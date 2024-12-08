@@ -1420,6 +1420,12 @@ methodmap CClotBody < CBaseCombatCharacter
 			speed_for_return *= 1.25;
 		}
 #endif
+
+		if(NpcStats_IsEnemySpeedModify(this.index))
+		{
+			speed_for_return *= f_SpeedModify[this.index];
+		}
+
 		if(!this.m_bThisNpcIsABoss)
 		{
 			if(!b_thisNpcIsARaid[this.index])
@@ -9211,6 +9217,23 @@ stock void FreezeNpcInTime(int npc, float Duration_Stun, bool IgnoreAllLogic = f
 	}
 }
 
+stock void NpcStats_SpeedModifyEnemy(int enemy, float duration, float speed=1.0, bool Nostack=true)
+{
+	if(Nostack && f_SpeedModify[enemy]>=speed)
+	{
+		f_SpeedModify[enemy]=speed;
+	}
+	else if(!Nostack)
+	{
+		f_SpeedModify[enemy]*=speed;
+	}
+	float GameTime = GetGameTime();
+	if(f_SpeedTimer[enemy] < (GameTime + duration))
+	{
+		f_SpeedTimer[enemy] = GameTime + duration;
+	}
+}
+
 stock void NpcStats_SilenceEnemy(int enemy, float duration)
 {
 	float GameTime = GetGameTime();
@@ -9254,11 +9277,16 @@ stock bool NpcStats_IsEnemySilenced(int enemy)
 
 stock bool NpcStats_VictorianCallToArms(int enemy)
 {
-	if(!IsValidEntity(enemy))
-		return true; //they dont exist, pretend as if they are silenced.
+    if(!IsValidEntity(enemy))
+        return true; //they dont exist, pretend as if they are silenced.
 
-	if(f_VictorianCallToArms[enemy] < GetGameTime())
+    if(f_VictorianCallToArms[enemy] < GetGameTime())
+{
+	if(!IsValidEntity(enemy))
+		return true;
+
 	{
+		f_SpeedModify[enemy]=1.0;
 		return false;
 	}
 	return true;
@@ -9289,6 +9317,7 @@ void NPCStats_RemoveAllDebuffs(int enemy)
 	f_LogosDebuff[enemy] = 0.0;
 	f_SpecterDyingDebuff[enemy] = 0.0;
 	f_PassangerDebuff[enemy] = 0.0;
+	f_SpeedTimer[enemy]=0.0;
 }
 #endif
 
@@ -9657,9 +9686,9 @@ public void Npc_DebuffWorldTextUpdate(CClotBody npc)
 		Format(HealthText, sizeof(HealthText), "%sM",HealthText);
 	}
 	if(NpcStats_VictorianCallToArms(npc.index))
-	{
-		Format(HealthText, sizeof(HealthText), "@",HealthText);
-	}
+    {
+        Format(HealthText, sizeof(HealthText), "%s@",HealthText);
+    }
 
 #if defined ZR
 	VausMagicaRemoveShield(npc.index);

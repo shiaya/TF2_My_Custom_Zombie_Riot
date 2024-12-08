@@ -382,6 +382,17 @@ public void OnPostThink(int client)
 			}
 		}
 	}
+	
+	if(IsValidClient(client) && b_Chaos_Coil[client] && GameTime > f_Chaos_Coil[client])
+	{
+		int Chaos_Coil = EntRefToEntIndex(i_Chaos_Coil_Speed[client]);
+		if(IsValidEntity(Chaos_Coil))
+		{
+			Attributes_Set(Chaos_Coil, 107, 1.0+(0.01*float(GetRandomInt(0, 10))));
+			SDKCall_SetSpeed(client);
+			f_Chaos_Coil[client] = GameTime + 3.0;
+		}
+	}
 
 	if(GetTeam(client) == 2)
 	{
@@ -1126,6 +1137,10 @@ public void OnPostThink(int client)
 			if(SuperUbersaw_Existant(client))
 			{
 				FormatEx(buffer, sizeof(buffer), "%s [ÜS %0.f%%]",buffer, SuperUbersawPercentage(client) * 100.0);
+			}
+			if(b_Reinforce[client])
+			{
+				FormatEx(buffer, sizeof(buffer), "%s [▼ %i％]",buffer, ReinforcePoint(client));
 			}
 #endif
 

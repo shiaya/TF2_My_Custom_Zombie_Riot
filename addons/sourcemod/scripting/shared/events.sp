@@ -95,6 +95,7 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	Zero(i_ExtraPlayerPoints);
 	WaveStart_SubWaveStart(GetGameTime());
 	ResetWaldchLogic();
+	ResetSansLogic();
 	CurrentGibCount = 0;
 	for(int client=1; client<=MaxClients; client++)
 	{
@@ -568,7 +569,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	Escape_DropItem(client);
 
 	//Incase they die, do suit!
-	if(!Rogue_Mode())
+	if(!Rogue_Mode() && !b_Sandvich_SafeHouse[client])
 		i_CurrentEquippedPerk[client] = 0;
 		
 	i_HealthBeforeSuit[client] = 0;

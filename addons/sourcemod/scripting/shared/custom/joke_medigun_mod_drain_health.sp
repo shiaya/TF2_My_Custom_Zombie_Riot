@@ -201,6 +201,7 @@ public MRESReturn OnMedigunPostFramePost(int medigun) {
 						WorldSpaceCenter(healTarget, Entity_Position );
 #if defined ZR
 						AddHealthToUbersaw(owner, 1, 0.0015);
+						HealPointToReinforce(owner, 1, 0.0015);
 #endif		
 						SDKHooks_TakeDamage(healTarget, medigun, owner, flDrainRate * GetGameFrameTime() * 3.0, DMG_PLASMA, medigun, _, Entity_Position);
 					}
@@ -226,6 +227,7 @@ public MRESReturn OnMedigunPostFramePost(int medigun) {
 						WorldSpaceCenter(healTarget, Entity_Position );
 #if defined ZR
 						AddHealthToUbersaw(owner, 1, 0.0005);
+						HealPointToReinforce(owner, 1, 0.0005);
 #endif		
 						SDKHooks_TakeDamage(healTarget, medigun, owner, flDrainRate * GetGameFrameTime(), DMG_PLASMA, medigun, _, Entity_Position);
 					}

@@ -47,7 +47,6 @@ void NPC_PluginStart()
 }
 
 #if defined ZR
-public void NPC_SpawnNext(bool panzer, bool panzer_warning)
 {
 	float GameTime = GetGameTime();
 	if(f_DelaySpawnsForVariousReasons > GameTime)
@@ -174,7 +173,7 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning)
 	float pos[3], ang[3];
 
 	MiniBoss boss;
-	if(panzer && Waves_GetMiniBoss(boss))
+	if(panzer && Waves_GetMiniBoss(boss, RND))
 	{
 		bool isBoss = false;
 		int deathforcepowerup = boss.Powerup;
@@ -2138,6 +2137,10 @@ stock bool DoesNpcHaveHudDebuffOrBuff(int client, int npc, float GameTime)
 		return true;
 	else if(f_Ruina_Attack_Buff[npc] > GameTime)
 		return true;
+	else if(NpcStats_IsEnemySpeedModify(npc))
+		return true;
+	else if(f_Overclocker_Buff[npc] > GameTime)
+		return true;
 	#endif
 #if defined RPG
 	else if(TrueStrength_StacksOnEntity(client, npc))
@@ -2331,10 +2334,20 @@ void BackstabNpcInternalModifExtra(int weapon, int attacker, int victim, float m
 #if defined ZR
 void OnKillUniqueWeapon(int attacker, int weapon, int victim)
 {
-	if(!IsValidEntity(weapon))
-		return;
-
 	if(!IsValidClient(attacker))
+		return;
+		
+	if(b_Box_Office[attacker])
+	{
+		if(!Waves_InSetup())
+		{
+			int cash = 1;
+			CashRecievedNonWave[attacker] += cash;
+			CashSpent[attacker] -= cash;
+		}
+	}
+		
+	if(!IsValidEntity(weapon))
 		return;
 		
 	if(i_HasBeenBackstabbed[victim])
@@ -2372,6 +2385,8 @@ void OnKillUniqueWeapon(int attacker, int weapon, int victim)
 		{
 			WrathfulBlade_OnKill(attacker, victim);
 		}
+		case WEAPON_FARMER:Famrmer_OnKill(attacker);
+		case WEAPON_PERSERKER:Perserker_OnKill(attacker);
 	}
 }
 #endif

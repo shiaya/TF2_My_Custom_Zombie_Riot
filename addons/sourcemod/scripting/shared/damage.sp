@@ -791,6 +791,39 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 		{
 			FullMoon_SanctuaryApplyBuffs(victim, damage);
 		}
+		case WEAPON_FARMER:
+		{
+			Famrmer_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
+		}
+		case WEAPON_PERSERKER:
+		{
+			Perserker_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
+		}
+	}
+	
+	if(b_Chaos_Coil[victim])
+		Elemental_AddChaosDamage(victim, attacker, RoundToCeil(damage));
+	
+	if(b_Iron_Will[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red))
+	{
+		int health = GetClientHealth(victim);
+		if(damage>health)
+		{
+			damage=0.0;
+			SetEntityHealth(victim, 1);
+		}
+	}
+
+	if(LastMann && b_Hero_Of_Concord[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red) && TeutonType[victim] == TEUTON_NONE)
+	{
+		float Resist=damage;
+		if(Items_HasNamedItem(victim, "True Concord Hero"))
+			Resist*=0.7;
+		else if(b_thisNpcIsARaid[attacker] || b_thisNpcIsABoss[attacker])
+			Resist*=0.8;
+		else
+			Resist*=0.75;
+		damage=Resist;
 	}
 	return damage;
 }
@@ -1074,6 +1107,35 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		{
 			Walter_NPCTakeDamage(victim, attacker, damage, weapon);
 		}
+		case WEAPON_MARKET_GARDENER:
+		{
+			MarketGardener_NPCTakeDamage(victim, attacker, damage, weapon);
+		}
+		case WEAPON_FARMER:
+		{
+			Famrmer_NPCTakeDamage(victim, attacker, damage, weapon);
+		}
+		case WEAPON_MINECRAFT_SWORD:
+		{
+			MSword_NPCTakeDamage(victim, attacker, damage, weapon);
+		}
+		case WEAPON_OVERCLOCKER:
+		{
+			Nitro_NPCTakeDamage(victim, attacker, damage, damagetype, weapon);
+		}
+		case WEAPON_PERSERKER:
+		{
+			Perserker_NPCTakeDamage(victim, attacker, damage, damagetype, weapon);
+		}
+		case WEAPON_SUPPORTWEAPONS:
+		{
+			SupportWeapons_NPCTakeDamage(victim, attacker, damage, damagetype, weapon);
+		}
+	}
+	
+	if(f_Overclocker_Buff[attacker] > GetGameTime())
+	{
+		damage *=4.5;
 	}
 #endif
 
@@ -1315,7 +1377,28 @@ static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int 
 	}
 	if(LastMann && GetTeam(victim) != TFTeam_Red)
 	{
-		damage *= 1.35;
+		bool minicrit=true;
+		if(b_Hero_Of_Concord[attacker] && IsValidClient(attacker) && TeutonType[attacker] == TEUTON_NONE)
+		{
+			if(b_Hero_Of_Concord_True)
+				damage*=1.55;
+			else
+				damage*=1.45;
+			minicrit=false;
+		}
+		else
+		{
+			if(b_Hero_Of_Concord_Deadman)
+			{
+				if(b_Hero_Of_Concord_True)
+					damage*=1.5;
+				else
+					damage*=1.45;
+				minicrit=false;
+			}
+			else
+				damage *= 1.35;
+		}
 		int DisplayCritSoundTo;
 		if(attacker <= MaxClients)
 			DisplayCritSoundTo = attacker;
@@ -1331,8 +1414,28 @@ static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int 
 				f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
 			}
 			
-			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,true); //Display crit above head
+			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,minicrit); //Display crit above head
 		}
+	}
+	if(IsValidClient(attacker) && b_Sandvich_Crits[attacker])
+	{
+		int CritChance = 100-i_Sandvich_Crits[attacker];
+		if(CritChance <= 0 ? true : GetRandomInt(0, 100) > CritChance)
+		{
+			damage *= 1.15;
+			i_Sandvich_Crits[attacker]=0;
+		}
+		else ++i_Sandvich_Crits[attacker];
+	}
+	if(IsValidClient(attacker) && b_DeathfromAbove[attacker])
+	{
+		float attackerPos[3], victimPos[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", attackerPos);
+		GetEntPropVector(victim, Prop_Send, "m_vecOrigin", victimPos);
+		attackerPos[0]=victimPos[0];
+		attackerPos[1]=victimPos[1];
+		float YPOS = GetVectorDistance(attackerPos, victimPos);
+		if(YPOS>100.0) damage *= 1.10;
 	}
 	if(IsValidEntity(weapon))
 	{
@@ -2084,6 +2187,10 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 	{
 		Format(Debuff_Adder_left, SizeOfChar, "%sM", Debuff_Adder_left);
 	}
+	if(NpcStats_IsEnemySpeedModify(victim))
+	{
+		Format(Debuff_Adder_left, SizeOfChar, "%s[<<%i％]", Debuff_Adder_left, RoundFloat(f_SpeedModify[victim]*100.0));
+	}
 	if(Victoria_Support_RechargeTime(victim))
 	{
 		FormatEx(Debuff_Adder_left, SizeOfChar, "%s[◈ %i％]", Debuff_Adder_left, Victoria_Support_RechargeTime(victim));
@@ -2174,13 +2281,47 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 	{
 		Format(Debuff_Adder_right, SizeOfChar, "↖%s", Debuff_Adder_right);
 	}
+	if(f_AncientBannerNpcBuff[victim] > GameTime) //hussar!
+	{
+		Format(Debuff_Adder_right, SizeOfChar, "➤%s", Debuff_Adder_right);
+	}
 	if(f_BobDuckBuff[victim] > GameTime) 
 	{
 		Format(Debuff_Adder_right, SizeOfChar, "BOB%s", Debuff_Adder_right);
 	}
-	if(f_AncientBannerNpcBuff[victim] > GameTime) //hussar!
+	if(f_Overclocker_Buff[victim] > GameTime)
 	{
-		Format(Debuff_Adder_right, SizeOfChar, "➤%s", Debuff_Adder_right);
+		Format(Debuff_Adder_right, SizeOfChar, "Ω%s", Debuff_Adder_right);
+		if(IsValidClient(victim)) ModifyOverclockBuff(victim, 1, 0.7, true, 5.0, 2.0);
+	}
+	else if(IsValidClient(victim)) ModifyOverclockBuff(victim, 1, 0.7, false, 5.0, 2.0);
+	if(LastMann && GetTeam(victim) == TFTeam_Red)
+	{
+		if(IsValidClient(victim))
+		{
+			if(IsPlayerAlive(victim) && b_Hero_Of_Concord[victim] && TeutonType[victim] == TEUTON_NONE)
+			{
+				TF2_AddCondition(victim, TFCond_CritCanteen, 1.0);
+				if(Items_HasNamedItem(victim, "True Concord Hero"))
+				{
+					b_Hero_Of_Concord_True=true;
+					TF2_AddCondition(victim, TFCond_KingAura, 1.0);
+				}
+				else
+					b_Hero_Of_Concord_True=false;
+				b_Hero_Of_Concord_LastMan[victim]=true;
+				b_Hero_Of_Concord_Deadman=true;
+			}
+			else if(b_Hero_Of_Concord_Deadman && TeutonType[victim] != TEUTON_WAITING && TeutonType[victim] != TEUTON_NONE)
+				TF2_AddCondition(victim, b_Hero_Of_Concord_True ? TFCond_CritOnWin : TFCond_CritCanteen, 1.0);
+		}
+		if(b_Hero_Of_Concord_Deadman)
+		{
+			if(b_Hero_Of_Concord_True)
+				Format(Debuff_Adder_right, SizeOfChar, "★%s", Debuff_Adder_right);
+			else
+				Format(Debuff_Adder_right, SizeOfChar, "☆%s", Debuff_Adder_right);
+		}
 	}
 #if defined ZR
 	if(GetTeam(victim) == 2 && Rogue_GetChaosLevel() > 0)

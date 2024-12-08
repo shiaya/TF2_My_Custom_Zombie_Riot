@@ -523,6 +523,8 @@ float f_IberiaMarked[MAXENTITIES];
 float f_VeryLowIceDebuff[MAXENTITIES];
 float f_LowIceDebuff[MAXENTITIES];
 float f_HighIceDebuff[MAXENTITIES];
+float f_SpeedModify[MAXENTITIES]={1.0, ...};
+float f_SpeedTimer[MAXENTITIES];
 bool b_Frozen[MAXENTITIES];
 bool b_NoGravity[MAXENTITIES];
 float f_TankGrabbedStandStill[MAXENTITIES];
@@ -547,6 +549,8 @@ float f_Ruina_Attack_Buff_Amt[MAXENTITIES];
 float f_GodAlaxiosBuff[MAXENTITIES];
 float f_Ocean_Buff_Weak_Buff[MAXENTITIES];
 float f_Ocean_Buff_Stronk_Buff[MAXENTITIES];
+float f_Overclocker_Buff[MAXENTITIES];
+float Kritzkrieg_Buff[MAXENTITIES];
 float f_BannerDurationActive[MAXENTITIES];
 float f_BannerAproxDur[MAXENTITIES];
 float f_BuffBannerNpcBuff[MAXENTITIES];
@@ -719,6 +723,22 @@ bool b_AggreviatedSilence[MAXTF2PLAYERS];
 bool b_ArmorVisualiser[MAXENTITIES];
 bool b_BobsCuringHand[MAXTF2PLAYERS];
 bool b_XenoVial[MAXTF2PLAYERS];
+bool b_Hero_Of_Concord[MAXENTITIES];
+bool b_Hero_Of_Concord_LastMan[MAXTF2PLAYERS];
+bool b_Hero_Of_Concord_True;
+int i_Hero_Of_Concord[MAXTF2PLAYERS]={0, ...};
+bool b_Hero_Of_Concord_Deadman;
+bool b_Box_Office[MAXTF2PLAYERS];
+bool b_Sandvich_SafeHouse[MAXTF2PLAYERS];
+bool b_Sandvich_Crits[MAXTF2PLAYERS];
+int i_Sandvich_Crits[MAXTF2PLAYERS];
+bool b_DeathfromAbove[MAXTF2PLAYERS];
+bool b_Reinforce[MAXTF2PLAYERS];
+bool b_POWERHEAL[MAXTF2PLAYERS]={false, ...};
+bool b_Chaos_Coil[MAXTF2PLAYERS];
+int i_Chaos_Coil_Speed[MAXTF2PLAYERS];
+float f_Chaos_Coil[MAXTF2PLAYERS];
+int i_Chaos_Coil[MAXTF2PLAYERS]={0, ...};
 int b_BobsCuringHand_Revived[MAXTF2PLAYERS];
 bool b_StickyExtraGrenades[MAXTF2PLAYERS];
 bool FinalBuilder[MAXENTITIES];
@@ -4218,6 +4238,7 @@ void ReviveClientFromOrToEntity(int target, int client, int extralogic = 0, int 
 		if(WasClientReviving)
 		{
 			AddHealthToUbersaw(client, 1, 0.065);
+			HealPointToReinforce(client, 1, 0.065);
 			i_Reviving_This_Client[client] = 0;
 			f_Reviving_This_Client[client] = 0.0;
 		}
