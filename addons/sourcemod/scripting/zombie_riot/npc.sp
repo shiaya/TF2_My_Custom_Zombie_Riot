@@ -827,6 +827,8 @@ void NPC_ConfigSetup()
 	VictorianDroneAnvil_MapStart();
 	Victorian_Tacticalunit_OnMapStart_NPC();
 	Victorian_TacticalProtector_OnMapStart_NPC();
+//Special
+	TrumpetSkeleton_OnMapStart_NPC();
 }
 
 int NPC_Add(NPCData data)
@@ -1844,4 +1846,5 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/npc/matrix/raids/npc_agentjohnson.sp"
 #include "zombie_riot/npc/matrix/raids/npc_agentthompson.sp"
 #include "zombie_riot/npc/matrix/raids/npc_twins.sp"
-#include "zombie_riot/npc/matrix/raids/npc_agent_smith.sp"
+#include "zombie_riot/npc/matrix/raids/npc_agent_smith.sp"//Special
+#include "zombie_riot/npc/special/npc_sans.sp"

@@ -246,6 +246,21 @@ void Music_EndLastmann()
 		{
 			if(IsClientInGame(client))
 			{
+				if(IsValidClient(client))
+				{
+					if(b_Hero_Of_Concord_LastMan[client])
+					{
+						i_Hero_Of_Concord[client]++;
+						//CPrintToChatAll("%i", i_Hero_Of_Concord[client]);
+						if(i_Hero_Of_Concord[client]>5 && !(Items_HasNamedItem(client, "True Concord Hero")))
+						{
+							Items_GiveNamedItem(client, "True Concord Hero");
+							CPrintToChat(client, "%t", "True Concord Hero Give");
+						}
+						b_Hero_Of_Concord_LastMan[client]=false;
+					}
+				}
+			
 				if(Yakuza_Lastman())
 					StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/yakuza_lastman.mp3", 2.0);
 

@@ -212,7 +212,13 @@ public Action NpcEnemyAliveLimit(int client, int args)
 
 public Action Waves_ForcePanzer(int client, int args)
 {
-	NPC_SpawnNext(true, true); //This will force spawn a panzer.
+	char arg[20];
+	int index=0;
+	GetCmdArg(1, arg, sizeof(arg));
+	if(StringToIntEx(arg, index) <= 0 || index <= 0)
+		index=-1;
+
+	NPC_SpawnNext(true, true, index); //This will force spawn a panzer.
 	return Plugin_Handled;
 }
 
@@ -690,7 +696,7 @@ void Waves_SetupMiniBosses(KeyValues map)
 		delete kv;
 }
 
-bool Waves_GetMiniBoss(MiniBoss boss)
+bool Waves_GetMiniBoss(MiniBoss boss, int RND = -1)
 {
 	if(!MiniBosses)
 		return false;
@@ -717,7 +723,7 @@ bool Waves_GetMiniBoss(MiniBoss boss)
 		length = level;
 	*/
 
-	MiniBosses.GetArray(GetURandomInt() % length, boss);
+	MiniBosses.GetArray((RND != -1 ? RND : GetURandomInt()) % length, boss);
 	return true;
 }
 
@@ -2006,7 +2012,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 				if(refreshNPCStore)
 					Store_RandomizeNPCStore(0);
 				
-				NPC_SpawnNext(panzer_spawn, panzer_sound);
+				NPC_SpawnNext(panzer_spawn, panzer_sound, -1);
 				return;
 			}
 
@@ -2278,11 +2284,28 @@ void WaveEndLogicExtra()
 	Building_ResetRewardValuesWave();
 	FallenWarriorGetRandomSeedEachWave();
 	Zero(i_MaxArmorTableUsed);
+	b_Hero_Of_Concord_Deadman=false;
 	for(int client; client <= MaxClients; client++)
 	{
 		if(IsValidClient(client))
 		{
+			if(!b_Hero_Of_Concord[client])i_Hero_Of_Concord[client]=0;
 			b_BobsCuringHand_Revived[client] += GetRandomInt(1,3);
+			if(!StrContains(WhatDifficultySetting_Internal, "Interitus Group"))
+			{
+				bool Chaostic = view_as<bool>(Store_HasNamedItem(client, "Glass Coil"));
+				if(Chaostic)
+				{
+					i_Chaos_Coil[client]++;
+					if(i_Chaos_Coil[client]>=32 && !(Items_HasNamedItem(client, "Chaos Coil")))
+					{
+						Items_GiveNamedItem(client, "Chaos Coil");
+						CPrintToChat(client, "%t", "Chaos Coil Give");
+					}
+				}
+				else
+					i_Chaos_Coil[client]=0;
+			}
 			if(Items_HasNamedItem(client, "Bob's Curing Hand"))
 			{
 				b_BobsCuringHand[client] = true;
@@ -3122,11 +3145,11 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 
 		if(Freeplay_ShouldMiniBoss())
 		{
-			NPC_SpawnNext(true, true);
+			NPC_SpawnNext(true, true, -1);
 		}
 		else
 		{
-			NPC_SpawnNext(false, false);
+			NPC_SpawnNext(false, false, -1);
 		}
 		
 		CurrentWave = 9;

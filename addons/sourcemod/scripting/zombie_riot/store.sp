@@ -5187,6 +5187,17 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	b_ExpertTrapper[client] = false;
 	b_RaptureZombie[client] = false;
 	b_ArmorVisualiser[client] = false;
+	if(!LastMann) b_Hero_Of_Concord[client] = false;
+	b_Box_Office[client] = false;
+	b_Sandvich_SafeHouse[client] = false;
+	b_Reinforce[client] = false;
+	b_Sandvich_Crits[client] = false;
+	b_DeathfromAbove[client] = false;
+	if(IsValidEntity(EntRefToEntIndex(i_Chaos_Coil_Speed[client])))
+	{
+		i_Chaos_Coil_Speed[client] = -1;
+	}
+	b_Chaos_Coil[client] = false;
 	i_MaxSupportBuildingsLimit[client] = 0;
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
 	BannerOnEntityCreated(client);
@@ -5799,6 +5810,49 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					{
 						b_ArmorVisualiser[client] = true;
 					}
+					if(info.SpecialAdditionViaNonAttribute == 14 && !LastMann)
+					{
+						b_Hero_Of_Concord[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 15)
+					{
+						b_Box_Office[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 16)
+					{
+						b_Sandvich_SafeHouse[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 17)
+					{
+						b_Reinforce[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 18)
+					{
+						if(!b_POWERHEAL[client])
+						{
+							for(int all=1; all<=MaxClients; all++)
+							{
+								if(IsValidClient(all) && !IsFakeClient(all))
+									ClientCommand(all, "playgamesound \"baka/metal_pipe.mp3\"");
+							}
+							TF2_StunPlayer(client, 1.0, 0.0, TF_STUNFLAG_BONKSTUCK|TF_STUNFLAG_SOUND, 0);
+							StopSound(client, SNDCHAN_STATIC, "player/pl_impact_stun.wav");
+						}
+						b_POWERHEAL[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 19)
+					{
+						b_Sandvich_Crits[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 20)
+					{
+						b_DeathfromAbove[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 21)
+					{
+						b_Chaos_Coil[client] = true;
+						if(IsValidEntity(entity))i_Chaos_Coil_Speed[client] = EntIndexToEntRef(entity);
+					}
 
 					if(EntityIsAWeapon)
 					{
@@ -6021,6 +6075,13 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		Enable_Hunting_Rifle(client, entity);
 		Weapon_Anti_Material_Rifle_Deploy(client, entity);
 		Walter_Enable(client, entity);
+		MarketGardener_Enable(client, entity);
+		Farmer_Enable(client, entity);
+		MSword_Enable(client, entity);
+		Perserker_Enable(client, entity);
+		SupportWeapons_Enable(client, entity);
+		LockDown_Enable(client, entity);
+		Still_Hunt_Enable(client, entity);
 	}
 
 	return entity;

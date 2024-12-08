@@ -207,7 +207,16 @@ enum
 	WEAPON_LOGOS = 127,
 	WEAPON_WALTER = 128,
 	WEAPON_OLDINFINITYBLADE = 129,
-	WEAPON_NYMPH = 130
+	WEAPON_NYMPH = 130,
+	WEAPON_MARKET_GARDENER = 1000,
+	WEAPON_FARMER = 1001,
+	WEAPON_MINECRAFT_SWORD = 1002,
+	WEAPON_OVERCLOCKER = 1003,
+	WEAPON_PERSERKER = 1004,
+	WEAPON_SUPPORTWEAPONS = 1005,
+	WEAPON_LOCKDOWN = 1006,
+	WEAPON_STILLHUNT = 1007,
+	WEAPON_TRUMPET = 1008
 }
 
 enum
@@ -571,6 +580,15 @@ int i_WaveHasFreeplay = 0;
 #include "zombie_riot/custom/wand/weapon_logos.sp"
 #include "zombie_riot/custom/weapon_walter.sp"
 #include "zombie_riot/custom/wand/weapon_wand_nymph.sp"
+#include "zombie_riot/custom/baka/weapon_market_gardener.sp"
+#include "zombie_riot/custom/baka/weapon_farmer.sp"
+#include "zombie_riot/custom/baka/weapon_minecraft_sword.sp"
+#include "zombie_riot/custom/baka/weapon_overclocker.sp"
+#include "zombie_riot/custom/baka/weapon_perserker_soul.sp"
+#include "zombie_riot/custom/baka/weapon_supportweapons.sp"
+#include "zombie_riot/custom/baka/weapon_mostima.sp"
+#include "zombie_riot/custom/baka/weapon_still_hunt.sp"
+#include "zombie_riot/custom/baka/weapon_trumpet.sp"
 
 void ZR_PluginLoad()
 {
@@ -604,6 +622,7 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_spawn_grigori", Command_SpawnGrigori, ADMFLAG_ROOT, "Forcefully summon grigori");
 	RegAdminCmd("sm_displayhud", CommandDebugHudTest, ADMFLAG_ROOT, "debug stuff");
 	RegAdminCmd("sm_fake_death_client", Command_FakeDeathCount, ADMFLAG_GENERIC, "Fake Death Count");
+	RegAdminCmd("sm_kill_npc", CommandKillTheNPC, ADMFLAG_ROOT, "You can kill an NPC by aiming at it and hitting it.");
 	CookieXP = new Cookie("zr_xp", "Your XP", CookieAccess_Protected);
 	CookieScrap = new Cookie("zr_Scrap", "Your Scrap", CookieAccess_Protected);
 	
@@ -830,6 +849,13 @@ void ZR_MapStart()
 	Yakuza_MapStart();
 	ResetMapStartSkadiWeapon();
 	Logos_MapStart();
+	Market_Garden_OnMapStart();
+	MSword_OnMapStart();
+	Farmer_OnMapStart();
+	OClocker_OnMapStart();
+	Perserker_OnMapStart();
+	LockDown_Wand_MapStart();
+	Still_Hunt_MapStart();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)
