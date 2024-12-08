@@ -10,6 +10,7 @@
 		"pt"	"Bob o 2°"
 		"nl"	"Bob De Tweede"
 		"chi"	"鲍勃二代"
+		"ko"	"밥 2세"
 	}
 	"Bob The Second:"
 	{
@@ -21,6 +22,7 @@
 		"pt"	"Bob o 2°:"
 		"nl"	"Bob De Tweede:"
 		"chi"	"鲍勃二代:"
+		"ko"	"밥 2세:"
 	}
 	"Pistol Ammo"
 	{
@@ -32,6 +34,7 @@
 		"pt"	"Munição da Pistola"
 		"nl"	"Pistool Ammunitie"
 		"chi"	"手枪弹药"
+		"ko"	"권총 탄약"
 	}
 	"Bob The Second is not friendly and follows you!"
 	{
@@ -43,6 +46,7 @@
 		"pt"	"Bob o 2° não é amigável e te segue!"
 		"nl"	"Bob De Tweede is niet vriendelijk en volgt je!"
 		"chi"	"鲍勃二代是友好的，并会跟着你！"
+		"ko"	"밥 2세는 적을 공격하며 당신을 따라다닙니다!"
 	}
 	"Use voice Commands to command him!"
 	{
@@ -54,6 +58,7 @@
 		"pt"	"Use comandos de voz para o comandar!"
 		"nl"	"Gebruik Stemcommando's om commando's te geven aan hem!"
 		"chi"	"使用语音指令来命令鲍勃"
+		"ko"	"음성 명령 기능으로 밥에게 명령을 내릴수있습니다!"
 	}
 	"Bob The Second is friendly and follows you!"
 	{
@@ -65,6 +70,7 @@
 		"pt"	"Bob o 2° é amigável e te segue!"
 		"nl"	"Bob De Tweede is vriendelijk en volgt je!"
 		"chi"	"鲍勃二代不是友好的，但会跟着你！"
+		"ko"	"밥 2세는 공격하지 않으며 당신을 따라다닙니다!"
 	}
 	"Bob The Second is not friendly and doesn't follow you!"
 	{
@@ -76,6 +82,7 @@
 		"pt"	"Bob o 2° não é amigável e não te segue!"
 		"nl"	"Bob De Tweede is niet vriendelijk en volgt je niet!"
 		"chi"	"鲍勃二代不是友好的，也不会跟着你！"
+		"ko"	"밥 2세는 적을 공격하며 따라다니지 않습니다!"
 	}
 	"Bob The Second is friendly and doesn't follow you!"
 	{
@@ -87,6 +94,7 @@
 		"pt"	"Bob o 2° é amigável e não te segue!"
 		"nl"	"Bob De Tweede is vriendelijk en volgt je niet!"
 		"chi"	"鲍勃二代是友好的，但不会跟着你！"
+		"ko"	"밥 2세는 공격하지 않으며 따라다니지 않습니다!"
 	}
 	"Bob The Second is not friendly and follows you! BUT stands still."
 	{
@@ -98,6 +106,7 @@
 		"pt"	"Bob o 2° não é amigável e te segue! MAS está parado."
 		"nl"	"Bob De Tweede is niet vriendelijk en volgt je! MAAR staat stil."
 		"chi"	"鲍勃二代不是友好的，会跟着你，并且坚守此地！"
+		"ko"	"밥 2세는 적을 공격하며 따라다닙니다! 하지만 움직이지 않습니다."
 	}
 	"Bob The Second is friendly and follows you! BUT stands still"
 	{
@@ -109,6 +118,7 @@
 		"pt"	"Bob o 2° é amigável e te segue! MAS está parado."
 		"nl"	"Bob De Tweede is vriendelijk en volgt je! MAAR staat stil."
 		"chi"	"鲍勃二代是友好的，会跟着你，并且坚守此地！"
+		"ko"	"밥 2세는 공격하지 않으며 따라다닙니다! 하지만 움직이지 않습니다."
 	}
 	"Bob The Second is not friendly and doesn't follow you! BUT stands still"
 	{
@@ -120,6 +130,7 @@
 		"pt"	"Bob o 2° não é amigável e não te segue! MAS está parado."
 		"nl"	"Bob De Tweede is niet vriendelijk en volgt je niet! MAAR staat stil."
 		"chi"	"鲍勃二代不是友好的，不会跟着你，但会坚守此地！"
+		"ko"	"밥 2세는 적을 공격하며 따라다니지 않습니다! 하지만 움직이지 않습니다."
 	}
 	"Bob The Second is friendly and doesn't follow you! BUT stands still"
 	{
@@ -131,6 +142,7 @@
 		"pt"	"Bob o 2° é amigável e não te segue! MAS está parado."
 		"nl"	"Bob De Tweede is vriendelijk en volgt je niet! MAAR staat stil."
 		"chi"	"鲍勃二代是友好的，不会跟着你，但会坚守此地！"
+		"ko"	"밥 2세는 공격하지 않으며 따라다니지 않습니다! 하지만 움직이지 않습니다."
 	}
 
 
@@ -265,6 +277,7 @@
 		"pt"	"Pegue aquela latinha."
 		"nl"	"Pak dat blik op."
 		"chi"   "捡起那个罐子。"
+		"ko"	"저 캔을 주워라."
 	}
 	"On my way, sir!"
 	{

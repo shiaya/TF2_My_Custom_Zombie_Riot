@@ -6,6 +6,7 @@
 		"fr"		"Archetype: Multi-plombs"
 		"ru"		"Архетип: Мультивыстрел"
 		"chi"		"类型：霰弹"
+		"ko"		"유형: 산탄"
 	}
 	"Rapid Fire"
 	{
@@ -13,6 +14,7 @@
 		"fr"		"Archetype: Tirs Rapides"
 		"ru"		"Архетип: Быстрый огонь"
 		"chi"		"类型：连发"
+		"ko"		"유형: 연사"
 	}
 	"Single Pellet"
 	{
@@ -20,6 +22,7 @@
 		"fr"		"Archetype: Chevrotine"
 		"ru"		"Архетип: Одиночный выстрел"
 		"chi"		"类型：单发"
+		"ko"		"유형: 단발"
 	}
 	"Infinite Fire"
 	{
@@ -27,6 +30,7 @@
 		"fr"		"Archetype: Tir Infini"
 		"ru"		"Архетип: Бесконечный огонь"
 		"chi"		"类型：火力压制"
+		"ko"		"유형: 풀 오토"
 	}
 	"Trap Master"
 	{
@@ -34,6 +38,7 @@
 		"fr"		"Archetype: Maître des Pièges"
 		"ru"		"Архетип: Ловчий"
 		"chi"		"类型：陷阱大师"
+		"ko"		"유형: 함정 술사"
 	}
 	"Far Range"
 	{
@@ -41,6 +46,7 @@
 		"fr"		"Archetype: Longue Portée"
 		"ru"		"Архетип: Дальняя дальность"
 		"chi"		"类型：远程"
+		"ko"		"유형: 초 장거리"
 	}
 	"Explosive Mind"
 	{
@@ -48,6 +54,7 @@
 		"fr"		"Archetype: Maître des Explosions"
 		"ru"		"Архетип: Взрывной разум"
 		"chi"		"类型：爆炸"
+		"ko"		"유형: 폭발형"
 	}
 	"Team Support"
 	{
@@ -55,6 +62,7 @@
 		"fr"		"Archetype: Bon Coéquipier"
 		"ru"		"Архетип: Командная поддержка"
 		"chi"		"类型：辅助"
+		"ko"		"유형: 아군 지원"
 	}
 	"ArchDebuff"
 	{
@@ -62,6 +70,7 @@
 		"fr"		"Archetype: Affaiblisseur"
 		"ru"		"Архетип: Ослабление"
 		"chi"		"类型：Debuff"
+		"ko"		"유형: 디버퍼"
 	}
 	"Brawler"
 	{
@@ -69,6 +78,7 @@
 		"fr"		"Archetype: Bagarreur"
 		"ru"		"Архетип: Потасовщик"
 		"chi"		"类型：战士"
+		"ko"		"유형: 난투꾼"
 	}
 	"Ambusher"
 	{
@@ -76,6 +86,7 @@
 		"fr"		"Archetype: Embusqueur"
 		"ru"		"Архетип: Засадник"
 		"chi"		"类型：偷袭"
+		"ko"		"유형: 매복자"
 	}
 	"Combatant"
 	{
@@ -83,6 +94,7 @@
 		"fr"		"Archetype: Combatant"
 		"ru"		"Архетип: Боец"
 		"chi"		"类型：斗士"
+		"ko"		"유형: 투사"
 	}
 	"Aberration"
 	{
@@ -90,6 +102,7 @@
 		"fr"		"Archetype: Aberration"
 		"ru"		"Архетип: Аберрация"
 		"chi"		"类型：异类"
+		"ko"		"유형: 에버레이션"
 	}
 	"Duelist"
 	{
@@ -97,6 +110,7 @@
 		"fr"		"Archetype: Dueliste"
 		"ru"		"Архетип: Дуэлянт"
 		"chi"		"类型：决斗士"
+		"ko"		"유형: 듀얼리스트"
 	}
 	"Lord"
 	{
@@ -104,6 +118,7 @@
 		"fr"		"Archetype: Roi"
 		"ru"		"Архетип: Лорд"
 		"chi"		"类型：领主"
+		"ko"		"유형: 로드"
 	}
 	"Crusher"
 	{
@@ -111,6 +126,7 @@
 		"fr"		"Archetype: Broyeur"
 		"ru"		"Архетип: Дробитель"
 		"chi"		"类型：碾压"
+		"ko"		"유형: 파쇄기"
 	}
 	"Summoner"
 	{
@@ -118,6 +134,7 @@
 		"fr"		"Archetype: Convoqueur"
 		"ru"		"Архетип: Призыватель"
 		"chi"		"类型：召唤师"
+		"ko"		"유형: 소환사"
 	}
 	"Chain Caster"
 	{
@@ -125,6 +142,7 @@
 		"fr"		"Archetype: Sortilèges Successifs"
 		"ru"		"Архетип: Маг цепей"
 		"chi"		"类型：连环法师"
+		"ko"		"유형: 체인 캐스터"
 	}
 	"Multi Caster"
 	{
@@ -132,12 +150,14 @@
 		"fr"		"Archetype: Multi-sortilèges"
 		"ru"		"Архетип: Мульти маг"
 		"chi"		"类型：多重法师"
+		"ko"		"유형: 멀티 캐스터"
 	}
 	"Base Caster"
 	{
 		"en"		"Archetype: Base Caster"
 		"fr"		"Archetype: Sortilèges Amateurs"
 		"ru"		"Архетип: Базовый маг"
+		"ko"		"유형: 기본 캐스터"
 	}
 	"Mythic Caster"
 	{
@@ -145,11 +165,13 @@
 		"fr"		"Archetype: Sortilèges Mythiques"
 		"chi"		"类型：至尊法师"
 		"ru"		"Архетип: Мифический маг"
+		"ko"		"유형: 미스틱 캐스터"
 	}
 	"Psychic Warlord"
 	{
 		"en"		"Archetype: Psychic Warlord"
 		"ru"		"Архетип: психический полководец"
+		"ko"		"유형: 사이킥 워로드"
 	}
 	"Abyssal Hunter"
 	{
@@ -157,6 +179,7 @@
 		"fr"		"Archetype: Chasseur des Abîmes"
 		"ru"		"Архетип: Охотник Бездны"
 		"chi"		"类型：深海猎人"
+		"ko"		"유형: 어비설 헌터스"
 	}
 	"Kazimierz"
 	{
@@ -164,6 +187,7 @@
 		"ru"		"Архетип: Казимерз"
 		"fr"		"Archetype: Kazimierz"
 		"chi"		"类型：卡齐米日"
+		"ko"		"유형: 키시미어"
 	}
 	"Bloodletter"
 	{
@@ -171,6 +195,7 @@
 		"ru"		"Арехтип: Кровопускатель"
 		"fr"		"Archetype: Hémorragie"
 		"chi"		"类型：放血者"
+		"ko"		"유형: 블러드레터"
 	}
 	"Bloody Butcher"
 	{
@@ -178,6 +203,7 @@
 		"ru"		"Архетип: Кровавый Мясник"
 		"fr"		"Archetype: Boucher Dégorgeur"
 		"chi"		"类型：血腥屠夫"
+		"ko"		"유형: 블러디 도살자"
 	}
 
 	"Common Pap Damage Attack Speed Firearm Desc"
@@ -186,6 +212,7 @@
 		"fr"		"Dégats et cadence de tir améliorés"
 		"ru"		"Увеличенный урон и скорость атаки."
 		"chi"       "增加伤害和攻击速度"
+		"ko"		"피해량과 공격 속도 증가"
 	}
 	"Common Pap Damage Attack Speed Not Firearm Desc"
 	{
@@ -193,11 +220,13 @@
 		"fr"		"Dégats et cadence des attaques améliorés"
 		"ru"		"Увеличенный урон и скорость атаки."
 		"chi"       "增加伤害和攻击速度"
+		"ko"		"피해량과 공격 속도 증가"
 	}
 
 	"Syringe Gun Desc"
 	{
 		"en"		"Low Damage but very high bleed duration\nDeals 15%% less damage against raids."
+		"ko"		"데미지는 낮지만 출혈 지속시간이 매우 깁니다. 레이드 보스에 대한 데미지가 15%% 감소합니다."
 	}
 	"Syringe Gun Pap 1 Desc"
 	{
@@ -205,6 +234,7 @@
 		"fr"		"Dégats et cadence de tir améliorés"
 		"ru"		"Увеличенный урон и скорость атаки."
 		"chi"       "增加伤害和攻击速度"
+		"ko"		"피해량과 공격 속도 증가"
 	}
 	"Syringe Gun Pap 2 Desc"
 	{
@@ -212,6 +242,7 @@
 		"fr"		"Dégats et cadence de tir améliorés"
 		"ru"		"Увеличенный урон и скорость атаки."
 		"chi"       "增加伤害和攻击速度"
+		"ko"		"피해량과 공격 속도 증가"
 	}
 	
 	
@@ -1547,11 +1578,13 @@
 	{
 		"en"	"+7 HP on melee kill, You can now eat metal and flesh gibs to regain health.\nHealth Regained depends on your health on kill attribute.\nKilling bosses or raids grants 4x heal on kill.\nKilling giants grants 2x heal on kill."
 		"fr"	"+7 soins lorsque vous tuez avec une arme corps-à-corps. Mangez les morceaux de vos ennemis pour vous soigner.\nSoins reçus s'améliorent avec votre attribut Santé par victime.\n4x soins quand vous tuez un Boss ou un Raid.\n2x soins quand vous tuez un géant."
+		"ko"	"처치시, +7 HP, 레이드 보스및 자이언트 보스 처치시 4배, 자이언트 처치시 2배\n적의 시체 파편을 섭취해 체력을 회복 할 수 있습니다."
 	}
 	
 	"Copium Desc"
 	{
 		"en"	"28.75%% melee resistance, 5%% ranged resistance, and 10%% extra damage with melee equipped"
+		"ko"	"근접 무기 사용중, 근접 무기 피해량 +10％, 근접 피해 +28.75％ 저항, 원거리 피해 +5％ 저항"
 	}
 	
 	"Cocain Desc"
@@ -1560,6 +1593,7 @@
 		"fr"	"+15%% cadence des attaques corps-à-corps"
 		"ru"	"На 15%% больше скорость атаки в ближнем бою."
 		"chi"   "近战攻击速度提高15%%"
+		"ko"	"근접무기 공속 +15％"
 	}
 	
 	"Steroids Desc"
@@ -1568,6 +1602,7 @@
 		"fr"	"+30%% dégats corps-à-corps, +4 santé par victime, +100 santé,\n+5%% résistance contre les dégats corps-à-corps pendant que vous portez une arme corps-à-corps"
 		"ru"	"На 30%% больше урона в ближнем бою, +4 ед. здоровья при убийстве и +100 ед. здоровья, +5%% сопр. ближнему бою при использ. оружия ближнего боя"
 		"chi"   "增加30%%的近战伤害，杀敌后+4点生命，生命值提升100点，使用近战武器时+5%%的近战抗性"
+		"ko"	"근접 무기 피해량 +30％, 처치시, +4 HP, 장착시 최대 체력 +100\n근접 무기 사용중 근접 피해 +5％ 저항"
 	}
 	
 	"LSD Desc"
@@ -1576,6 +1611,7 @@
 		"fr"	"+1.5x dégats corps-à-corps, +5 santé par victime, +150 santé,\n+3%% résistance contre les dégats corps-à-corps pendant que vous portez une arme corps-à-corps"
 		"ru"	"1,5-кратное увеличение урона в ближнем бою, +5 ед. здоровья при убийстве и +150 ед. здоровья, +3%% сопр. ближнему бою при использ. оружия ближнего боя"
 		"chi"   "增加1.5倍的近战伤害，杀敌后+5点生命，生命值提升150点，使用近战武器时+5%%的近战抗性"
+		"ko"	"근접 무기 피해량 +50％, 처치시, +5 HP, 장착시 최대 체력 +150\n근접 무기 사용중 근접 피해 +3％ 저항"
 	}
 	
 	"Crystal Meth Desc"
@@ -1584,6 +1620,7 @@
 		"fr"	"+1.5x dégats corps-à-corps, +8 santé par victime, +150 santé,\n+3%% résistance contre les dégats corps-à-corps pendant que vous portez une arme corps-à-corps"
 		"ru"	"1,5-кратное увеличение урона в ближнем бою, +8 ед. здоровья при убийстве и +150 ед. здоровья, +3%% сопр. ближнему бою при использ. оружия ближнего боя"
 		"chi"   "增加30%%的近战伤害，杀敌后+8点生命，生命值提升150点，使用近战武器时+5%%的近战抗性"
+		"ko"	"근접 무기 피해량 +50％, 처치시, +8 HP, 장착시 최대 체력 +150\n근접 무기 사용중 근접 피해 +3％ 저항"
 	}
 	
 	"God's Might Desc"
@@ -1592,6 +1629,7 @@
 		"fr"	"+1.5x dégats corps-à-corps, +12 santé par victime, +250 santé,\n+5%% résistance contre les dégats corps-à-corps pendant que vous portez une arme corps-à-corps"
 		"ru"	"1,5-кратное увеличение урона в ближнем бою, +12 ед. здоровья при убийстве и +250 ед. здоровья, +5%% сопр. ближнему бою при использ. оружия ближнего боя"
 		"chi"   "增加1.5倍的近战伤害，杀敌后+12点生命，生命值提升250点，使用近战武器时+5%%的近战抗性"
+		"ko"	"근접 무기 피해량 +50％, 처치시, +5 HP, 장착시 최대 체력 +250\n근접 무기 사용중 근접 피해 +5％ 저항"
 	}
 	
 	"Bob's Enhancer Desc"
@@ -1600,14 +1638,20 @@
 		"fr"	"+1.65x dégats corps-à-corps, +22 santé par victime, +600 santé,\n+6%% résistance contre les dégats corps-à-corps pendant que vous portez une arme corps-à-corps"
 		"ru"	"1,65x увеличение урона в ближнем бою, +22 ед. здоровья при убийстве и +600 ед. здоровья, +6%% сопр. ближнему бою при использ. оружия ближнего боя"
 		"chi"   "增加1.65倍的近战伤害，杀敌后+22点生命，生命值提升600点，使用近战武器时+6%%的近战抗性"
+		"ko"	"근접 무기 피해량 +65％, 처치시, +22 HP, 장착시 최대 체력 +600\n근접 무기 사용중 근접 피해 +6％ 저항"
 	}
-	
+	"Void's Glimpse Desc"
+	{
+		"en"	"1.65x increased Melee Damage, +22 HP on kill and +600 HP, +6%% melee resistance with melee equipped"
+		"ko"	"근접 무기 피해량 +65％, 처치시, +22 HP, 장착시 최대 체력 +600\n근접 무기 사용중 근접 피해 +6％ 저항"
+	}
 	"Repair Handling book for dummies Desc"
 	{
-		"en"	"2x more repair Rate"
+		"en"	"2x more repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
 		"fr"	"2x vitesse de réparation"
 		"ru"	"На 2x выше скорость починки."
 		"chi"   "修复建筑生命值提高2x"
+		"ko"	"수리 속도 +100％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Construction Novice Desc"
@@ -1615,6 +1659,7 @@
 		"en"	"50%% more building health and 5.0x sentry damage, 1 more support building added and 50%% more repair Rate"
 		"fr"	"+50%% durabilité pour constructions, 5.0x dégats par votre mitrailleuse, +2x vitesse de réparation. +1 espace pour construction de support."
 		"chi"	"建筑物血量提高50%%，布哨伤害*5，+1辅助建筑上限，+50%%建筑修复效率。"
+		"ko"	"구조물 체력 +50％, 센트리 피해량 +400％, 수리 속도 +50％, 최대 지원 구조물 +1"
 	}
 	
 	"Construction Apprentice Desc"
@@ -1622,26 +1667,40 @@
 		"en"	"65%% more building health and 3.1x Sentry damage, 2 more support buildings added and 50%% more repair Rate"
 		"fr"	"+65%% durabilité pour constructions, +3.1x dégats par votre mitrailleuse, +50%% vitesse de réparation. +2 espaces pour construction de support."
 		"chi"	"建筑物血量提高65%%，布哨伤害*3.1，+2辅助建筑上限，+50%%建筑修复效率。"
+		"ko"	"구조물 체력 +65％, 센트리 피해량 +210％, 수리 속도 +50％, 최대 지원 구조물 +2"
 	}
 	
 	"Alien Repair Handling book Desc"
 	{
 		"en"	"2.0x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
+		"fr"	"+2x vitesse de réparation"
+		"ru"	"2,0-кратная скорость починки."
+		"chi"   "修复建筑生命值提高2.0倍"
+		"ko"	"수리 속도 +100％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	"Engineering Repair Handling book Desc"
 	{
 		"en"	"2.0x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
+		"fr"	"+2x vitesse de réparation"
+		"ru"	"2,0-кратная скорость починки."
+		"chi"   "修复建筑生命值提高2.0倍"
+		"ko"	"수리 속도 +100％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	"Construction Worker Desc"
 	{
 		"en"	"65%% more building health, increased sentry dmg by 1.4x and increased attack speed by 1.2x, 3 more support buildings added"
 		"fr"	"+65%% durabilité pour constructions, +1.4x dégats par votre mitrailleuse, +1.2x cadence de tir. +3 espaces pour construction de support."
 		"chi"	"建筑物血量提高65%%，布哨伤害*1.4，+3辅助建筑上限。"
+		"ko"	"구조물 체력 +65％, 센트리 피해량 +40％, 센트리 공속 +20％, 최대 지원 구조물 +3"
 	}
 	
 	"Cosmic Repair Handling book Desc"
 	{
 		"en"	"3x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
+		"fr"	"+3x vitesse de réparation"
+		"ru"	"Трёхкратная скорость починки."
+		"chi"   "修复建筑生命值提高2倍"
+		"ko"	"수리 속도 +200％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Construction Expert Desc"
@@ -1649,6 +1708,7 @@
 		"en"	"1.7x more building health and 2.25x Sentry damage and increased attack speed by 1.2x, 4 more support buildings added"
 		"fr"	"+1.7x durabilité pour constructions, +2.25x dégats par votre mitrailleuse, +1.2x cadence de tir. +4 espaces pour construction de support."
 		"chi"	"建筑物血量*1.7，布哨伤害*2.25，+4辅助建筑上限。"
+		"ko"	"구조물 체력 +70％, 센트리 피해량 +125％, 센트리 공속 +20％, 최대 지원 구조물 +4"
 	}
 	
 	"Construction Master Desc"
@@ -1656,6 +1716,7 @@
 		"en"	"1.4x more building health and 2.6x Sentry damage, 5 more support buildings added"
 		"fr"	"+1.4x durabilité pour constructions, +2.6x dégats par votre mitrailleuse. +5 espaces pour construction de support."
 		"chi"	"建筑物血量*1.4，布哨伤害*2.6，+5辅助建筑上限。"
+		"ko"	"구조물 체력 +40％, 센트리 피해량 +160％, 최대 지원 구조물 +5"
 	}
 	
 	"Construction Killer Desc"
@@ -1664,6 +1725,7 @@
 		"fr"	"+2.5x dégats par votre mitrailleuse"
 		"ru"	"2,5-кратный урон турели."
 		"chi"   "增加2.5倍哨兵伤害"
+		"ko"	"센트리 피해량 +150％"
 	}
 	
 	"Accurate Marksman Desc"
@@ -1672,6 +1734,7 @@
 		"fr"	"10%% moins de déviation, +20%% vitesse des projectiles"
 		"ru"	"На 10%% выше точность и на 20%% выше скорость снаряда."
 		"chi"   "射击精度提高10%%、射速提高20%%"
+		"ko"	"집탄율 +10％, 투사체 속도 +20％"
 	}
 	
 	"Ammo Coat Desc"
@@ -1680,12 +1743,14 @@
 		"fr"	"+50%% dégats"
 		"ru"	"Увеличение урона от оружия на 50%%"
 		"chi"   "提升50%%武器伤害"
+		"ko"	"원거리 피해량 +50％"
 	}
 	"Compacted Rounds Desc"
 	{
 		"en"	"20%% more weapon damage, 15%% faster attackspeed, reload speed and 25%% more max clip."
 		"fr"	"+50%% dégats, +15%% cadence de tir et vitesse de rechargement, +25%% capacité chargeur"
 		"chi"	"+20%%武器伤害，+15%%攻击速度和装弹速度，+25%%弹夹容量。"
+		"ko"	"원거리 피해량 +20％, 공/장속 +15％, 장탄수 +25％"
 	}
 	"Ammo Coat Elite Desc"
 	{
@@ -1693,6 +1758,7 @@
 		"fr"	"+60%% dégats"
 		"ru"	"Увеличение урона от оружия на 60%%"
 		"chi"   "提升60%%武器伤害"
+		"ko"	"원거리 피해량 +60％"
 	}
 	
 	"Antidote Coated Bullets Desc"
@@ -1701,6 +1767,7 @@
 		"fr"	"+60%% dégats"
 		"ru"	"Увеличение урона от оружия на 60%%"
 		"chi"   "提升60%%武器伤害"
+		"ko"	"원거리 피해량 +60％"
 	}
 	
 	"Anti-Matter Bullets Desc"
@@ -1709,6 +1776,7 @@
 		"fr"	"+65%% dégats"
 		"ru"	"Увеличение урона от оружия на 65%%"
 		"chi"   "提升65%%武器伤害"
+		"ko"	"원거리 피해량 +65％"
 	}
 	
 	"Magical Haste Desc"
@@ -1717,6 +1785,7 @@
 		"fr"	"+25%% cadence des attaques magiques, +50%% Mana maximum et regénération Mana"
 		"ru"	"На 25%% быстрее скорость огненной магии и на 50%% восстановления маны и максимальной маны"
 		"chi"   "提升25%%法杖攻速，50%%的法力回复和最大法力值"
+		"ko"	"마법 공속 +25％, 마나 최대치및 재충전 속도 +50％, 마법 피해량 +7％"
 	}
 	
 	"Magical Book Desc"
@@ -1725,11 +1794,13 @@
 		"fr"	"+50%% dégats magiques"
 		"ru"	"На 50%% больше урона от магии."
 		"chi"   "提升50%%法术伤害"
+		"ko"	"마법 피해량 +50％"
 	}
 	
 	"Hastening Potion Desc"
 	{
 		"en"	"15%% Faster Mage Fire Speed and 50%% Mana Regen and Max Mana, 50+ HP and 5%% melee resistance, 7%% more mage damage."
+		"ko"	"마법 공속 +15％, 마나 최대치및 재충전 속도 +50％, 최대 체력 +50, 근접 피해 +5% 저항, 마법 피해량 +7％"
 	}
 	
 	"The Bombinomicon Desc"
@@ -1738,11 +1809,13 @@
 		"fr"	"+60%% dégats magiques"
 		"ru"	"На 60%% больше урона от магии."
 		"chi"   "提升60%%法术伤害"
+		"ko"	"마법 피해량 +60％"
 	}
 	
 	"Betweenlands Potion Desc"
 	{
 		"en"	"20%% Faster Mage Fire Speed and 100%% Mana Regen and Max Mana, 100+ HP and 5%% melee resistance, 7%% more mage damage."
+		"ko"	"마법 공속 +20％, 마나 최대치및 재충전 속도 +100％, 최대 체력 +100, 근접 피해 +5% 저항, 마법 피해량 +7％"
 	}
 	
 	"Master Sorcerer Desc"
@@ -1751,6 +1824,7 @@
 		"fr"	"+65%% dégats magiques"
 		"ru"	"На 65%% больше урона от магии."
 		"chi"   "提升65%%法术伤害"
+		"ko"	"마법 피해량 +65％"
 	}
 	
 	"Bob's Magic Desc"
@@ -1759,24 +1833,28 @@
 		"fr"	"+70%% dégats magiques"
 		"ru"	"На 70%% больше урона от магии."
 		"chi"   "提升70%%法术伤害"
+		"ko"	"마법 피해량 +70％"
 	}
 	
 	"Body armor Desc"
 	{
 		"en"	"Increased How much armour you get per use and max cap. +50 HP\nProvides passive resistance if armor is broken and increaces with more armor upgrades."
 		"fr"	"Armure reçu et armure maximalle améliorées. +50 santé.\nDonne une résistance passive qui s'améliore avec vos améliorations pour armure, si votre armure est brisée."
+		"ko"	"최대 아머 +50, 최대 체력 +50, +10％ 저항"
 	}
 	
 	"Kevlar Desc"
 	{
 		"en"	"Increased How much armour you get per use and max cap. +100 HP\nProvides passive resistance if armor is broken and increaces with more armor upgrades."
 		"fr"	"Armure reçu et armure maximalle améliorées. +100 santé.\nDonne une résistance passive qui s'améliore avec vos améliorations pour armure, si votre armure est brisée."
+		"ko"	"최대 아머 +50, 최대 체력 +100, +10％ 저항"
 	}
 	
 	"Heavy Vest Desc"
 	{
 		"en"	"Increased How much armour you get per use and max cap. +150 HP\nProvides passive resistance if armor is broken and increaces with more armor upgrades."
 		"fr"	"Armure reçu et armure maximalle améliorées. +150 santé.\nDonne une résistance passive qui s'améliore avec vos améliorations pour armure, si votre armure est brisée."
+		"ko"	"최대 아머 +50, 최대 체력 +150, +10％ 저항"
 	}
 	
 	"Jesus's Blessing Desc"
@@ -1785,12 +1863,20 @@
 		"fr"	"+300 santé. Regénére 1%% de votre santé tous les 0.5 secondes, jusqu'a la moitié de votre santé. Vous resterez vivant pour plus longtemps quand KO."
 		"ru"	"+300 здоровья и реген. здоровья 1%% от вашего макс. здоровья в секунду до половины вашего здоровья, во время кровотечения вы также будете выживать дольше."
 		"chi"   "+300生命值和获得每秒1%%的生命回复，最多恢复一半的生命值。在倒地期间，你也会活得更长。"
+		"ko"	"최대 체력 +300, +10％ 저항\n최대 체력이 절반일때 절반이상이 될때까지 최대 체력의 1％만큼 자힐하며\n다운됬을때 더 오래 살아 있을 수 있습니다."
 	}
 	
 	"Full Riot Gear Desc"
 	{
 		"en"	"Increased How much armour you get per use and max cap. +150 HP\nProvides passive resistance if armor is broken and increaces with more armor upgrades."
 		"fr"	"Armure reçu et armure maximalle améliorées. +150 santé.\nDonne une résistance passive qui s'améliore avec vos améliorations pour armure, si votre armure est brisée."
+		"ko"	"최대 아머 +50, 최대 체력 +200, +10％ 저항"
+	}
+	
+	"Grigoris Special Antidote Desc"
+	{
+		"en"	"You get an extra 350+ HP, and get 4% dmg resistance to all sources."
+		"ko"	"최대 체력 +350, 모든 피해 +4％ 저항"
 	}
 	
 	"Healthy Apple from Bob Desc"
@@ -1799,6 +1885,7 @@
 		"fr"	"+1500 santé"
 		"ru"	"+1500 ед. здоровья."
 		"chi"   "+1500生命值"
+		"ko"	"최대 체력 +1500"
 	}
 	"Flamethrower Extra Desc"
 	{
@@ -1808,31 +1895,56 @@
 	"Doctor Certificate Desc"
 	{
 		"en"	"2x Medigun Hurt and Heal and 5%% melee resistance with Healing Support Weapons out\nReduces Medifluid drain by 40%% (cant go below 1)"
+		"fr"	"+2x puissance Medigun\n+5% résistance contre les dégats corps-à-corps pendant que vous tenez des armes de support."
+		"ru"	"Двукратный урон и лечение у лечебной пушки, а также 5%% сопр. ближнему бою при использ. доп./лечебной пушки"
+		"chi"   "+2倍的医枪伤害和治疗效果，当拿起医疗枪时获得5%%的近战抗性."
+		"ko"	"메디건의 피해량및 치료량 +100％, 서포트 무기 사용중 일때 근접 피해 +5％ 저항\nMedifluid 소모량 40％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Professor Certificate Desc"
 	{
 		"en"	"1.5x Medigun Hurt and Heal and 5%% melee resistance with Healing Support Weapons out\nReduces Medifluid drain by 25%% (cant go below 1)"
+		"fr"	"+1.5x puissance Medigun\n+5% résistance contre les dégats corps-à-corps pendant que vous tenez des armes de support."
+		"ru"	"1,5-кратный урон и лечение у лечебной пушки, а также 5%% сопр. ближнему бою при использ. доп./лечебной пушки"
+		"chi"   "+1.5倍的医枪伤害和治疗效果，当拿起医疗枪时获得5%%的近战抗性."
+		"ko"	"메디건의 피해량및 치료량 +50％, 서포트 무기 사용중 일때 근접 피해 +5％ 저항\nMedifluid 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Death Certificate Desc"
 	{
 		"en"	"1.4x Medigun Hurt and Heal and +2 seconds of uber and 5%% melee resistance with Healing Support Weapons out\nReduces Medifluid drain by 25%% (cant go below 1)"
+		"fr"	"+1.4x puissance Medigun, +2 secondes de Über\n+5% résistance contre les dégats corps-à-corps pendant que vous tenez des armes de support."
+		"ru"	"1,4-кратный урон и лечение у лечебной пушки и +2 секунды убера, а также 5%% сопр. ближнему бою при использ. доп./лечебной пушки"
+		"chi"   "+1.4倍的医枪伤害和治疗效果，每秒恢复2的超量。当拿起医疗枪时获得5%%的近战抗性."
+		"ko"	"메디건의 피해량및 치료량 +40％, 우버 지속시간 +2초, 서포트 무기 사용중 일때 근접 피해 +5％ 저항\nMedifluid 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Reaper's Certificate Desc"
 	{
 		"en"	"1.45x Medigun Hurt and Heal and +1 seconds of uber and 5%% melee resistance with Healing Support Weapons out\nReduces Medifluid drain by 25%% (cant go below 1)"
+		"fr"	"+1.45x puissance Medigun, +1 seconde de Über\n+5% résistance contre les dégats corps-à-corps pendant que vous tenez des armes de support."
+		"ru"	"1,45-кратный урон и лечение у лечебной пушки и +1 секунда убера, а также 5%% сопр. ближнему бою при использ. доп./лечебной пушки"
+		"chi"   "+1.45倍的医枪伤害和治疗效果，每秒恢复1的超量。当拿起医疗枪时获得5%%的近战抗性."
+		"ko"	"메디건의 피해량및 치료량 +45％, 우버 지속시간 +1초, 서포트 무기 사용중 일때 근접 피해 +5％ 저항\nMedifluid 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Hell's Certificate Desc"
 	{
 		"en"	"1.45x Medigun Hurt and Heal and +1 seconds of uber and 5%% melee resistance with Healing Support Weapons out\nReduces Medifluid drain by 25%% (cant go below 1)"
+		"fr"	"+1.45x puissance Medigun, +1 seconde de Über\n+5% résistance contre les dégats corps-à-corps pendant que vous tenez des armes de support."
+		"ru"	"1,45-кратный урон и лечение у лечебной пушки и +1 секунда убера, а также 5%% сопр. ближнему бою при использ. доп./лечебной пушки"
+		"chi"   "+1.45倍的医枪伤害和治疗效果，每秒恢复的超量。当拿起医疗枪时获得5%%的近战抗性."
+		"ko"	"메디건의 피해량및 치료량 +45％, 우버 지속시간 +1초, 서포트 무기 사용중 일때 근접 피해 +5％ 저항\nMedifluid 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Medic's Lost Medical Lisence Desc"
 	{
 		"en"	"1.5x Medigun Hurt and Heal and 5%% melee resistance with Healing Support Weapons out\nReduces Medifluid drain by 25%% (cant go below 1)"
+		"en"	"1.5x Medigun Hurt and Heal and 5%% melee resistance with Secondary/Medigun out"
+		"fr"	"+1.5x puissance Medigun\n+5% résistance contre les dégats corps-à-corps pendant que vous tenez votre Medigun"
+		"ru"	"1,5-кратный урон и лечение у лечебной пушки и 5%% сопр. ближнему бою при использ. доп./лечебной пушки"
+		"chi"   "+1.5倍的医枪伤害和治疗效果，当拿起医疗枪时获得5%%的近战抗性."
+		"ko"	"메디건의 피해량및 치료량 +50％, 서포트 무기 사용중 일때 근접 피해 +5％ 저항\nMedifluid 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Panic Attack Desc"
@@ -3449,25 +3561,31 @@
 		"en"	"70%% More magic damage, 2x max mana, and 15%% faster attackspeed for mage weapons."
 		"fr"	"+70%% dégats magiques, 2x Mana maximum, +15%% cadence des attaques magiques"
 		"chi"	"+70%%法伤，*2蓝上限，+15%%魔法武器攻速。"
+		"ko"	"마법 피해량 +70％ 마법 공속 +15％, 마나 최대치 +100％"
 	}
 	"Expidonsan's Black hole Storage Unit Desc"
 	{
 		"en"	"70%% More ranged damage, 15%% faster attackspeed, 15%% faster reload and 25% more clipsize."
 		"fr"	"+50%% dégats, +15%% cadence de tir et vitesse de rechargement, +25%% capacité chargeur"
+		"ko"	"원거리 피해량 +70％, 공/장속 +15％, 장탄수 +25％"
 	}
 	"Wildingen's Elite Building Components Desc"
 	{
 		"en"	"70%% More building damage and building health."
 		"fr"	"+70%% dégats et durabilité pour vos constructions."
+		"ko"	"구조물 최대 체력및 센트리 피해량 +70％"
 	}
 	"Spookmaster's Strong Bone Amplifier Desc"
 	{
 		"en"	"1500 more hp and 15%% overall damage resistance."
 		"fr"	"+1500 santé, +15%% résistance"
+		"ko"	"최대 체력 +1500, 모든 피해 +15％ 저항"
 	}
 	"Helena's Elite Medicine Desc"
 	{
 		"en"	"1.6x Medigun Hurt and Heal and 5%% melee resistance with Healing Support Weapons out\nReduces Medifluid drain by 40% (cant go below 1)"
+		"fr"	"+1.6x puissance Medigun\n+5% résistance contre les dégats corps-à-corps pendant que vous tenez des armes de support."
+		"ko"	"메디건의 피해량및 치료량 +60％, 서포트 무기 사용중 일때 근접 피해 +5％ 저항\nMedifluid 사용량 40％ 감소 (1 이하로 내려가지않음)"
 	}
 	"Messenger Launcher Desc"
 	{
@@ -3864,7 +3982,7 @@
 		"en"	"''Carbon foot on the pedal, I AM TRASH METAL!''\nUnlocks two more projectiles and improves base stats further.\nAn object of unspeakable danger lurks in this trash can..."
 		"chi"	"''Carbon foot on the pedal, I AM TRASH METAL!''\n获得两个新的发射物，加强基础属性。\n垃圾桶里出现一个不可名状之物……"
 	}
-		"Telekinesis Desc"
+	"Telekinesis Desc"
 	{
 		"en"	"''A single dosage of an experimental drug, designed to grant psychic powers.''\nFires a shotgun blast of projectiles, which home in on the target you were aiming at.\nM2: Grab and hold a zombie, rapidly draining your mana.\nPress M2 again to throw the zombie."
 		"chi"	"''一管试验性药剂，可增强服用者的精神力。''\n M1高速发射低射程的攻击。\n[M2]抓住一名敌人，持续消耗大量MP。被抓住的敌人会被眩晕。\n再次M2可将敌人抛出。"
@@ -3956,14 +4074,94 @@
 	"Hunting Rifle desc"
 	{
 		"en"	"A hunting rifle with a small clip size, reloads slowly but each bullet packs a punch."
+		"ko"	"장탄수가 부족하고 재장전속도가 느리지만 한발 한발이 강력합니다"
 	}
 	"Hunting Rifle Pap 1 desc"
 	{
 		"en"	"Clip size, damage increased. \nUnlocks an ability which boosts reload speed and increases damage."
+		"ko"	"탄창 크기, 피해량 증가.\n장속과 피해량을 증가시키는 능력을 사용 할 수 있습니다."
 	}
 	"Hunting Rifle Pap 2 desc"
 	{
 		"en"	"Clip size, damage and ability duration increased."
+		"ko"	"탄창 크기, 피해량 증가.\n능력 지속시간 증가"
+	}
+
+	"Glass Cannon Desc"
+	{
+		"en"	"35%% increased Weapon Damage But 50%% Damage Taken increased"
+		"ko"	"주무기, 보조무기 피해량 +35％, 하지만 받는 피해 +50％"
+	}
+	"Compact Feed Mechanism Desc"
+	{
+		"en"	"You attack 40%%, reload 20%% slower but 100%% more max clip."
+		"ko"	"공속 -40％, 장속 -20％, 대신 장탄수 +100％"
+	}
+	"Nails Tape Desc"
+	{
+		"en"	"50%% Blast radius increased"
+		"ko"	"폭발 범위 +50％"
+	}
+	"Sharpness v Desc"
+	{
+		"en"	"25%% increased Melee Damage"
+		"ko"	"근접무기 피해량 +25％"
+	}
+	"eTG-c Desc"
+	{
+		"en"	"+1 HP on hit and HP +15 Regen and 15%% Damage Taken increased with Melee Weapons out"
+		"ko"	"근접무기를 들고있을때: 자힐 +15, 적중 시 체력 +1, 하지만 받는 피해 +15％"
+	}
+	"LBT Slick Desc"
+	{
+		"en"	"Increased How much armour you get per use and max cap.\nProvides passive resistance if armor is broken and increaces with more armor upgrades.\nbut 20%% decreased Move Speed"
+		"ko"	"아머 포인트가 증가하고, 받는 근거리 피해 10％ 저항 받는 원거리 피해 20％ 저항\n이속 -20％"
+	}
+	"Overclocked Ubercharger Desc"
+	{
+		"en"	"1.25x Ubercharge Rate but -1 seconds of Uber"
+		"ko"	"우버 충전속도 +65％ 하지만 우버 지속 시간 -2초"
+	}
+	"Medi Shield Desc"
+	{
+		"en"	"Increased armour pointn and 10%% Damage Resistance with Healing Support Weapons out"
+		"ko"	"아머 포인트가 증가하고 지원무기를 사용중일때 모든 피해 10％ 저항"
+	}
+	"Stick of Faith Desc"
+	{
+		"en"	"1.5x Medigun Hurt and Heal and -100%% All Weapons Damage decreased"
+		"ko"	"적에게 피해를 줄수 없게 되지만 치료량이 +50％까지 증가합니다."
+	}
+	"Mana Glass Desc"
+	{
+		"en"	"25%% increased Magic Damage and 25%% Mana Regen and Max Mana, but 50%% Damage Taken increased with Magic Weapons out"
+		"ko"	"마법 무기를 사용중일때 마법 피해 +25％, 마나 회복 속도및 최대치 +25％\n받는 피해 +50％"
+	}
+	"Mana Flower Desc"
+	{
+		"en"	"25%% increased Magic Damage and 25%% Mana Regen and Max Mana, but 0%% Damage Taken increased with Magic Weapons out"
+		"ko"	"마법 무기를 사용중일때 마법 피해 -20％, 마나 회복 속도및 최대치 +100％"
+	}
+	"Turret Whip Desc"
+	{
+		"en"	"2.0x sentry damage But 20%% Damage Taken increased with Magic Weapons out"
+		"ko"	"센트리 피해량 +200％, 받는 피해 +20％"
+	}
+	"Reinforced Iron Plate Desc"
+	{
+		"en"	"100%% more building health But -50%% Repair Rate"
+		"ko"	"구조물 체력 +100％, 수리 효율 -50％"
+	}
+	"High Value Target Desc"
+	{
+		"en"	"All Weapons Deals 2.5x damage against raidbosses.\nBut -50%% All Weapons Damage decreased"
+		"ko"	"모든 무기 레이드보스 대상 피해량 +200％ 하지만 모든 무기 피해량 -50％"
+	}
+	
+	"Iron Helmet desc"
+	{
+		"en"	"Gain +5 max health and 2%% Range Damage Resistance\nbut 1%% decreased Move Speed"
+		"ko"	"최대 체력 +5, 받는 원거리 피해 -2％\n하지만 이속 -1％"
 	}
 	"Whistle Stop Desc"
 	{
@@ -3984,5 +4182,499 @@
 	"Wand of Decay Desc"
 	{
 		"en"	"Increased damage and fire rate"
+	}
+	"Iron Chestplate desc"
+	{
+		"en"	"1%% Damage Resistance but 1%% decreased Move Speed"
+		"ko"	"받는 피해 -1％, 하지만 이속 -1％"
+	}
+	"Iron Leggings desc"
+	{
+		"en"	"Gain +2 max health and 1%% Melee Damage Resistance \nbut 1%% decreased Move Speed"
+		"ko"	"최대 체력 +2, 근거리 받는 피해 -1％, 하지만 이속 -1％"
+	}
+	"Iron Boots desc"
+	{
+		"en"	"Gain +5 max health"
+		"ko"	"최대 체력 +5"
+	}
+	"Red Pants desc"
+	{
+		"en"	"5 More HP and 1%% Melee Damage Resistance"
+		"ko"	"최대 체력 +5, 근거리 받는 피해 -1％"
+	}
+	"Ceramic Coating desc"
+	{
+		"en"	"Increased armour pointn but 2%% decreased Move Speed"
+		"ko"	"아머 포인트가 증가, 하지만 이속 -1％"
+	}
+	"Killer Focus desc"
+	{
+		"en"	"Deals 1.05x damage against raidbosses."
+		"ko"	"레이드보스 대상 피해량 +5％"
+	}
+	"Meruna desc"
+	{
+		"en"	"8%% more repair Rate and 5%% more building health and 3%% attack speed, range for sentry guns \nBut 10%% Damage Taken increased and 2.0x Fire Damage Taken increased"
+		"ko"	"받는 화상 피해 +100％, 받는 피해량 +3％\n수리 효율 +3％, 구조물 체력 +1％, 센트리 사거리 +1％, 센트리 공속 +1％"
+	}
+	"Meruna Desc Extra"
+	{
+		"en"	"I don't know why, but you can gain a little knowledge about structures by popping ice cream on your head."
+		"ko"	"이유는 몰라도 머리에 아이스크림을 꽇는것으로 구조물 관련 지식을 약간 얻을수있습니다."
+	}
+	"Katana desc"
+	{
+		"en"	"2.5%% increased Melee Damage"
+		"ko"	"근접 무기 피해량 +2.5％"
+	}
+	"Katana Desc Extra"
+	{
+		"en"	"This weapon can be equipped in the Head slot."
+		"ko"	"본 무기는 투구 칸에 장착할 수 있습니다"
+	}
+	"HH Sandvich desc"
+	{
+		"en"	"HP +1 Regen, Added 15% random damage buff"
+		"ko"	"자힐 +1, 무작위 피해량 15% 버프 추가"
+	}
+	"14gi desc"
+	{
+		"en"	"+5.5%% bonus healing from all sources"
+		"ko"	"받는 체력 회복량 +5.5％"
+	}
+	"Glass Coil desc"
+	{
+		"en"	"5%% increased Move Speed But 35%% Damage Taken increased"
+		"ko"	"이속 +5％, 하지만 받는 피해 +35％"
+	}
+	"Speed Coil desc"
+	{
+		"en"	"1%% increased Move Speed"
+		"ko"	"이속 +1％"
+	}
+	"HCB desc"
+	{
+		"en"	"1.055x Medigun Hurt and Heal."
+		"ko"	"치료량 +5.5％"
+	}
+	"Dwarf Rage desc"
+	{
+		"en"	"25%% increased damage But 15%% decreased Attack Speed\nWarning! If equipped by a Leaf Lover, it will inflict a powerful debuff."
+		"ko"	"피해량 +5％, 공속 -5％\n경고! 리프러버가 장착하면 강력한 디버프를 받습니다."
+	}
+	"True Biker Desc"
+	{
+		"en"	"2%% Damage Resistance"
+		"ko"	"받는 피해 -2％"
+	}
+	"DS BuckShot desc"
+	{
+		"en"	"Secondary and Primary weapon bullets per shot increased by 30%\nbut 15%% decreased Attack Speed"
+		"ko"	"발사되는 탄환수 +30％, 하지만 공속 -15％"
+	}
+	"Khaydarin C desc"
+	{
+		"en"	"+10%% increased Magic Damage and +10%% Mana Regen and Max Mana"
+		"ko"	"마법 피해 +10％, 마나 회복 속도및 최대치 +10％"
+	}
+	"U-238 desc"
+	{
+		"en"	"Secondary and Primary weapon rage gain rate increased by 25%\nand 5%% increased Weapon Damage"
+		"ko"	"주무기및 보조무기 사거리 +25％, 피해량 +5％"
+	}
+	"DRG Pickaxe desc"
+	{
+		"en"	"Melee weapon Attack speed increased by 5.0%"
+		"ko"	"근접 무기 공속 +5.0％"
+	}
+	"Time Warden Badge desc"
+	{
+		"en"	"All weapon Attack speed increased by 5% and All weapon Damage increased by 5%\nbut -10 HP Degen"
+		"ko"	"모든 무기의 피해량, 공속 +5％\n하지만 초당 체력 -10"
+	}
+	"Dual-Fusion Welders desc"
+	{
+		"en"	"15%% more repair Rate and 5%% more building health"
+		"ko"	"수리 효율 +10％, 구조물 체력 +5％"
+	}
+	"Secret Mad Milk Recipe Desc"
+	{
+		"en"	"Melee Weapon On Hit +1 HP"
+		"ko"	"근접무기로 적중시, 체력 +1"
+	}
+	"Quantum Computer Desc"
+	{
+		"en"	"1.01x Sentry damage, 1.05x Sentry Range, 1.02x Sentry Attack speed"
+		"ko"	"센트리 피해량 +1％, 센트리 사거리 +5％, 센트리 공속 +2％"
+	}
+	"Hero of Concord Village Desc"
+	{
+		"en"	"Becoming the Last Man increases your damage and resistance!"
+		"ko"	"라스트맨이 되면 피해량과 저항이 높아집니다!"
+	}
+	"True Concord Hero Give"
+	{
+		"en"	"{default}Since I completed the MISSION well, I should get a REWARD, right?: {blue}''True Concord Hero''{default}!"
+		"ko"	"{default}MISSION을 잘 완수했으니 REWARD를 받아야겠지?: {blue}''진정한 콘코드 마을의 영웅 증표''{default}!"
+	}
+	"Box Office Desc"
+	{
+		"en"	"+1 credit On Kill"
+		"ko"	"처치할때마다 자금 +1"
+	}
+	"Little Sandvich SafeHouse desc"
+	{
+		"en"	"Even if you die, the Perk Machine effect will not disappear."
+		"ko"	"사망해도 능력지급기의 효과가 유지됩니다."
+	}
+	"Buff Buff Fruit Desc"
+	{
+		"en"	"wiihahahaha, this power is great!\ngives you more hp, damage resistance"
+		"ko"	"위~~~ 하하하. 최고잖아!! '힘힘 열매'의 능력!!!"
+	}
+	"Das Feelinbeter Medibager desc"
+	{
+		"en"	"1.03x Medigun Hurt and Heal."
+		"ko"	"치료량 +3％"
+	}
+	"Sacred Medical Bag desc"
+	{
+		"en"	"1.1x Medigun Hurt and Heal. but all weapnos -100%% decreased Damage"
+		"ko"	"치료량 +10％ 하지만 모든 무기의 피해량이 -100％"
+	}
+	"POWER HEAL Desc"
+	{
+		"en"	"+1 seconds of uber"
+		"ko"	"우버 지속시간 +1초"
+	}
+	"POWER HEAL Desc Extra"
+	{
+		"en"	"There's a lot of medical equipment... but... for some reason, Metal Pipes are also included."
+		"ko"	"아주많은 의료장비들이 있습니다...만.. 어째선지 쇠파이프도 포함되어있습니다.."
+	}
+	"Death from Above Desc"
+	{
+		"en"	"When you are above an enemy, you gain a 10%% damage buff."
+		"ko"	"자신보다 낮은 위치에 있는 적 공격시, 10％ 피해량 버프"
+	}
+	"Chaos Coil Give"
+	{
+		"en"	"{default}The coil is consumed by {darkblue}chaos{default}... {blue}''Chaos Coil''{default}has been unlocked."
+		"ko"	"{default}코일이 {darkblue}카오스{default}에 침식 당했습니다... {blue}''카오스 코일''{default}이 해금 됬습니다."
+	}
+	"Chaos Coil desc"
+	{
+		"en"	"Speed ​​changes randomly every second from a minimum of +0% to +10%.\nWhen hit, takes chaos damage."
+		"ko"	"속도가 최소 +0％~+10％까지 무작위로 매 초마다 바뀝니다.\n피격시 카오스 피해를 받습니다."
+	}
+	"JeongSang Shoes desc"
+	{
+		"en"	"10 More HP"
+		"ko"	"최대 체력 +10"
+	}
+	"Spring Shoes desc"
+	{
+		"en"	"+10% Jump height"
+		"ko"	"점프 높이 +10％"
+	}
+	"Leaf Belt desc"
+	{
+		"en"	"+7%% bonus healing from all sources"
+		"ko"	"받는 체력 회복량 +7％"
+	}
+	
+	"Orbital 120MM Desc"
+	{
+		"en"	"Throw a grenade that call the Orbital 120MM HE Barrage\nIts Strength scales with your money you have spend in total."
+		"ko"	"수류탄을 투척해 범위내 무작위 여러번 폭격을 가합니다.\n돈을 소비한 만큼 피해량이 증가합니다."
+	}
+	"Mysterious Brew Desc"
+	{
+		"en"	"Apply random effects when Used LUL"
+		"ko"	"마실때마다 랜덤한 효과적용...?"
+	}
+	"Eagle 500kg Bomb Desc"
+	{
+		"en"	"Throw a grenade that call the Eagle 500kg Bomb\nIts Strength scales with your money you have spend in total."
+		"ko"	"수류탄을 투척해 해당 지점에 폭격을 가합니다.\n대상의 최대체력의 0.05x 만큼의 피해를 주고, 돈을 소비한 만큼 추가로 피해량이 증가합니다."
+	}
+	"Stim Packs Desc"
+	{
+		"en"	"Take damage equal to 25%% of your maximum health, but your Reload speed and Attack speed increase for 10 seconds."
+		"ko"	"최대 체력의 25％의 피해를 받지만 10초동안 공속,장속이 증가함."
+	}
+	"See You In Hell Desc"
+	{
+		"en"	"It can be activated when you down,\ndealing damage to the surrounding area and causing stiffness."
+		"ko"	"쓰러졌을때 발동가능하며 주변에 피해를 주고 경직 시킵니다."
+	}
+	"Iron Will Desc"
+	{
+		"en"	"It can be activated when you are knocked down,\nand you will be instantly revived and become invincible.\nIf you do not recover more than half of your maximum health within 10 seconds,\nyou will be knocked down again."
+		"ko"	"쓰러졌을때 발동가능하며 즉시 부활하고 무적이 됩니다.\n10초안에 최대체력의 절반 이상을 회복하지 못하면 다시 쓰러집니다."
+	}
+	"Reinforce Desc"
+	{
+		"en"	"A device that revives a random dead teammate, recharging through healing.\nThe maximum charge increases with the amount of healing rate"
+		"ko"	"치료를 통해 충전할수있는 무작위 죽은 아군 1명을 되살리는 장치입니다.\n최대 충전량은 늘어난 치료량에 따라 증가됩니다."
+	}
+	"Orbital GAS Desc"
+	{
+		"en"	"Throw a grenade that call the Orbital Gas strike\nDeals continuous damage to all enemies within range.\nIts Strength scales with your money you have spend in total.\n It deals very low damage and deals damage quickly.\nThe damage it deals is true damage."
+		"ko"	"수류탄을 투척해 가스 타격을 요청합니다.\n범위내 적에게 도트딜을 줍니다.\n돈을 소비한 만큼 피해량이 증가합니다.\n피해량이 매우 낮으며 빠르게 피해를 줍니다.\n해당 피해는 트루데미지를 입힙니다."
+	}
+	"Deploying Support Weapon Desc"
+	{
+		"en"	"You can throw a beacon to receive Support Weapon.\nDon't stand under the pod!.\nIts Strength scales with your money you have spend in total.\nWhen you approach the box, you will receive a random weapon.\nBoxes and weapons you receive have a duration."
+		"ko"	"비콘을 던져 무기를 지원받을수있습니다.\n포드밑에 서있지마십시요!\n돈을 소비한 만큼 피해량이 증가합니다.\n상자에 접근하면 랜덤한 무기를 지급받습니다.\n상자및 지급받은 무기는 지속시간이 존재합니다."
+	}
+	
+	"Market Gardener Desc"
+	{
+		"en"	"When attacking in the air, deals additional damage in proportion to movement speed."
+		"ko"	"공중에서 공격시 이속비례 추가 피해를 줌."
+	}
+	
+	"Market Gardener Pap 1"
+	{
+		"en"	"Increased damage and attack speed. \nWhen attacking in the air, damage multiplier is 1.1x. \nWhen speed is above maximum (520Hu), damage multiplier is 1.05x. If the target is a boss"
+		"ko"	"피해량및 공속 증가.\n공중에서 공격시 피해량 증가\n최대 속도(520Hu) 이상이면 피해량 증가"
+	}
+	
+	"Market Gardener Pap 2"
+	{
+		"en"	"Increased damage and attack speed. \nWhen attacking in the air, damage multiplier is 1.5x. \nWhen speed is above maximum (520Hu), damage multiplier is 1.25x. If the target is a boss"
+		"ko"	"피해량및 공속 증가.\n공중에서 공격시 피해량 증가\n최대 속도(520Hu) 이상이면 피해량 증가"
+	}
+	
+	"Market Gardener Pap 3"
+	{
+		"en"	"Increases damage, attack speed, and jump height. \nWhen attacking in the air, damage multiplier 2.0x, recovers 5% of maximum health, and launches the attacker into the air. \nIf the speed is above maximum (520Hu),\ndamage multiplier 1.5x. If the target is a boss"
+		"ko"	"피해량및 공속및 점프높이 증가.\n공중에서 공격시 피해량 증가, 최대체력의 2.5％ 회복, 공격자를 공중으로 띄웁니다.\n최대 속도(520Hu) 이상이면 피해량 배수 1.5x 대상이 보스라면 최대체력 0.04x 만큼의 추가 피해를 줌"
+	}
+	
+	"Market Gardener Pap 4"
+	{
+		"en"	"M2: Dash in the direction you are looking\nWhen attacking in the air, at a speed higher than maximum (520Hu),\nIf the target is a boss, damage multiplier 2.0x"
+		"ko"	"M2: 보는방향으로 대쉬\n공중에서 공격시 피해량 증가, 최대체력의 4.0％ 회복.\n최대 속도(520Hu) 이상이면 피해량 증가"
+	}
+	"Market Gardener Pap 5-1"
+	{
+		"en"	"Increased damage.\nWhen attacking in the air, damage multiplier 3.0x, damage to bosses +50%\nWhen attacking in the air, at a speed higher than maximum (520Hu), additional damage equal to 0.01x maximum health\nM2 ability cooldown -50%"
+		"ko"	"피해량 증가.\n공중에서 공격시 피해량 증가, 보스 대상 피해량 +50％\n공중에서 공격시, 최대 속도(520Hu) 이상, 모든 대상에게 최대체력 0.01x 만큼의 추가 피해를 줌\nM2 능력 재사용 대기시간 -50％"
+	}
+	
+	"Market Gardener Pap 5-2"
+	{
+		"en"	"Increased damage and decreased attack speed. \nWhen attacking in the air, damage multiplier is increased by 4.0x, and iadditional damage is given equal to 0.015x maximum health."
+		"ko"	"피해량 증가및 공속 감소.\n공중에서 공격시 피해량 증가, 최대체력 0.015x 만큼의 추가 피해를 줌"
+	}
+	
+	"Market Gardener Pap 5-3"
+	{
+		"en"	"Increased damage and decreased attack speed.\nWhen attacking in the air, damage multiplier is increased by 5.0x, and additional damage is given equal to 0.02x maximum health.\nWind ability cooldown -50%"
+		"ko"	"피해량 증가및 공속 감소.\n공중에서 공격시 피해량 증가, 최대체력 0.02x 만큼의 추가 피해를 줌\n돌풍 능력 재사용 대기시간 -50％"
+	}
+	
+	"Market Gardener Pap 6-1"
+	{
+		"en"	"Increased damage. When attacking in the air, damage multiplier 2.5x, damages surrounding enemies.\nWhen attacking in the air, hit number of surrounding enemies +3 when speed is above maximum (520Hu)"
+		"ko"	"피해량 증가. 공중에서 공격시 피해량 증가, 주변 적에게 피해를 줌\n공중에서 공격시, 최대 속도(520Hu) 이상 주변 적 타격수 +3"
+	}
+	
+	"Market Gardener Pap 6-2"
+	{
+		"en"	"Increased damage and attack speed. \nNumber of nearby enemies hit +3, range damage range increased. \nWhen attacking in the air, range damage range increased at or above maximum speed (520Hu)."
+		"ko"	"피해량 및 공속 증가.\n주변 적 타격수 +3, 범위 피해 사거리 증가\n공중에서 공격시, 최대 속도(520Hu) 이상 범위 피해 사거리 증가"
+	}
+	
+	"Market Gardener Pap 6-3"
+	{
+		"en"	"Increased damage, +2 to the number of enemies hit, increased range of damage\nIncreased damage to nearby enemies.\nWhen attacking in the air, damage multiplier 2.0x if speed is above maximum (520Hu)"
+		"ko"	"피해량 증가, 주변 적 타격수 +2, 범위 피해 사거리 증가\n주변 적에게 주는 피해량 증가.\n공중에서 공격시, 최대 속도(520Hu) 이상이면 피해량 배수 2.0x"
+	}
+	
+	"Minecraft Sword Desc"
+	{
+		"en"	"Low damage. Good attack speed, can AoE Attack"
+		"ko"	"낮은 피해량. 나쁘지않은 공속, 범위 공격 가능"
+	}
+	"Minecraft Sword Extra Desc"
+	{
+		"en"	"A sword made of pixels that seem to come from another world, M1: Sweeping Edge"
+		"ko"	"이계에서 온듯한 기이한 검입니다, M1: 휩쓸기"
+	}
+	"Minecraft Sword Pap 1"
+	{
+		"en"	"Increased damage, decreased attack speed"
+		"ko"	"피해량 증가, 공속 감소"
+	}
+	"Minecraft Sword Extra Pap 1"
+	{
+		"en"	"It's made of stone and feels cheap. Increased damage, decreased attack speed"
+		"ko"	"돌로 만들었습니다. 피해량은 늘었지만 공속이 낮아졌습니다."
+	}
+	"Minecraft Sword Pap 2"
+	{
+		"en"	"Increased damage, increased attack speed"
+		"ko"	"피해량 증가, 공속 증가"
+	}
+	"Minecraft Sword Extra Pap 2"
+	{
+		"en"	"Forged from iron. Damage increased and attack speed restored."
+		"ko"	"철로 만들었습니다. 피해량은 늘고 공속이 다시 돌아왔습니다."
+	}
+	"Minecraft Sword Pap 3"
+	{
+		"en"	"Increased damage, greatly increased attack speed, -50% cooldown on Sweeping Edge ability\nEnchant: Silence"
+		"ko"	"피해량 증가, 공속 대폭 증가, 휩쓸기 능력 재사용 대기시간 -50％\n인첸트: 침묵"
+	}
+	"Minecraft Sword Extra Pap 3"
+	{
+		"en"	"Made of gold! Damage increased and attack speed greatly increased.\nAs a bonus, the cooldown of the Sweep ability has been shortened."
+		"en"	"금으로 이루어져있다!. 피해량은 늘고 공속이 매우 빨라졌습니다.\n덤으로 휩쓸기 능력 재사용시간이 단축되었습니다."
+	}
+	"Minecraft Sword Pap 4"
+	{
+		"en"	"Increased damage, decreased attack speed, increased area damage.\nEnchantment removed"
+		"ko"	"피해량 증가, 공속 정상화, 범위 피해 증가.\n인첸트 제거됨"
+	}
+	"Minecraft Sword Extra Pap 4"
+	{
+		"en"	"Diamond! Damage increased and attack speed returned. But enchantment is gone."
+		"en"	"다이아몬드!. 피해량은 늘고 공속이 돌아왔습니다. 하지만 인첸트를 포기했습니다."
+	}
+	"Minecraft Sword Pap 5"
+	{
+		"en"	"Damage increased, attack range and area damage increased."
+		"ko"	"피해량 증가, 범위공격 사거리 증가, 범위 피해 증가."
+	}
+	"Minecraft Sword Extra Pap 5"
+	{
+		"en"	"Netherite! Damage increased, attack range and area damage increased."
+		"ko"	"네더라이트!. 피해량은 늘고 공격범위, 범위 피해가 높아졌습니다."
+	}
+	
+	"The Soul Eater Desc"
+	{
+		"en"	"Accumulates souls when killing.\nM2: Consumes all souls to increase by the amount.\nLasts until the end of the wave.\nInfinite ammo for the secondary weapon. Accumulates souls when dealing damage with the secondary weapon. (There is a delay.)\nPress the R key to continuously consume souls to damage nearby enemies and apply a slow."
+		"ko"	"처치할때마다 영혼을 축적합니다.\nM2: 모든 영혼을 소모해 수치만큼 증가합니다.\n해당 웨이브가 종료될때까지 지속됨\n보조무기의 탄약이 무한입니다. 보조무기로 피해를 줄때 영혼을 축적합니다.(딜레이 있음)\nR키를 눌러 지속적으로 영혼을 소모해 주변 적에게 피해를 주고 둔화를 적용시킵니다."
+	}
+	"The Soul Eater Pap 1"
+	{
+		"en"	"Increased damage and resistance per soul"
+		"ko"	"영혼당 피해량및 저항 증가"
+	}
+	"The Soul Eater Pap 2"
+	{
+		"en"	"Increased damage and resistance per soul"
+		"ko"	"영혼당 피해량및 저항 증가"
+	}
+	"The Soul Eater Pap 3"
+	{
+		"en"	"Increased damage and resistance per soul"
+		"ko"	"영혼당 피해량및 저항 증가"
+	}
+	"The Soul Eater Pap 4"
+	{
+		"en"	"Increased damage and resistance per soul"
+		"ko"	"영혼당 피해량및 저항 증가"
+	}
+	"The Soul Eater Pap 5"
+	{
+		"en"	"Increased damage and resistance per soul"
+		"ko"	"영혼당 피해량및 저항 증가"
+	}
+	
+	"Overclocking Desc Pap 1"
+	{
+		"en"	"When using Uber, the target's weapon performance is greatly improved!\nbut Medigun Hurt and Heal decreased"
+		"ko"	"우버 사용시 대상의 무기성능을 대폭 향상 시킵니다! 하지만 치료량이 감소됩니다."
+	}
+	
+	"Nitroglycerin Pap 1"
+	{
+		"en"	"When using Uber, it explodes greatly based on yourself, slowing and silencing nearby enemies.\nSome of the damage is converted to true damage."
+		"ko"	"우버 사용시 자신을 기준으로 크게 폭발하며 주변적에게 슬로우및 침묵을 겁니다.\n일부 피해가 트루뎀으로 전환됩니다."
+	}
+	
+	"Pickaxe Desc"
+	{
+		"en"	"Slow attack speed, weak damage"
+		"ko"	"느린 공속 약한 피해량"
+	}
+	"Berserker Soul Desc"
+	{
+		"en"	"Increased damage When maximum health is less than half, damage is increased"
+		"ko"	"피해량 증가 최대체력이 절반 이하 일때 피해량 증가"
+	}
+	"Ash Desc"
+	{
+		"en"	"Increased damage \nPassive: When your rage is full, you become invincible for a few seconds when you take a critical hit.\nM2: Activates the passive.\nYour rage increases when you take damage."
+		"ko"	"피해량 증가 \n패시브: 분노가 가득찼을때 치명상을 입으면 몇초동안 넉다운되지않고 무적이 됩니다.\nM2: 패시브를 발동시킵니다.\n분노는 피해를 받을때 증가됩니다."
+	}
+	"Adrenaline Desc"
+	{
+		"en"	"Increased damage\nPassive duration is increased, and Rage cost is increased.\nRage is automatically recharged."
+		"ko"	"피해량 증가\n패시브 지속시간이 증가하고, 분노 요구량이 늘어납니다.\n분노가 자동으로 충전됩니다."
+	}
+	"Scrap Miner Desc"
+	{
+		"en"	"Increased damage\nWhen hitting, increases scrap.\nM2: Gives scrap to the target you are looking at and gains funds equal to half of the scrap."
+		"ko"	"피해량 증가\n적중할때 스크랩이 늘어납니다.\nM2:바라보는 대상에게 스크랩을 주고 스크랩의 절반만큼 자금을 흭득합니다."
+	}
+	"Backpack Expander Desc"
+	{
+		"en"	"Damage increases, scrap holding amount increases.\nAdditional scrap increases when hitting.\nM2 cooldown increases."
+		"ko"	"피해량 증가, 스크랩 소지량이 늘어납니다.\n적중할때 스크랩이 추가로 늘어납니다.\nM2의 쿨다운이 증가됩니다."
+	}
+	"Ender Pouch Desc"
+	{
+		"en"	"Increased damage and attack speed, continuously gives scrap to the designated ally.\nM2 function is changed to 'Designate friendly player'\nM2 cooldown increases."
+		"ko"	"피해량 및 공속 증가, 지정된 아군에게 지속적으로 스크랩을 줍니다.\M2기능이 아군 플레이어를 지정으로 변경됩니다.\nM2의 쿨다운이 증가됩니다."
+	}
+	
+	
+	"Still_Hunt_Cayde"
+	{
+		"#format"	"{1:s}"
+		"en"		"{olive}{1}{default} casts {gold}Cayde's Retribution{default}"
+		"ko"		"{olive}{1}{default} 님이 {gold}케이드의 응징{default}을 시전합니다."
+	}
+	"Still Hunt Desc"
+	{
+		"en"	"Each time you land a headshot, you recharge the ability. When fully charged, you can press reload to fire three powerful shots."
+		"ko"	"헤드샷을 적중할 때마다 능력을 충전합니다. 완전 충전시, 재장전을 눌러 3발의 강력한 탄환을 발사할 수 있습니다."
+	}
+	"Still Hunt Desc pap 1"
+	{
+		"en"	"Increased damage"
+		"ko"	"피해량 증가"
+	}
+	"Still Hunt Desc pap 2"
+	{
+		"en"	"Increased damage"
+		"ko"	"피해량 증가"
+	}
+	"Still Hunt Desc pap 3"
+	{
+		"en"	"Damage increased, ability bullets are changed to one shot, but damage is greatly increased!"
+		"ko"	"피해량 증가, 능력의 탄환이 한발로 변경되지만 피해량이 대폭 증가합니다!"
+	}
+	"Bone Power Trumpet Desc"
+	{
+		"en"	"Boo!"
+		"ko"	"뿌꾹"
+	}
+	"Snas Trumpet Give"
+	{
+		"en"	"{default}You have taken the trumpet from the skeleton. {blue}''Trumpet''{default}has been unlocked."
+		"ko"	"{default}당신은 지나가던 스켈레톤으로부터 트럼펫을 뺏는대 성공했습니다. {blue}''트럼펫''{default}이 해금 됬습니다."
+	}
+	"ASpecial Drink Pack Give"
+	{
+		"en"	"{default}We found supplies at the outpost. We got a special package there. {darkblue}''Atomizer's Special Drink Pack''{default}!"
+		"ko"	"{default}우리는 전초기지에서 보급품을 발견했습니다. 거기서 특별한 패키지를 얻었습니다. {blue}''인수분해의 스페셜 드링크 팩''{default}이 해금 됬습니다."
 	}
 }

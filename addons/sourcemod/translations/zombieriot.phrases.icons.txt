@@ -76,7 +76,7 @@
 	"Chaos Kahmlstein Arrived"
 	{
 		"en" 		"Kahmlstein, the rebellious chaos inflicted leader will annihilate you."
-		"ru" 		"Кахмлстейн,мятежный лидер, Подвергнутый хаосу, уничтожит вас.
+		"ru" 		"Кахмлстейн,мятежный лидер, Подвергнутый хаосу, уничтожит вас."
 		"fr" 		"Kahmlstein, le leader rebèle chaotique, va vous détruire."
 		"chi"		"混沌之首，卡姆斯坦因前来歼灭你。"
 	}
@@ -455,13 +455,43 @@
 		"en"		"Omega makes an appearance."
 		"fr"		"Omega apparaît."
 	}
+	"The Goons 1"
+	{
+		"en"		"Prepare for a coordinated attack."
+		"ko"		"협동 공격에 대비하십시요."
+	}
+	"The Goons 2"
+	{
+		"en"		"Your position has been revealed to a sniper."
+		"ko"		"저격수에게 위치가 노출됬습니다."
+	}
+	"The Goons 3"
+	{
+		"en"		"Base is under attack."
+		"ko"		"기지가 공격받고 있습니다."
+	}
 	"Victorian Radiomast Is Here!"
 	{
 		"en"	"Victorian Radiomast Is Here! Break this to end the infinite wave"
 	}
+	"The Trumpet Skeleton 1"
+	{
+		"en"		"Boo!"
+		"ko"		"뿌국!"
+	}
+	"The Trumpet Skeleton 2"
+	{
+		"en"		"The Skeleton has appeared."
+		"ko"		"스켈레톤이 등장했습니다."
+	}
+	"The Trumpet Skeleton 3"
+	{
+		"en"		"A Trumpet is heard from somewhere."
+		"ko"		"등''골''이 오싹해집니다.."
+	}
 	"Atomizer Arrived"
 	{
-		"en" 		"Leatherboots Scoutsquad's elite, Incoming Atomizer."
+		"en" 		"Incoming Atomizer."
 	}
 	"Huscarls Arrived"
 	{
@@ -469,7 +499,7 @@
 	}
 	"Harrison Arrived"
 	{
-		"en" 		 "The Pilot of Victorian Artillery, Harrison Arrived."
+		"en" 		 "Harrison Arrived."
 	}
 	"Castellan Arrived"
 	{

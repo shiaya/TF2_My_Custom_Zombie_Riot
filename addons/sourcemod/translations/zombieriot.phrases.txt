@@ -27,6 +27,7 @@
 	"Press To Open Store"
 	{
 		"en"		"%%+showscores%% OPEN STORE MENU"
+		"ko"		"%%+showscores%% 상점 열기"
 	}
 	"Last Alive"
 	{
@@ -100,6 +101,7 @@
 	{
 		"#format"	"{1:d}"
 		"en"		"{green}Current Skillpoints: {1}"
+		"ko"		"{green}현재 스킬 포인트: {1}"
 	}
 	"Credits_Menu_New"
 	{
@@ -303,6 +305,7 @@
 	"Confirm Loadout"
 	{
 		"en"		"Confirm Loadout"
+		"ko"		"로드아웃 확인 <필수>"
 	}
 	"N/A"
 	{
@@ -1284,6 +1287,7 @@
 		"pt"		"Dinheiro Extra!"
 		"ru" 		"Дополнительные деньги!"
 		"chi"       "额外的现金!"
+		"ko"		"Free Robux!"
 	}
 	"Grigori Shop Extra Activated"
 	{
@@ -1927,6 +1931,7 @@
 	{
 		"#format"	"{1:s},{2:d}"
 		"en"		"{green}''{1}'' picked up a gift box! Everyone gains {2} XP!"
+		"ko"		"{green}''{1}'' 님이 선물상자를 흭득했습니다! 모두에게 추가 {2} XP!"
 	}
 	"Press TAB To open the store"
 	{
@@ -2108,14 +2113,6 @@
 		"nl"		"Nu dat je een wapen hebt ben je voorbereid.\nKoop betere wapens en upgrades in latere golven en probeer tot het einde te overleven!\nVerdere hulp vind je onder de winkel bij ''help?''\nTeamwork is de sleutel voor victorie!"
 		"chi"       "现在你已经拥有了武器，你准备好了吗？\n去买更好的枪和升级你的武器，生存到最后!\n更多的帮助可以在“帮助”中查看\n团队合作是胜利的关键!"
 	}
-	"Tutorial Show Hint Perk Machine"
-	{
-		"en"		"Use this machine to get a tempomary boost to yourself!\nSelect what you want!\nHold crouch to see its effects when selecting!"
-	}
-	"Tutorial Show Hint Pack a Punch"
-	{
-		"en"		"Use this machine with your holding weapon to upgrade it with a cost!\nNot all weapons can be upgraded!"
-	}
 	"Is already at full hp"
 	{
 		"en"		"is already at full hp."
@@ -2199,6 +2196,15 @@
 		"pt"		"Assegure-se de não passar de 32 caracteres e não inserir caracteres especiais no nome"
 		"nl"		"Wees zeker dat je naam onder de 32 karakters is en geen speciale tekens bevat"
 		"chi"       "请确保您的名字不超过32个字符，并且不包含特殊字符"
+	}
+	"Loadout Slots"
+	{
+		"#format"	"{1:d}"
+		"en"		"{1} Loadout Slot(s)"
+		"fr"		"{1} Espace(s) de Chargement"
+		"ru"		"Ячеек снаряжения: {1}"
+		"pt"		"Vagas para Loadout: {1}"
+		"nl"		"{1} Loadout Slot(en)"
 	}
 	"All Weapons Unlocked"
 	{
@@ -2462,17 +2468,24 @@
 		"ru"		"Это последняя волна, приготовьтесь."
 		"chi"		"这是最后一波，做好准备。"
 	}
+	"Void_Help_Message"
+	{
+		"en"		"Expidonsan's are trying to send help, but the void interfeers, only guarduses could get here."
+	}
 	"Tower_Message"
 	{
 		"en"		"You see a giant radiotower at the distance."
+		"ko"		"저멀리 거대한 라디오 타워가 보입니다."
 	}
 	"Victoria_Help_Message"
 	{
 		"en"		"Ziberian Guerillas are here to help."
+		"ko"		"지베리안 게릴라의 지원이 도착했습니다."
 	}
-	"Void_Help_Message"
+	"RadioTower_Message"
 	{
-		"en"		"Expidonsan's are trying to send help, but the void interfeers, only guarduses could get here."
+		"en"		"Radiotower is here, Prepare."
+		"ko"		"저멀리 거대한 라디오 타워가 보입니다."
 	}
 	"Silvester Shares His Power"
 	{
@@ -3669,18 +3682,21 @@
 		"#format"	"{1:s}"
 		"en"		"{darkgrey}Created by: {community}{1}"
 		"fr"		"{darkgrey}Creé par: {community}{1}"
+		"ko"		"{darkgrey}제작자: {community}{1}"
 	}
 	"NPCs By"
 	{
 		"#format"	"{1:s}"
 		"en"		"{darkgrey}NPCs by: {community}{1}"
 		"fr"		"{darkgrey}NPCs par: {community}{1}"
+		"ko"		"{darkgrey}NPC 제작자: {community}{1}"
 	}
 	"Format By"
 	{
 		"#format"	"{1:s}"
 		"en"		"{darkgrey}Format by: {community}{1}"
 		"fr"		"{darkgrey}Format par: {community}{1}"
+		"ko"		"{darkgrey}설정 제작자: {community}{1}"
 	}
 	"Raidboss By"
 	{
@@ -3688,6 +3704,7 @@
 		"en"		"{darkgrey}Raidboss by: {community}{1}"
 		"fr"		"{darkgrey}Raid boss par: {community}{1}"
 		"chi"		"{darkgrey}Raidboss作者：{community}{1}"
+		"ko"		"{darkgrey}레이드보스 제작자: {community}{1}"
 	}
 	"Now Playing Song"
 	{
@@ -3943,74 +3960,92 @@
 	"Switch Class"
 	{
 		"en"	"Switch Class"
+		"ko"	"병과 변경"
 	}
 	"Switch Weapons"
 	{
 		"en"	"Switch Weapons"
+		"ko"	"무기 변경"
 	}
 	"Weapon Preference"
 	{
 		"en"	"Your Preference"
+		"ko"	"너가 선호하는건?"
 	}
 	"Preference Alyx"
 	{
 		"en"	"I'll just stick with my gun thanks.\nAnd don't worry, I'll patch you up whenever I can."
+		"ko"	"저는 그냥 제 총을 가지고 있을게요. 고맙습니다.\n그리고 걱정하지 마세요. 시간이 되면 꼭 치료해 드리겠습니다."
 	}
 	"Preference Barney"
 	{
 		"en"	"Well I like anything I can get my hands on.\nDon't need to tell me what to get, I'll use it."
+		"ko"	"글쎄다~, 난는 손에 넣을 수 있는 건 뭐든 좋아해.\n무엇을 사야 하는지 말할 필요 없어. 내가 사용할 꺼니깐."
 	}
 	"Preference Normal"
 	{
 		"en"	"Just standard weapons, nothing special."
+		"ko"	"평범한게 최고지~"
 	}
 	"Preference Speed"
 	{
 		"en"	"I like wepaons with a little more fire rate."
+		"ko"	"난 묵직한 한방이 있는 무기가 손에 맞더라고."
 	}
 	"Preference Heavy"
 	{
 		"en"	"I like wepaons with a little more damage per shot."
+		"ko"	"난 묵직한 한방이 있는 무기가 손에 맞더라고."
 	}
 	"Preference No Clip"
 	{
 		"en"	"I like ranged weapons without needing to reload."
+		"ko"	"난 재장전이 필요없는 원거리 무가가 좋더라고."
 	}
 	"Preference Super Speed"
 	{
 		"en"	"I really like weapons with alot of attack speed."
+		"ko"	"공속이 빠르면 뭐든지 해결할수있지, 난 아주 빠른 무기면 충분해!"
 	}
 	"Preference Super Heavy"
 	{
 		"en"	"I really like weapons that can nuke at once."
+		"ko"	"난 일격에 주님곁에 보낼수있는 무기가 좋아."
 	}
 	"Build Healing Station At Me"
 	{
 		"en"	"Build Healing Station At Me"
+		"ko"	"냉장고 건설"
 	}
 	"Build Barricade At Me"
 	{
 		"en"	"Build Barricade At Me"
+		"ko"	"방벽 건설"
 	}
 	"Build Sentry At Me"
 	{
 		"en"	"Build Sentry At Me"
+		"ko"	"센트리 건설"
 	}
 	"Build Ammo Box At Me"
 	{
 		"en"	"Build Ammo Box At Me"
+		"ko"	"탄약상자 설치"
 	}
 	"Build Armor Table At Me"
 	{
 		"en"	"Build Armor Table At Me"
+		"ko"	"아머 테이블 설치"
 	}
 	"Build Perk Machine At Me"
 	{
 		"en"	"Build Perk Machine At Me"
+		"ko"	"퍼크 머신 건설"
 	}
 	"Build Pack-a-Punch At Me"
 	{
 		"en"	"Build Pack-a-Punch At Me"
+		"ko"	"팩-어-펀치 건설"
 	}
 	"Pistol"
 	{
@@ -4039,9 +4074,127 @@
 	"Victoria Raid Desc"
 	{
 		"en" 	"(11) You are asked by Sensal to visit Ziberia where it is currently under attack by Victoria."
+		"ko" 	"(11) 센살은 당신에게 현재 빅토리아가 공격하고 있는 지베리아를 방문해달라고 부탁합니다."
 	}
 	"Ability already Active"
 	{
 		"en"	"Ability already Active"
+	}
+	"Get_DrinkRND_1"
+	{
+		"en" 		"Armour Point Regenerativen"
+		"ko" 		"아머 포인트 재생"
+	}
+	"Get_DrinkRND_2"
+	{
+		"en" 		"HP Regenerativen"
+		"ko" 		"체력 재생"
+	}
+	"Get_DrinkRND_3"
+	{
+		"en" 		"Poison"
+		"ko" 		"독"
+	}
+	"Get_DrinkRND_4"
+	{
+		"en" 		"Energy Drink!"
+		"ko" 		"에너지 드링크!"
+	}
+	"Get_DrinkRND_5"
+	{
+		"en" 		"No Health?"
+		"ko" 		"체력... 없다?"
+	}
+	"Get_DrinkRND_6"
+	{
+		"en" 		"Min Crit!"
+		"ko" 		"소형 치명타!"
+	}
+	"Get_DrinkRND_7"
+	{
+		"en" 		"Burning"
+		"ko" 		"화상"
+	}
+	"Get_DrinkRND_8"
+	{
+		"en" 		"Slow"
+		"ko" 		"둔화"
+	}
+	"Get_DrinkRND_9"
+	{
+		"en" 		"Uber!"
+		"ko" 		"무적!"
+	}
+	"Get_DrinkRND_10"
+	{
+		"en" 		"Smite!"
+		"ko" 		"단죄!"
+	}
+	"Get_DrinkRND_11"
+	{
+		"en" 		"Smite!"
+		"ko" 		"단죄!"
+	}
+	"Orbital Cannon Out of Ammo This Round, Reload"
+	{
+		"en"	"Orbital Cannon Out of Ammo This Round, Reload"
+		"ko"	"궤도 캐논 재장전중! 다음 웨이브에 완료됨"	
+	}
+	"Eagle 1 Out of Ammo This Round, Reload"
+	{
+		"en"	"Eagle 1 Out of Ammo This Round, Reload"
+		"ko"	"이글 1 재장전중! 다음 웨이브에 완료됨"	
+	}
+	"Use Only On Wave"
+	{
+		"en"	"Use Only On Wave"
+		"ko"	"웨이브 진행중에만 사용할수있습니다."	
+	}
+	"Use Only Alive"
+	{
+		"en"	"Use Only Alive"
+		"ko"	"살아있을때만 사용할수있습니다."	
+	}
+	"Use Only Down"
+	{
+		"en"	"Use Only Down"
+		"ko"	"쓰러져있을때만 사용 가능합니다."	
+	}
+	"1 per wave"
+	{
+		"en"	"1 per wave"
+		"ko"	"웨이브당 한번만 사용할수있습니다."	
+	}
+	"Low Health No Use"
+	{
+		"en"	"Cannot be used to Low Health."
+		"ko"	"체력이 낮아 사용 할 수 없습니다."	
+	}
+	"Ability No Use"
+	{
+		"en"	"Cannot be used"
+		"ko"	"사용 할 수 없습니다."	
+	}
+	"Player not detected"
+	{
+		"en"	"Player not detected"
+		"ko"	"플레이어를 감지 할 수 없습니다."	
+	}
+	"Not enough energy"
+	{
+		"en"	"Not enough energy"
+		"ko"	"에너지가 부족합니다"	
+	}
+	"Need Healing Point"
+	{
+		"#format"	"{1:i}"
+		"en"	"Need {1} Healing Point"
+		"ko"	"{1} 치료 포인트가 필요합니다."	
+	}
+	"Pickup Gift Single"
+	{
+		"#format"	"{1:d}"
+		"en"		"{green}You already have everything in this rarity, but where given {1} XP as a compensation!{default}"
+		"ko"		"{green}현 단계의 모든 아이템을 가지고있습니다. 대신 추가 {1} XP 를 보상으로 받았습니다!{default}"
 	}
 }
