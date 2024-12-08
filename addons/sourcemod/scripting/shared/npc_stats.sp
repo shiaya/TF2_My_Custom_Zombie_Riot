@@ -9281,10 +9281,18 @@ stock bool NpcStats_VictorianCallToArms(int enemy)
         return true; //they dont exist, pretend as if they are silenced.
 
     if(f_VictorianCallToArms[enemy] < GetGameTime())
+    {
+        return false;
+    }
+    return true;
+}
+
+stock bool NpcStats_IsEnemySpeedModify(int enemy)
 {
 	if(!IsValidEntity(enemy))
 		return true;
 
+	if(f_SpeedTimer[enemy] < GetGameTime())
 	{
 		f_SpeedModify[enemy]=1.0;
 		return false;

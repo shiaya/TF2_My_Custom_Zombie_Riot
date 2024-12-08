@@ -47,6 +47,7 @@ void NPC_PluginStart()
 }
 
 #if defined ZR
+public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 {
 	float GameTime = GetGameTime();
 	if(f_DelaySpawnsForVariousReasons > GameTime)

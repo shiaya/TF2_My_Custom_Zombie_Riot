@@ -31,7 +31,7 @@ public void Trumpet_NoKnockback_Secondary_Attack(int client, int weapon, bool cr
 
 public void Trumpet_Secondary_Attack(int client, int weapon, bool crit, int slot)
 {
-	if(GetEntityFlags(iClient) & FL_DUCKING)
+	if(GetEntityFlags(client) & FL_DUCKING)
 	{
 		if(Ability_Check_Cooldown(client, 1) < 0.0 || CvarInfiniteCash.BoolValue)
 		{

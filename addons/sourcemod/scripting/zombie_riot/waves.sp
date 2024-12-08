@@ -2284,6 +2284,7 @@ void WaveEndLogicExtra()
 	Building_ResetRewardValuesWave();
 	FallenWarriorGetRandomSeedEachWave();
 	Zero(i_MaxArmorTableUsed);
+	Farmer_WaveEnd();
 	b_Hero_Of_Concord_Deadman=false;
 	for(int client; client <= MaxClients; client++)
 	{

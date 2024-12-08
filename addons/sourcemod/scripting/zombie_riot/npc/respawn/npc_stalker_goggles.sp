@@ -289,7 +289,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 			if(AppearedBefore_Suicide)
 			{
 				CPrintToChatAll("{darkblue}The machine wanders off, it isnt interrested in this place anymore, someone else takes its place instead...");
-				NPC_SpawnNext(true, true); //This will force spawn a panzer.
+				NPC_SpawnNext(true, true, -1); //This will force spawn a panzer.
 				b_NpcForcepowerupspawn[npc.index] = 0;
 			}
 			AppearedBefore_Suicide = true;
