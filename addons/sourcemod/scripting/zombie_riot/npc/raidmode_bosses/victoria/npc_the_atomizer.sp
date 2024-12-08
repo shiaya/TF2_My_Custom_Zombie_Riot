@@ -124,6 +124,8 @@ static bool b_said_player_weaponline[MAXTF2PLAYERS];
 static float fl_said_player_weaponline_time[MAXENTITIES];
 static bool SUPERHIT[MAXENTITIES];
 
+static bool BakaServerItems[MAXENTITIES];
+
 static int gLaser1;
 static int gRedPoint;
 static int g_BeamIndex_heal;
@@ -274,6 +276,8 @@ methodmap Atomizer < CClotBody
 		npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
 		npc.m_bDissapearOnDeath = true;
 		npc.m_flMeleeArmor = 1.25;
+		BakaServerItems[npc.index]=false;
+		BakaServerItems[npc.index] = StrContains(data, "bakaserver") != -1;
 
 		bool CloneDo = StrContains(data, "support_ability") != -1;
 		if(CloneDo)
@@ -1142,6 +1146,19 @@ static void Internal_NPCDeath(int entity)
 
 	if(BlockLoseSay)
 		return;
+		
+	if(BakaServerItems[npc.index])
+	{
+		for (int client = 0; client < MaxClients; client++)
+		{
+			if(IsValidClient(client) && GetClientTeam(client) == 2
+			&& TeutonType[client] != TEUTON_WAITING && !(Items_HasNamedItem(client, "Atomizer's Special Drink Pack")))
+			{
+				Items_GiveNamedItem(client, "Atomizer's Special Drink Pack");
+				CPrintToChat(client, "%t", "ASpecial Drink Pack Give");
+			}
+		}
+	}
 
 	switch(GetRandomInt(0,2))
 	{
