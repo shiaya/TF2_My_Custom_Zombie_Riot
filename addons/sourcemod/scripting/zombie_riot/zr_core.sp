@@ -208,6 +208,7 @@ enum
 	WEAPON_WALTER = 128,
 	WEAPON_OLDINFINITYBLADE = 129,
 	WEAPON_NYMPH = 130,
+	WEAPON_CASTLEBREAKER = 131,
 	WEAPON_MARKET_GARDENER = 1000,
 	WEAPON_FARMER = 1001,
 	WEAPON_MINECRAFT_SWORD = 1002,
@@ -580,6 +581,7 @@ int i_WaveHasFreeplay = 0;
 #include "zombie_riot/custom/wand/weapon_logos.sp"
 #include "zombie_riot/custom/weapon_walter.sp"
 #include "zombie_riot/custom/wand/weapon_wand_nymph.sp"
+#include "zombie_riot/custom/weapon_castlebreaker.sp"
 #include "zombie_riot/custom/baka/weapon_market_gardener.sp"
 #include "zombie_riot/custom/baka/weapon_farmer.sp"
 #include "zombie_riot/custom/baka/weapon_minecraft_sword.sp"
@@ -849,6 +851,7 @@ void ZR_MapStart()
 	Yakuza_MapStart();
 	ResetMapStartSkadiWeapon();
 	Logos_MapStart();
+	ResetMapStartCastleBreakerWeapon();
 	Market_Garden_OnMapStart();
 	MSword_OnMapStart();
 	Farmer_OnMapStart();

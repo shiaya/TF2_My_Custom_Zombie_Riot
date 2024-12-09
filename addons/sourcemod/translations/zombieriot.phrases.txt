@@ -2482,10 +2482,10 @@
 		"en"		"Ziberian Guerillas are here to help."
 		"ko"		"지베리안 게릴라의 지원이 도착했습니다."
 	}
-	"RadioTower_Message"
+	"RadioTower_here_Message"
 	{
 		"en"		"Radiotower is here, Prepare."
-		"ko"		"저멀리 거대한 라디오 타워가 보입니다."
+		"ko"		"라디오 타워가 여기있습니다, 전투 준비."
 	}
 	"Silvester Shares His Power"
 	{
