@@ -907,7 +907,7 @@
 	{
 		"#format"	"{1:d},{2:.0f},{3:.0f}"
 		"en" 		"Mana: [{1}/{2}] (+{3})"
-//		"it"		"Ricevuto {1} in questa ondata!
+//		"it"		"Ricevuto {1} in questa ondata!"
 		"ru"		"Мана: [{1}/{2}] (+{3})"
 //		"pl"		"Otrzymaano {1} dzięki tej rundzie!"
 //		"es"		"Encontraste {1} en esta oleada!"
@@ -1451,7 +1451,7 @@
 	{
 		"en" 		"These are mini-bosses that spawn randomly after wave 12.\nRaids:\nRaids take 25%% more explosive damage, and usually 25% more melee damage.\nSome weapons deal extra damage againt raids, see desc if they do."
 		"fr" 		"Après la vague 12, des Miniboss vont apparaître.\nRaids:\nLes boss Raid recoivent 25%% plus de dégats par les explosions,\net habituellement, 25%% plus de dégats par les coups corps à corps.\nCertaines armes deviennent plus forts contre les Raids, vérifiez leur description."
-		// "pt"		"Tem alguns mini-chefes que aparecem aleatoriamente na onda 12.\nRaids:\n
+		// "pt"		"Tem alguns mini-chefes que aparecem aleatoriamente na onda 12.\nRaids:\n"
 	}
 	"Revival Zombies Explained"
 	{
@@ -1918,7 +1918,7 @@
 	//	"ru"		"Ваш последний экипированный Навык уровня был восстоновлен"
 	//	"de"		"Ihre letzten level perks wurden wiederhergestellt."
 	//	"pt"		"Sua ultima habilidade de nível foi restaurada"
-	//	"nl"		"Uw laatste gebruike level perks werden herstelt
+	//	"nl"		"Uw laatste gebruike level perks werden herstelt"
 
 		"#format"	"{1:s}"
 		"en"		"Could not buy {1}."
@@ -2112,6 +2112,14 @@
 		"pt"		"Agora que você tem uma arma, você está pronto(a).\nCompre armas melhores, e as aprimore em ondas posteriores e sobreviva ate o final!\nÉ possivel adquirir mais ajuda no menu na opção de ''ajuda?''\nTrabalho em equipe é a chava para a vitória!"
 		"nl"		"Nu dat je een wapen hebt ben je voorbereid.\nKoop betere wapens en upgrades in latere golven en probeer tot het einde te overleven!\nVerdere hulp vind je onder de winkel bij ''help?''\nTeamwork is de sleutel voor victorie!"
 		"chi"       "现在你已经拥有了武器，你准备好了吗？\n去买更好的枪和升级你的武器，生存到最后!\n更多的帮助可以在“帮助”中查看\n团队合作是胜利的关键!"
+	}
+	"Tutorial Show Hint Perk Machine"
+	{
+		"en"		"Use this machine to get a tempomary boost to yourself!\nSelect what you want!\nHold crouch to see its effects when selecting!"
+	}
+	"Tutorial Show Hint Pack a Punch"
+	{
+		"en"		"Use this machine with your holding weapon to upgrade it with a cost!\nNot all weapons can be upgraded!"
 	}
 	"Is already at full hp"
 	{
@@ -2468,10 +2476,6 @@
 		"ru"		"Это последняя волна, приготовьтесь."
 		"chi"		"这是最后一波，做好准备。"
 	}
-	"Void_Help_Message"
-	{
-		"en"		"Expidonsan's are trying to send help, but the void interfeers, only guarduses could get here."
-	}
 	"Tower_Message"
 	{
 		"en"		"You see a giant radiotower at the distance."
@@ -2486,6 +2490,10 @@
 	{
 		"en"		"Radiotower is here, Prepare."
 		"ko"		"라디오 타워가 여기있습니다, 전투 준비."
+	}
+	"Void_Help_Message"
+	{
+		"en"		"Expidonsan's are trying to send help, but the void interfeers, only guarduses could get here."
 	}
 	"Silvester Shares His Power"
 	{
@@ -3975,12 +3983,12 @@
 	"Preference Alyx"
 	{
 		"en"	"I'll just stick with my gun thanks.\nAnd don't worry, I'll patch you up whenever I can."
-		"ko"	"저는 그냥 제 총을 가지고 있을게요. 고맙습니다.\n그리고 걱정하지 마세요. 시간이 되면 꼭 치료해 드리겠습니다."
+		//"ko"	"저는 그냥 제 총을 가지고 있을게요. 고맙습니다.\n그리고 걱정하지 마세요. 시간이 되면 꼭 치료해 드리겠습니다."
 	}
 	"Preference Barney"
 	{
 		"en"	"Well I like anything I can get my hands on.\nDon't need to tell me what to get, I'll use it."
-		"ko"	"글쎄다~, 난는 손에 넣을 수 있는 건 뭐든 좋아해.\n무엇을 사야 하는지 말할 필요 없어. 내가 사용할 꺼니깐."
+		//"ko"	"글쎄다~, 난는 손에 넣을 수 있는 건 뭐든 좋아해.\n무엇을 사야 하는지 말할 필요 없어. 내가 사용할 꺼니깐."
 	}
 	"Preference Normal"
 	{
@@ -3990,7 +3998,7 @@
 	"Preference Speed"
 	{
 		"en"	"I like wepaons with a little more fire rate."
-		"ko"	"난 묵직한 한방이 있는 무기가 손에 맞더라고."
+		"ko"	"난 빠르게 연사로 갈길수있는 무기가 무난하다 생각해."
 	}
 	"Preference Heavy"
 	{
@@ -4005,12 +4013,12 @@
 	"Preference Super Speed"
 	{
 		"en"	"I really like weapons with alot of attack speed."
-		"ko"	"공속이 빠르면 뭐든지 해결할수있지, 난 아주 빠른 무기면 충분해!"
+		"ko"	"공속이 빠르면 뭐든지 해결할수있지!"
 	}
 	"Preference Super Heavy"
 	{
 		"en"	"I really like weapons that can nuke at once."
-		"ko"	"난 일격에 주님곁에 보낼수있는 무기가 좋아."
+		"ko"	"난 일격에 주님곁에 보낼수있는 무기가 좋아!"
 	}
 	"Build Healing Station At Me"
 	{
@@ -4132,8 +4140,13 @@
 	}
 	"Get_DrinkRND_11"
 	{
-		"en" 		"Smite!"
-		"ko" 		"단죄!"
+		"en" 		"Toxic Gas"
+		"ko" 		"독 가스"
+	}
+	"Get_DrinkRND_12"
+	{
+		"en" 		"Teleport!"
+		"ko" 		"순간이동!"
 	}
 	"Orbital Cannon Out of Ammo This Round, Reload"
 	{
