@@ -74,12 +74,13 @@ static const char g_SummonAlotOfRockets[][] = {
 	"weapons/rocket_ll_shoot.wav",
 };
 
+static int gLaser1;
+static int gBluePoint;
 
 static const char g_BoomSounds[] = "mvm/mvm_tank_explode.wav";
 static const char g_IncomingBoomSounds[] = "weapons/drg_wrench_teleport.wav";
 
 static float f_TimeSinceHasBeenHurt;
-static float FTL[MAXENTITIES];
 static float Delay_Attribute[MAXENTITIES];
 static int I_cant_do_this_all_day[MAXENTITIES];
 static int HowManyMelee[MAXENTITIES];
@@ -133,10 +134,9 @@ static void ClotPrecache()
 	PrecacheModel("models/player/soldier.mdl");
 	PrecacheSoundCustom("#zombiesurvival/victoria/raid_castellan.mp3");
 	PrecacheSound("mvm/ambient_mp3/mvm_siren.mp3");
-	
 	PrecacheModel(LASERBEAM);
-	PrecacheModel("sprites/redglow1.vmt");
-	PrecacheModel("materials/sprites/laser.vmt");
+	gBluePoint = PrecacheModel("sprites/blueglow1.vmt");
+	gLaser1 = PrecacheModel("materials/sprites/laser.vmt");
 	PrecacheModel("materials/sprites/laserbeam.vmt", true);
 	PrecacheModel("materials/sprites/halo01.vmt", true);
 }
@@ -242,7 +242,6 @@ methodmap Castellan < CClotBody
 	}
 	public void PlayMeleeHitSound() 
 	{
-		EmitSoundToAll(g_MeleeHitSounds, this.index, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 		EmitSoundToAll(g_MeleeHitSounds, this.index, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 	}
 	property float m_flTimeUntillSupportSpawn
@@ -358,8 +357,7 @@ methodmap Castellan < CClotBody
 				ShowGameText(client_check, "obj_status_sentrygun_3", 1, "%t", "Castellan Arrived");
 			}
 		}
-		FTL[npc.index] = 200.0;
-		RaidModeTime = GetGameTime(npc.index) + FTL[npc.index];
+		RaidModeTime = GetGameTime(npc.index) + 200.0;
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
 		
@@ -391,8 +389,7 @@ methodmap Castellan < CClotBody
 		}
 		else if(ZR_GetWaveCount()+1 > 55)
 		{
-			FTL[npc.index] = 220.0;
-			RaidModeTime = GetGameTime(npc.index) + FTL[npc.index];
+			RaidModeTime = GetGameTime(npc.index) + 220.0;
 			RaidModeScaling *= 0.75;
 		}
 		bool final = StrContains(data, "final_item") != -1;
@@ -405,7 +402,7 @@ methodmap Castellan < CClotBody
 		MusicEnum music;
 		strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/victoria/raid_castellan.mp3");
 		music.Time = 247;
-		music.Volume = 2.0;
+		music.Volume = 1.75;
 		music.Custom = true;
 		strcopy(music.Name, sizeof(music.Name), "06Graveyard_Arena3");
 		strcopy(music.Artist, sizeof(music.Artist), "Serious sam Reborn mod (?)");
@@ -836,7 +833,7 @@ static void Internal_ClotThink(int iNPC)
 
 	if(npc.m_flDoingAnimation < gameTime)
 		CastellanAnimationChange(npc);
-	if(Gone_Stats[npc.index])
+	if(!Gone_Stats[npc.index])
 		npc.PlayIdleAlertSound();
 }
 
@@ -906,7 +903,6 @@ static Action Internal_OnTakeDamage(int victim, int &attacker, int &inflictor, f
 			IncreaceEntityDamageTakenBy(npc.index, 0.05, 1.0);
 			npc.m_fbRangedSpecialOn = true;
 			npc.m_bFUCKYOU=true;
-			FTL[npc.index] += 35.0;
 			RaidModeTime += 35.0;
 		}
 	}
@@ -1258,7 +1254,6 @@ static int CastellanSelfDefense(Castellan npc, float gameTime, int target, float
 					MakeObjectIntangeable(npc.index);
 					npc.m_iChanged_WalkCycle = 0;
 					ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-					WorldSpaceVec[2]=-5.0;
 					ParticleEffectAt(WorldSpaceVec, "smoke_marker", 10.0);
 					npc.PlayDeathSound();
 					Temp_Target[npc.index]=-1;
@@ -1267,11 +1262,13 @@ static int CastellanSelfDefense(Castellan npc, float gameTime, int target, float
 					GetHighDefTargets(npcGetInfo, enemy, sizeof(enemy));
 					do
 					{
-						Temp_Target[npc.index] = enemy[GetRandomInt(0, sizeof(g_PlayRocketshotready) - 1)];
+						Temp_Target[npc.index] = enemy[GetRandomInt(0, sizeof(enemy) - 1)];
 					}
 					while(!IsValidEntity(Temp_Target[npc.index]) || GetTeam(npc.index) == GetTeam(Temp_Target[npc.index]) || npc.index==Temp_Target[npc.index]);
+					if(IsValidClient(Temp_Target[npc.index]))Vs_LockOn[Temp_Target[npc.index]]=true;
 					EmitSoundToAll("mvm/ambient_mp3/mvm_siren.mp3", npc.index, SNDCHAN_STATIC, 120, _, 1.0);
 					EmitSoundToAll("mvm/ambient_mp3/mvm_siren.mp3", npc.index, SNDCHAN_STATIC, 120, _, 1.0);
+					TeleportDiversioToRandLocation(npc.index,_,1250.0, 750.0);
 					Delay_Attribute[npc.index] = gameTime + 10.0;
 					I_cant_do_this_all_day[npc.index]=4;
 				}	
@@ -1281,6 +1278,7 @@ static int CastellanSelfDefense(Castellan npc, float gameTime, int target, float
 				if(Delay_Attribute[npc.index] < gameTime)
 				{
 					npc.m_flNextMeleeAttack = gameTime + 2.0;
+					if(IsValidClient(Temp_Target[npc.index]))Vs_LockOn[Temp_Target[npc.index]]=false;
 					Temp_Target[npc.index]=-1;
 					Gone_Stats[npc.index] = false;
 					Gone[npc.index] = true;
@@ -1314,41 +1312,53 @@ static int CastellanSelfDefense(Castellan npc, float gameTime, int target, float
 				}
 			}
 		}
-		if(IsValidEntity(Temp_Target[npc.index]) && npc.m_flAirRaidDelay < gameTime)
+		if(IsValidEntity(Temp_Target[npc.index]))
 		{
-			float BombPos[3];
-			float BombDamage = 50.0;
-			BombDamage *= RaidModeScaling;
-			float Spam_delay=0.0;
-			for(int AirRaid; AirRaid < 5; AirRaid++)
+			float BombPos[3], TempPos[3];
+			GetAbsOrigin(Temp_Target[npc.index], BombPos);
+			TempPos[0] = BombPos[0];
+			TempPos[1] = BombPos[1];
+			TempPos[2] = BombPos[2] + 3000.0;
+			BombPos[2] += 5.0;
+			TE_SetupBeamPoints(BombPos, TempPos, gLaser1, -1, 0, 0, 0.1, 0.0, 25.0, 0, 1.0, {115, 125, 255, 255}, 3);
+			TE_SendToAll();
+			TE_SetupGlowSprite(BombPos, gBluePoint, 0.1, 1.0, 255);
+			TE_SendToAll();
+			BombPos[2] -= 5.0;
+			if(npc.m_flAirRaidDelay < gameTime)
 			{
-				GetAbsOrigin(Temp_Target[npc.index], BombPos);
-				if(AirRaid>4)
+				float BombDamage = 50.0;
+				BombDamage *= RaidModeScaling;
+				float Spam_delay=0.0;
+				for(int AirRaid; AirRaid < 8; AirRaid++)
 				{
-					PredictSubjectPositionForProjectiles(npc, Temp_Target[npc.index], 100.0, _,BombPos);
-					BombPos[0] += GetRandomFloat(-25.0, 25.0);
-					BombPos[1] += GetRandomFloat(-25.0, 25.0);
+					if(AirRaid>4)
+					{
+						PredictSubjectPositionForProjectiles(npc, Temp_Target[npc.index], 100.0, _,BombPos);
+						BombPos[0] += GetRandomFloat(-25.0, 25.0);
+						BombPos[1] += GetRandomFloat(-25.0, 25.0);
+					}
+					else if(AirRaid>0)
+					{
+						BombPos[0] += GetRandomFloat(-500.0, 500.0);
+						BombPos[1] += GetRandomFloat(-500.0, 500.0);
+					}
+					DataPack pack;
+					CreateDataTimer(Spam_delay, Timer_Bomb_Spam, pack, TIMER_FLAG_NO_MAPCHANGE);
+					pack.WriteCell(EntIndexToEntRef(npc.index));
+					pack.WriteFloat(BombPos[0]);
+					pack.WriteFloat(BombPos[1]);
+					pack.WriteFloat(BombPos[2]);
+					pack.WriteFloat(BombDamage);
+					pack.WriteFloat(3.0);
+					pack.WriteFloat(1.0);
+					pack.WriteFloat(150.0);
+					Spam_delay += 0.15;
 				}
-				else if(AirRaid>0)
-				{
-					BombPos[0] += GetRandomFloat(-500.0, 500.0);
-					BombPos[1] += GetRandomFloat(-500.0, 500.0);
-				}
-				DataPack pack;
-				CreateDataTimer(Spam_delay, Timer_Bomb_Spam, pack, TIMER_FLAG_NO_MAPCHANGE);
-				pack.WriteCell(EntIndexToEntRef(npc.index));
-				pack.WriteFloat(BombPos[0]);
-				pack.WriteFloat(BombPos[1]);
-				pack.WriteFloat(BombPos[2]);
-				pack.WriteFloat(BombDamage);
-				pack.WriteFloat(3.0);
-				pack.WriteFloat(1.0);
-				pack.WriteFloat(150.0);
-				Spam_delay += 0.15;
+				npc.m_flAirRaidDelay = gameTime + 2.5;
 			}
-			npc.m_flAirRaidDelay = gameTime + 2.5;
 		}
-		RaidModeTime += 0.1;
+		RaidModeTime += (0.1 + DEFAULT_UPDATE_DELAY_FLOAT);
 		return 2;
 	}
 	else if(npc.m_flTimeUntillHomingStrike <gameTime)
@@ -1459,7 +1469,7 @@ static int CastellanSelfDefense(Castellan npc, float gameTime, int target, float
 					
 				}
 				npc.m_iAttacksTillReload -= 1;
-				npc.m_flNextMeleeAttack = gameTime + 0.35;
+				npc.m_flNextMeleeAttack = gameTime + (NpcStats_VictorianCallToArms(npc.index) ? 0.75 : 1.5);
 			}
 		}
 	}
@@ -1492,7 +1502,7 @@ static int CastellanSelfDefense(Castellan npc, float gameTime, int target, float
 								
 								WorldSpaceCenter(targetTrace, vecHit);
 
-								float damage = 50.0;
+								float damage = 40.0;
 
 								SDKHooks_TakeDamage(targetTrace, npc.index, npc.index, damage * RaidModeScaling, DMG_CLUB, -1, _, vecHit);								
 									
