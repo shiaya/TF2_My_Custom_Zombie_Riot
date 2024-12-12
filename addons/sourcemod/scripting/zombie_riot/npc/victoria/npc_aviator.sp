@@ -257,7 +257,7 @@ public void Aviator_ClotThink(int iNPC)
 
 					float pos[3]; GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", pos);
 					float ang[3]; GetEntPropVector(npc.index, Prop_Data, "m_angRotation", ang);
-
+					Explode_Logic_Custom(0.0, npc.index, npc.index, -1, pos, 200.0, _, _, true, _, false, _, NPC_Go_away);
 					int entity = NPC_CreateByName("npc_ironshield", -1, pos, ang, GetTeam(npc.index));
 					if(entity > MaxClients)
 					{
@@ -579,5 +579,15 @@ void ResetAviatorWeapon(Aviator npc, int weapon_Type)
 			SetVariantString("0.8");
 			AcceptEntityInput(npc.m_iWearable1, "SetModelScale");
 		}
+	}
+}
+
+static void NPC_Go_away(int entity, int victim, float damage, int weapon)
+{
+	Huscarls npc = view_as<Huscarls>(entity);
+	float vecHit[3]; WorldSpaceCenter(victim, vecHit);
+	if(IsValidEntity(npc.index) && IsValidEntity(victim) && !IsValidClient(victim) && GetTeam(npc.index) != GetTeam(victim))
+	{
+		Custom_Knockback(npc.index, victim, 600.0, true);
 	}
 }
