@@ -829,6 +829,7 @@ void NPC_ConfigSetup()
 	Victorian_TacticalProtector_OnMapStart_NPC();
 //Special
 	TrumpetSkeleton_OnMapStart_NPC();
+	CyberGrindGM_OnMapStart_NPC();
 }
 
 int NPC_Add(NPCData data)
@@ -1846,5 +1847,7 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/npc/matrix/raids/npc_agentjohnson.sp"
 #include "zombie_riot/npc/matrix/raids/npc_agentthompson.sp"
 #include "zombie_riot/npc/matrix/raids/npc_twins.sp"
-#include "zombie_riot/npc/matrix/raids/npc_agent_smith.sp"//Special
+#include "zombie_riot/npc/matrix/raids/npc_agent_smith.sp"
+//Special
 #include "zombie_riot/npc/special/npc_sans.sp"
+#include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"

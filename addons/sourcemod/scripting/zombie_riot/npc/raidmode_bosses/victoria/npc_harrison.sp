@@ -803,7 +803,7 @@ static void Internal_ClotThink(int iNPC)
 		npc.m_flNextRangedSpecialAttackHappens += 0.1;
 		npc.m_flTimeUntillNextRailgunShots += 0.1;
 		npc.m_flTimeUntillDroneSniperShot += 0.1;
-		RaidModeTime += 0.1;
+		RaidModeTime += 0.1+DEFAULT_UPDATE_DELAY_FLOAT;
 		return;
 	}
 

@@ -28,6 +28,11 @@ static int i_SupportWeapon_Delete[MAXPLAYERS+1];
 static int i_SupportWeapon_Lvl[MAXPLAYERS+1];
 static float f_SupportWeapon_Timer[MAXPLAYERS+1];
 
+static const char g_TeleSounds[][] = {
+	"weapons/rescue_ranger_teleport_receive_01.wav",
+	"weapons/rescue_ranger_teleport_receive_02.wav"
+};
+
 static char gExplosive1;
 static char gLaser1;
 static char gRedPoint;
@@ -77,6 +82,7 @@ public void M3_Abilities_Precache()
 	PrecacheSound("baka/nuke_doom.mp3");
 	PrecacheSound("weapons/air_burster_explode3.wav");
 	PrecacheSound("ambient/explosions/explode_9.wav");
+	for (int i = 0; i < (sizeof(g_TeleSounds));	   i++) { PrecacheSound(g_TeleSounds[i]);	   }
 	if(FileExists("sound/baka/sd_reinforce01.mp3", true))
 		PrecacheSound("baka/sd_reinforce01.mp3", true);
 	if(FileExists("sound/baka/sd_reinforce02.mp3", true))
@@ -1529,11 +1535,17 @@ public void DrinkRND(int client)
 		CreateTimer(60.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		int GetRND=-1;
 		if(Items_HasNamedItem(client, "Atomizer's Special Drink Pack"))
-			GetRND==GetRandomInt(1, 10);
+			GetRND=GetRandomInt(1, 12);
 		else
 			GetRND=GetRandomInt(1, 9);
 		f_PDelay[client]=GetGameTime();
-		f_PDuration[client]=GetGameTime() + 30.0;
+		float AddTime;
+		switch(GetRND)
+		{
+			case 11:AddTime=20.0;
+			default:AddTime=30.0;
+		}
+		f_PDuration[client]=GetGameTime() + AddTime;
 		char RNDWeaponName[512];
 		FormatEx(RNDWeaponName, sizeof(RNDWeaponName), "Get_DrinkRND_%i", GetRND);
 		if(TranslationPhraseExists(RNDWeaponName))
@@ -1672,9 +1684,9 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 				if(!IsInvuln(client))
 				{
 					if(health>2)
-						SDKHooks_TakeDamage(client, client, client, float(health/2), DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
+						SDKHooks_TakeDamage(client, 0, 0, float(health/2), DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
 					else
-						SDKHooks_TakeDamage(client, client, client, 195.0, DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
+						SDKHooks_TakeDamage(client, 0, 0, 195.0, DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
 				}
 				else
 				{
@@ -1685,6 +1697,104 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 						ForcePlayerSuicide(client);
 				}
 				f_Overclocker_Buff[client] = GetGameTime() + 20.0;
+				return Plugin_Stop;
+			}
+			case 11:
+			{
+				float damage = 5+(Pow(float(CashSpentTotal[client]), 1.225))/10000.0;
+				if(damage<5.0)damage=5.0;
+				float position[3]; WorldSpaceCenter(client, position);
+				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+				{
+					int npc = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+					if(IsValidEntity(npc) && GetTeam(npc) != TFTeam_Red)
+					{
+						float position2[3], distance;
+						GetEntPropVector(npc, Prop_Send, "m_vecOrigin", position2);
+						distance = GetVectorDistance(position, position2);
+						if(distance<200.0)
+						{
+							SDKHooks_TakeDamage(npc, client, client, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+							NpcStats_SpeedModifyEnemy(npc, 1.0, 0.9, true);
+						}
+					}
+				}
+				if(f_PDelay[client] < GetGameTime())
+				{
+					position[2] += 50.0;
+					float fPos[3], fDir[2];
+					for (int i = 0; i < RoundFloat(200.0 / 64.0); ++i)
+					{
+						float fRadius = GetRandomFloat(170.0, 200.0);
+
+						fDir[0] = GetRandomFloat(0.0, 2.0 * 3.1415); // radians
+						fDir[1] = GetRandomFloat(0.0, 2.0 * 3.1415);
+						GetPointOnSphere(position, fDir, fRadius, fPos);
+
+						ParticleEffectAt(fPos, "peejar_impact_cloud_gas", 1.0);
+					}
+					f_PDelay[client] = GetGameTime() + 0.6;
+				}
+			}
+			case 12:
+			{
+				float WorldSpaceVec[3]; WorldSpaceCenter(client, WorldSpaceVec);
+				ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
+				int TempTarget;
+				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+				{
+					int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+					if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
+					{
+						TempTarget=entity;
+						break;
+					}
+				}
+				if(IsValidEntity(TempTarget))
+				{
+					UnderTides npcGetInfo = view_as<UnderTides>(TempTarget);
+					int AllyNPC[MAXENTITIES];
+					GetHighDefTargets(npcGetInfo, AllyNPC, sizeof(AllyNPC));
+					do
+					{
+						TempTarget = AllyNPC[GetRandomInt(0, sizeof(AllyNPC) - 1)];
+					}
+					while(!IsValidEntity(TempTarget) || GetTeam(client) != GetTeam(TempTarget) || client==TempTarget);
+					
+					if(IsValidEntity(TempTarget) && GetTeam(client) == GetTeam(TempTarget))
+					{
+						WorldSpaceCenter(TempTarget, WorldSpaceVec);
+						ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
+						TeleportEntity(client, WorldSpaceVec, NULL_VECTOR, NULL_VECTOR);
+						EmitSoundToAll(g_TeleSounds[GetRandomInt(0, sizeof(g_TeleSounds) - 1)], client, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
+						return Plugin_Stop;
+					}
+				}
+				
+				int Decicion = TeleportDiversioToRandLocation(client, true, 1500.0, 1000.0);
+				switch(Decicion)
+				{
+					case 2:
+					{
+						Decicion = TeleportDiversioToRandLocation(client, true, 1500.0, 500.0);
+						if(Decicion == 2)
+						{
+							Decicion = TeleportDiversioToRandLocation(client, true, 1500.0, 250.0);
+							if(Decicion == 2)
+							{
+								Decicion = TeleportDiversioToRandLocation(client, true, 1500.0, 0.0);
+							}
+						}
+					}
+					case 3:
+					{
+						ability_cooldown[client] = GetGameTime() + 5.0;
+						return Plugin_Stop;
+					}
+				}
+				WorldSpaceCenter(client, WorldSpaceVec);
+				ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+				EmitSoundToAll(g_TeleSounds[GetRandomInt(0, sizeof(g_TeleSounds) - 1)], client, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 				return Plugin_Stop;
 			}
 		}

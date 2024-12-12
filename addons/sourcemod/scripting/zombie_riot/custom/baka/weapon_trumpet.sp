@@ -5,19 +5,21 @@ public void Weapon_Trumpet_MapStart()
 {
 	if(FileExists("sound/baka_zr/trumpetskeleton.mp3", true))
 		PrecacheSound("baka_zr/trumpetskeleton.mp3", true);
+	PrecacheSound("weapons/pistol_shoot.wav");
+	PrecacheSound("weapons/pistol_shoot_crit.wav");
 }
 
-public void Trumpet_NoKnockback_Secondary_Attack(int client, int weapon, bool crit, int slot)
+public void Trumpet_Main_Attack(int client, int weapon, bool crit, int slot)
 {
-	if(Ability_Check_Cooldown(client, 1) < 0.0 || CvarInfiniteCash.BoolValue)
+	if(Ability_Check_Cooldown(client, slot) < 0.0 || CvarInfiniteCash.BoolValue)
 	{
 		Rogue_OnAbilityUse(weapon);
-		Ability_Apply_Cooldown(client, 1, 1.0);
+		Ability_Apply_Cooldown(client, slot, 1.0);
 		EmitSoundToAll("baka_zr/trumpetskeleton.mp3", client, SNDCHAN_STATIC, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME);
 	}
 	else
 	{
-		float Ability_CD = Ability_Check_Cooldown(client, 1);
+		float Ability_CD = Ability_Check_Cooldown(client, slot);
 		
 		if(Ability_CD <= 0.0)
 			Ability_CD = 0.0;
@@ -27,36 +29,17 @@ public void Trumpet_NoKnockback_Secondary_Attack(int client, int weapon, bool cr
 		SetGlobalTransTarget(client);
 		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
 	}
+	StopSound(client, SNDCHAN_STATIC, "weapons/pistol_shoot_crit.wav");
+	StopSound(client, SNDCHAN_STATIC, "weapons/pistol_shoot.wav");
 }
 
 public void Trumpet_Secondary_Attack(int client, int weapon, bool crit, int slot)
 {
-	if(GetEntityFlags(client) & FL_DUCKING)
-	{
-		if(Ability_Check_Cooldown(client, 1) < 0.0 || CvarInfiniteCash.BoolValue)
-		{
-			Ability_Apply_Cooldown(client, slot, 1.0);
-			Ability_Apply_Cooldown(client, 1, 1.0);
-			EmitSoundToAll("baka_zr/trumpetskeleton.mp3", client, SNDCHAN_STATIC, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME);
-		}
-		else
-		{
-			float Ability_CD = Ability_Check_Cooldown(client, 1);
-			
-			if(Ability_CD <= 0.0)
-				Ability_CD = 0.0;
-				
-			ClientCommand(client, "playgamesound items/medshotno1.wav");
-			SetDefaultHudPosition(client);
-			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
-		}
-	}
-	else if(Ability_Check_Cooldown(client, slot) < 0.0 || CvarInfiniteCash.BoolValue)
+	if(Ability_Check_Cooldown(client, slot) < 0.0 || CvarInfiniteCash.BoolValue)
 	{
 		Rogue_OnAbilityUse(weapon);
 		Ability_Apply_Cooldown(client, slot, 30.0);
-		Ability_Apply_Cooldown(client, 1, 3.0);
+		Ability_Apply_Cooldown(client, 1, 1.0);
 		bool PlaySound=false;
 		float position[3], entitypos[3], distance;
 		WorldSpaceCenter(client, position);

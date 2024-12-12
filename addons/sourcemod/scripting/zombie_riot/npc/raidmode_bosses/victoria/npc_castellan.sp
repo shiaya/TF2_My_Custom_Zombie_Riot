@@ -951,12 +951,7 @@ static void Internal_NPCDeath(int entity)
 	if(BlockLoseSay)
 		return;
 
-	switch(GetRandomInt(0,2))
-	{
-		case 0:CPrintToChatAll("{blue}Castellan{default}: Ugh, I need backup");
-		case 1:CPrintToChatAll("{blue}Castellan{default}: I will never let you trample over the glory of {gold}Victoria{default} Again!");
-		case 2:CPrintToChatAll("{blue}Castellan{default}: You intruders will soon face the {crimson}Real Deal.{default}");
-	}
+	CPrintToChatAll("{blue}Castellan{default}: okay... This really hurts.");
 
 }
 

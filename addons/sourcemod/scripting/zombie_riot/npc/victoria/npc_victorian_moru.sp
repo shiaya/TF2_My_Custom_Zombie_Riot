@@ -294,7 +294,7 @@ int VictoriaAnvilDefenseMode(int iNPC, float gameTime, int target, float distanc
 	{
 		if(distance < (NORMAL_ENEMY_MELEE_RANGE_FLOAT_SQUARED * (MK2[npc.index] ? 20.0 : 10.0)))
 		{
-			npc.PlayHealSound();
+			bool playsounds=false;
 			float vecTarget[3]; WorldSpaceCenter(target, vecTarget);
 			npc.FaceTowards(vecTarget, 20000.0);
 			spawnRing_Vectors(vecTarget, (MK2[npc.index] ? 400.0 : 200.0)  * 2.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 30, 255, 0, 150, 1, 0.3, 5.0, 8.0, 3);	
@@ -312,9 +312,25 @@ int VictoriaAnvilDefenseMode(int iNPC, float gameTime, int target, float distanc
 					{
 						IncreaceEntityDamageTakenBy(entity, 0.8, 0.3);
 						HealEntityGlobal(npc.index, entity, 75.0, 1.0);
+						playsounds=true;
 					}
 				}
 			}
+			for(int player=1; player<=MaxClients; player++)
+			{
+				if(IsValidClient(player) && IsPlayerAlive(player) && TeutonType[player] == TEUTON_NONE && GetTeam(player) == GetTeam(npc.index))
+				{
+					GetEntPropVector(player, Prop_Send, "m_vecOrigin", entitypos);
+					dist = GetVectorDistance(vecTarget, entitypos);
+					if(dist<(MK2[npc.index] ? 400.0 : 200.0))
+					{
+						IncreaceEntityDamageTakenBy(player, 0.8, 0.3);
+						HealEntityGlobal(npc.index, player, (MK2[npc.index] ? 15.0 : 5.0), 1.0);
+						playsounds=true;
+					}
+				}
+			}
+			if(playsounds)npc.PlayHealSound();
 			npc.m_flNextMeleeAttack = gameTime + 0.3;
 			return 0;
 		}
