@@ -105,11 +105,11 @@ static float fl_said_player_weaponline_time[MAXENTITIES];
 static float Vs_DelayTime[MAXENTITIES];
 static int Vs_Stats[MAXENTITIES];
 static float Vs_Temp_Pos[MAXENTITIES][MAXENTITIES][3];
-static int Vs_ParticleSpawned[MAXENTITIES][MAXENTITIES];
-static float Vs_Boom_Its_Too_Loud[MAXENTITIES];
-static float Vs_IncomingBoom_Its_Too_Loud[MAXENTITIES];
+static int Vs_ParticleSpawned[MAXENTITIES];
+static float Vs_Boom_Its_Too_Loud;
+static float Vs_IncomingBoom_Its_Too_Loud;
 
-static int OverrideOwner[MAXENTITIES];
+static int OverrideOwner;
 
 static int gLaser1;
 static int gRedPoint;
@@ -309,7 +309,7 @@ methodmap Harrison < CClotBody
 		npc.m_bDissapearOnDeath = true;
 		npc.m_flMeleeArmor = 1.25;
 		
-		OverrideOwner[npc.index] = -1;
+		OverrideOwner = -1;
 		bool CloneDo=false;
 		static char countext[20][1024];
 		int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
@@ -318,7 +318,7 @@ methodmap Harrison < CClotBody
 			if(i>=count)break;
 			else if(!StrContains(countext[i], "support_ability"))CloneDo=true;
 			int ownerdata = StringToInt(countext[i]);
-			if(IsValidEntity(ownerdata)) OverrideOwner[npc.index] = ownerdata;
+			if(IsValidEntity(ownerdata)) OverrideOwner = ownerdata;
 		}
 		if(CloneDo)
 		{
@@ -493,7 +493,7 @@ static void Clone_ClotThink(int iNPC)
 		return;
 
 	npc.m_flNextThinkTime = gameTime + 0.1;
-	if(!IsValidEntity(OverrideOwner[npc.index]))OverrideOwner[npc.index] = npc.index;
+	if(!IsValidEntity(OverrideOwner))OverrideOwner = npc.index;
 	
 	bool playsounds=false;
 	switch(I_cant_do_this_all_day[npc.index])
@@ -520,13 +520,13 @@ static void Clone_ClotThink(int iNPC)
 			GetHighDefTargets(npcGetInfo, enemy, sizeof(enemy));
 			for(int i; i < sizeof(enemy); i++)
 			{
-				for(int k; k < (NpcStats_VictorianCallToArms(OverrideOwner[npc.index]) ? 3 : 2); k++)
+				for(int k; k < (NpcStats_VictorianCallToArms(OverrideOwner) ? 3 : 2); k++)
 				{
 					if(enemy[i])
 					{
 						DataPack pack;
 						CreateDataTimer(npc.m_flTimeUntillSummonRocket, Timer_Quad_Rocket_Shot, pack, TIMER_FLAG_NO_MAPCHANGE);
-						pack.WriteCell(EntIndexToEntRef(OverrideOwner[npc.index]));
+						pack.WriteCell(EntIndexToEntRef(OverrideOwner));
 						pack.WriteCell(EntIndexToEntRef(enemy[i]));
 						npc.m_flTimeUntillSummonRocket += 0.15;
 						playsounds=true;
@@ -1740,8 +1740,8 @@ static bool Victoria_Support(Harrison npc)
 			TE_SendToAll();
 			if(Vs_RechargeTime[npc.index] > (Vs_RechargeTimeMax[npc.index] - 1.0))
 			{
-				Vs_ParticleSpawned[npc.index][enemy[i]] = ParticleEffectAt(position, "kartimpacttrail", 2.0);
-				SetEdictFlags(Vs_ParticleSpawned[npc.index][enemy[i]], (GetEdictFlags(Vs_ParticleSpawned[npc.index][enemy[i]]) | FL_EDICT_ALWAYS));
+				Vs_ParticleSpawned[enemy[i]] = ParticleEffectAt(position, "kartimpacttrail", 2.0);
+				SetEdictFlags(Vs_ParticleSpawned[enemy[i]], (GetEdictFlags(Vs_ParticleSpawned[enemy[i]]) | FL_EDICT_ALWAYS));
 				Vs_IncomingBoom=true;
 			}
 		}
@@ -1751,7 +1751,7 @@ static bool Victoria_Support(Harrison npc)
 			position[0] = Vs_Temp_Pos[npc.index][enemy[i]][0];
 			position[1] = Vs_Temp_Pos[npc.index][enemy[i]][1];
 			position[2] = Vs_Temp_Pos[npc.index][enemy[i]][2] - 100.0;
-			TeleportEntity(Vs_ParticleSpawned[npc.index][enemy[i]], position, NULL_VECTOR, NULL_VECTOR);
+			TeleportEntity(Vs_ParticleSpawned[enemy[i]], position, NULL_VECTOR, NULL_VECTOR);
 			position[2] += 100.0;
 			
 			b_ThisNpcIsSawrunner[npc.index] = true;
@@ -1769,19 +1769,19 @@ static bool Victoria_Support(Harrison npc)
 	
 	if(Vs_IncomingBoom)
 	{
-		if(Vs_IncomingBoom_Its_Too_Loud[npc.index] < GetGameTime())
+		if(Vs_IncomingBoom_Its_Too_Loud < GetGameTime())
 		{
 			npc.PlayIncomingBoomSound();
-			Vs_IncomingBoom_Its_Too_Loud[npc.index] = GetGameTime() + 4.0;
+			Vs_IncomingBoom_Its_Too_Loud = GetGameTime() + 4.0;
 		}
 		Vs_Stats[npc.index]=1;
 	}
 	if(Vs_Fired)
 	{
-		if(Vs_Boom_Its_Too_Loud[npc.index] < GetGameTime())
+		if(Vs_Boom_Its_Too_Loud < GetGameTime())
 		{
 			npc.PlayBoomSound();
-			Vs_Boom_Its_Too_Loud[npc.index] = GetGameTime() + 4.0;
+			Vs_Boom_Its_Too_Loud = GetGameTime() + 4.0;
 		}
 		Vs_RechargeTime[npc.index]=0.0;
 		Vs_RechargeTime[npc.index]=0.0;

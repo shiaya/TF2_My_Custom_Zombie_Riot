@@ -257,7 +257,8 @@ public const char ItemArchetype[][] =
 	"Bloodletter",	//24, Vampire Knives fast-attack path
 	"Bloody Butcher", //25, Vampire Knives cleaver path
 	"Mythic Caster",	// 26
-	"Psychic Warlord"	//27, Psychokinesis and Magnesis Staff, possibly more in the future
+	"Psychic Warlord",	//27, Psychokinesis and Magnesis Staff, possibly more in the future
+	"Archetype Victoria" //28, Damn this is an Archetype for a Victorian weapon made by beep.
 };
 
 public const int RenderColors_RPG[][] =

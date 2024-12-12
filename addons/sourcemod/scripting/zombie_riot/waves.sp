@@ -245,6 +245,10 @@ public Action Waves_RevoteCmd(int client, int args)
 	{
 		Rogue_RevoteCmd(client);
 	}
+	else if(CyberVote)
+	{
+		RaidMode_RevoteCmd(client);
+	}
 	else if(Voting)
 	{
 		VotedFor[client] = 0;

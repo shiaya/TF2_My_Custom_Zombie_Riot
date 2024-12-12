@@ -11,6 +11,8 @@ static int VotedFor[MAXTF2PLAYERS];
 static float VoteEndTime;
 int CyberGrind_Difficulty;
 int CyberGrind_InternalDifficulty;
+bool CyberVote;
+static bool TeleToU[MAXENTITIES];
 
 void CyberGrindGM_OnMapStart_NPC()
 {
@@ -31,7 +33,6 @@ static void ClotPrecache()
 {
 	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
 	PrecacheModel("models/player/spy.mdl");
-	RegConsoleCmd("sm_revote", RaidMode_RevoteCmd, "Revote the vote");
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
@@ -78,6 +79,12 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsValidClient(target))
+					Ammo_Count_Used[target] = -15;
+			}
+			
 			Waves_ClearWaves();
 			CurrentRound = 14;
 			CurrentWave = -1;
@@ -95,6 +102,12 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsValidClient(target))
+					Ammo_Count_Used[target] = -15;
+			}
 			
 			Waves_ClearWaves();
 			CurrentRound = 29;
@@ -114,6 +127,12 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsValidClient(target))
+					Ammo_Count_Used[target] = -15;
+			}
+			
 			Waves_ClearWaves();
 			CurrentRound = 44;
 			CurrentWave = -1;
@@ -131,6 +150,12 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsValidClient(target))
+					Ammo_Count_Used[target] = -15;
+			}
 			
 			Waves_ClearWaves();
 			CurrentRound = 59;
@@ -179,11 +204,9 @@ methodmap CyberGrindGM < CClotBody
 		npc.m_flSpeed = 0.0;
 		npc.m_iOverlordComboAttack = 0;
 		npc.m_flNextMeleeAttack = 0.0;
+		npc.m_flNextRangedAttack = GetGameTime() + 1.0;
 		CyberGrind_Difficulty = 0;
-		b_DoNotUnStuck[npc.index] = true;
-		b_NoKnockbackFromSources[npc.index] = true;
-		b_NpcIsInvulnerable[npc.index] = true;
-		b_ThisEntityIgnored[npc.index] = true;
+		TeleToU[npc.index] = true;
 		
 		int skin = 1;
 		SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
@@ -194,19 +217,6 @@ methodmap CyberGrindGM < CClotBody
 
 		SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
 		SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
-		MakeObjectIntangeable(npc.index);
-		UnderTides npcGetInfo = view_as<UnderTides>(npc.index);
-		int enemy[MAXENTITIES], Temp_Target;
-		GetHighDefTargets(npcGetInfo, enemy, sizeof(enemy));
-		do
-		{
-			Temp_Target = enemy[GetRandomInt(0, sizeof(enemy) - 1)];
-		}
-		while(!IsValidEntity(Temp_Target) || GetTeam(npc.index) == GetTeam(Temp_Target) || npc.index==Temp_Target);
-		float WorldSpaceVec[3]; WorldSpaceCenter(Temp_Target, WorldSpaceVec);
-		TeleportEntity(npc.index, WorldSpaceVec, NULL_VECTOR, NULL_VECTOR);
-		ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-		RaidMode_SetupVote();
 		return npc;
 	}
 }
@@ -230,6 +240,28 @@ static void CyberGrindGM_ClotThink(int iNPC)
 		SetEntityRenderColor(particle, 255, 255, 255, 1);
 		SetEntPropFloat(particle, Prop_Send, "m_fadeMinDist", 1.0);
 		SetEntPropFloat(particle, Prop_Send, "m_fadeMaxDist", 1.0);
+	}
+	if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
+	{
+		b_DoNotUnStuck[npc.index] = true;
+		b_NoKnockbackFromSources[npc.index] = true;
+		b_NpcIsInvulnerable[npc.index] = true;
+		b_ThisEntityIgnored[npc.index] = true;
+		MakeObjectIntangeable(npc.index);
+		UnderTides npcGetInfo = view_as<UnderTides>(npc.index);
+		int enemy[MAXENTITIES], Temp_Target;
+		GetHighDefTargets(npcGetInfo, enemy, sizeof(enemy));
+		do
+		{
+			Temp_Target = enemy[GetRandomInt(0, sizeof(enemy) - 1)];
+		}
+		while(!IsValidEntity(Temp_Target) || GetTeam(npc.index) == GetTeam(Temp_Target) || npc.index==Temp_Target);
+		float WorldSpaceVec[3]; WorldSpaceCenter(Temp_Target, WorldSpaceVec);
+		TeleportEntity(npc.index, WorldSpaceVec, NULL_VECTOR, NULL_VECTOR);
+		ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+		RaidMode_SetupVote();
+		TeleToU[npc.index]=false;
+		npc.PlayDeathSound();	
 	}
 
 	if(CyberGrind_Difficulty>0)
@@ -280,14 +312,13 @@ static Action CyberGrindGM_OnTakeDamage(int victim, int &attacker, int &inflicto
 	return Plugin_Changed;
 }
 
-static Action RaidMode_RevoteCmd(int client, int args)
+void RaidMode_RevoteCmd(int client)
 {
 	if(Voting)
 	{
 		VotedFor[client] = 0;
-		Waves_CallVote(client);
+		RaidMode_CallVote(client, 1);
 	}
-	return Plugin_Handled;
 }
 
 static void CyberGrindGM_NPCDeath(int entity)
@@ -320,7 +351,7 @@ static void RaidMode_SetupVote()
 {
 	delete Voting;
 	Voting = new ArrayList(sizeof(Vote));
-	
+	CyberVote=true;
 	Vote vote;
 	
 	strcopy(vote.Name, sizeof(vote.Name), "Standard");
@@ -348,7 +379,8 @@ static void RaidMode_SetupVote()
 		if(IsClientInGame(client) && GetClientTeam(client)>1)
 		{
 			RaidMode_RoundStart();
-			Waves_CallVote(client, 1);
+			VotedFor[client] = 0;
+			RaidMode_CallVote(client);
 			break;
 		}
 	}
@@ -362,7 +394,7 @@ static bool RaidMode_CallVote(int client, int force = 0)
 		
 		SetGlobalTransTarget(client);
 		
-		menu.SetTitle("%t:\n ", "Vote for the Mode!");
+		menu.SetTitle("Vote for the Mode!:\n ");
 		
 		Vote vote;
 		Format(vote.Name, sizeof(vote.Name), "%t", "No Vote");
@@ -572,16 +604,32 @@ static Action RaidMode_EndVote(Handle timer, float time)
 			{
 				CyberGrind_Difficulty = 3;
 				CurrentCash = 4000;
+				for(int client = 1; client <= MaxClients; client++)
+				{
+					if(IsValidClient(client))
+						Ammo_Count_Used[client] = -10;
+				}
+				
 			}
 			else if(!StrContains(vote.Name, "Expert"))
 			{
 				CyberGrind_Difficulty = 2;
 				CurrentCash = 5006;
+				for(int client = 1; client <= MaxClients; client++)
+				{
+					if(IsValidClient(client))
+						Ammo_Count_Used[client] = -50;
+				}
 			}
 			else
 			{
 				CyberGrind_Difficulty = 1;
 				CurrentCash = 5706;
+				for(int client = 1; client <= MaxClients; client++)
+				{
+					if(IsValidClient(client))
+						Ammo_Count_Used[client] = -100;
+				}
 			}
 		}
 	}

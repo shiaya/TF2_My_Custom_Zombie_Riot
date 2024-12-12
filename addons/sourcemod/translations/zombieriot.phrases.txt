@@ -4101,8 +4101,8 @@
 	}
 	"CYBER GRIND Desc"
 	{
-		"en" 	"YES. Boss Raid."
-		"ko" 	"맞아요 평범하기 그지없는 보스레이드 입니다!"
+		"en" 	"YES. RaidBoss Rush."
+		"ko" 	"맞아요 평범하기 그지없는 레이드보스 러쉬입니다."
 	}
 	"Ability already Active"
 	{
