@@ -934,6 +934,7 @@
 		"pt"		"Mana insuficiente! Você precisa de {1} Mana!"
 		"nl"		"Niet genoeg Mana! U hebt maar {1} Mana!"
 		"chi"       "法力不足！需要 {1} 法力发动"
+		"ko"		"마나 부족! {1}만큼의 마나가 필요합니다!"
 	}
 	"Ability has cooldown"
 	{
@@ -948,6 +949,14 @@
 		"pt"		"Está habilidade ainda está em recarga de {1} segundos!"
 		"nl"		"Deze kracht heeft nog een afkoelingsperiode van {1} seconden!"
 		"chi"       "技能冷却还有 {1} 的时间!"
+		"ko"		"능력 재사용 대기중 {1}초 남음!"
+	}
+	"Not Enough Ammo"
+	{
+		"#format"	"{1:d}"
+		"en" 		"Not Enough Ammo! You need {1} Ammo!"
+		"de"		"Nicht Genügend Ammo! Du brauchst {1} Ammo!"
+		"ko"		"탄약 부족! {1}만큼의 탄약이 필요합니다!"
 	}
 	"Unspeakable Teleport Taunt"
 	{
@@ -4089,6 +4098,11 @@
 	{
 		"en" 	"(11) You are asked by Sensal to visit Ziberia where it is currently under attack by Victoria."
 		"ko" 	"(11) 센살은 당신에게 현재 빅토리아가 공격하고 있는 지베리아를 방문해달라고 부탁합니다."
+	}
+	"CYBER GRIND Desc"
+	{
+		"en" 	"YES. Boss Raid."
+		"ko" 	"맞아요 평범하기 그지없는 보스레이드 입니다!"
 	}
 	"Ability already Active"
 	{

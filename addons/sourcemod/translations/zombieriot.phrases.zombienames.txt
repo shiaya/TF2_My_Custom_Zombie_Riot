@@ -4258,6 +4258,11 @@
 		"en"	"<<Rare bloodsucking TrumpetSkeleton of Conflagration>>"
 		"ko"	"<<Rare bloodsucking TrumpetSkeleton of Conflagration>>"
 	}
+	"Cyber Grind GM"
+	{
+		"en"	"[GM] Cyber Grind"
+		"ko"	"[GM] Cyber Grind"
+	}
 	"Agent John"
 	{
 		"en"		"Agent John"
