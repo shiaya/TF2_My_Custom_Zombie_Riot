@@ -1767,8 +1767,8 @@ void Waves_Progress(bool donotAdvanceRound = false)
 					}
 				}
 				
-				ReviveAll();
 				Music_EndLastmann();
+				ReviveAll();
 				CheckAlivePlayers();
 			}
 			if(round.AmmoBoxExtra)
@@ -1997,7 +1997,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 
 				Citizen_SetupStart();
 			}
-			else if(wasLastMann && !Rogue_Mode())
+			else if(wasLastMann && !Rogue_Mode() && round.Waves.Length)
 			{
 				Cooldown = GetGameTime() + 30.0;
 
@@ -3226,9 +3226,9 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 			}
 		}
 		
+		Music_EndLastmann();
 		ReviveAll();
 		
-		Music_EndLastmann();
 		CheckAlivePlayers();
 
 		if((CurrentRound % 5) == 4)

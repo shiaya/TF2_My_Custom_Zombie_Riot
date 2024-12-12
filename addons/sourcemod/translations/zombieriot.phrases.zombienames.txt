@@ -4458,4 +4458,12 @@
 		"en"		"Smith"
 		"ko"		"스미스"
 	}
+	"Victoria"
+	{
+		"en"		"Victoria"
+	}
+	"Matrix"
+	{
+		"en"		"Matrix"
+	}
 }

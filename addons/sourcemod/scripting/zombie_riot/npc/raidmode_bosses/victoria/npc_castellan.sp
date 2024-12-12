@@ -1353,7 +1353,7 @@ static int CastellanSelfDefense(Castellan npc, float gameTime, int target, float
 				npc.m_flAirRaidDelay = gameTime + 2.5;
 			}
 		}
-		RaidModeTime += (0.1 + DEFAULT_UPDATE_DELAY_FLOAT);
+		RaidModeTime += (0.12 + DEFAULT_UPDATE_DELAY_FLOAT);
 		return 2;
 	}
 	else if(npc.m_flTimeUntillHomingStrike <gameTime)
@@ -1725,7 +1725,6 @@ static Action Timer_Rocket_Shot(Handle timer, DataPack pack)
                 pack2.WriteCell(EntIndexToEntRef(enemy));
             }
 		}
-		npc.FaceTowards(vecTarget, 99999.0);
 	}
 	return Plugin_Stop;
 }
