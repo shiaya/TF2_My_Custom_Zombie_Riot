@@ -1250,6 +1250,7 @@ bool b_NoHealthbar[MAXENTITIES];
 //Arrays for npcs!
 int i_NoEntityFoundCount[MAXENTITIES]={0, ...};
 float f3_CustomMinMaxBoundingBox[MAXENTITIES][3];
+float f3_CustomMinMaxBoundingBoxMinExtra[MAXENTITIES][3];
 bool b_DissapearOnDeath[MAXENTITIES];
 bool b_IsGiant[MAXENTITIES];
 bool b_Pathing[MAXENTITIES];
