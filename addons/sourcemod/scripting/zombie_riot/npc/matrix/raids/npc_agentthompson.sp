@@ -157,7 +157,14 @@ methodmap AgentThompson < CClotBody
 		}
 		
 		RaidModeScaling = float(ZR_GetWaveCount()+1);
-
+		if(RaidModeScaling < 55)
+		{
+			RaidModeScaling *= 0.19; //abit low, inreacing
+		}
+		else
+		{
+			RaidModeScaling *= 0.38;
+		}
 		float amount_of_people = float(CountPlayersOnRed());
 		
 		if(amount_of_people > 12.0)
@@ -330,7 +337,7 @@ static void Thompsons_SelfDefense(AgentThompson npc, float gameTime, int target,
 				npc.DoSwingTrace(swingTrace, npc.m_iTarget, _, _, _, 1, _, HowManyEnemeisAoeMelee);
 				delete swingTrace;
 				bool PlaySound = false;
-				float damage = 12.0;
+				float damage = 35.0;
 				damage *= RaidModeScaling;
 				bool silenced = NpcStats_IsEnemySilenced(npc.index);
 				for(int counter = 1; counter <= HowManyEnemeisAoeMelee; counter++)
@@ -475,10 +482,10 @@ static void Thompsons_SelfDefense(AgentThompson npc, float gameTime, int target,
 				npc.AddGesture("ACT_MP_ATTACK_STAND_SECONDARY");
 				KillFeed_SetKillIcon(npc.index, "shotgun_primary");
 
-				float damage = 5.0;
+				float damage = 15.0;
 				damage *= RaidModeScaling;
 
-				FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "bullet_tracer01_red");
+				FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "dxhr_sniper_rail_blue");
 				
 				npc.PlayRangedSound();
 			}
@@ -571,13 +578,13 @@ public Action AgentThompson_OnTakeDamage(int victim, int &attacker, int &inflict
 	
 	if(attacker <= MaxClients && attacker > 0)
     {
-        switch(GetRandomInt(1, 4))
+        switch(GetRandomInt(1, 8))
         {
-            case 1,2:
+            case 1,2,3,4,5,6:
             {
                 
             }
-            case 3,4:
+            case 7,8:
             {
                 float chargerPos[3];
                 GetEntPropVector(victim, Prop_Data, "m_vecAbsOrigin", chargerPos);

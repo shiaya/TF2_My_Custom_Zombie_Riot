@@ -2289,6 +2289,8 @@ void WaveEndLogicExtra()
 	LeperResetUses();
 	Building_ResetRewardValuesWave();
 	FallenWarriorGetRandomSeedEachWave();
+	CastleBreaker_ResetCashGain();
+	ZombieDrops_AllowExtraCash();
 	Zero(i_MaxArmorTableUsed);
 	Farmer_WaveEnd();
 	b_Hero_Of_Concord_Deadman=false;

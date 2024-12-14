@@ -678,7 +678,7 @@ void Music_PostThink(int client)
 				}
 			}
 		}
-		
+		/*
 		//TODO: move somewhere else
 		if(RaidbossIgnoreBuildingsLogic())
 		{
@@ -689,6 +689,7 @@ void Music_PostThink(int client)
 				RaidAllowsBuildings = true;
 			}
 		}
+		*/
 		
 		if(!ZombieMusicPlayed)//once set in a wave, it should stay untill the next mass revive.
 		{
