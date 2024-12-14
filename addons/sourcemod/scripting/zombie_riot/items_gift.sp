@@ -73,7 +73,7 @@ void InvItems_SetupConfig()
 	char buffer[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, "giftitems");
 
-	KeyValues kv = new KeyValues("BakaItems");
+	KeyValues kv = new KeyValues("GiftItems");
 	kv.ImportFromFile(buffer);
 	kv.GotoFirstSubKey();
 	

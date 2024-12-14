@@ -514,7 +514,7 @@ float f_SpadeLudoDebuff[MAXENTITIES];
 float f_LowTeslarDebuff[MAXENTITIES];
 float f_ElementalAmplification[MAXENTITIES];
 float f_WeaponSpecificClassBuff[MAXENTITIES][1];
-bool b_WeaponSpecificClassBuff[MAXENTITIES][3];
+bool b_WeaponSpecificClassBuff[MAXENTITIES][5];
 float f_HighTeslarDebuff[MAXENTITIES];
 float f_VoidAfflictionStandOn[MAXENTITIES];
 float f_VoidAfflictionStrength[MAXENTITIES];
@@ -1250,7 +1250,6 @@ bool b_NoHealthbar[MAXENTITIES];
 //Arrays for npcs!
 int i_NoEntityFoundCount[MAXENTITIES]={0, ...};
 float f3_CustomMinMaxBoundingBox[MAXENTITIES][3];
-float f3_CustomMinMaxBoundingBoxMinExtra[MAXENTITIES][3];
 bool b_DissapearOnDeath[MAXENTITIES];
 bool b_IsGiant[MAXENTITIES];
 bool b_Pathing[MAXENTITIES];

@@ -266,6 +266,8 @@ bool Waves_CallVote(int client, int force = 0)
 {
 	if(Rogue_Mode())
 		return Rogue_CallVote(client);
+	else if(CyberVote)
+		return RaidMode_CallVote(client);
 	
 	if((Voting || VotingMods) && (force || !VotedFor[client]))
 	{

@@ -86,7 +86,7 @@ methodmap CyberGrindGM < CClotBody
 			}
 			
 			Waves_ClearWaves();
-			CurrentRound = 14;
+			CurrentRound = (CyberGrind_InternalDifficulty>1 ? 13 : 14);
 			CurrentWave = -1;
 			Waves_Progress();
 			
@@ -110,7 +110,7 @@ methodmap CyberGrindGM < CClotBody
 			}
 			
 			Waves_ClearWaves();
-			CurrentRound = 29;
+			CurrentRound = (CyberGrind_InternalDifficulty>1 ? 28 : 29);
 			CurrentWave = -1;
 			Waves_Progress();
 			
@@ -134,7 +134,7 @@ methodmap CyberGrindGM < CClotBody
 			}
 			
 			Waves_ClearWaves();
-			CurrentRound = 44;
+			CurrentRound = (CyberGrind_InternalDifficulty>1 ? 43 : 44);
 			CurrentWave = -1;
 			Waves_Progress();
 			
@@ -158,6 +158,7 @@ methodmap CyberGrindGM < CClotBody
 			}
 			
 			Waves_ClearWaves();
+			CurrentRound = (CyberGrind_InternalDifficulty>1 ? 58 : 59);
 			CurrentRound = 59;
 			CurrentWave = -1;
 			Waves_Progress();
@@ -175,11 +176,9 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			
-			if(CyberGrind_InternalDifficulty)
-			{
-			
-			}
-			
+			if(CyberGrind_InternalDifficulty>2)
+				NPC_SpawnNext(true, true, -1);
+			WaveStart_SubWaveStart(GetGameTime() + 800.0);
 			b_NpcForcepowerupspawn[npc.index] = 0;
 			i_RaidGrantExtra[npc.index] = 0;
 			b_DissapearOnDeath[npc.index] = true;
@@ -386,7 +385,7 @@ static void RaidMode_SetupVote()
 	}
 }
 
-static bool RaidMode_CallVote(int client, int force = 0)
+bool RaidMode_CallVote(int client, int force = 0)
 {
 	if(Voting && (force || !VotedFor[client]))
 	{
@@ -402,8 +401,6 @@ static bool RaidMode_CallVote(int client, int force = 0)
 
 		if(Voting)
 		{
-			Format(vote.Name, sizeof(vote.Name), "Standard (Lv %d)", 120);
-			menu.AddItem(NULL_STRING, vote.Name);
 			int length = Voting.Length;
 			for(int i; i < length; i++)
 			{
@@ -614,7 +611,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 			else if(!StrContains(vote.Name, "Expert"))
 			{
 				CyberGrind_Difficulty = 2;
-				CurrentCash = 5006;
+				CurrentCash = 4700;
 				for(int client = 1; client <= MaxClients; client++)
 				{
 					if(IsValidClient(client))
@@ -631,6 +628,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 						Ammo_Count_Used[client] = -100;
 				}
 			}
+			PrintToChatAll("%t: %s","Difficulty set to", vote.Name);
 		}
 	}
 	return Plugin_Continue;

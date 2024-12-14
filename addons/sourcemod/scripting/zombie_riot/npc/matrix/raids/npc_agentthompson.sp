@@ -433,10 +433,14 @@ static void Thompsons_SelfDefense(AgentThompson npc, float gameTime, int target,
 			{
 				float vecTarget[3]; WorldSpaceCenter(npc.m_iTarget, vecTarget);
 				float vecMe[3]; WorldSpaceCenter(npc.index, vecMe);
-				npc.FaceTowards(vecTarget, 150.0);
+				npc.FaceTowards(vecTarget, 15000.0);
+				
+				// Can dodge bullets by moving
+				PredictSubjectPositionForProjectiles(npc, target, 400.0, _, vecTarget);
 				
 				float eyePitch[3], vecDirShooting[3];
 				GetEntPropVector(npc.index, Prop_Data, "m_angRotation", eyePitch);
+				npc.FaceTowards(vecTarget, 10000.0);
 				
 				vecTarget[2] += 15.0;
 				MakeVectorFromPoints(vecMe, vecTarget, vecDirShooting);
@@ -471,7 +475,7 @@ static void Thompsons_SelfDefense(AgentThompson npc, float gameTime, int target,
 				npc.AddGesture("ACT_MP_ATTACK_STAND_SECONDARY");
 				KillFeed_SetKillIcon(npc.index, "shotgun_primary");
 
-				float damage = 4.0;
+				float damage = 5.0;
 				damage *= RaidModeScaling;
 
 				FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "bullet_tracer01_red");

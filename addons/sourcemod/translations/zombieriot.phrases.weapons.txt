@@ -3289,6 +3289,21 @@
 		"en"	"Ancestor Launcher"
 		"ko"	"''조상'' 발사기"
 	}
+	"Victorian Launcher"
+	{
+		"en"	"Victorian Launcher"
+		"ko"	"빅토리안 런쳐"
+	}
+	"Castle Breaker"
+	{
+		"en"	"Castle Breaker"
+		"ko"	"캐슬 브레이커"
+	}
+	"Steam Knight's Spear"
+	{
+		"en"	"Steam Knight's Spear"
+		"ko"	"증기 기사의 창"
+	}
 	"Hunting Rifle"
 	{
 		"en"	"Hunting Rifle"

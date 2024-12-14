@@ -81,7 +81,7 @@ methodmap VictoriaProtector < CClotBody
 	}
 	public VictoriaProtector(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
-		VictoriaProtector npc = view_as<VictoriaProtector>(CClotBody(vecPos, vecAng, "models/bots/heavy/bot_heavy.mdl", "1.45", "15000", ally, false, true));
+		VictoriaProtector npc = view_as<VictoriaProtector>(CClotBody(vecPos, vecAng, "models/bots/heavy/bot_heavy.mdl", "1.45", "15000", ally));
 		
 		i_NpcWeight[npc.index] = 1;
 		
@@ -393,7 +393,7 @@ int VictoriaProtectorGetTarget(int iNPC, float gameTime)
 int VictoriaProtectorAssaultMode(int iNPC, float gameTime, int target, float distance)
 {
 	VictoriaProtector npc = view_as<VictoriaProtector>(iNPC);
-	if(distance < GIANT_ENEMY_MELEE_RANGE_FLOAT_SQUARED || npc.m_flAttackHappenswillhappen)
+	if(distance < NORMAL_ENEMY_MELEE_RANGE_FLOAT_SQUARED || npc.m_flAttackHappenswillhappen)
 	{
 		if(npc.m_flNextMeleeAttack < gameTime)
 		{

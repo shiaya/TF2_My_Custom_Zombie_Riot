@@ -1,15 +1,15 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-public void Weapon_Trumpet_MapStart()
+/*public void Weapon_ToolGun_MapStart()
 {
 	if(FileExists("sound/baka_zr/trumpetskeleton.mp3", true))
 		PrecacheSound("baka_zr/trumpetskeleton.mp3", true);
 	PrecacheSound("weapons/pistol_shoot.wav");
 	PrecacheSound("weapons/pistol_shoot_crit.wav");
-}
+}*/
 
-public void Trumpet_Main_Attack(int client, int weapon, bool crit, int slot)
+public void ToolGun_Main_Attack(int client, int weapon, bool crit, int slot)
 {
 	if(Ability_Check_Cooldown(client, slot) < 0.0 || CvarInfiniteCash.BoolValue)
 	{

@@ -104,7 +104,7 @@ static float fl_said_player_weaponline_time[MAXENTITIES];
 
 static float Vs_DelayTime[MAXENTITIES];
 static int Vs_Stats[MAXENTITIES];
-static float Vs_Temp_Pos[MAXENTITIES][MAXENTITIES][3];
+static float Vs_Temp_Pos[MAXENTITIES][3];
 static int Vs_ParticleSpawned[MAXENTITIES];
 static float Vs_Boom_Its_Too_Loud;
 static float Vs_IncomingBoom_Its_Too_Loud;
@@ -1087,7 +1087,6 @@ static int HarrisonSelfDefense(Harrison npc, float gameTime, int target, float d
 		}
 		return 1;
 	}
-	/*
 	else if(npc.m_flTimeUntillNextRailgunShots < gameTime)
 	{
 		float vecTarget[3]; WorldSpaceCenter(target, vecTarget);
@@ -1122,7 +1121,6 @@ static int HarrisonSelfDefense(Harrison npc, float gameTime, int target, float d
 		}
 		
 	}
-	*/
 	else if(npc.m_flTimeUntillDroneSniperShot < gameTime)
 	{
 		if(npc.m_flNextRangedAttack < gameTime)
@@ -1340,7 +1338,7 @@ static int HarrisonSelfDefense(Harrison npc, float gameTime, int target, float d
 	return 0;
 }
 
-/*
+
 static int HarrisonHitDetected[MAXENTITIES];
 
 static void HarrisonInitiateLaserAttack(int entity, float VectorTarget[3], float VectorStart[3])
@@ -1479,7 +1477,7 @@ static bool Harrison_TraceWallsOnly(int entity, int contentsMask)
 {
 	return !entity;
 }
-*/
+
 static Action Timer_Quad_Rocket_Shot(Handle timer, DataPack pack)
 {
 	pack.Reset();
@@ -1713,9 +1711,9 @@ static bool Victoria_Support(Harrison npc)
 			position[2] = vecTarget[2] + 3000.0;
 			if(Vs_RechargeTime[npc.index] < (Vs_RechargeTimeMax[npc.index] - 2.0))
 			{
-				Vs_Temp_Pos[npc.index][enemy[i]][0] = position[0];
-				Vs_Temp_Pos[npc.index][enemy[i]][1] = position[1];
-				Vs_Temp_Pos[npc.index][enemy[i]][2] = position[2] - 3000.0;
+				Vs_Temp_Pos[enemy[i]][0] = position[0];
+				Vs_Temp_Pos[enemy[i]][1] = position[1];
+				Vs_Temp_Pos[enemy[i]][2] = position[2] - 3000.0;
 				if(IsValidClient(enemy[i]) && !IsFakeClient(enemy[i])) Vs_LockOn[enemy[i]]=true;
 			}
 			else
@@ -1726,19 +1724,19 @@ static bool Victoria_Support(Harrison npc)
 						Vs_LockOn[client]=false;
 				}
 			}
-			TE_SetupBeamRingPoint(Vs_Temp_Pos[npc.index][enemy[i]], Vs_Raged- ((Vs_RechargeTime[npc.index]/Vs_RechargeTimeMax[npc.index])*Vs_Raged), (Vs_Raged - ((Vs_RechargeTime[npc.index]/Vs_RechargeTimeMax[npc.index])*Vs_Raged))+0.5, g_BeamIndex_heal, g_HALO_Laser, 0, 5, 0.1, 1.0, 1.0, {255, 255, 255, 150}, 0, 0);
+			TE_SetupBeamRingPoint(Vs_Temp_Pos[enemy[i]], Vs_Raged- ((Vs_RechargeTime[npc.index]/Vs_RechargeTimeMax[npc.index])*Vs_Raged), (Vs_Raged - ((Vs_RechargeTime[npc.index]/Vs_RechargeTimeMax[npc.index])*Vs_Raged))+0.5, g_BeamIndex_heal, g_HALO_Laser, 0, 5, 0.1, 1.0, 1.0, {255, 255, 255, 150}, 0, 0);
 			TE_SendToAll();
 			float position2[3];
-			position2[0] = Vs_Temp_Pos[npc.index][enemy[i]][0];
-			position2[1] = Vs_Temp_Pos[npc.index][enemy[i]][1];
-			position2[2] = Vs_Temp_Pos[npc.index][enemy[i]][2] + 65.0;
+			position2[0] = Vs_Temp_Pos[enemy[i]][0];
+			position2[1] = Vs_Temp_Pos[enemy[i]][1];
+			position2[2] = Vs_Temp_Pos[enemy[i]][2] + 65.0;
 			TE_SetupBeamRingPoint(position2, Vs_Raged, Vs_Raged+0.5, g_BeamIndex_heal, g_HALO_Laser, 0, 5, 0.1, 1.0, 1.0, {145, 47, 47, 150}, 0, 0);
 			TE_SendToAll();
-			TE_SetupBeamRingPoint(Vs_Temp_Pos[npc.index][enemy[i]], Vs_Raged, Vs_Raged+0.5, g_BeamIndex_heal, g_HALO_Laser, 0, 5, 0.1, 1.0, 1.0, {145, 47, 47, 150}, 0, 0);
+			TE_SetupBeamRingPoint(Vs_Temp_Pos[enemy[i]], Vs_Raged, Vs_Raged+0.5, g_BeamIndex_heal, g_HALO_Laser, 0, 5, 0.1, 1.0, 1.0, {145, 47, 47, 150}, 0, 0);
 			TE_SendToAll();
-			TE_SetupBeamPoints(Vs_Temp_Pos[npc.index][enemy[i]], position, gLaser1, -1, 0, 0, 0.1, 0.0, 25.0, 0, 1.0, {145, 47, 47, 150}, 3);
+			TE_SetupBeamPoints(Vs_Temp_Pos[enemy[i]], position, gLaser1, -1, 0, 0, 0.1, 0.0, 25.0, 0, 1.0, {145, 47, 47, 150}, 3);
 			TE_SendToAll();
-			TE_SetupGlowSprite(Vs_Temp_Pos[npc.index][enemy[i]], gRedPoint, 0.1, 1.0, 255);
+			TE_SetupGlowSprite(Vs_Temp_Pos[enemy[i]], gRedPoint, 0.1, 1.0, 255);
 			TE_SendToAll();
 			if(Vs_RechargeTime[npc.index] > (Vs_RechargeTimeMax[npc.index] - 1.0))
 			{
@@ -1750,9 +1748,9 @@ static bool Victoria_Support(Harrison npc)
 		else if(Vs_Stats[npc.index]==1)
 		{
 			float position[3];
-			position[0] = Vs_Temp_Pos[npc.index][enemy[i]][0];
-			position[1] = Vs_Temp_Pos[npc.index][enemy[i]][1];
-			position[2] = Vs_Temp_Pos[npc.index][enemy[i]][2] - 100.0;
+			position[0] = Vs_Temp_Pos[enemy[i]][0];
+			position[1] = Vs_Temp_Pos[enemy[i]][1];
+			position[2] = Vs_Temp_Pos[enemy[i]][2] - 100.0;
 			TeleportEntity(Vs_ParticleSpawned[enemy[i]], position, NULL_VECTOR, NULL_VECTOR);
 			position[2] += 100.0;
 			

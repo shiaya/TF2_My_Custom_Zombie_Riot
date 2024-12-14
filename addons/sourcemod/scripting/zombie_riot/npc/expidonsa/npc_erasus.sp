@@ -270,7 +270,7 @@ void ErasusSelfDefense(Erasus npc, float gameTime, int target, float distance)
 				
 				if(IsValidEnemy(npc.index, target))
 				{
-					float damageDealt = 110.0;
+					float damageDealt = 100.0;
 					if(ShouldNpcDealBonusDamage(target))
 						damageDealt *= 5.0;
 
