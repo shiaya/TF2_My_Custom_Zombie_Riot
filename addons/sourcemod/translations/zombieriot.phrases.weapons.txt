@@ -3912,6 +3912,21 @@
 		"en"		"Leaf Belt [Uncommon]"
 		"ko"		"나뭇잎 벨트 [드문]"
 	}
+	"Snow Boots [Common]"
+	{
+		"en"		"Snow Boots [Common]"
+		"ko"		"설원 부츠 [흔한]"
+	}
+	"TECH OVER D.TECH 01 [Common]"
+	{
+		"en"		"TECH OVER D.TECH 01 [Common]"
+		"ko"		"TECH OVER D.TECH 01 [흔한]"
+	}
+	"Hammer Editor HUD [Common]"
+	{
+		"en"		"Hammer Editor HUD [Common]"
+		"ko"		"해머 에디터 HUD [흔한]"
+	}
 	"Trumpet"
 	{
 		"en"		"Trumpet"

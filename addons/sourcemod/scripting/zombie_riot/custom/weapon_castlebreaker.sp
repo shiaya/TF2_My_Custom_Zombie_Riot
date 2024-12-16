@@ -377,7 +377,7 @@ static Action Timer_ChangeSound(Handle timer, DataPack pack)
 		{
 			case 5:
 			{
-				EmitSoundToAll("weapons/sniper_railgun_world_reload.wav", client, SNDCHAN_AUTO, 65, _, 1.1, 115);
+				EmitSoundToAll("weapons/sniper_railgun_world_reload.wav", client, SNDCHAN_AUTO, 65, _, 1.0, 115);
 				CastleBreaker_Cylinder[client]=0;
 				return Plugin_Stop;
 			}
@@ -395,7 +395,7 @@ static Action Timer_ChangeSound(Handle timer, DataPack pack)
 		{
 			case 0:
 			{
-				EmitSoundToAll("weapons/sniper_railgun_bolt_back.wav", client, SNDCHAN_AUTO, 65, _, 1.1, 115);
+				EmitSoundToAll("weapons/sniper_railgun_bolt_back.wav", client, SNDCHAN_AUTO, 65, _, 1.0, 115);
 				
 				CastleBreaker_Cylinder[client]++;
 				CastleBreaker_SoundsDelay[client] = GetGameTime() + 0.01;

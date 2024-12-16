@@ -311,7 +311,7 @@ stock int GetHealingTarget(int client, bool checkgun=false)
 	return -1;
 }
 
-stock void Overclock_Magical(int client)
+public void Overclock_Magical(int client)
 {
 	int primary = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	int secondary = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);

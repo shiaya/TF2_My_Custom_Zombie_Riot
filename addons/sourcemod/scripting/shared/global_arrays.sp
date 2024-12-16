@@ -387,6 +387,8 @@ float f_Ruina_Attack_Buff_Amt[MAXENTITIES];
 float f_GodAlaxiosBuff[MAXENTITIES];
 float f_Ocean_Buff_Weak_Buff[MAXENTITIES];
 float f_Ocean_Buff_Stronk_Buff[MAXENTITIES];
+float f_Overclocker_Buff[MAXENTITIES];
+float Kritzkrieg_Buff[MAXENTITIES];
 float f_BannerDurationActive[MAXENTITIES];
 float f_BannerAproxDur[MAXENTITIES];
 float f_BuffBannerNpcBuff[MAXENTITIES];

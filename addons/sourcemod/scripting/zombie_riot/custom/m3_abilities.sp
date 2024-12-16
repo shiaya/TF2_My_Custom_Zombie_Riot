@@ -1542,7 +1542,7 @@ public void DrinkRND(int client)
 		float AddTime;
 		switch(GetRND)
 		{
-			case 11:AddTime=20.0;
+			case 10,11:AddTime=20.0;
 			default:AddTime=30.0;
 		}
 		f_PDuration[client]=GetGameTime() + AddTime;
@@ -1696,8 +1696,8 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 					else
 						ForcePlayerSuicide(client);
 				}
-				f_Overclocker_Buff[client] = GetGameTime() + 20.0;
-				return Plugin_Stop;
+				Overclock_Magical(client);
+				f_Overclocker_Buff[client] = GetGameTime() + 0.2;
 			}
 			case 11:
 			{
@@ -1755,11 +1755,14 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 					UnderTides npcGetInfo = view_as<UnderTides>(TempTarget);
 					int AllyNPC[MAXENTITIES];
 					GetHighDefTargets(npcGetInfo, AllyNPC, sizeof(AllyNPC));
-					do
+					for( int loop = 1; loop <= 500; loop++ ) 
 					{
 						TempTarget = AllyNPC[GetRandomInt(0, sizeof(AllyNPC) - 1)];
+						if(!IsValidEntity(TempTarget) || GetTeam(client) != GetTeam(TempTarget) || client==TempTarget)
+							continue;
+						else
+							break;
 					}
-					while(!IsValidEntity(TempTarget) || GetTeam(client) != GetTeam(TempTarget) || client==TempTarget);
 					
 					if(IsValidEntity(TempTarget) && GetTeam(client) == GetTeam(TempTarget))
 					{

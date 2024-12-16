@@ -4320,7 +4320,7 @@
 	}
 	"Dual-Fusion Welders desc"
 	{
-		"en"	"15%% more repair Rate and 5%% more building health"
+		"en"	"10%% more repair Rate and 5%% more building health"
 		"ko"	"수리 효율 +10％, 구조물 체력 +5％"
 	}
 	"Secret Mad Milk Recipe Desc"
@@ -4330,8 +4330,8 @@
 	}
 	"Quantum Computer Desc"
 	{
-		"en"	"1.01x Sentry damage, 1.05x Sentry Range, 1.02x Sentry Attack speed"
-		"ko"	"센트리 피해량 +1％, 센트리 사거리 +5％, 센트리 공속 +2％"
+		"en"	"1.01x Sentry damage, 1.05x Sentry Range, 1.01x Sentry Attack speed"
+		"ko"	"센트리 피해량 +1％, 센트리 사거리 +5％, 센트리 공속 +1％, 센트리 공속 +1％"
 	}
 	"Hero of Concord Village Desc"
 	{
@@ -4362,6 +4362,11 @@
 	{
 		"en"	"1.03x Medigun Hurt and Heal."
 		"ko"	"치료량 +3％"
+	}
+	"TECH OVER D.TECH 01 desc"
+	{
+		"en"	"1.03 Sentry Attack speed"
+		"ko"	"센트리 공속 +3％"
 	}
 	"Sacred Medical Bag desc"
 	{
@@ -4407,6 +4412,16 @@
 	{
 		"en"	"+7%% bonus healing from all sources"
 		"ko"	"받는 체력 회복량 +7％"
+	}
+	"HE HUD desc"
+	{
+		"en"	"3%% more repair Rate"
+		"ko"	"수리 효율 +3％"
+	}
+	"Snow Boots desc"
+	{
+		"en"	"1%% Damage Resistance"
+		"ko"	"받는 피해 -1％"
 	}
 	
 	"Orbital 120MM Desc"

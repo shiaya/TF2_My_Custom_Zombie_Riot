@@ -1,12 +1,65 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+static Handle h_TimerTrumpetrWeaponManagement[MAXTF2PLAYERS] = {null, ...};
+
 public void Weapon_Trumpet_MapStart()
 {
 	if(FileExists("sound/baka_zr/trumpetskeleton.mp3", true))
 		PrecacheSound("baka_zr/trumpetskeleton.mp3", true);
 	PrecacheSound("weapons/pistol_shoot.wav");
 	PrecacheSound("weapons/pistol_shoot_crit.wav");
+}
+
+public void Enable_TrumpetWeapon(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
+{
+	if(h_TimerTrumpetrWeaponManagement[client] != null)
+	{
+		//This timer already exists.
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TRUMPET)
+		{
+			//Is the weapon it again?
+			//Yes?
+			delete h_TimerTrumpetrWeaponManagement[client];
+			h_TimerTrumpetrWeaponManagement[client] = null;
+			DataPack pack;
+			h_TimerTrumpetrWeaponManagement[client] = CreateDataTimer(0.1, Timer_Management_Trumpet, pack, TIMER_REPEAT);
+			pack.WriteCell(client);
+			pack.WriteCell(EntIndexToEntRef(weapon));
+		}
+	}
+	else
+	{
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TRUMPET)
+		{
+			DataPack pack;
+			h_TimerTrumpetrWeaponManagement[client] = CreateDataTimer(0.1, Timer_Management_Trumpet, pack, TIMER_REPEAT);
+			pack.WriteCell(client);
+			pack.WriteCell(EntIndexToEntRef(weapon));
+		}
+		
+	}
+}
+
+public Action Timer_Management_Trumpet(Handle timer, DataPack pack)
+{
+	pack.Reset();
+	int client = pack.ReadCell();
+	int weapon = EntRefToEntIndex(pack.ReadCell());
+	if(!IsValidClient(client) || !IsClientInGame(client) || !IsPlayerAlive(client) || !IsValidEntity(weapon))
+	{
+		h_TimerTrumpetrWeaponManagement[client] = null;
+		return Plugin_Stop;
+	}	
+
+	int weapon_holding = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	if(weapon_holding == weapon)
+	{
+		StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot_crit.wav");
+		StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot.wav");
+	}
+
+	return Plugin_Continue;
 }
 
 public void Trumpet_Main_Attack(int client, int weapon, bool crit, int slot)
@@ -31,8 +84,6 @@ public void Trumpet_Main_Attack(int client, int weapon, bool crit, int slot)
 		SetGlobalTransTarget(client);
 		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
 	}
-	StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot_crit.wav");
-	StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot.wav");
 }
 
 public void Trumpet_Secondary_Attack(int client, int weapon, bool crit, int slot)
