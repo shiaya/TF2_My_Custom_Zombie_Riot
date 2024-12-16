@@ -353,6 +353,7 @@ methodmap Harrison < CClotBody
 			func_NPCDeath[npc.index] = view_as<Function>(Internal_NPCDeath);
 			func_NPCOnTakeDamage[npc.index] = view_as<Function>(Internal_OnTakeDamage);
 			func_NPCThink[npc.index] = view_as<Function>(Internal_ClotThink);
+			RemoveAllDamageAddition();
 			//IDLE
 			npc.m_iState = 0;
 			npc.m_flGetClosestTargetTime = 0.0;
@@ -1860,9 +1861,9 @@ static Action Dron_Laser_Particle_StartTouch(int entity, int target)
 		inflictor = owner;
 	float ProjectileLoc[3];
 	GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", ProjectileLoc);
-	float damage = 35.0;
+	float damage = 10.0;
 	damage *= RaidModeScaling;
-	Explode_Logic_Custom(damage, owner, inflictor, -1, ProjectileLoc, 250.0, _, _, true, _, false, _);
+	Explode_Logic_Custom(damage, owner, inflictor, -1, ProjectileLoc, 150.0, _, _, true, _, false, _);
 	ParticleEffectAt(ProjectileLoc, "mvm_soldier_shockwave", 1.0);
 	ParticleEffectAt(ProjectileLoc, "drg_cow_explosion_sparkles_blue", 1.5);
 	EmitSoundToAll(g_DronShotHitSounds, 0, SNDCHAN_AUTO, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME, _, -1, ProjectileLoc);

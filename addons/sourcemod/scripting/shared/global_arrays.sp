@@ -363,6 +363,8 @@ float f_LowIceDebuff[MAXENTITIES];
 float f_HighIceDebuff[MAXENTITIES];
 float f_SpeedModify[MAXENTITIES]={1.0, ...};
 float f_SpeedTimer[MAXENTITIES];
+float f_CasinoDebuff[MAXENTITIES];
+float f_CasinoDebuffValue[MAXENTITIES];
 bool b_Frozen[MAXENTITIES];
 bool b_NoGravity[MAXENTITIES];
 float f_TankGrabbedStandStill[MAXENTITIES];
