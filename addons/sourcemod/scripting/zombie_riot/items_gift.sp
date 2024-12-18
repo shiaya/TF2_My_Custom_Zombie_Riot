@@ -39,7 +39,10 @@ public Action CommandKillTheNPC(int client, int args)
 	}
 	if(mode==2)
 	{
-		SDKHooks_TakeDamage(victim, client, client, DMG, DMG_SLASH, -1);	
+		if(GetTeam(client) != GetTeam(victim))
+			SDKHooks_TakeDamage(victim, client, client, DMG, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE, -1);
+		else
+			SDKHooks_TakeDamage(victim, 0, 0, DMG, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE, -1);
 		return Plugin_Handled;
 	}
 	else if(mode==1)

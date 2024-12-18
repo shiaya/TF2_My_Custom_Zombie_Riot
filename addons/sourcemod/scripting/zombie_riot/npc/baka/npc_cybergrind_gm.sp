@@ -82,7 +82,7 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] = -15;
+					Ammo_Count_Used[target] -= 15;
 			}
 			
 			Waves_ClearWaves();
@@ -106,7 +106,7 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] = -15;
+					Ammo_Count_Used[target] -= 15;
 			}
 			
 			Waves_ClearWaves();
@@ -130,7 +130,7 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] = -15;
+					Ammo_Count_Used[target] -= 15;
 			}
 			
 			Waves_ClearWaves();
@@ -154,12 +154,11 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] = -15;
+					Ammo_Count_Used[target] -= 15;
 			}
 			
 			Waves_ClearWaves();
 			CurrentRound = (CyberGrind_InternalDifficulty>1 ? 58 : 59);
-			CurrentRound = 59;
 			CurrentWave = -1;
 			Waves_Progress();
 			
@@ -242,25 +241,41 @@ static void CyberGrindGM_ClotThink(int iNPC)
 	}
 	if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
 	{
-		b_DoNotUnStuck[npc.index] = true;
-		b_NoKnockbackFromSources[npc.index] = true;
-		b_NpcIsInvulnerable[npc.index] = true;
-		b_ThisEntityIgnored[npc.index] = true;
-		MakeObjectIntangeable(npc.index);
-		UnderTides npcGetInfo = view_as<UnderTides>(npc.index);
-		int enemy[MAXENTITIES], Temp_Target;
-		GetHighDefTargets(npcGetInfo, enemy, sizeof(enemy));
-		do
-		{
-			Temp_Target = enemy[GetRandomInt(0, sizeof(enemy) - 1)];
-		}
-		while(!IsValidEntity(Temp_Target) || GetTeam(npc.index) == GetTeam(Temp_Target) || npc.index==Temp_Target);
-		float WorldSpaceVec[3]; WorldSpaceCenter(Temp_Target, WorldSpaceVec);
-		TeleportEntity(npc.index, WorldSpaceVec, NULL_VECTOR, NULL_VECTOR);
+		float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
 		ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-		RaidMode_SetupVote();
-		TeleToU[npc.index]=false;
-		npc.PlayDeathSound();	
+		if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
+		{
+			b_DoNotUnStuck[npc.index] = true;
+			b_NoKnockbackFromSources[npc.index] = true;
+			b_NpcIsInvulnerable[npc.index] = true;
+			b_ThisEntityIgnored[npc.index] = true;
+			MakeObjectIntangeable(npc.index);
+			int Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 300.0);
+			switch(Decicion)
+			{
+				case 2:
+				{
+					Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 150.0);
+					if(Decicion == 2)
+					{
+						Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 50.0);
+						if(Decicion == 2)
+						{
+							Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 0.0);
+						}
+					}
+				}
+				case 3:
+				{
+					//todo code on what to do if random teleport is disabled
+				}
+			}
+			TeleToU[npc.index]=false;
+			ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+			NPC_SetGoalVector(npc.index, WorldSpaceVec, true);
+			npc.PlayDeathSound();
+			RaidMode_SetupVote();
+		}
 	}
 
 	if(CyberGrind_Difficulty>0)
@@ -353,20 +368,20 @@ static void RaidMode_SetupVote()
 	CyberVote=true;
 	Vote vote;
 	
-	strcopy(vote.Name, sizeof(vote.Name), "Standard");
-	strcopy(vote.Desc, sizeof(vote.Desc), "Standard Desc");
+	strcopy(vote.Name, sizeof(vote.Name), "Normal");
+	strcopy(vote.Desc, sizeof(vote.Desc), "Normal Desc");
 	vote.Config[0] = 0;
 	vote.Level = 120;
 	Voting.PushArray(vote);
 	
-	strcopy(vote.Name, sizeof(vote.Name), "Expert");
-	strcopy(vote.Desc, sizeof(vote.Desc), "Expert Desc");
+	strcopy(vote.Name, sizeof(vote.Name), "Hard");
+	strcopy(vote.Desc, sizeof(vote.Desc), "Hard Desc");
 	vote.Config[0] = 0;
 	vote.Level = 150;
 	Voting.PushArray(vote);
 	
-	strcopy(vote.Name, sizeof(vote.Name), "Hard");
-	strcopy(vote.Desc, sizeof(vote.Desc), "Hard Desc");
+	strcopy(vote.Name, sizeof(vote.Name), "Expert");
+	strcopy(vote.Desc, sizeof(vote.Desc), "Expert Desc");
 	vote.Config[0] = 0;
 	vote.Level = 200;
 	Voting.PushArray(vote);
@@ -456,11 +471,11 @@ static int RaidMode_CallVoteH(Menu menu, MenuAction action, int client, int choi
 
 						if(vote.Desc[0] && TranslationPhraseExists(vote.Desc))
 						{
-							CPrintToChat(client, "%s: %t", vote.Name, vote.Desc);
+							CPrintToChat(client, "%t: %t", vote.Name, vote.Desc);
 						}
 						else
 						{
-							CPrintToChat(client, "%s: %s", vote.Name, vote.Desc);
+							CPrintToChat(client, "%t: %s", vote.Name, vote.Desc);
 						}
 
 						RaidMode_CallVote(client, choice);
@@ -597,7 +612,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 			Voting.GetArray(highest, vote);
 			delete Voting;
 			
-			if(!StrContains(vote.Name, "Hard"))
+			if(!StrContains(vote.Name, "Expert"))
 			{
 				CyberGrind_Difficulty = 3;
 				CurrentCash = 4000;
@@ -608,7 +623,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 				}
 				
 			}
-			else if(!StrContains(vote.Name, "Expert"))
+			else if(!StrContains(vote.Name, "Hard"))
 			{
 				CyberGrind_Difficulty = 2;
 				CurrentCash = 4700;
@@ -628,7 +643,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 						Ammo_Count_Used[client] = -100;
 				}
 			}
-			PrintToChatAll("%t: %s","Difficulty set to", vote.Name);
+			PrintToChatAll("%t: %t","Difficulty set to", vote.Name);
 		}
 	}
 	return Plugin_Continue;

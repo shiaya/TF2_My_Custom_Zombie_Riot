@@ -178,8 +178,6 @@ public void MarketGardener_NPCTakeDamage(int victim, int attacker, float &damage
 	float BOSSDMGSCALE = Attributes_Get(weapon, 425);
 	float NONBOSSDMGSCALE = Attributes_Get(weapon, 426);
 	float HEALONJUMPATTACK = Attributes_Get(weapon, 401, 0.0);
-	if(f_Overclocker_Buff[attacker] > gametime)
-		DMGBuff*=1.25;
 	DMGBuff+=Speed;
 	DMGBuff*=JUMPDMGSCALE;
 	float MAXSpeed = (i_CurrentEquippedPerk[attacker] == 2 ? 480.0 : 520.0);

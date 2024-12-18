@@ -180,12 +180,16 @@ public Action Timer_Uber(Handle timer, any medigunid)
 		if(IsValidClient(target) && IsPlayerAlive(target))
 		{
 			f_Overclocker_Buff[target] = GetGameTime()+0.2;
-			Overclock_Magical(target);
+			Overclock_Magical(target, 0.2, true);
+		}
+		else if(IsValidEntity(target) && !b_NpcHasDied[target] && GetTeam(client) == GetTeam(target))
+		{
+			f_Overclocker_Buff[target] = GetGameTime()+0.2;
 		}
 		if(IsValidClient(client) && IsPlayerAlive(client))
 		{
 			f_Overclocker_Buff[client] = GetGameTime()+0.2;
-			Overclock_Magical(client);
+			Overclock_Magical(client, 0.2, true);
 		}
 	}
 	return Plugin_Continue;
@@ -311,7 +315,7 @@ stock int GetHealingTarget(int client, bool checkgun=false)
 	return -1;
 }
 
-public void Overclock_Magical(int client)
+public void Overclock_Magical(int client, float Scale, bool apply)
 {
 	int primary = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	int secondary = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
@@ -320,7 +324,19 @@ public void Overclock_Magical(int client)
 	if((IsValidEntity(primary) && i_IsWandWeapon[primary])
 	||(IsValidEntity(secondary) && i_IsWandWeapon[secondary])
 	||(IsValidEntity(melee) && i_IsWandWeapon[melee])) Magical=true;
-	if(Magical) Current_Mana[client]=RoundToCeil((800.0*Mana_Regen_Level[client])*1.2);
+	if(Magical)
+	{
+		int MaxMana = RoundToCeil((800.0*Mana_Regen_Level[client]));
+		if(apply)
+		{
+			int AddMana = Current_Mana[client]+RoundToCeil(MaxMana*Scale);
+			if(AddMana>MaxMana)
+				AddMana=MaxMana;
+			Current_Mana[client]=AddMana;
+			return;
+		}
+		Current_Mana[client]=RoundToCeil(MaxMana*Scale);
+	}
 }
 
 stock void Overclock_Weapon(int client, int Weapon, float muit=1.0)

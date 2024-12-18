@@ -914,6 +914,11 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		NPC_TraceAttack(victim, attacker, inflictor, damage, damagetype, DummyAmmotype, 0, i_MeleeHitboxHit[attacker]);
 	}
 	
+	if(f_Overclocker_Buff[attacker] > GetGameTime())
+	{
+		damage *=1.5;
+	}
+	
 	switch(i_CustomWeaponEquipLogic[weapon])
 	{
 		case WEAPON_BOUNCING:
@@ -1139,11 +1144,6 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		{
 			SupportWeapons_NPCTakeDamage(victim, attacker, damage, damagetype, weapon);
 		}
-	}
-	
-	if(f_Overclocker_Buff[attacker] > GetGameTime())
-	{
-		damage *=4.5;
 	}
 #endif
 
@@ -2047,11 +2047,11 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 	//All debuffs go here!
 	if(f_HighTeslarDebuff[victim] > GameTime)
 	{
-		Format(Debuff_Adder_left, SizeOfChar, "%s⏧", Debuff_Adder_left);
+		Format(Debuff_Adder_left, SizeOfChar, "⌁⌁");
 	}
 	else if(f_LowTeslarDebuff[victim] > GameTime)
 	{
-		Format(Debuff_Adder_left, SizeOfChar, "%s⌁", Debuff_Adder_left);
+		Format(Debuff_Adder_left, SizeOfChar, "⌁");
 	}
 	if (f_ElementalAmplification[victim] > GameTime)
 	{
@@ -2141,15 +2141,15 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 	}
 	if(f_HighIceDebuff[victim] > GameTime)
 	{
-		Format(Debuff_Adder_left, SizeOfChar, "%s❈", Debuff_Adder_left);
+		Format(Debuff_Adder_left, SizeOfChar, "%s❅❅❅", Debuff_Adder_left);
 	}
 	else if(f_LowIceDebuff[victim] > GameTime)
 	{
-		Format(Debuff_Adder_left, SizeOfChar, "%s❆", Debuff_Adder_left);
+		Format(Debuff_Adder_left, SizeOfChar, "%s❅❅", Debuff_Adder_left);
 	}
 	else if (f_VeryLowIceDebuff[victim] > GameTime)
 	{
-		Format(Debuff_Adder_left, SizeOfChar, "%s❉", Debuff_Adder_left);	
+		Format(Debuff_Adder_left, SizeOfChar, "%s❅", Debuff_Adder_left);	
 	}
 	if (f_BuildingAntiRaid[victim] > GameTime)
 	{
@@ -2311,8 +2311,10 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 	{
 		Format(Debuff_Adder_right, SizeOfChar, "Ω%s", Debuff_Adder_right);
 		if(IsValidClient(victim)) ModifyOverclockBuff(victim, 1, 0.7, true, 5.0, 2.0);
+		else ModifyOverclockBuff(victim, 2, 0.7, true, 5.0, 2.0);
 	}
 	else if(IsValidClient(victim)) ModifyOverclockBuff(victim, 1, 0.7, false, 5.0, 2.0);
+	else ModifyOverclockBuff(victim, 2, 0.7, false, 5.0, 2.0);
 	if(LastMann && GetTeam(victim) == TFTeam_Red)
 	{
 		if(IsValidClient(victim))

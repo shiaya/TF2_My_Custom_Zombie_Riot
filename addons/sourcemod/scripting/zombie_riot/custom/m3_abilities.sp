@@ -100,6 +100,19 @@ public void M3_Abilities_Precache()
 	if(FileExists("sound/baka_zr/sd_spw_03.mp3", true))
 		PrecacheSound("baka_zr/sd_spw_03.mp3", true);
 }
+
+public Action CommandDeployingSupportWeapon(int client, int args)
+{
+	if(!IsValidClient(client) || IsFakeClient(client))
+	{
+		PrintToConsole(client, "Command is in-game only");
+		return Plugin_Handled;
+	}
+	DeployingSupportWeapon(client, true);
+	
+	return Plugin_Handled;
+}
+
 public Action OnBombDrop(const char [] output, int caller, int activator, float delay)
 {
 	char name[64];
@@ -216,7 +229,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 			{
 				int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
-				if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
+				if(IsValidEntity(entity))
 				{
 					GetEntPropVector(entity, Prop_Send, "m_vecOrigin", entitypos);
 					distance = GetVectorDistance(position, entitypos);
@@ -226,7 +239,10 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 						float damage=(MaxHealth*2.0);
 						if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] || b_IsGiant[entity])
 							damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[client]), 1.18)/10.0);
-						SDKHooks_TakeDamage(entity, client, client, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+						if(GetTeam(client) != GetTeam(entity))
+							SDKHooks_TakeDamage(entity, client, client, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+						else
+							SDKHooks_TakeDamage(entity, 0, 0, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
 					}
 				}
 			}
@@ -377,7 +393,7 @@ public void M3_Abilities(int client)
 		}
 		case 14:
 		{
-			DeployingSupportWeapon(client);
+			DeployingSupportWeapon(client, false);
 		}
 	}
 }
@@ -426,21 +442,24 @@ int ReinforcePoint(int client)
 	return RoundToFloor((float(i_ReinforcePoint[client])/float(i_ReinforcePointMax[client]))*100.0);
 }
 
-public void DeployingSupportWeapon(int client)
+public void DeployingSupportWeapon(int client, bool NoCD)
 {
-	if(ability_cooldown[client] < GetGameTime())
+	if(ability_cooldown[client] < GetGameTime() || NoCD)
 	{
-		if(i_OrbitalCount[client] >= 1)
+		if(!NoCD)
 		{
-			ClientCommand(client, "playgamesound items/medshotno1.wav");
-			SetDefaultHudPosition(client);
-			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Orbital Cannon Out of Ammo This Round, Reload");	
-			return;
+			if(i_OrbitalCount[client] >= 1)
+			{
+				ClientCommand(client, "playgamesound items/medshotno1.wav");
+				SetDefaultHudPosition(client);
+				SetGlobalTransTarget(client);
+				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Orbital Cannon Out of Ammo This Round, Reload");	
+				return;
+			}
+			i_OrbitalCount[client] += 1;
+			ability_cooldown[client] = GetGameTime() + 300.0;
+			CreateTimer(300.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
-		i_OrbitalCount[client] += 1;
-		ability_cooldown[client] = GetGameTime() + 300.0;
-		CreateTimer(300.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		int entity = CreateEntityByName("tf_projectile_pipe_remote");	
 
 		if(IsValidEntity(entity))
@@ -1636,6 +1655,8 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 				TF2_AddCondition(client, TFCond_ObscuredSmoke, 1.0);
 				TF2_RemoveCondition(client, TFCond_SpeedBuffAlly);
 				TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
+				if(Items_HasNamedItem(client, "Atomizer's Special Drink Pack"))
+					f_CaffeinatorBuff[client] = GetGameTime() + 1.0;
 				if(f_PDuration[client] < GetGameTime())
 				{
 					TF2_RemoveCondition(client, TFCond_MarkedForDeath);
@@ -1696,7 +1717,7 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 					else
 						ForcePlayerSuicide(client);
 				}
-				Overclock_Magical(client);
+				Overclock_Magical(client, 1.0, true);
 				f_Overclocker_Buff[client] = GetGameTime() + 0.2;
 			}
 			case 11:
