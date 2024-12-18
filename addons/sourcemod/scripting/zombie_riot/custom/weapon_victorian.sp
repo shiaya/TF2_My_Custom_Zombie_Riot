@@ -15,12 +15,15 @@ static bool HasRocketSteam[MAXTF2PLAYERS];
 static int i_VictoriaParticle[MAXTF2PLAYERS];
 static int LineofDefenseParticle_I[MAXTF2PLAYERS];
 static int LineofDefenseParticle_II[MAXTF2PLAYERS];
+static float VictoriaLauncher_HUDDelay[MAXTF2PLAYERS];
+
 static float f_ProjectileSinceSpawn[MAXENTITIES];
+static float f_ProjectileDMG[MAXENTITIES];
+static float f_ProjectileRadius[MAXENTITIES];
 
 static int how_many_supercharge_left[MAXTF2PLAYERS];
 static int how_many_shots_reserved[MAXTF2PLAYERS];
 static bool Mega_Burst[MAXTF2PLAYERS];
-static bool IsValidMega_Burst[MAXTF2PLAYERS];
 
 static bool During_Ability[MAXTF2PLAYERS];
 static bool Super_Hot[MAXTF2PLAYERS];
@@ -115,6 +118,17 @@ void Victorian_Melee_Swing(float &CustomMeleeRange, float &CustomMeleeWide)
 
 public void Weapon_Victoria(int client, int weapon, bool crit)
 {
+	float Overheat = Ability_Check_Cooldown(client, 1);
+	if(Overheat <= 0.0)
+		Overheat = 0.0;
+	else
+	{
+		ClientCommand(client, "playgamesound items/medshotno1.wav");
+		SetDefaultHudPosition(client);
+		SetGlobalTransTarget(client);
+		ShowSyncHudText(client,  SyncHud_Notifaction,"This Weapon still Over Heated! %.1f seconds!", Overheat);
+		return;
+	}
 	int new_ammo = GetAmmo(client, 8);
 	if(new_ammo < 3)
 	{
@@ -127,88 +141,107 @@ public void Weapon_Victoria(int client, int weapon, bool crit)
 	new_ammo -= 3;
 	SetAmmo(client, 8, new_ammo);
 	CurrentAmmo[client][8] = GetAmmo(client, 8);
-	float damage = 10.0;
-	
-	damage *= Attributes_Get(weapon, 2, 1.0);	
+	float BaseDMG = 950.0;
+	BaseDMG *= Attributes_Get(weapon, 2, 1.0);
+	BaseDMG *= Attributes_Get(weapon, 621, 1.0);
+
+	float Radius = EXPLOSION_RADIUS;
+	Radius *= Attributes_Get(weapon, 99, 1.0);
+
+	if(RaidbossIgnoreBuildingsLogic(1))
+	{
+		Radius *= 1.5;
+	}
+	//Rapid Shot
+	if(During_Ability[client])
+	{
+		BaseDMG *= 0.8;
+		if(Super_Hot[client])
+		{
+			BaseDMG *= 1.2;
+		}
+		//PrintToChatAll("Rapid Boom");
+	}
+	//Change Rocket
+	if(how_many_supercharge_left[client] > 0 && !Mega_Burst[client])
+	{
+		BaseDMG *= 1.2;
+		Radius *= 1.2;
+		//PrintToChatAll("Strong Boom");
+		if(how_many_supercharge_left[client] < 5)
+		{
+			BaseDMG *= 1.1;
+			//PrintToChatAll("Stronger Boom");
+		}
+	}
+	//Super Change
+	else if(Mega_Burst[client])
+	{
+		BaseDMG *= 1.3 * how_many_shots_reserved[client];
+		Radius *= 1 + how_many_shots_reserved[client]/2;
+	}
+	else
+		BaseDMG *= 1.0;
 
 	float speed = 800.0;
 	speed *= Attributes_Get(weapon, 103, 1.0);
-
 	speed *= Attributes_Get(weapon, 104, 1.0);
-
 	speed *= Attributes_Get(weapon, 475, 1.0);
+	speed *= Attributes_Get(weapon, 101, 1.0);
+	speed *= Attributes_Get(weapon, 102, 1.0);
+
+	float Angles[3];
+	GetClientEyeAngles(client, Angles);
+	Angles[0] -= 40.0;
+	if(Angles[0] < -89.0)
+	{
+		Angles[0] = -89.0;
+	}
+	int projectile;
+	if(Super_Hot[client] && !Mega_Burst[client])
+		projectile = Wand_Projectile_Spawn(client, speed, 9.0, 0.0, -1, weapon, "flaregun_trail_crit_red",Angles,false);
+	else if(!Super_Hot[client] && Mega_Burst[client])
+	{
+		projectile = Wand_Projectile_Spawn(client, speed, 9.0, 0.0, -1, weapon, "critical_rocket_red",Angles,false);
+	}
+	else if(!Super_Hot[client] && !Mega_Burst[client])
+		projectile = Wand_Projectile_Spawn(client, speed, 9.0, 0.0, -1, weapon, "rockettrail",Angles,false);
+	f_ProjectileSinceSpawn[projectile] = GetGameTime() + 1.0;
+	f_ProjectileRadius[projectile] = Radius;
+	f_ProjectileDMG[projectile] = BaseDMG;
+	WandProjectile_ApplyFunctionToEntity(projectile, Shell_VictorianTouch);
+	//SetEntityMoveType(projectile, MOVETYPE_FLYGRAVITY);
+	EmitSoundToAll(SOUND_VIC_SHOT, client, SNDCHAN_AUTO, 70, _, 0.9);
+	if(i_CurrentEquippedPerk[client] == 5)
+	{
+		speed+=200.0;
 	
-	float Overheat = Ability_Check_Cooldown(client, 1);
-	if(Overheat <= 0.0)
-	{
-		Overheat = 0.0;
-		float Angles[3];
+		float vec[3], VecStart[3], SpeedReturn[3]; WorldSpaceCenter(client, VecStart);
+		Handle swingTrace;
+		b_LagCompNPC_No_Layers = true;
+		float vecSwingForward[3];
+		StartLagCompensation_Base_Boss(client);
+		DoSwingTrace_Custom(swingTrace, client, vecSwingForward, speed, false, 45.0, true);
 
-		GetClientEyeAngles(client, Angles);
-		Angles[0] -= 40.0;
-		if(Angles[0] < -89.0)
+		int target = TR_GetEntityIndex(swingTrace);	
+		if(IsValidEnemy(client, target))
 		{
-			Angles[0] = -89.0;
+			WorldSpaceCenter(target, vec);
 		}
-		int projectile;
-		if(Super_Hot[client] && !Mega_Burst[client])
-			projectile = Wand_Projectile_Spawn(client, speed, 9.0, damage, -1, weapon, "flaregun_trail_crit_red",Angles,false);
-		else if(!Super_Hot[client] && Mega_Burst[client])
+		else
 		{
-			projectile = Wand_Projectile_Spawn(client, speed, 9.0, damage, -1, weapon, "critical_rocket_red",Angles,false);
-			IsValidMega_Burst[client]=true;
-		}
-		else if(!Super_Hot[client] && !Mega_Burst[client])
-			projectile = Wand_Projectile_Spawn(client, speed, 9.0, damage, -1, weapon, "rockettrail",Angles,false);
-		f_ProjectileSinceSpawn[projectile] = GetGameTime() + 1.0;
-		WandProjectile_ApplyFunctionToEntity(projectile, Shell_VictorianTouch);
-		//SetEntityMoveType(projectile, MOVETYPE_FLYGRAVITY);
-		EmitSoundToAll(SOUND_VIC_SHOT, client, SNDCHAN_AUTO, 70, _, 0.9);
-		if(i_CurrentEquippedPerk[client] == 5)
-		{
-			float Range = 1000.0;
-			SDKhooks_SetManaRegenDelayTime(client, 2.0);
-			Range *= Attributes_Get(weapon, 103, 1.0);
-			Range *= Attributes_Get(weapon, 104, 1.0);
-			Range *= Attributes_Get(weapon, 475, 1.0);
-			Range *= Attributes_Get(weapon, 101, 1.0);
-			Range *= Attributes_Get(weapon, 102, 1.0);
-		
-			float vec[3], VecStart[3], SpeedReturn[3]; WorldSpaceCenter(client, VecStart);
-			Handle swingTrace;
-			b_LagCompNPC_No_Layers = true;
-			float vecSwingForward[3];
-			StartLagCompensation_Base_Boss(client);
-			DoSwingTrace_Custom(swingTrace, client, vecSwingForward, Range, false, 45.0, true); //infinite range, and ignore walls!
-
-			int target = TR_GetEntityIndex(swingTrace);	
-			if(IsValidEnemy(client, target))
-			{
-				WorldSpaceCenter(target, vec);
-			}
-			else
-			{
-				delete swingTrace;
-				int MaxTargethit = -1;
-				DoSwingTrace_Custom(swingTrace, client, vecSwingForward, Range, false, 45.0, true,MaxTargethit); //infinite range, and ignore walls!
-				TR_GetEndPosition(vec, swingTrace);
-			}
-			FinishLagCompensation_Base_boss();
 			delete swingTrace;
-		
-			ArcToLocationViaSpeedProjectile(VecStart, vec, SpeedReturn, 1.0, 1.0);
-			TeleportEntity(projectile, NULL_VECTOR, NULL_VECTOR, SpeedReturn);
+			int MaxTargethit = -1;
+			DoSwingTrace_Custom(swingTrace, client, vecSwingForward, speed, false, 45.0, true,MaxTargethit);
+			TR_GetEndPosition(vec, swingTrace);
 		}
-		Better_Gravity_Rocket(projectile, 55.0);
+		FinishLagCompensation_Base_boss();
+		delete swingTrace;
+	
+		ArcToLocationViaSpeedProjectile(VecStart, vec, SpeedReturn, 1.0, 1.0);
+		TeleportEntity(projectile, NULL_VECTOR, NULL_VECTOR, SpeedReturn);
 	}
-	else
-	{
-		ClientCommand(client, "playgamesound items/medshotno1.wav");
-		SetDefaultHudPosition(client);
-		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction,"This Weapon still Over Heated! %.1f seconds!", Overheat);
-		return;
-	}
+	Better_Gravity_Rocket(projectile, 55.0);
 
 	if(how_many_supercharge_left[client] > 0)
 		how_many_supercharge_left[client] -= 1;
@@ -217,7 +250,7 @@ public void Weapon_Victoria(int client, int weapon, bool crit)
 		how_many_supercharge_left[client] = 0;
 		int flMaxHealth = SDKCall_GetMaxHealth(client);
 		int flHealth = GetClientHealth(client);
-		float Cooldown = 5.0;
+		float Cooldown = 0.8; //Melee attack speed
 
 		int health = flMaxHealth / how_many_shots_reserved[client];
 		flHealth -= health;
@@ -225,8 +258,9 @@ public void Weapon_Victoria(int client, int weapon, bool crit)
 		{
 			flHealth = 1;
 		}
-		SetEntityHealth(client, flHealth);	
-
+		SetEntityHealth(client, flHealth);
+		
+		Cooldown *= Attributes_Get(weapon, 6, 1.0); //2.4s
 		Cooldown *= how_many_shots_reserved[client];
 		Ability_Apply_Cooldown(client, 1, Cooldown);
 		EmitSoundToAll(SOUND_OVERHEAT, client, SNDCHAN_AUTO, 70, _, 1.0, 70);
@@ -236,6 +270,7 @@ public void Weapon_Victoria(int client, int weapon, bool crit)
 		int particle_hand = ParticleEffectAt(flPos, "flaregun_trail_crit_red", Cooldown);
 		AddEntityToThirdPersonTransitMode(client, particle_hand);
 		SetParent(client, particle_hand, "effect_hand_r");
+		Mega_Burst[client] = false;
 		//PrintToChatAll("MEGA Fire");
 	}
 }
@@ -253,19 +288,11 @@ static void Shell_VictorianTouch(int entity, int target)
 	{
 		//if(damagetype & DMG_CLUB)
 		//Code to do damage position and ragdolls
-		static float angles[3];
-		GetEntPropVector(entity, Prop_Send, "m_angRotation", angles);
-		float vecForward[3];
-		GetAngleVectors(angles, vecForward, NULL_VECTOR, NULL_VECTOR);
 		float position[3];
 		GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", position);
 
 		int owner = EntRefToEntIndex(i_WandOwner[entity]);
-
-		float BaseDMG = 950.0;
-		BaseDMG *= Attributes_Get(weapon, 2, 1.0);
-		BaseDMG *= Attributes_Get(weapon, 621, 1.0);
-
+		float BaseDMG = f_ProjectileDMG[entity];
 		if(f_ProjectileSinceSpawn[entity] > GetGameTime())
 		{
 			float Ratio = f_ProjectileSinceSpawn[entity] - GetGameTime();
@@ -289,52 +316,9 @@ static void Shell_VictorianTouch(int entity, int target)
 					BaseDMG *= 1.1;
 			}
 		}
-
-
-		float Radius = EXPLOSION_RADIUS;
-		Radius *= Attributes_Get(weapon, 99, 1.0);
-
 		float Falloff = Attributes_Get(weapon, 117, 1.0);
-		float Dmg_Force[3]; CalculateDamageForce(vecForward, 10000.0, Dmg_Force);
-		if(RaidbossIgnoreBuildingsLogic(1))
-		{
-			Radius *= 1.5;
-		}
-		//Rapid Shot
-		if(During_Ability[owner])
-		{
-			BaseDMG *= 0.8;
-			if(Super_Hot[owner])
-			{
-				BaseDMG *= 1.2;
-			}
-			//PrintToChatAll("Rapid Boom");
-		}
-		//Change Rocket
-		if(how_many_supercharge_left[owner] > 0 && !Mega_Burst[owner])
-		{
-			BaseDMG *= 1.2;
-			Radius *= 1.2;
-			//PrintToChatAll("Strong Boom");
-			if(how_many_supercharge_left[owner] < 5)
-			{
-				BaseDMG *= 1.1;
-				//PrintToChatAll("Stronger Boom");
-			}
-		}
-		//Super Change
-		else if(Mega_Burst[owner] && IsValidMega_Burst[owner])
-		{
-			if(IsValidMega_Burst[owner])
-				Mega_Burst[owner] = false;
-			BaseDMG *= 1.3 * how_many_shots_reserved[owner];
-			Radius *= 1 + how_many_shots_reserved[owner]/2;
-		}
-		else
-			BaseDMG *= 1.0;
-
 		float spawnLoc[3];
-		Explode_Logic_Custom(BaseDMG, owner, owner, weapon, position, Radius, Falloff);
+		Explode_Logic_Custom(BaseDMG, owner, owner, weapon, position, f_ProjectileRadius[entity], Falloff);
 		EmitAmbientSound(SOUND_VIC_IMPACT, spawnLoc, entity, 70,_, 0.9, 70);
 		ParticleEffectAt(position, "rd_robot_explosion_smoke_linger", 1.0);
 		
@@ -462,7 +446,7 @@ public void Victorian_Rapidshot(int client, int weapon, bool crit, int slot)
 static void CreateVictoriaEffect(int client, int weapon)
 {
 	int weapon_holding = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if(weapon_holding == weapon)
+	if(weapon_holding == weapon && VictoriaLauncher_HUDDelay[client] < GetGameTime())
 	{
 		char wtf_Why_are_there_so_many_point_hints[512];
 		int new_ammo = GetAmmo(client, 8);
@@ -507,6 +491,7 @@ static void CreateVictoriaEffect(int client, int weapon)
 		
 		PrintHintText(client,"%s", wtf_Why_are_there_so_many_point_hints);
 		StopSound(client, SNDCHAN_STATIC, "UI/hint.wav");
+		VictoriaLauncher_HUDDelay[client] = GetGameTime() + 0.5;
 	}
 
 	if(During_Ability[client])
