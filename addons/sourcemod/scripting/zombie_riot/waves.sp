@@ -2302,6 +2302,7 @@ void WaveEndLogicExtra()
 	Specter_AbilitiesWaveEnd();	
 	Rapier_CashWaveEnd();
 	LeperResetUses();
+	ResetFlameTail();
 	Building_ResetRewardValuesWave();
 	FallenWarriorGetRandomSeedEachWave();
 	CastleBreaker_ResetCashGain();

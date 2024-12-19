@@ -87,7 +87,7 @@ public void Enable_Victorian_Launcher(int client, int weapon) // Enable manageme
 		{
 			if(h_TimerVictorianLauncherManagement[i])
 			{
-				b_WeaponSpecificClassBuff[weapon][4] = true;
+				ApplyStatusEffect(weapon, weapon, "Victorian Launcher's Call", 9999999.0);
 				Attributes_SetMulti(weapon, 99, 1.1);
 			}
 		}
@@ -292,7 +292,9 @@ static void Shell_VictorianTouch(int entity, int target)
 		GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", position);
 
 		int owner = EntRefToEntIndex(i_WandOwner[entity]);
+		
 		float BaseDMG = f_ProjectileDMG[entity];
+		
 		if(f_ProjectileSinceSpawn[entity] > GetGameTime())
 		{
 			float Ratio = f_ProjectileSinceSpawn[entity] - GetGameTime();
