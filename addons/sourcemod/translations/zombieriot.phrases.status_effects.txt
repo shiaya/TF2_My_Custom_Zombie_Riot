@@ -632,6 +632,36 @@
 	{
 		"en"	"Randomly changes damage and HUD elements depending on it's level."
 	}
+	"Overclock"
+	{
+		"en"	"Overclock"
+		"ko"	"과부하"
+	}
+	"Overclock Desc"
+	{
+		"en"	"The weapon's stats are improved and mana is continuously restored."
+		"ko"	"무기의 스텟이 향상되며, 마나가 지속적으로 회복됩니다."
+	}
+	"Concord Hero"
+	{
+		"en"	"Concord Hero"
+		"ko"	"콘코드 영웅"
+	}
+	"Concord Hero Desc"
+	{
+		"en"	"Damage dealt increases by 45%% and all damage taken is reduced by 25%%."
+		"ko"	"피해량이 45%%늘어나며 받는 모든 피해를 25%% 경감합니다."
+	}
+	"True Concord Hero"
+	{
+		"en"	"True Concord Hero"
+		"ko"	"진정한 콘코드 영웅"
+	}
+	"True Concord Hero Desc"
+	{
+		"en"	"Damage dealt increases by 45%% and all damage taken is reduced by 30%%."
+		"ko"	"피해량이 55%%늘어나며 받는 모든 피해를 30%% 경감합니다."
+	}
 	"Iberia Morale Boost"
 	{
 		"en" 	"Iberia Morale Boost"

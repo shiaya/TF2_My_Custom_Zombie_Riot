@@ -2677,6 +2677,21 @@ void StatusEffects_StatusEffectListOnly()
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "S");
 	data.Positive 					= true;
 	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Overclock");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "Ω");
+	data.Positive 					= false;
+	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "True Concord Hero");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "★");
+	data.Positive 					= false;
+	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Concord Hero");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "☆");
+	data.Positive 					= false;
+	StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Chaos Infliction");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "⛡");
