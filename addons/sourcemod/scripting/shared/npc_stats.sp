@@ -8990,6 +8990,19 @@ stock void NpcStats_SpeedModifyEnemy(int enemy, float duration, float speed=1.0,
 	}
 }
 
+stock bool NpcStats_IsEnemySpeedModify(int enemy)
+{
+	if(!IsValidEntity(enemy))
+		return true;
+
+	if(f_SpeedTimer[enemy] < GetGameTime())
+	{
+		f_SpeedModify[enemy]=1.0;
+		return false;
+	}
+	return true;
+}
+
 #if defined ZR
 void NPCStats_RemoveAllDebuffs(int enemy, float Duration = 0.0)
 {
@@ -9002,8 +9015,6 @@ void NPCStats_RemoveAllDebuffs(int enemy, float Duration = 0.0)
 	ApplyStatusEffect(enemy, enemy, "Hardened Aura", Duration);
 }
 #endif
-
-
 
 bool Npc_Teleport_Safe(int client, float endPos[3], float hullcheckmins_Player[3], float hullcheckmaxs_Player[3], bool check_for_Ground_Clerance = false, bool teleport_entity = true)
 {

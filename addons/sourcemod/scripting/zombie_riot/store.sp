@@ -5206,6 +5206,8 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 		i_Chaos_Coil_Speed[client] = -1;
 	}
 	b_Chaos_Coil[client] = false;
+	b_Shotgun_Slug_Ammo[client] = false;
+	b_Force_Shield_Generator[client] = false;
 	i_MaxSupportBuildingsLimit[client] = 0;
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
 	BannerOnEntityCreated(client);
@@ -5869,6 +5871,14 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 						b_Chaos_Coil[client] = true;
 						if(IsValidEntity(entity))i_Chaos_Coil_Speed[client] = EntIndexToEntRef(entity);
 					}
+					if(info.SpecialAdditionViaNonAttribute == 22)
+					{
+						b_Shotgun_Slug_Ammo[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 23)
+					{
+						b_Force_Shield_Generator[client] = true;
+					}
 
 					int CostDo;
 
@@ -5940,6 +5950,22 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 
 	if(EntityIsAWeapon)
 	{
+		if(b_Shotgun_Slug_Ammo[client] && i_WeaponArchetype[entity] == 1)
+		{
+			int Pellets = 10;
+			float ExtraPellets=0.0;
+			if(Attributes_Has(entity, 45))
+				ExtraPellets=Attributes_Get(entity, 45, 0.0);
+				
+			if(ExtraPellets>0.0)
+			{
+				Pellets=RoundToCeil(float(Pellets)*ExtraPellets);
+				Attributes_Set(entity, 45, 0.1);
+			}
+			if(Pellets>1)
+				Attributes_SetMulti(entity, 2, float(Pellets));
+		}
+	
 		//SPEED COLA!
 		if(i_CurrentEquippedPerk[client] == 4)
 		{

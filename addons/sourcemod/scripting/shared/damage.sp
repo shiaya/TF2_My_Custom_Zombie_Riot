@@ -711,6 +711,12 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 			SetEntityHealth(victim, 1);
 		}
 	}
+	
+	if(IsInvuln(victim) && b_Force_Shield_Generator[victim])
+	{
+		RemoveAllBuffs(victim, false);
+		ApplyStatusEffect(victim, victim, "Hardened Aura", 0.6);
+	}
 
 	if(LastMann && b_Hero_Of_Concord[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red) && TeutonType[victim] == TEUTON_NONE)
 	{
@@ -1848,7 +1854,7 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 		//Display morale!
 		MoraleIconShowHud(victim, Debuff_Adder_right, SizeOfChar);
 	}
-	if(f_Overclocker_Buff[victim] > GameTime)
+	if(f_Overclocker_Buff[victim] > GetGameTime())
 	{
 		Format(Debuff_Adder_right, SizeOfChar, "Ω%s", Debuff_Adder_right);
 		if(IsValidClient(victim)) ModifyOverclockBuff(victim, 1, 0.7, true, 5.0, 2.0);

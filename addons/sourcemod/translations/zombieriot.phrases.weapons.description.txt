@@ -4427,6 +4427,16 @@
 		"en"	"1%% Damage Resistance"
 		"ko"	"받는 피해 -1％"
 	}
+	"Slug Shell desc"
+	{
+		"en"	"''Archetype: Multi Pellet'' Only\nChanges to a powerful single shot."
+		"ko"	"''유형: 산탄'' 전용\n강력한 한발로 변경됩니다."
+	}
+	"Force Shield Generator desc"
+	{
+		"en"	"Removes some debuffs when invincible."
+		"ko"	"무적 상태일때 일부 디버프를 해제 합니다."
+	}
 	
 	"Orbital 120MM Desc"
 	{

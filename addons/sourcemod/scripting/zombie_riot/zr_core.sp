@@ -652,7 +652,8 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_fake_death_client", Command_FakeDeathCount, ADMFLAG_GENERIC, "Fake Death Count");
 	RegAdminCmd("sm_kill_npc", CommandKillTheNPC, ADMFLAG_ROOT, "You can kill an NPC by aiming at it and hitting it.");
 	RegAdminCmd("sm_dsw", CommandDeployingSupportWeapon, ADMFLAG_ROOT, "Deploying Support Weapon, yep is op");
-	RegAdminCmd("sm_revotewaves", Waves_AdminsRevoteCmd, ADMFLAG_ROOT, "Admins Wave Revote");
+	RegAdminCmd("sm_waveend", Waves_AdminsWaveEndCmd, ADMFLAG_ROOT, "Wave Force END");
+	RegAdminCmd("sm_raidend", Waves_AdminsRaidTimeEndCmd, ADMFLAG_ROOT, "Raid Force END");
 	CookieXP = new Cookie("zr_xp", "Your XP", CookieAccess_Protected);
 	CookieScrap = new Cookie("zr_Scrap", "Your Scrap", CookieAccess_Protected);
 	

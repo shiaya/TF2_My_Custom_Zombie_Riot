@@ -3927,6 +3927,16 @@
 		"en"		"Hammer Editor HUD [Common]"
 		"ko"		"해머 에디터 HUD [흔한]"
 	}
+	"Slug Shell [Uncommon]"
+	{
+		"en"		"12g Slug Shell [Uncommon]"
+		"ko"		"12g 슬러그 탄 [드문]"
+	}
+	"Force Shield Generator [Rare]"
+	{
+		"en"		"Force Shield Generator [Rare]"
+		"ko"		"포스 실드 제너레이터 HUD [희귀한]"
+	}
 	"Trumpet"
 	{
 		"en"		"Trumpet"

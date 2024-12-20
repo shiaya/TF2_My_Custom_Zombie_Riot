@@ -53,7 +53,7 @@ public void OnUberDeployed(Event event, const char[] name, bool dontBroadcast)
 					float damage=(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] ? 1.5 : 1.0)*((5000.0*Attributes_GetOnPlayer(client, 8, true, true))+(Pow(float(CashSpentTotal[client]), 1.18)/10.0))+SDKCall_GetMaxHealth(client);
 					if(Dohit>1) damage/=Dohit;
 					NpcStats_SpeedModifyEnemy(entity, (b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] ? 1.0 : 3.0), 0.35, true);
-					NpcStats_SilenceEnemy(entity, (b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] ? 1.0 : 3.0));
+					ApplyStatusEffect(client, entity, "Silenced", (b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] ? 1.0 : 3.0));
 					SDKHooks_TakeDamage(entity, client, client, damage, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE, GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary));
 					Dohit++;
 				}

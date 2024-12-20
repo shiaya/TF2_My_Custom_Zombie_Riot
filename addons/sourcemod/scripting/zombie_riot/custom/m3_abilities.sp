@@ -1246,7 +1246,7 @@ public void Seeyou_in_HELL(int client)
 				if(distance<650.0)
 				{
 					FreezeNpcInTime(entity, (b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] ? 3.0 : 6.0), true);
-					NpcStats_SilenceEnemy(entity, (b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] ? 3.0 : 6.0));
+					ApplyStatusEffect(client, entity, "Silenced", (b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] ? 3.0 : 6.0));
 					float MaxHealth = float(ReturnEntityMaxHealth(entity));
 					float damage=(MaxHealth*0.02)+(Pow(float(CashSpentTotal[client]), 1.18)/9.0);
 					SDKHooks_TakeDamage(entity, client, client, damage, DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
@@ -1656,7 +1656,10 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 				TF2_RemoveCondition(client, TFCond_SpeedBuffAlly);
 				TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
 				if(Items_HasNamedItem(client, "Atomizer's Special Drink Pack"))
-					f_CaffeinatorBuff[client] = GetGameTime() + 1.0;
+				{
+					ApplyStatusEffect(client, client, "Caffinated", 2.6);
+					ApplyStatusEffect(client, client, "Caffinated Drain", 1.1);
+				}
 				if(f_PDuration[client] < GetGameTime())
 				{
 					TF2_RemoveCondition(client, TFCond_MarkedForDeath);

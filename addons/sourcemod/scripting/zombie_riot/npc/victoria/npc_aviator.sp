@@ -584,7 +584,7 @@ void ResetAviatorWeapon(Aviator npc, int weapon_Type)
 
 static void NPC_Go_away(int entity, int victim, float damage, int weapon)
 {
-	Huscarls npc = view_as<Huscarls>(entity);
+	Aviator npc = view_as<Aviator>(entity);
 	float vecHit[3]; WorldSpaceCenter(victim, vecHit);
 	if(IsValidEntity(npc.index) && IsValidEntity(victim) && !IsValidClient(victim) && GetTeam(npc.index) != GetTeam(victim))
 	{

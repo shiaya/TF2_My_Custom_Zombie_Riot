@@ -262,18 +262,20 @@ public Action Waves_RevoteCmd(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action Waves_AdminsRevoteCmd(int client, int args)
+public Action Waves_AdminsWaveEndCmd(int client, int args)
 {
 	strcopy(LastWaveWas, sizeof(LastWaveWas), "none");
-	for(int target=1; target<=MaxClients; target++)
-	{
-		if(IsClientInGame(target) && GetClientTeam(target)>1)
-		{
-			Waves_RoundStart();
-			VotedFor[target] = 0;
-			Waves_CallVote(target, 1);
-		}
-	}
+	DeleteAndRemoveAllNpcs = 10.0;
+	mp_bonusroundtime.IntValue = (12 * 2);
+	ZR_NpcTauntWinClear();
+	ForcePlayerLoss();
+	RaidBossActive = INVALID_ENT_REFERENCE;
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsRaidTimeEndCmd(int client, int args)
+{
+	RaidModeTime=GetGameTime();
 	return Plugin_Handled;
 }
 

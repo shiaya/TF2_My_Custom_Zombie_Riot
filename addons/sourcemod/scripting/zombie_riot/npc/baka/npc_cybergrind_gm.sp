@@ -299,6 +299,10 @@ static void CyberGrindGM_ClotThink(int iNPC)
 				}
 				case 2:
 				{
+					Citizen_SpawnAtPoint("b");
+					Citizen_SpawnAtPoint();
+					CPrintToChatAll("{gray}Barney: {default}Hey! We came late to assist! Got a friend too!");
+				
 					b_NpcForcepowerupspawn[npc.index] = 0;
 					i_RaidGrantExtra[npc.index] = 0;
 					b_DissapearOnDeath[npc.index] = true;
