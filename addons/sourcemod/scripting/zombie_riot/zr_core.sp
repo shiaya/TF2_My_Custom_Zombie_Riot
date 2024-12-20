@@ -783,6 +783,7 @@ void ZR_MapStart()
 	Blemishine_Map_Precache();
 	
 	Waves_MapStart();
+	Freeplay_OnMapStart();
 	Music_MapStart();
 	Star_Shooter_MapStart();
 	Bison_MapStart();

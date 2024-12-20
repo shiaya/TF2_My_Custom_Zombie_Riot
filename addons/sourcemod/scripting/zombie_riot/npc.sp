@@ -1015,6 +1015,7 @@ void ZR_NpcTauntWin()
 
 void NPCDeath(int entity)
 {
+	Freeplay_OnNPCDeath(entity);
 	if(view_as<CClotBody>(entity).m_fCreditsOnKill)
 	{
 		int GiveMoney = 0;
@@ -1102,7 +1103,6 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 	}
 	return Plugin_Changed;
 }
-
 //BASES FOR ENEMIES
 
 #include "zombie_riot/npc/expidonsa/npc_expidonsa_base.sp" //ALSO IN RPG!
@@ -1125,6 +1125,11 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/object/obj_barracks.sp"
 #include "zombie_riot/object/obj_brewing_stand.sp"
 #include "zombie_riot/object/obj_revenant.sp"
+
+//Special
+#include "zombie_riot/npc/special/npc_sans.sp"
+#include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"
+
 //NORMAL
 
 #include "zombie_riot/npc/normal/npc_headcrabzombie.sp"
@@ -1848,6 +1853,7 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/npc/matrix/raids/npc_agentthompson.sp"
 #include "zombie_riot/npc/matrix/raids/npc_twins.sp"
 #include "zombie_riot/npc/matrix/raids/npc_agent_smith.sp"
-//Special
-#include "zombie_riot/npc/special/npc_sans.sp"
-#include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"
+#include "zombie_riot/npc/matrix/freeplay/npc_freeplay_agentdave.sp"
+#include "zombie_riot/npc/matrix/freeplay/npc_freeplay_agentwayne.sp"
+#include "zombie_riot/npc/matrix/freeplay/npc_freeplay_agentian.sp"
+#include "zombie_riot/npc/matrix/freeplay/npc_freeplay_agentspencer.sp"

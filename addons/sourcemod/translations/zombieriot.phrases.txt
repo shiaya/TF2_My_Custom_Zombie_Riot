@@ -958,6 +958,13 @@
 		"de"		"Nicht Genügend Ammo! Du brauchst {1} Ammo!"
 		"ko"		"탄약 부족! {1}만큼의 탄약이 필요합니다!"
 	}
+	"Not Enough Ammo"
+	{
+		"#format"	"{1:d}"
+		"en" 		"Not Enough Ammo! You need {1} Ammo!"
+		"de"		"Nicht Genügend Ammo! Du brauchst {1} Ammo!"
+		"ko"		"탄약 부족! {1}만큼의 탄약이 필요합니다!"
+	}
 	"Unspeakable Teleport Taunt"
 	{
 		"en"		"Behind you."
