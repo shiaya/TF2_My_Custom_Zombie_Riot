@@ -4253,6 +4253,11 @@
 		"en"	"Trumpet Skeleton"
 		"ko"	"트럼펫 스켈레톤"
 	}
+	"Invisible Trigger Man"
+	{
+		"en"	"=Failed name="
+		"ko"	"=Failed name="
+	}
 	"Rare bloodsucking TrumpetSkeleton of Conflagration"
 	{
 		"en"	"<<Rare bloodsucking TrumpetSkeleton of Conflagration>>"

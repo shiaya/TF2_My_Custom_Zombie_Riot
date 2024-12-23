@@ -483,6 +483,8 @@ float f_Chaos_Coil[MAXTF2PLAYERS];
 int i_Chaos_Coil[MAXTF2PLAYERS]={0, ...};
 bool b_Force_Shield_Generator[MAXTF2PLAYERS];
 bool b_Shotgun_Slug_Ammo[MAXTF2PLAYERS];
+float f_Nailgun_Shotgun_Slug_Ammo[MAXTF2PLAYERS];
+bool b_DrinkRND_BuildingCD_Buff[MAXTF2PLAYERS];
 int b_BobsCuringHand_Revived[MAXTF2PLAYERS];
 bool b_StickyExtraGrenades[MAXTF2PLAYERS];
 bool FinalBuilder[MAXENTITIES];

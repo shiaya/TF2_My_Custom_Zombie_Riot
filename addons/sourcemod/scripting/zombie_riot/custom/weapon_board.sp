@@ -495,7 +495,7 @@ public float Player_OnTakeDamage_Board(int victim, float &damage, int attacker, 
 	else if(Board_Level[victim] == 3) //rookie
 	{
 		//PrintToChatAll("damage resist");
-			HealPurgatory_timer[victim] = CreateTimer(10.0, HealPurgatory, victim);
+		HealPurgatory_timer[victim] = CreateTimer(10.0, HealPurgatory, victim);
 		return damage * 0.9;
 	}
 	else if(Board_Level[victim] == 4) //punish

@@ -153,6 +153,10 @@ int AmmoboxUsed(int client, int entity)
 				mana_regen_temp *= Mana_Regen_Level[client];
 				max_mana_temp *= Mana_Regen_Level[client];	
 			}
+			
+			if(Items_HasNamedItem(client, "Widemouth Refill Port"))
+				mana_regen_temp *= 1.1;
+			
 			if(b_AggreviatedSilence[client])
 				mana_regen_temp *= 0.30;
 

@@ -4182,6 +4182,11 @@
 		"en" 		"Teleport!"
 		"ko" 		"순간이동!"
 	}
+	"Get_DrinkRND_13"
+	{
+		"en" 		"Building Super Recharging!"
+		"ko" 		"구조물 슈퍼 재충전!"
+	}
 	"Orbital Cannon Out of Ammo This Round, Reload"
 	{
 		"en"	"Orbital Cannon Out of Ammo This Round, Reload"

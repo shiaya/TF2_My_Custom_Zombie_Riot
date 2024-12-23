@@ -830,6 +830,7 @@ void NPC_ConfigSetup()
 //Special
 	TrumpetSkeleton_OnMapStart_NPC();
 	CyberGrindGM_OnMapStart_NPC();
+	Invisible_TRIGGER_Man_OnMapStart_NPC();
 }
 
 int NPC_Add(NPCData data)
@@ -1129,6 +1130,7 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 //Special
 #include "zombie_riot/npc/special/npc_sans.sp"
 #include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"
+#include "zombie_riot/npc/baka/npc_invisible_trigger_man.sp"
 
 //NORMAL
 

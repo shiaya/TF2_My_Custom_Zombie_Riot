@@ -33,11 +33,17 @@ static void ClotPrecache()
 {
 	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
 	PrecacheModel("models/player/spy.mdl");
+	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3");
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 {
 	return CyberGrindGM(client, vecPos, vecAng, ally, data);
+}
+
+void ResetCyberGrindGMLogic()
+{
+	CyberVote = false;
 }
 
 methodmap CyberGrindGM < CClotBody
@@ -66,6 +72,12 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsValidClient(target))
+					Ammo_Count_Used[target] -= (CyberGrind_InternalDifficulty>2 ? 20 : 15);
+			}
+			
 			b_NpcForcepowerupspawn[npc.index] = 0;
 			i_RaidGrantExtra[npc.index] = 0;
 			b_DissapearOnDeath[npc.index] = true;
@@ -82,7 +94,7 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] -= 15;
+					Ammo_Count_Used[target] -= (CyberGrind_InternalDifficulty>2 ? 20 : 15);
 			}
 			
 			Waves_ClearWaves();
@@ -106,7 +118,7 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] -= 15;
+					Ammo_Count_Used[target] -= (CyberGrind_InternalDifficulty>2 ? 20 : 15);
 			}
 			
 			Waves_ClearWaves();
@@ -130,7 +142,7 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] -= 15;
+					Ammo_Count_Used[target] -= (CyberGrind_InternalDifficulty>2 ? 20 : 15);
 			}
 			
 			Waves_ClearWaves();
@@ -154,7 +166,7 @@ methodmap CyberGrindGM < CClotBody
 			for(int target = 1; target <= MaxClients; target++)
 			{
 				if(IsValidClient(target))
-					Ammo_Count_Used[target] -= 15;
+					Ammo_Count_Used[target] -= (CyberGrind_InternalDifficulty>2 ? 20 : 15);
 			}
 			
 			Waves_ClearWaves();
@@ -183,6 +195,61 @@ methodmap CyberGrindGM < CClotBody
 			b_DissapearOnDeath[npc.index] = true;
 			b_DoGibThisNpc[npc.index] = true;
 			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "we_got_soldine"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3");
+			music.Time = 187;
+			music.Volume = 1.0;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "The Game");
+			strcopy(music.Artist, sizeof(music.Artist), "Disturbed");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "final_item"))
+		{
+			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
+			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
+			func_NPCThink[npc.index] = CyberGrindGM_Final_Item;
+			
+			npc.m_iBleedType = BLEEDTYPE_NORMAL;
+			npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
+			npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+			
+			//IDLE
+			b_ThisNpcIsImmuneToNuke[npc.index] = true;
+			npc.m_iState = 0;
+			npc.m_flGetClosestTargetTime = 0.0;
+			npc.StartPathing();
+			npc.m_flSpeed = 0.0;
+			npc.m_iOverlordComboAttack = 0;
+			npc.m_flNextMeleeAttack = 0.0;
+			npc.m_flNextRangedAttack = GetGameTime() + 1.0;
+			CyberGrind_Difficulty = 0;
+			TeleToU[npc.index] = true;
+		
+			int skin = 1;
+			SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
+
+			npc.m_iWearable1 = npc.EquipItem("head", "models/workshop/player/items/spy/spr18_assassins_attire/spr18_assassins_attire.mdl");
+
+			npc.m_iWearable2 = npc.EquipItem("head", "models/player/items/spy/spy_hat.mdl");
+
+			SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
+			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
 			return npc;
 		}
 		
@@ -218,6 +285,171 @@ methodmap CyberGrindGM < CClotBody
 		return npc;
 	}
 }
+
+static void CyberGrindGM_Final_Item(int iNPC)
+{
+	CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
+	float gameTime = GetGameTime(npc.index);
+	if(npc.m_flNextDelayTime > gameTime)
+	npc.m_flNextDelayTime = gameTime + DEFAULT_UPDATE_DELAY_FLOAT;
+	npc.Update();
+	if(npc.m_flNextThinkTime > gameTime)
+		return;
+	npc.m_flNextThinkTime = gameTime + 0.1;
+	if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
+	{
+		float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
+		ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+		if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
+		{
+			b_DoNotUnStuck[npc.index] = true;
+			b_NoKnockbackFromSources[npc.index] = true;
+			b_NpcIsInvulnerable[npc.index] = true;
+			b_ThisEntityIgnored[npc.index] = true;
+			MakeObjectIntangeable(npc.index);
+			int Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 300.0);
+			switch(Decicion)
+			{
+				case 2:
+				{
+					Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 150.0);
+					if(Decicion == 2)
+					{
+						Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 50.0);
+						if(Decicion == 2)
+						{
+							Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 0.0);
+						}
+					}
+				}
+				case 3:
+				{
+					//todo code on what to do if random teleport is disabled
+				}
+			}
+			TeleToU[npc.index]=false;
+			WorldSpaceCenter(npc.index, WorldSpaceVec);
+			ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+			NPC_SetGoalVector(npc.index, WorldSpaceVec, true);
+			npc.PlayDeathSound();
+		}
+	}
+	
+	if(!TeleToU[npc.index] && npc.m_flNextMeleeAttack < gameTime)
+	{
+		switch(npc.m_iOverlordComboAttack)
+		{
+			case 0:
+			{
+				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Congratulations, Cleared the Challenge");
+				npc.m_flNextMeleeAttack = gameTime + 4.0;
+				npc.m_iOverlordComboAttack=1;
+			}
+			case 1:
+			{
+				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Here, I'll give you the {unique}Item{default} as promised.");
+				for (int client = 0; client < MaxClients; client++)
+				{
+					if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING)
+					{
+						char Give_me_the_item[512];
+						Format(Give_me_the_item, sizeof(Give_me_the_item),
+						"{default}He opened his briefcase and handed over the items:");
+						if(CyberGrind_InternalDifficulty>0 && !(Items_HasNamedItem(client, "Widemouth Refill Port")))
+						{
+							Items_GiveNamedItem(client, "Widemouth Refill Port");
+							Format(Give_me_the_item, sizeof(Give_me_the_item),
+							"%s\n{gray}[Normal]{uncommon}''Widemouth Refill Port''{default}", Give_me_the_item);
+						}
+						if(CyberGrind_InternalDifficulty>1 && !(Items_HasNamedItem(client, "Builder's Blueprints")))
+						{
+							Items_GiveNamedItem(client, "Builder's Blueprints");
+							Format(Give_me_the_item, sizeof(Give_me_the_item),
+							"%s\n{red}[Hard]{darkblue}''Builder's Blueprints''{default}", Give_me_the_item);
+						}
+						if(CyberGrind_InternalDifficulty>2 && !(Items_HasNamedItem(client, "Sardis Gold")))
+						{
+							Items_GiveNamedItem(client, "Sardis Gold");
+							Format(Give_me_the_item, sizeof(Give_me_the_item),
+							"%s\n{collectors}[Expert]{gold}''Sardis Gold''{default}", Give_me_the_item);
+						}
+						CPrintToChat(client,"%s", Give_me_the_item);
+					}
+				}
+				npc.m_flNextMeleeAttack = gameTime + 0.5;
+				npc.m_iOverlordComboAttack=2;
+			}
+			case 2:
+			{
+				ResetReplications();
+				cvarTimeScale.SetFloat(0.1);
+				CreateTimer(0.5, SetTimeBack);
+				if(!Music_Disabled())
+					EmitCustomToAll("#zombiesurvival/music_win_1.mp3", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+					
+				ConVar roundtime = FindConVar("mp_bonusroundtime");
+				float last = roundtime.FloatValue;
+				roundtime.FloatValue = 20.0;
+
+				MVMHud_Disable();
+				int entity = CreateEntityByName("game_round_win"); 
+				DispatchKeyValue(entity, "force_map_reset", "1");
+				SetEntProp(entity, Prop_Data, "m_iTeamNum", TFTeam_Red);
+				DispatchSpawn(entity);
+				AcceptEntityInput(entity, "RoundWin");
+				roundtime.FloatValue = last;
+				for(int client = 1; client <= MaxClients; client++)
+				{
+					if(IsClientInGame(client) && !b_IsPlayerABot[client])
+						Music_Stop_All(client);
+				}
+				RemoveAllCustomMusic();
+				npc.m_iOverlordComboAttack=3;
+			}
+			case 3:
+			{
+				float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
+				ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+				npc.PlayDeathSound();
+				b_DoNotUnStuck[npc.index] = true;
+				b_NoKnockbackFromSources[npc.index] = true;
+				b_NpcIsInvulnerable[npc.index] = true;
+				b_ThisEntityIgnored[npc.index] = true;
+				MakeObjectIntangeable(npc.index);
+				b_NoHealthbar[npc.index]=true;
+				if(IsValidEntity(i_InvincibleParticle[npc.index]))
+				{
+					int particle = EntRefToEntIndex(i_InvincibleParticle[npc.index]);
+					SetEntityRenderMode(particle, RENDER_TRANSCOLOR);
+					SetEntityRenderColor(particle, 255, 255, 255, 1);
+					SetEntPropFloat(particle, Prop_Send, "m_fadeMinDist", 1.0);
+					SetEntPropFloat(particle, Prop_Send, "m_fadeMaxDist", 1.0);
+				}
+				SetEntityRenderMode(npc.index, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(npc.index, 255, 255, 255, 1);
+				SetEntPropFloat(npc.index, Prop_Send, "m_fadeMinDist", 1.0);
+				SetEntPropFloat(npc.index, Prop_Send, "m_fadeMaxDist", 1.0);
+				if(IsValidEntity(npc.m_iWearable1))
+				{
+					SetEntityRenderMode(npc.m_iWearable1, RENDER_TRANSCOLOR);
+					SetEntityRenderColor(npc.m_iWearable1, 255, 255, 255, 1);
+					SetEntPropFloat(npc.m_iWearable1, Prop_Send, "m_fadeMinDist", 1.0);
+					SetEntPropFloat(npc.m_iWearable1, Prop_Send, "m_fadeMaxDist", 1.0);
+				}
+				if(IsValidEntity(npc.m_iWearable2))
+				{
+					SetEntityRenderMode(npc.m_iWearable2, RENDER_TRANSCOLOR);
+					SetEntityRenderColor(npc.m_iWearable2, 255, 255, 255, 1);
+					SetEntPropFloat(npc.m_iWearable2, Prop_Send, "m_fadeMinDist", 1.0);
+					SetEntPropFloat(npc.m_iWearable2, Prop_Send, "m_fadeMaxDist", 1.0);
+				}
+				if(IsValidEntity(npc.m_iTeamGlow))
+					RemoveEntity(npc.m_iTeamGlow);
+			}
+		}
+	}
+}
+
 
 static void CyberGrindGM_ClotThink(int iNPC)
 {
@@ -579,7 +811,7 @@ static void RaidMode_RoundStart()
 {
 	if(Voting)
 	{
-		VoteEndTime = GetGameTime() + 40.0;
+		VoteEndTime = GetGameTime() + 30.0;
 		CreateTimer(30.0, RaidMode_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -619,11 +851,11 @@ static Action RaidMode_EndVote(Handle timer, float time)
 			if(!StrContains(vote.Name, "Expert"))
 			{
 				CyberGrind_Difficulty = 3;
-				CurrentCash = 4000;
+				CurrentCash = 4500;
 				for(int client = 1; client <= MaxClients; client++)
 				{
 					if(IsValidClient(client))
-						Ammo_Count_Used[client] = -10;
+						Ammo_Count_Used[client] = -25;
 				}
 				
 			}

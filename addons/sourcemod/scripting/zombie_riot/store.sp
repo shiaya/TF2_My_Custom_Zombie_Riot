@@ -585,6 +585,9 @@ void Store_OnCached(int client)
 		
 		if(Items_HasNamedItem(client, "ZR Contest 2024 Artist"))
 			amount += 50;
+			
+		if(Items_HasNamedItem(client, "Sardis Gold"))
+			amount += 20;
 		
 		amount += SkillTree_GetByName(client, "Cash Up 1") * 2;
 		amount += SkillTree_GetByName(client, "Cash Up 1 Infinite") * 1 / 5;
@@ -5213,6 +5216,7 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	}
 	b_Chaos_Coil[client] = false;
 	b_Shotgun_Slug_Ammo[client] = false;
+	f_Nailgun_Shotgun_Slug_Ammo[client] = 1.0;
 	b_Force_Shield_Generator[client] = false;
 	i_MaxSupportBuildingsLimit[client] = 0;
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
@@ -5821,6 +5825,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					if(info.SpecialAdditionViaNonAttribute == 10)
 					{
 						b_ProximityAmmo[client] = true;
+						i_WeaponDamageFalloff[entity]=0.99;
 					}
 					if(info.SpecialAdditionViaNonAttribute == 11)
 					{
@@ -5968,8 +5973,17 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 				Pellets=RoundToCeil(float(Pellets)*ExtraPellets);
 				Attributes_Set(entity, 45, 0.1);
 			}
+			else
+				Pellets=0;
+			
 			if(Pellets>1)
-				Attributes_SetMulti(entity, 2, float(Pellets));
+			{
+				if(i_CustomWeaponEquipLogic[entity] == WEAPON_NAILGUN_SHOTGUN)
+					f_Nailgun_Shotgun_Slug_Ammo[client]=float(Pellets);
+				else
+					Attributes_SetMulti(entity, 2, float(Pellets));
+				i_WeaponDamageFalloff[entity]=0.99;
+			}
 		}
 	
 		//SPEED COLA!

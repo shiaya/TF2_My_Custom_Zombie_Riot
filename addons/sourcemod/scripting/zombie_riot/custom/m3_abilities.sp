@@ -1554,14 +1554,16 @@ public void DrinkRND(int client)
 		CreateTimer(60.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		int GetRND=-1;
 		if(Items_HasNamedItem(client, "Atomizer's Special Drink Pack"))
-			GetRND=GetRandomInt(1, 12);
+			GetRND=GetRandomInt(1, 13);
 		else
 			GetRND=GetRandomInt(1, 9);
 		f_PDelay[client]=GetGameTime();
 		float AddTime;
 		switch(GetRND)
 		{
-			case 10,11:AddTime=20.0;
+			case 10:AddTime=0.1;
+			case 11:AddTime=20.0;
+			case 13:AddTime=10.0;
 			default:AddTime=30.0;
 		}
 		f_PDuration[client]=GetGameTime() + AddTime;
@@ -1702,31 +1704,36 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 			}
 			case 10:
 			{
-				int health = GetClientHealth(client);
-				float WorldSpaceVec[3]; WorldSpaceCenter(client, WorldSpaceVec);
-				TimedLgtning(client, WorldSpaceVec);
-				if(!IsInvuln(client))
+				if(f_PDuration[client] < GetGameTime() && f_PDelay[client] < GetGameTime())
 				{
-					if(health>2)
-						SDKHooks_TakeDamage(client, 0, 0, float(health/2), DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
+					int health = GetClientHealth(client);
+					float WorldSpaceVec[3]; WorldSpaceCenter(client, WorldSpaceVec);
+					TimedLgtning(client, WorldSpaceVec);
+					if(!IsInvuln(client))
+					{
+						if(health>2)
+							SDKHooks_TakeDamage(client, 0, 0, float(health/2), DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
+						else
+							SDKHooks_TakeDamage(client, 0, 0, 195.0, DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
+					}
 					else
-						SDKHooks_TakeDamage(client, 0, 0, 195.0, DMG_GENERIC|DMG_PREVENT_PHYSICS_FORCE);
-				}
-				else
-				{
-					int newhealth = health/2;
-					if(health>2)
-						SetEntityHealth(client, newhealth);
-					else
-						ForcePlayerSuicide(client);
+					{
+						int newhealth = health/2;
+						if(health>2)
+							SetEntityHealth(client, newhealth);
+						else
+							ForcePlayerSuicide(client);
+					}
+					f_PDelay[client] = GetGameTime() + 60.0;
+					f_PDuration[client] = GetGameTime() + 20.0;
 				}
 				Overclock_Magical(client, 1.0, true);
 				f_Overclocker_Buff[client] = GetGameTime() + 0.2;
 			}
 			case 11:
 			{
-				float damage = 5+(Pow(float(CashSpentTotal[client]), 1.225))/10000.0;
-				if(damage<5.0)damage=5.0;
+				float damage = 10.0+(Pow(float(CashSpentTotal[client]), 1.225))/10000.0;
+				if(damage<10.0)damage=10.0;
 				float position[3]; WorldSpaceCenter(client, position);
 				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 				{
@@ -1736,7 +1743,7 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 						float position2[3], distance;
 						GetEntPropVector(npc, Prop_Send, "m_vecOrigin", position2);
 						distance = GetVectorDistance(position, position2);
-						if(distance<200.0)
+						if(distance<300.0)
 						{
 							SDKHooks_TakeDamage(npc, client, client, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
 							NpcStats_SpeedModifyEnemy(npc, 1.0, 0.9, true);
@@ -1823,6 +1830,12 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 				ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
 				EmitSoundToAll(g_TeleSounds[GetRandomInt(0, sizeof(g_TeleSounds) - 1)], client, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 				return Plugin_Stop;
+			}
+			case 13:
+			{
+				b_DrinkRND_BuildingCD_Buff[client]=true;
+				if(f_PDuration[client] < GetGameTime())
+					b_DrinkRND_BuildingCD_Buff[client]=false;
 			}
 		}
 		if(f_PDuration[client] < GetGameTime())

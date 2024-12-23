@@ -4396,8 +4396,8 @@
 	}
 	"Slug Shell desc"
 	{
-		"en"	"''Archetype: Multi Pellet'' Only\nChanges to a powerful single shot."
-		"ko"	"''유형: 산탄'' 전용\n강력한 한발로 변경됩니다."
+		"en"	"''Archetype: Multi Pellet'' Only\nDamage increases by bullets per shot.\nInstead, it becomes Single Pellet, and damage reduction by distance is applied.\Damage -20％, Reload speed -5％"
+		"ko"	"''유형: 산탄'' 전용\n발사되는 탄환수 만큼 피해량이 증가합니다.\n대신 한발만 발사 되고, 거리별 피해량 감소가 적용됩니다.\n피해량 -20％, 장속 -5％"
 	}
 	"Force Shield Generator desc"
 	{

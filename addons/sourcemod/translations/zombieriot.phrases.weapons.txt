@@ -3935,7 +3935,7 @@
 	"Force Shield Generator [Rare]"
 	{
 		"en"		"Force Shield Generator [Rare]"
-		"ko"		"포스 실드 제너레이터 HUD [희귀한]"
+		"ko"		"포스 실드 제너레이터[희귀한]"
 	}
 	"Trumpet"
 	{

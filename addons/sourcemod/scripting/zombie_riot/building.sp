@@ -568,6 +568,13 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 									float CooldownGive = BuildingCooldown[id];
 									if(Rogue_Mode())
 										CooldownGive *= 0.5;
+									if(Items_HasNamedItem(client, "Builder's Blueprints"))
+									{
+										if(CooldownGive>1.0)
+											CooldownGive-=1.0;
+										else
+											CooldownGive=0.0;
+									}
 										
 									Cooldowns[client][id] = GetGameTime() + CooldownGive;
 								}
@@ -734,6 +741,7 @@ void BuildingVoteEndResetCD()
 }
 stock void ApplyBuildingCollectCooldown(int building, int client, float Duration, bool IgnoreVotingExtraCD = false)
 {
+
 	if(CvarInfiniteCash.BoolValue)
 	{
 		Building_Collect_Cooldown[building][client] = 0.0;
@@ -741,6 +749,11 @@ stock void ApplyBuildingCollectCooldown(int building, int client, float Duration
 	else if(GameRules_GetRoundState() == RoundState_BetweenRounds && !IgnoreVotingExtraCD)
 	{
 		Building_Collect_Cooldown[building][client] = FAR_FUTURE;
+	}
+	else if(b_DrinkRND_BuildingCD_Buff[client])
+	{
+		Duration*=0.1;
+		Building_Collect_Cooldown[building][client] = Duration;
 	}
 	else
 	{

@@ -171,6 +171,8 @@ static int g_ProjectileModelRocket;
 
 static bool b_lost;
 
+static int NPCId;
+
 public void Blitzkrieg_OnMapStart()
 {
 	g_f_blitz_dialogue_timesincehasbeenhurt=0.0;
@@ -189,7 +191,12 @@ public void Blitzkrieg_OnMapStart()
 	data.Category = Type_Raid;
 	data.Func = ClotSummon;
 	data.Precache = ClotPrecache;
-	NPC_Add(data);
+	NPCId = NPC_Add(data);
+}
+
+int RaidBoss_Blitzkrieg_ID()
+{
+	return NPCId;
 }
 
 static void ClotPrecache()
