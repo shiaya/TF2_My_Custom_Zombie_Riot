@@ -486,15 +486,15 @@ public void Weapon_FlagellantHealing_M1(int client, int weapon, bool crit, int s
 
 				if(target < MaxClients)
 					ClientCommand(target, "playgamesound items/smallmedkit1.wav");
-
-				float cooldown = healing / 30.0;
-				if(cooldown < 2.0)
+				
+				float cooldown = (healing / multi) / 15.0;
+				if(cooldown < 5.0)
 				{
-					cooldown = 2.0;
+					cooldown = 5.0;
 				}
-				else if(cooldown > 10.0)
+				else if(cooldown > 15.0)
 				{
-					cooldown = 10.0;
+					cooldown = 15.0;
 				}
 
 				Ability_Apply_Cooldown(client, slot, cooldown);
@@ -638,7 +638,7 @@ public void Weapon_FlagellantHealing_M2(int client, int weapon, bool crit, int s
 		}
 	}
 
-	if(Elemental_GoingCritical(target))
+	if(target > 0 && Elemental_GoingCritical(target))
 		validAlly = false;
 
 	if(validAlly)
@@ -796,7 +796,7 @@ public void Weapon_FlagellantDamage_M2(int client, int weapon, bool crit, int sl
 		
 		SDKHooks_TakeDamage(target, client, client, (3200.0 * multi), DMG_PLASMA, secondary);
 		if(extra)
-			SDKHooks_TakeDamage(target, client, client, extra, DMG_SLASH, secondary, _, _, false, ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED);
+			SDKHooks_TakeDamage(target, client, client, extra, DMG_TRUEDAMAGE, secondary, _, _, false, ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED);
 
 		ParticleEffectAt(pos, PARTICLE_JARATE, 2.0);
 		Ability_Apply_Cooldown(client, slot, 50.0);

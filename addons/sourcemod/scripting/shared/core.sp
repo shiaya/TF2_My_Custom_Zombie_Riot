@@ -81,7 +81,6 @@ enum
 	EDICT_RAID,
 	EDICT_EFFECT
 }
-
 //maybe doing this will help lag, as there are no aim layers in zombies, they always look forwards no matter what.
 
 //edit: No, makes you miss more often.
@@ -612,6 +611,8 @@ int Armor_Wearable[MAXTF2PLAYERS];
 int Cosmetic_WearableExtra[MAXTF2PLAYERS];
 #endif
 
+int OriginalWeapon_AmmoType[MAXENTITIES];
+
 /*
 	Above Are Variables/Defines That Are Shared
 
@@ -619,6 +620,7 @@ int Cosmetic_WearableExtra[MAXTF2PLAYERS];
 */
 
 #include "shared/stocks_override.sp"
+#include "shared/master_takedamage.sp"
 #include "shared/npc_stats.sp"	// NPC Stats is required here due to important methodmap
 #include "shared/npc_collision_logic.sp"	// NPC collisions are sepearted for ease
 #include "shared/npc_trace_filters.sp"	// NPC trace filters are sepearted for ease
@@ -1975,7 +1977,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] classname,
 			}
 			if(ConsumeAmmoReserve >= 1)
 			{
-				int Ammo_type = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType");
+				int Ammo_type = GetAmmoType_WeaponPrimary(weapon);
 				SetAmmo(client, Ammo_type, GetAmmo(client, Ammo_type) - ConsumeAmmoReserve);
 			}
 		}
@@ -1992,7 +1994,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] classname,
 			}
 			if(ConsumeAmmoReserve >= 1)
 			{
-				int Ammo_type = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType");
+				int Ammo_type = GetAmmoType_WeaponPrimary(weapon);
 				SetAmmo(client, Ammo_type, GetAmmo(client, Ammo_type) + ConsumeAmmoReserve);
 			}
 		}
@@ -2031,6 +2033,10 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] classname,
 		PrintHintText(client, buffer);
 		StopSound(client, SNDCHAN_STATIC, "UI/hint.wav");
 	}
+	DataPack pack_WeaponAmmo = new DataPack();
+	pack_WeaponAmmo.WriteCell(EntIndexToEntRef(client));
+	pack_WeaponAmmo.WriteCell(EntIndexToEntRef(weapon));
+	RequestFrame(CheckWeaponAmmoLogicExternal, pack_WeaponAmmo);
 	
 	float GameTime = GetGameTime();
 	int WeaponSlot = TF2_GetClassnameSlot(classname);
