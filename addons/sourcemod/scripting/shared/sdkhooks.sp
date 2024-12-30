@@ -327,6 +327,7 @@ public void OnPreThinkPost(int client)
 	}
 	CvarAirAcclerate.FloatValue = b_AntiSlopeCamp[client] ? 2.0 : 10.0;
 	Cvar_clamp_back_speed.FloatValue = f_Client_BackwardsWalkPenalty[client];
+	Cvar_LoostFooting.FloatValue = f_Client_LostFriction[client];
 }
 #endif	// ZR & RPG
 
@@ -361,7 +362,7 @@ public void OnPostThink(int client)
 
 			if(damageTrigger > 1.0)
 			{
-				SDKHooks_TakeDamage(client, 0, 0, damageTrigger, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE, -1,_,_,_,ZR_STAIR_ANTI_ABUSE_DAMAGE);
+				SDKHooks_TakeDamage(client, 0, 0, damageTrigger, DMG_OUTOFBOUNDS, -1,_,_,_,ZR_STAIR_ANTI_ABUSE_DAMAGE);
 			}
 		}
 	}
@@ -437,7 +438,13 @@ public void OnPostThink(int client)
 		Cvar_clamp_back_speed.ReplicateToClient(client, IntToStringDo); //set down
 		ReplicateClient_BackwardsWalk[client] = f_Client_BackwardsWalkPenalty[client];
 	}
-		
+	if(ReplicateClient_LostFooting[client] != ReplicateClient_LostFooting[client])
+	{
+		char IntToStringDo[4];
+		FloatToString(f_Client_LostFriction[client], IntToStringDo, sizeof(IntToStringDo));
+		Cvar_LoostFooting.ReplicateToClient(client, IntToStringDo); //set down
+		ReplicateClient_LostFooting[client] = f_Client_LostFriction[client];
+	}
 	//Reduce knockback when airborn, this is to fix issues regarding flying way too high up, making it really easy to tank groups!
 	bool WasAirborn = false;
 
@@ -586,6 +593,19 @@ public void OnPostThink(int client)
 			mana_regen[client] *= 1.05;
 			max_mana[client] *= 1.05;
 		}
+
+		/*int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+		
+		if(IsValidEntity(weapon))
+		{
+			switch(i_CustomWeaponEquipLogic[weapon])
+			{
+				case WEAPON_KIT_FRACTAL:
+				{
+					Fractal_Kit_Modify_Mana(client, weapon);
+				}
+			}
+		}*/
 
 		if(b_AggreviatedSilence[client])	
 		{
@@ -758,8 +778,11 @@ public void OnPostThink(int client)
 			if(WeaponWasGivenInfiniteDelay[weapon] && !IsWeaponEmptyCompletly(client, weapon, true))
 			{
 				//tiny delay to prevent abuse?
-				SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime() + 0.5);
-				SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime() + 0.5);
+				if(Attributes_Get(weapon, 4015, 0.0) == 0.0)
+				{
+					SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime() + 0.5);
+					SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime() + 0.5);
+				}
 				WeaponWasGivenInfiniteDelay[weapon] = false;
 			}
 			static float cooldown_time;
@@ -942,48 +965,55 @@ public void OnPostThink(int client)
 			{
 				if(percentage_melee != 100.0 && percentage_melee > 0.0)
 				{
+					char NumberAdd[32];
+					had_An_ability = true;
 					if(percentage_melee < 10.0)
 					{
-						FormatEx(buffer, sizeof(buffer), "%s[☛%.2f%%", buffer, percentage_melee);
-						had_An_ability = true;
+						Format(NumberAdd, sizeof(NumberAdd), "[☛%.2f%%", percentage_melee);
 					}
 					else
 					{
-
-						FormatEx(buffer, sizeof(buffer), "%s[☛%.0f%%", buffer, percentage_melee);
-						had_An_ability = true;
+						Format(NumberAdd, sizeof(NumberAdd), "[☛%.0f%%", percentage_melee);
 					}
+					
+					if(f_ClientDoDamageHud_Hurt[client][0] > GetGameTime())
+						Npcs_AddUnderscoreToText(NumberAdd, sizeof(NumberAdd));
+
+					Format(buffer, sizeof(buffer), "%s%s", buffer, NumberAdd);
 				}
 				
 				if(percentage_ranged != 100.0 && percentage_ranged > 0.0)
 				{
+					char NumberAdd[32];
 					if(had_An_ability)
 					{
-						FormatEx(buffer, sizeof(buffer), "%s|", buffer);
 						if(percentage_ranged < 10.0)
 						{
-							FormatEx(buffer, sizeof(buffer), "%s➶%.2f%%]", buffer, percentage_ranged);
-							had_An_ability = true;
+							FormatEx(NumberAdd, sizeof(NumberAdd), "|➶%.2f%%", percentage_ranged);
 						}
 						else
 						{
-							FormatEx(buffer, sizeof(buffer), "%s➶%.0f%%]", buffer, percentage_ranged);
-							had_An_ability = true;
+							FormatEx(NumberAdd, sizeof(NumberAdd), "|➶%.0f%%", percentage_ranged);
 						}
 					}
 					else
 					{
 						if(percentage_ranged < 10.0)
 						{
-							FormatEx(buffer, sizeof(buffer), "%s [➶%.2f%%]", buffer, percentage_ranged);
-							had_An_ability = true;
+							FormatEx(NumberAdd, sizeof(NumberAdd), "[➶%.2f%%", percentage_ranged);
 						}
 						else
 						{
-							FormatEx(buffer, sizeof(buffer), "%s [➶%.0f%%]", buffer, percentage_ranged);
-							had_An_ability = true;
+							FormatEx(NumberAdd, sizeof(NumberAdd), "[➶%.0f%%", percentage_ranged);
 						}
 					}
+
+					had_An_ability = true;
+					if(f_ClientDoDamageHud_Hurt[client][1] > GetGameTime())
+						Npcs_AddUnderscoreToText(NumberAdd, sizeof(NumberAdd));
+
+					Format(buffer, sizeof(buffer), "%s%s", buffer, NumberAdd);
+					Format(buffer, sizeof(buffer), "%s]", buffer);
 				}
 				else
 				{
@@ -1711,10 +1741,13 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 	}
 	if(damagetype & DMG_TRUEDAMAGE)
 	{
-		if(f_RecievedTruedamageHit[victim] < GetGameTime())
+		if(!(i_HexCustomDamageTypes[victim] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
 		{
-			f_RecievedTruedamageHit[victim] = GetGameTime() + 0.5;
-			ClientCommand(victim, "playgamesound player/crit_received%d.wav", (GetURandomInt() % 3) + 1);
+			if(f_RecievedTruedamageHit[victim] < GetGameTime())
+			{
+				f_RecievedTruedamageHit[victim] = GetGameTime() + 0.5;
+				ClientCommand(victim, "playgamesound player/crit_received%d.wav", (GetURandomInt() % 3) + 1);
+			}
 		}
 	}
 
@@ -1977,7 +2010,6 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 			EmitSoundToAll("misc/halloween/spell_overheal.wav", victim, SNDCHAN_STATIC, 80, _, 0.8);
 			f_OneShotProtectionTimer[victim] = GameTime + 60.0; // 60 second cooldown
 			//PrintToConsole(victim, "[ZR] THIS IS DEBUG! IGNORE! Player_OnTakeDamageAlive_DeathCheck 5");
-
 			return Plugin_Handled;
 		}
 		//if they were supposed to die, but had protection from the marchant kit, do this instead.
@@ -2460,7 +2492,7 @@ public void OnWeaponSwitchPre(int client, int weapon)
 void ApplyLastmanOrDyingOverlay(int client)
 {
 	if(LastMann && Yakuza_Lastman())
-		return;
+		return;	
 	
 	DoOverlay(client, "debug/yuv");
 	if(LastMann)

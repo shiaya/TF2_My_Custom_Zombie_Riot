@@ -314,7 +314,14 @@ bool Waves_CallVote(int client, int force = 0)
 		
 		Vote vote;
 		Format(vote.Name, sizeof(vote.Name), "%t", "No Vote");
-		menu.AddItem(NULL_STRING, vote.Name);
+		if(Voting)
+		{
+			menu.AddItem(NULL_STRING, vote.Name);
+		}
+		else
+		{
+			menu.AddItem(NULL_STRING, vote.Name, ITEMDRAW_DISABLED);
+		}
 
 		if(Voting)
 		{
@@ -323,8 +330,8 @@ bool Waves_CallVote(int client, int force = 0)
 			{
 				Voting.GetArray(i, vote);
 				vote.Name[0] = CharToUpper(vote.Name[0]);
-				
-				if(vote.Level > 0 && LastWaveWas[0] && StrEqual(vote.Config, LastWaveWas))
+				//There must be atleast 4 selections for the cooldown to work.
+				if(length >= 4 &&vote.Level > 0 && LastWaveWas[0] && StrEqual(vote.Config, LastWaveWas))
 				{
 					Format(vote.Name, sizeof(vote.Name), "%s (Cooldown)", vote.Name);
 					menu.AddItem(vote.Config, vote.Name, ITEMDRAW_DISABLED);
@@ -393,6 +400,7 @@ public int Waves_CallVoteH(Menu menu, MenuAction action, int client, int choice)
 				if(!choice || VotedFor[client] != choice)
 				{
 					VotedFor[client] = choice;
+					
 					if(VotedFor[client] == 0)
 					{
 						VotedFor[client] = -1;
@@ -1064,6 +1072,8 @@ void Waves_RoundStart()
 	
 	Waves_RoundEnd();
 	Freeplay_ResetAll();
+
+	Kit_Fractal_ResetRound();
 	
 	if(Rogue_Mode())
 	{

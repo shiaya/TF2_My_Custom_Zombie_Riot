@@ -47,7 +47,9 @@ public const int AmmoData[][] =
 	{ 10, 500 },		//Medigun Fluid
 	{ 10, 80 },			//Laser Battery
 	{ 0, 0 },			//Hand Grenade
-	{ 0, 0 }			//Drinks like potions
+	{ 0, 0 },			//???
+	{ 0, 0 },			//???
+	{ 0, 0 }			//???
 };
 
 
@@ -209,6 +211,10 @@ enum
 	WEAPON_OLDINFINITYBLADE = 129,
 	WEAPON_NYMPH = 130,
 	WEAPON_CASTLEBREAKER = 131,
+	WEAPON_ZEALOT_MELEE = 132,
+	WEAPON_ZEALOT_GUN = 133,
+	WEAPON_ZEALOT_POTION = 134,
+	WEAPON_KIT_FRACTAL	= 135,
 	WEAPON_MARKET_GARDENER = 1000,
 	WEAPON_FARMER = 1001,
 	WEAPON_MINECRAFT_SWORD = 1002,
@@ -377,6 +383,7 @@ int Level[MAXTF2PLAYERS];
 int XP[MAXTF2PLAYERS];
 int i_ExtraPlayerPoints[MAXTF2PLAYERS];
 int i_PreviousPointAmount[MAXTF2PLAYERS];
+int SpecialLastMan;
 
 bool WaitingInQueue[MAXTF2PLAYERS];
 
@@ -544,6 +551,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/kit_seaborn.sp"
 #include "zombie_riot/custom/weapon_class_leper.sp"
 #include "zombie_riot/custom/kit_flagellant.sp"
+#include "zombie_riot/custom/kit_zealot.sp"
 #include "zombie_riot/custom/cosmetics/silvester_cosmetics_yay.sp"
 #include "zombie_riot/custom/cosmetics/magia_cosmetics.sp"
 #include "zombie_riot/custom/wand/weapon_wand_impact_lance.sp"
@@ -551,6 +559,8 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/weapon_rusty_rifle.sp"
 #include "zombie_riot/custom/weapon_wrathful_blade.sp"
 #include "zombie_riot/custom/kit_blitzkrieg.sp"
+#include "zombie_riot/custom/kit_fractal.sp"
+#include "zombie_riot/custom/weapon_laz_laser_cannon.sp"
 #include "zombie_riot/custom/weapon_angelic_shotgonnus.sp"
 #include "zombie_riot/custom/weapon_fullmoon.sp"
 #include "zombie_riot/custom/red_blade.sp"
@@ -850,6 +860,7 @@ void ZR_MapStart()
 	Reset_stats_Yamato_Global();	//acts as a reset/map precache
 	QuincyMapStart();
 	Fantasy_Blade_MapStart();
+	Fractal_Kit_MapStart();
 	Casino_MapStart();
 	Saga_MapStart();
 	Beam_Wand_Pap_OnMapStart();
@@ -891,6 +902,7 @@ void ZR_MapStart()
 	LockDown_Wand_MapStart();
 	Still_Hunt_MapStart();
 	Weapon_ToolGun_MapStart();
+	OnMapStartZealot();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)
@@ -1678,7 +1690,7 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 	if(!Waves_Started() || (!rogue && Waves_InSetup()) || (rogue && Rogue_InSetup()) || GameRules_GetRoundState() != RoundState_ZombieRiot)
 	{
 		LastMann = false;
-		Yakuza_Lastman(false);
+		Yakuza_Lastman(0);
 		CurrentPlayers = 0;
 		for(int client=1; client<=MaxClients; client++)
 		{
@@ -1715,7 +1727,7 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 				else if(LastMann)
 				{
 					LastMann = false;
-					Yakuza_Lastman(false);
+					Yakuza_Lastman(0);
 				}
 				
 			}
@@ -1811,8 +1823,20 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 						if(Yakuza_IsNotInJoint(client))
 						{
 							Yakuza_AddCharge(client, 99999);
-							Yakuza_Lastman(true);
+							Yakuza_Lastman(1);
 							CPrintToChatAll("{crimson}Something awakens inside %N.......",client);
+						}
+						if(Zealot_Sugmar(client))
+						{
+							Yakuza_Lastman(2);
+							CPrintToChatAll("{crimson}%N descended into a fanatical worship of Sigmar, and set out to cleanse the unrighteous themselves.",client);
+						}
+						if(Fractal_LastMann(client))
+						{
+							//get some cool line.
+							Max_Fractal_Crystals(client);
+							CPrintToChatAll("{purple}Twirl{crimson}'s Essence enters %N...",client);
+							Yakuza_Lastman(3);
 						}
 						
 						for(int i=1; i<=MaxClients; i++)

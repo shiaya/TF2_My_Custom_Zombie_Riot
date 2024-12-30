@@ -111,6 +111,7 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	Merchant_RoundStart();
 	Flametail_RoundStart();
 	BlacksmithBrew_RoundStart();
+	Zealot_RoundStart();
 
 	if(RoundStartTime > GetGameTime())
 		return;

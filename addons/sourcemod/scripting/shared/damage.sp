@@ -31,7 +31,7 @@ stock bool Damage_Modifiy(int victim, int &attacker, int &inflictor, float &dama
 		//LogEntryInvicibleTest(victim, attacker, damage, 7);
 #endif
 	}
-	else if(!b_NpcHasDied[victim])
+	else if(b_ThisWasAnNpc[victim])
 	{
 		if(Damage_NPCVictim(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom))
 			return true;
@@ -58,7 +58,7 @@ stock bool Damage_Modifiy(int victim, int &attacker, int &inflictor, float &dama
 #endif
 			//LogEntryInvicibleTest(victim, attacker, damage, 14);
 		}
-		else if(!b_NpcHasDied[attacker])
+		else if(b_ThisWasAnNpc[attacker])
 		{
 			if(Damage_NPCAttacker(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom))
 				return true;
@@ -107,6 +107,8 @@ stock bool Damage_AnyVictim(int victim, int &attacker, int &inflictor, float &da
 #if !defined RTS
 stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
+	if(!CheckInHud())
+		HudDamageIndicator(victim,damagetype, false);
 #if defined ZR
 	if(VIPBuilding_Active())
 		return true;
@@ -576,7 +578,7 @@ stock bool Damage_AnyAttacker(int victim, int &attacker, int &inflictor, float &
 	damage += StatusEffect_OnTakeDamage_DealPositive(victim, attacker,inflictor, basedamage, damagetype);
 #if defined ZR
 	//Medieval buff stacks with any other attack buff.
-	if(attacker >= MaxClients && GetTeam(victim) == TFTeam_Red && Medival_Difficulty_Level != 0.0)
+	if(GetTeam(attacker) != TFTeam_Red && GetTeam(victim) == TFTeam_Red && Medival_Difficulty_Level != 0.0)
 	{
 		damage *= 2.0 - Medival_Difficulty_Level; //More damage !! only upto double.
 	}
@@ -591,6 +593,9 @@ stock bool Damage_PlayerAttacker(int victim, int &attacker, int &inflictor, floa
 	if(Rogue_InItallianWrath(weapon))
 		damage *= 2.0;
 #endif
+	if(!CheckInHud())
+		HudDamageIndicator(attacker,damagetype, true);
+		
 	return false;
 }
 #endif
@@ -747,6 +752,16 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 		{
 			Perserker_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
 		}
+		case WEAPON_ZEALOT_MELEE, WEAPON_ZEALOT_GUN, WEAPON_ZEALOT_POTION:
+		{
+			if(!CheckInHud())
+				return Player_OnTakeDamage_Zealot(victim, damage, attacker, equipped_weapon, damagePosition, damagetype);
+		}
+		case WEAPON_KIT_FRACTAL:
+		{
+			if(!(damagetype & DMG_TRUEDAMAGE))
+				return Player_OnTakeDamage_Fractal(victim, damage, damagePosition,attacker);
+		}
 	}
 	
 	if(b_Chaos_Coil[victim])
@@ -809,6 +824,7 @@ static stock bool NullfyDamageAndNegate(int victim, int &attacker, int &inflicto
 		}
 	}
 #endif
+//For huds, show anyways!
 	if(!b_NpcIsTeamkiller[attacker])
 	{
 		if(GetTeam(attacker) == GetTeam(victim)) //should be entirely ignored
@@ -1113,6 +1129,16 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		{
 			if(!CheckInHud())
 				WeaponCastleBreaker_OnTakeDamageNpc(attacker, victim, damage, weapon, damagetype);
+		}
+		case WEAPON_ZEALOT_MELEE:
+		{
+			if(!CheckInHud())
+				WeaponZealot_OnTakeDamage(attacker, victim, damage);
+		}
+		case WEAPON_ZEALOT_GUN:
+		{
+			if(!CheckInHud())
+				WeaponZealot_OnTakeDamage_Gun(attacker, victim, damage);
 		}
 		case WEAPON_MARKET_GARDENER:
 		{

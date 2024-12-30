@@ -270,12 +270,15 @@ enum
 	RUINA_TWIRL_CREST_4		= 8192,			//14
 	RUINA_QUINCY_BOW_3		= 16384			//15
 }
-#define RUINA_CUSTOM_MODELS_4	"models/zombie_riot/weapons/ruina_models_4_1.mdl"
+#define RUINA_CUSTOM_MODELS_4	"models/zombie_riot/weapons/ruina_models_4_2.mdl"
 enum
 {
 	RUINA_STELLA_CREST			= 1,			//1
 	RUINA_STELLA_CREST_CHARGING	= 2,			//2
-	RUINA_KARLAS_PROJECTILE		= 4				//4 ITS A SPACE SHIP, BUT ACTUALLY NOT!
+	RUINA_KARLAS_PROJECTILE		= 4,			//4 ITS A SPACE SHIP, BUT ACTUALLY NOT!
+	RUINA_FANTASY_BLADE			= 8,			//8 its a sword, that looks like a spaceship..
+	RUINA_FRACTAL_LENZ			= 16,			//16 the primary medic weapon animation is ASSSSSSSS for making a magic-spell weapon specifically for what I wanted. so the model effort is "eh". but I had no choice :(
+	RUINA_FRACTAL_HARVESTER		= 32
 }
 
 
@@ -734,6 +737,7 @@ public void OnPluginStart()
 	100,
 	1,
 	1,
+	1,
 	1};
 #endif
 	
@@ -774,6 +778,10 @@ public void OnPluginStart()
 	Cvar_clamp_back_speed = FindConVar("tf_clamp_back_speed");
 	if(Cvar_clamp_back_speed)
 		Cvar_clamp_back_speed.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
+
+	Cvar_LoostFooting = FindConVar("tf_movement_lost_footing_friction");
+	if(Cvar_LoostFooting)
+		Cvar_LoostFooting.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
 
 	CvarTfMMMode = FindConVar("tf_mm_servermode");
 	if(CvarTfMMMode)
@@ -1517,6 +1525,7 @@ public void OnClientDisconnect(int client)
 	i_EntityToAlwaysMeleeHit[client] = 0;
 	ReplicateClient_Svairaccelerate[client] = -1.0;
 	ReplicateClient_BackwardsWalk[client] = -1.0;
+	ReplicateClient_LostFooting[client] = -1.0;
 	ReplicateClient_Tfsolidobjects[client] = -1;
 	ReplicateClient_RollAngle[client] = -1;
 	b_NetworkedCrouch[client] = false;
@@ -3023,7 +3032,7 @@ public void TF2_OnConditionRemoved(int client, TFCond condition)
 			}
 			case TFCond_Taunting:
 			{
-				ViewChange_Update(client);
+				Viewchange_UpdateDelay(client);
 
 				if(!b_TauntSpeedIncreace[client])
 				{

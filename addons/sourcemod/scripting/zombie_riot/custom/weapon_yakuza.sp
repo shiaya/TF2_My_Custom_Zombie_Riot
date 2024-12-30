@@ -60,7 +60,6 @@ static int CurrentWeaponComboAt[MAXTF2PLAYERS];
 static float LastDamage[MAXTF2PLAYERS];
 static float LastSpeed[MAXTF2PLAYERS];
 static float CurrentlyInAttack[MAXTF2PLAYERS];
-static bool SpecialLastMan;
 static bool Precached;
 static float HeatActionCooldown[MAXTF2PLAYERS];
 static float HeatActionCooldownEnemy[MAXENTITIES];
@@ -74,7 +73,7 @@ void Yakuza_MapStart()
 	Zero(HeatActionCooldown);
 	Zero(HeatActionCooldownEnemy);
 	Precached = false;
-	SpecialLastMan = false;
+	SpecialLastMan = 0;
 	PrecacheSound("items/pegleg_01.wav");
 	PrecacheSound("items/pegleg_02.wav");
 	PrecacheSound("items/powerup_pickup_base.wav");
@@ -109,7 +108,7 @@ bool Yakuza_IsNotInJoint(int client)
 	return WeaponTimer[client] != null;	
 }
 
-bool Yakuza_Lastman(any toggle = -1)
+int Yakuza_Lastman(any toggle = -1)
 {
 	if(toggle != -1)
 		SpecialLastMan = view_as<bool>(toggle);
@@ -645,6 +644,7 @@ public void Yakuza_M2Special(int client, int weapon, int slot)
 				Rogue_OnAbilityUse(weapon);
 				Yakuza_AddCharge(client, -RequiredHeat);
 				f_AntiStuckPhaseThrough[client] = GetGameTime() + (3.5 * Yakuza_DurationDoEnemy(target));
+				f_AntiStuckPhaseThroughFirstCheck[client] = GetGameTime() + (3.5 * Yakuza_DurationDoEnemy(target));
 				//Everything is greenlit! Yaay!
 				HeatActionCooldown[client] = GetGameTime() + 0.5;
 				if(WeaponStyle[client] != Style_Dragon)
@@ -695,6 +695,7 @@ public void Yakuza_M2Special(int client, int weapon, int slot)
 						DamageBase *= Attributes_Get(weapon, 2, 1.0);
 						//tiger drop negates all damage.
 						f_AntiStuckPhaseThrough[client] = 0.0;
+						f_AntiStuckPhaseThroughFirstCheck[client] = 0.0;
 						IncreaceEntityDamageTakenBy(client, 0.0001, 0.75);
 						DoSpecialActionYakuza(client, DamageBase, "brawler_heat_4", 0.75, target);
 						flMaxhealth *= 0.45;
@@ -761,7 +762,7 @@ public void Yakuza_M2Special(int client, int weapon, int slot)
 			
 			float VicLoc[3];
 			VicLoc[2] += halved ? 250.0 : 450.0; //Jump up.
-			if(!VIPBuilding_Active())
+			if(!VIPBuilding_Active() && !HasSpecificBuff(target, "Solid Stance"))
 			{
 				SDKUnhook(target, SDKHook_Think, NpcJumpThink);
 				f3_KnockbackToTake[target] = VicLoc;
