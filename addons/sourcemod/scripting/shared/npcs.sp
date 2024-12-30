@@ -2134,6 +2134,7 @@ void OnKillUniqueWeapon(int attacker, int weapon, int victim)
 		}
 		case WEAPON_FARMER:Famrmer_OnKill(attacker);
 		case WEAPON_PERSERKER:Perserker_OnKill(attacker);
+		case WEAPON_STILLHUNT:Still_Hunt_OnKill(attacker);
 	}
 }
 #endif

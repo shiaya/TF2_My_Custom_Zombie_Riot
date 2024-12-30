@@ -210,7 +210,7 @@ public Action Timer_Ash_Activated(Handle timer, any userid)
 		{
 			Perserker_Ash[client]=false;
 			Perserker_Manual[client]=false;
-			SDKHooks_TakeDamage(client, 0, 0, float(GetClientHealth(client))*3.0, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+			SDKHooks_TakeDamage(client, 0, 0, float(GetClientHealth(client))*3.0, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 			if(dieingstate[client] > 0 || !IsPlayerAlive(client))
 				return Plugin_Stop;
 		}
@@ -339,12 +339,12 @@ public void Perserker_NPCTakeDamage(int victim, int attacker, float &damage, int
 			DMGBuff *= 3.0;
 		damage+=(DMGBuff+maxhealth);
 		damage*=(Perserker_Manual[attacker] ? 1.25 : 1.0);
-		if(Perserker_Rage_Attack[attacker]>0.0 && (damagetype | DMG_SLASH))
+		if(Perserker_Rage_Attack[attacker]>0.0 && (damagetype | DMG_TRUEDAMAGE))
 		{
 			Handle AttackPack;
 			CreateDataTimer(0.01, Timer_Delay_Attack, AttackPack, TIMER_FLAG_NO_MAPCHANGE);
 			WritePackCell(AttackPack, Perserker_Rage_Attack[attacker]*0.5);
-			WritePackCell(AttackPack, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+			WritePackCell(AttackPack, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 			WritePackCell(AttackPack, victim);
 			WritePackCell(AttackPack, attacker);
 			Perserker_Rage_Attack[attacker]=0.0;

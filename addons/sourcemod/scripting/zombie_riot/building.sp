@@ -575,7 +575,7 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 										else
 											CooldownGive=0.0;
 									}
-										
+									b_Interior_ExplosiveBuilding[entity]=b_Explosive_Structures[client];
 									Cooldowns[client][id] = GetGameTime() + CooldownGive;
 								}
 							}

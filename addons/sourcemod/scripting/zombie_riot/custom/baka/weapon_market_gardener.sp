@@ -10,12 +10,14 @@ static float Power_Nerf[MAXENTITIES];
 static int Market_WeaponPap[MAXTF2PLAYERS];
 static bool Market_OnAttack[MAXTF2PLAYERS];
 static int Market_AltAttackUse[MAXTF2PLAYERS];
+static int Market_Perk[MAXTF2PLAYERS];
 
 public void Market_Garden_OnMapStart()
 {
 	Zero(Weapon_Energy);
 	Zero(Weapon_Energy_Max);
 	Zero(Market_WeaponPap);
+	Zero(Market_Perk);
 	Zero(MarketHUDDelay);
 	Zero(Market_OnAttack);
 	Zero(Market_AltAttackUse);
@@ -31,11 +33,12 @@ public void Market_Gardener_Attack(int client, int weapon, bool &result, int slo
 
 public void Market_Gardener_AltAttack(int client, int weapon, bool &result, int slot)
 {
-	if(Market_AltAttackUse[client]>0 || CvarInfiniteCash.BoolValue)
+	int MaxCharger = (Market_Perk[client] == 3 ? 2 : 1);
+	if(Market_AltAttackUse[client]<MaxCharger || CvarInfiniteCash.BoolValue)
 	{
 		Rogue_OnAbilityUse(weapon);
-		if(Market_AltAttackUse[client]<0)Market_AltAttackUse[client]=0;
-		else if(!CvarInfiniteCash.BoolValue)Market_AltAttackUse[client]--;
+		if(!CvarInfiniteCash.BoolValue)Market_AltAttackUse[client]++;
+		if(Market_AltAttackUse[client] > MaxCharger)Market_AltAttackUse[client]=MaxCharger;
 		Temp_Launch_Power[0]=1000.0,Temp_Launch_Power[1]=800.0,Temp_Launch_Power[2]=1.0;
 		FakeClientCommandEx(client, "voicemenu 2 1");
 		RequestFrame(LaunchPlayer, client);
@@ -53,8 +56,7 @@ public void Market_Gardener_AltAttack(int client, int weapon, bool &result, int 
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);	
-		PrintToChat(client, "%i", i_CurrentEquippedPerk[client]);
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
 	}
 }
 
@@ -100,12 +102,27 @@ void LaunchPlayer(int client)
 
 public void MarketGardener_Enable(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
 {
-	if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MARKET_GARDENER)
+	if(MarketTimer[client] != null)
 	{
-		delete MarketTimer[client];
-		MarketTimer[client] = null;
+		if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MARKET_GARDENER)
+		{
+			Market_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
+			Market_Perk[client]=i_CurrentEquippedPerk[client];
+			delete MarketTimer[client];
+			MarketTimer[client] = null;
+			DataPack pack;
+			MarketTimer[client] = CreateDataTimer(0.1, Timer_MarketGardener, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			pack.WriteCell(client);
+			pack.WriteCell(EntIndexToEntRef(weapon));
+		}
+		return;
+	}
+	if(i_CustomWeaponEquipLogic[weapon] == WEAPON_MARKET_GARDENER)
+	{
+		Market_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
+		Market_Perk[client]=i_CurrentEquippedPerk[client];
 		DataPack pack;
-		MarketTimer[client] = CreateDataTimer(0.25, Timer_MarketGardener, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		MarketTimer[client] = CreateDataTimer(0.1, Timer_MarketGardener, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		pack.WriteCell(client);
 		pack.WriteCell(EntIndexToEntRef(weapon));
 	}
@@ -123,20 +140,21 @@ public Action Timer_MarketGardener(Handle timer, DataPack pack)
 	}
 	if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MARKET_GARDENER)
 	{
-		int MaxCharger = 2;
-		if(i_CurrentEquippedPerk[client] != 3)MaxCharger = 1;
-		Market_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
-		if(Ability_Check_Cooldown(client, 2) < 0.0 && Market_AltAttackUse[client] < MaxCharger)
+		float CoolDown = Attributes_Get(weapon, 249, 120.0);
+		if(Market_Perk[client] == 4)
+			CoolDown -= 10.0;
+		else if(Market_Perk[client] == 3)
+			CoolDown += 10.0;
+		if(Market_AltAttackUse[client] <= 0)
 		{
-			++Market_AltAttackUse[client];
-			float CoolDown = Attributes_Get(weapon, 249, 120.0);
-			if(i_CurrentEquippedPerk[client] == 4)
-				CoolDown -= 10.0;
-			else if(i_CurrentEquippedPerk[client] == 3)
-				CoolDown += 10.0;
+			Market_AltAttackUse[client]=0;
 			Ability_Apply_Cooldown(client, 2, CoolDown);
 		}
-		if(Market_AltAttackUse[client] > MaxCharger)Market_AltAttackUse[client] = MaxCharger;
+		else if(Ability_Check_Cooldown(client, 2) < 0.0)
+		{
+			--Market_AltAttackUse[client];
+			Ability_Apply_Cooldown(client, 2, CoolDown);
+		}
 		Weapon_Energy_Max[client] = Attributes_Get(weapon, 171, 15.0);
 		if(GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon") == weapon && Market_WeaponPap[client]>=3)
 		{
@@ -159,9 +177,12 @@ public void MarketGardener_NPCTakeDamage(int victim, int attacker, float &damage
 		return;
 	if(!IsValidClient(attacker))
 		return;
+	if(!Market_OnAttack[attacker])
+		return;
+	Market_OnAttack[attacker]=false;
 	if(GetEntityFlags(attacker)&FL_ONGROUND)
 	{
-		if(i_CurrentEquippedPerk[attacker] == 5)
+		if(Market_Perk[attacker] == 5)
 			damage *= 0.5;
 		return;
 	}
@@ -172,7 +193,7 @@ public void MarketGardener_NPCTakeDamage(int victim, int attacker, float &damage
 	float Speed = MoveSpeed(attacker, _, true);
 	bool minicrit=true;
 	float DMGBuff = damage;
-	bool GetMarket;
+	bool GetMarket=false;
 	float JUMPDMGSCALE = Attributes_Get(weapon, 19);
 	float BOSSHEALTHPER = Attributes_Get(weapon, 399, 0.0);
 	float BOSSDMGSCALE = Attributes_Get(weapon, 425);
@@ -180,7 +201,9 @@ public void MarketGardener_NPCTakeDamage(int victim, int attacker, float &damage
 	float HEALONJUMPATTACK = Attributes_Get(weapon, 401, 0.0);
 	DMGBuff+=Speed;
 	DMGBuff*=JUMPDMGSCALE;
-	float MAXSpeed = (i_CurrentEquippedPerk[attacker] == 2 ? 480.0 : 520.0);
+	float MAXSpeed = 520.0;
+	if(Market_Perk[attacker] == 2)
+		MAXSpeed = 480.0;
 	if(b_thisNpcIsARaid[victim] || b_thisNpcIsABoss[victim] || (Market_WeaponPap[attacker]>=5 && Market_WeaponPap[attacker]<=7))
 	{
 		float BOSSHEALTH = float(ReturnEntityMaxHealth(victim));
@@ -225,7 +248,7 @@ public void MarketGardener_NPCTakeDamage(int victim, int attacker, float &damage
 			TeleportEntity(attacker, NULL_VECTOR, NULL_VECTOR, fVelocity);
 			Weapon_Energy[attacker]=0.0;
 		}
-		if(Market_WeaponPap[attacker]>=8 && Market_WeaponPap[attacker]<=10 && Market_OnAttack[attacker])
+		if(Market_WeaponPap[attacker]>=8 && Market_WeaponPap[attacker]<=10)
 		{
 			int GetTarget;
 			float position[3], position2[3], distance;
@@ -257,17 +280,19 @@ public void MarketGardener_NPCTakeDamage(int victim, int attacker, float &damage
 	}
 	if(!minicrit)
 	{
-		float DMGNerf = i_CurrentEquippedPerk[attacker] ? 5.0 : 10.0;
+		float DMGNerf = Market_Perk[attacker] ? 5.0 : 10.0;
 		if(Power_Nerf[victim] > gametime)
 			DMGBuff*=(DMGNerf-(Power_Nerf[victim] - gametime))/DMGNerf;
 		Power_Nerf[victim] = gametime + DMGNerf;
-		if(i_CurrentEquippedPerk[attacker] == 5)
+		if(Market_Perk[attacker] == 5)
 			DMGBuff*=1.25;
 	}
-	if(i_CurrentEquippedPerk[attacker] == 2)
+	if(Market_Perk[attacker] == 2)
 		DMGBuff*=0.95;
 	damage=DMGBuff;
 	DisplayCritAboveNpc(victim, attacker, true, _, _, minicrit);
+	PrintToChat(attacker, "Speed: %.1f", Speed);
+	return;
 }
 
 stock void ApplySelfHealEvent(int entindex, int amount)

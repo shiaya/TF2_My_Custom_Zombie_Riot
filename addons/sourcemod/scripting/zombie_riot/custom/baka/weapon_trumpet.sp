@@ -7,8 +7,8 @@ public void Weapon_Trumpet_MapStart()
 {
 	if(FileExists("sound/baka_zr/trumpetskeleton.mp3", true))
 		PrecacheSound("baka_zr/trumpetskeleton.mp3", true);
-	PrecacheSound("weapons/pistol_shoot.wav");
-	PrecacheSound("weapons/pistol_shoot_crit.wav");
+	/*PrecacheSound("weapons/pistol_shoot.wav");
+	PrecacheSound("weapons/pistol_shoot_crit.wav");*/
 }
 
 public void Enable_TrumpetWeapon(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
@@ -55,8 +55,8 @@ public Action Timer_Management_Trumpet(Handle timer, DataPack pack)
 	int weapon_holding = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 	if(weapon_holding == weapon)
 	{
-		StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot_crit.wav");
-		StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot.wav");
+		/*StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot_crit.wav");
+		StopSound(client, SNDCHAN_WEAPON, "weapons/pistol_shoot.wav");*/
 	}
 
 	return Plugin_Continue;

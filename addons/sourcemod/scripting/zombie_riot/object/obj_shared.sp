@@ -66,10 +66,13 @@ static char g_DeathSounds[][] = {
 	"physics/metal/metal_box_break2.wav",
 };
 
+static char g_ExplosionSounds[]= "weapons/explode1.wav";
+
 void Object_MapStart()
 {
 	PrecacheSoundArray(g_DeathSounds);
 	PrecacheSoundArray(g_HurtSounds);
+	PrecacheSound(g_ExplosionSounds);
 }
 void Object_PluginStart()
 {
@@ -920,6 +923,31 @@ void DestroyBuildingDo(int entity)
 	float VecOrigin[3];
 	GetAbsOrigin(entity, VecOrigin);
 	VecOrigin[2] += 15.0;
+	if(b_Interior_ExplosiveBuilding[entity])
+	{
+		int maxhealth = GetEntProp(entity, Prop_Data, "m_iMaxHealth");
+		int client = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+		float damage = 10.0;
+		float AOE_range = 100.0;
+		if(!IsValidClient(client))client=-1;
+		else
+		{
+			float attack_speed;
+
+			attack_speed = 1.0 / Attributes_GetOnPlayer(client, 343, true, true);
+				
+			damage = attack_speed * damage * Attributes_GetOnPlayer(client, 287, true, true);
+			
+			damage+=float(maxhealth)*0.9;
+			
+			float sentry_range = Attributes_GetOnPlayer(client, 344, true, true);
+			
+			AOE_range *= sentry_range;
+		}
+		KillFeed_SetKillIcon(entity, "ullapool_caber_explosion");
+		Explode_Logic_Custom(damage, client, entity, -1, VecOrigin, AOE_range, 0.75, _, false);
+		EmitSoundToAll(g_ExplosionSounds, entity, SNDCHAN_VOICE, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME, GetRandomInt(80,125));
+	}
 	DataPack pack = new DataPack();
 	pack.WriteFloat(VecOrigin[0]);
 	pack.WriteFloat(VecOrigin[1]);

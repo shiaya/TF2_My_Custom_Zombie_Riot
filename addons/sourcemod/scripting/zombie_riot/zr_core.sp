@@ -217,7 +217,8 @@ enum
 	WEAPON_SUPPORTWEAPONS = 1005,
 	WEAPON_LOCKDOWN = 1006,
 	WEAPON_STILLHUNT = 1007,
-	WEAPON_TRUMPET = 1008
+	WEAPON_TRUMPET = 1008,
+	WEAPON_HYAKKARYOURAN = 1009
 }
 
 enum
@@ -588,6 +589,8 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/weapon_mostima.sp"
 #include "zombie_riot/custom/baka/weapon_still_hunt.sp"
 #include "zombie_riot/custom/baka/weapon_trumpet.sp"
+#include "zombie_riot/custom/baka/weapon_toolgun.sp"
+#include "zombie_riot/custom/baka/weapon_hyakkaryouran.sp"
 
 void ZR_PluginLoad()
 {
@@ -654,6 +657,7 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_dsw", CommandDeployingSupportWeapon, ADMFLAG_ROOT, "Deploying Support Weapon, yep is op");
 	RegAdminCmd("sm_waveend", Waves_AdminsWaveEndCmd, ADMFLAG_ROOT, "Wave Force END");
 	RegAdminCmd("sm_raidend", Waves_AdminsRaidTimeEndCmd, ADMFLAG_ROOT, "Raid Force END");
+	RegAdminCmd("sm_raidadd", Waves_AdminsRaidTimeAddCmd, ADMFLAG_ROOT, "Raid Time Add");
 	CookieXP = new Cookie("zr_xp", "Your XP", CookieAccess_Protected);
 	CookieScrap = new Cookie("zr_Scrap", "Your Scrap", CookieAccess_Protected);
 	
@@ -886,6 +890,7 @@ void ZR_MapStart()
 	Perserker_OnMapStart();
 	LockDown_Wand_MapStart();
 	Still_Hunt_MapStart();
+	Weapon_ToolGun_MapStart();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)

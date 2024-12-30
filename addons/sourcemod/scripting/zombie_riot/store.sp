@@ -5218,6 +5218,8 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	b_Shotgun_Slug_Ammo[client] = false;
 	f_Nailgun_Shotgun_Slug_Ammo[client] = 1.0;
 	b_Force_Shield_Generator[client] = false;
+	b_Shotgun_Dragonr_Beath_Ammo[client] = false;
+	b_Explosive_Structures[client] = false;
 	i_MaxSupportBuildingsLimit[client] = 0;
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
 	BannerOnEntityCreated(client);
@@ -5893,6 +5895,14 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					{
 						b_Force_Shield_Generator[client] = true;
 					}
+					if(info.SpecialAdditionViaNonAttribute == 24)
+					{
+						b_Shotgun_Dragonr_Beath_Ammo[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 25)
+					{
+						b_Explosive_Structures[client] = true;
+					}
 
 					int CostDo;
 
@@ -6147,6 +6157,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		SupportWeapons_Enable(client, entity);
 		LockDown_Enable(client, entity);
 		Still_Hunt_Enable(client, entity);
+		Enable_HyakkaryouranWeapon(client, entity);
 		//give all revelant things back
 		WeaponSpawn_Reapply(client, entity, StoreWeapon[entity]);
 	}

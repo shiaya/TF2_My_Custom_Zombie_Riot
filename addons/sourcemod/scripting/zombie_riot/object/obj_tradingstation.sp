@@ -1,7 +1,6 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-
 void ObjectTradingStation_MapStart()
 {
 	PrecacheModel("models/props_spytech/computer_low.mdl");

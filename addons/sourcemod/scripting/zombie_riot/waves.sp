@@ -282,6 +282,21 @@ public Action Waves_AdminsRaidTimeEndCmd(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action Waves_AdminsRaidTimeAddCmd(int client, int args)
+{
+	if(args<1)
+	{
+		PrintToConsole(client, "Usage: sm_raidadd <Float:Time>");
+		return Plugin_Handled;
+	}
+	char arg[12];
+	GetCmdArg(1, arg, sizeof(arg));
+	float AddTime = StringToFloat(arg);
+
+	RaidModeTime+=GetGameTime()+AddTime;
+	return Plugin_Handled;
+}
+
 bool Waves_CallVote(int client, int force = 0)
 {
 	if(Rogue_Mode())

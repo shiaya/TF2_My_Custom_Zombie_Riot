@@ -1,6 +1,5 @@
 #pragma semicolon 1
 #pragma newdecls required
-
 static int NPCId;
 
 void ObjectBarricade_MapStart()

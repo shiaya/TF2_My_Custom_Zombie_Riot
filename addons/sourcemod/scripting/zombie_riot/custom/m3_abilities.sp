@@ -194,7 +194,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 							float damage=(MaxHealth*2.0);
 							if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] || b_IsGiant[entity])
 								damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[HELLDIVER]), 1.18)/10.0);
-							SDKHooks_TakeDamage(entity, HELLDIVER, HELLDIVER, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+							SDKHooks_TakeDamage(entity, HELLDIVER, HELLDIVER, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 						}
 					}
 				}
@@ -207,7 +207,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 						if(distance<=125.0)
 						{
 							int health = GetClientHealth(target);
-							SDKHooks_TakeDamage(target, 0, 0, float(health)*3.0, DMG_SLASH|DMG_CRIT);
+							SDKHooks_TakeDamage(target, 0, 0, float(health)*3.0, DMG_TRUEDAMAGE|DMG_CRIT);
 						}
 					}
 				}
@@ -240,9 +240,9 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 						if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] || b_IsGiant[entity])
 							damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[client]), 1.18)/10.0);
 						if(GetTeam(client) != GetTeam(entity))
-							SDKHooks_TakeDamage(entity, client, client, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+							SDKHooks_TakeDamage(entity, client, client, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 						else
-							SDKHooks_TakeDamage(entity, 0, 0, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+							SDKHooks_TakeDamage(entity, 0, 0, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 					}
 				}
 			}
@@ -255,7 +255,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 					if(distance<=125.0)
 					{
 						int health = GetClientHealth(target);
-						SDKHooks_TakeDamage(target, 0, 0, float(health)*3.0, DMG_SLASH|DMG_CRIT);
+						SDKHooks_TakeDamage(target, 0, 0, float(health)*3.0, DMG_TRUEDAMAGE|DMG_CRIT);
 					}
 				}
 			}
@@ -924,7 +924,7 @@ public Action Timer_Orbital_GAS_Stratagems(Handle timer, DataPack pack)
 							distance = GetVectorDistance(position, position2);
 							if(distance<500.0)
 							{
-								SDKHooks_TakeDamage(npc, client, client, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+								SDKHooks_TakeDamage(npc, client, client, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 								NpcStats_SpeedModifyEnemy(npc, 1.0, 0.9, true);
 							}
 						}
@@ -1575,6 +1575,7 @@ public void DrinkRND(int client)
 			SetGlobalTransTarget(client);
 			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", RNDWeaponName);
 		}
+		else PrintToChat(client, "[%i] No Translation?", GetRND);
 		DataPack pack;
 		CreateDataTimer(0.1, Timer_DrinkRND, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 		pack.WriteCell(GetClientUserId(client));
@@ -1745,7 +1746,7 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 						distance = GetVectorDistance(position, position2);
 						if(distance<300.0)
 						{
-							SDKHooks_TakeDamage(npc, client, client, damage, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+							SDKHooks_TakeDamage(npc, client, client, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 							NpcStats_SpeedModifyEnemy(npc, 1.0, 0.9, true);
 						}
 					}

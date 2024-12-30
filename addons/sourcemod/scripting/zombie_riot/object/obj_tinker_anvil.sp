@@ -1,6 +1,5 @@
 #pragma semicolon 1
 #pragma newdecls required
-
 void ObjectTinkerAnvil_MapStart()
 {
 	PrecacheModel("models/props_medieval/anvil.mdl");

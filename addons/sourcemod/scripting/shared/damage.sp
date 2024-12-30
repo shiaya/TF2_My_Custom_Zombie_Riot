@@ -1386,7 +1386,8 @@ static stock void OnTakeDamageWidowsWine(int victim, int &attacker, int &inflict
 static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon)
 {	
 	float ExtraDamageDealt;
-
+	bool Crit=false;
+	bool Minicrit=true;
 	ExtraDamageDealt = CurrentCash * 0.001; //at wave 60, this will equal to 60* dmg
 	if(ExtraDamageDealt <= 0.35)
 	{
@@ -1394,14 +1395,14 @@ static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int 
 	}
 	if(LastMann && GetTeam(victim) != TFTeam_Red)
 	{
-		bool minicrit=true;
 		if(b_Hero_Of_Concord[attacker] && IsValidClient(attacker) && TeutonType[attacker] == TEUTON_NONE)
 		{
 			if(b_Hero_Of_Concord_True)
 				damage*=1.55;
 			else
 				damage*=1.45;
-			minicrit=false;
+			Minicrit=false;
+			Crit=true;
 		}
 		else
 		{
@@ -1411,38 +1412,36 @@ static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int 
 					damage*=1.5;
 				else
 					damage*=1.45;
-				minicrit=false;
+				Minicrit=false;
+				Crit=true;
 			}
 			else
 				damage *= 1.35;
 		}
-		int DisplayCritSoundTo;
-		if(attacker <= MaxClients)
-			DisplayCritSoundTo = attacker;
-		else if(inflictor <= MaxClients)
-			DisplayCritSoundTo = inflictor;
-
-		if(DisplayCritSoundTo > 0 && DisplayCritSoundTo <= MaxClients)
-		{
-			bool PlaySound = false;
-			if(f_MinicritSoundDelay[DisplayCritSoundTo] < GetGameTime())
-			{
-				PlaySound = true;
-				f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
-			}
-			
-			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,minicrit); //Display crit above head
-		}
 	}
 	if(IsValidClient(attacker) && b_Sandvich_Crits[attacker])
 	{
-		int CritChance = 100-i_Sandvich_Crits[attacker];
-		if(CritChance <= 0 ? true : GetRandomInt(0, 100) > CritChance)
+		int CritChanceA = 100-i_Sandvich_Crits_AttackCount[attacker];
+		int CritChanceD = 1000000-i_Sandvich_Crits_DamageCount[attacker];
+		
+		int CritChance = RoundToCeil((float(i_Sandvich_Crits_AttackCount[attacker])*0.5)+(float(i_Sandvich_Crits_DamageCount[attacker])*0.000025));
+		
+		if(CritChanceA <= 0 || CritChanceD <= 0 ||GetRandomInt(0, 100) < CritChance)
 		{
 			damage *= 1.15;
-			i_Sandvich_Crits[attacker]=0;
+			i_Sandvich_Crits_AttackCount[attacker]=0;
+			i_Sandvich_Crits_DamageCount[attacker]=0;
+			Minicrit=false;
+			Crit=true;
 		}
-		else ++i_Sandvich_Crits[attacker];
+		else
+		{
+			++i_Sandvich_Crits_AttackCount[attacker];
+			i_Sandvich_Crits_DamageCount[attacker]+=RoundToCeil(damage);
+			/*PrintToChat(attacker, "CritChance A: %i",CritChanceA);
+			PrintToChat(attacker, "CritChance D: %i",CritChanceD);
+			PrintToChat(attacker, "CritChance: %i",CritChance);*/
+		}
 	}
 	if(IsValidClient(attacker) && b_DeathfromAbove[attacker])
 	{
@@ -1461,6 +1460,11 @@ static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int 
 			ExtraDamageDealt *= 0.5;
 			damage *= ExtraDamageDealt;
 		}
+		if(IsValidClient(attacker) && b_Shotgun_Dragonr_Beath_Ammo[attacker] && i_WeaponArchetype[weapon] == 1)
+		{
+			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
+				NPC_Ignite(victim, attacker, 3.0, weapon);
+		}
 	}
 	if(IsValidEntity(inflictor))
 	{
@@ -1471,6 +1475,26 @@ static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int 
 			{
 				damage *= ExtraDamageDealt;
 			}
+		}
+	}
+	if(Crit)
+	{
+		int DisplayCritSoundTo;
+		if(attacker <= MaxClients)
+			DisplayCritSoundTo = attacker;
+		else if(inflictor <= MaxClients)
+			DisplayCritSoundTo = inflictor;
+
+		if(DisplayCritSoundTo > 0 && DisplayCritSoundTo <= MaxClients)
+		{
+			bool PlaySound = false;
+			if(f_MinicritSoundDelay[DisplayCritSoundTo] < GetGameTime())
+			{
+				PlaySound = true;
+				f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
+			}
+			
+			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,Minicrit); //Display crit above head
 		}
 	}
 	return false;
