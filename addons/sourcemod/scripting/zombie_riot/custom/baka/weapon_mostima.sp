@@ -115,7 +115,7 @@ public void LockDown_Wand_Secondary_Attack(int client, int weapon, bool crit, in
 		if(KeyofOrdered_charges[client] >= KeyofOrdered_charges_Max[client] && KeyofOrdered_charges[client] != 0.0)
 		{
 			float duration = 23.0;
-			Rogue_OnAbilityUse(weapon);
+			Rogue_OnAbilityUse(client, weapon);
 			KeyofOrdered_duration[client]= GetGameTime() + float(i_Current_Pap[client]) + duration;
 			Current_Mana[client]=0;
 			KeyofOrdered_charges[client]=0.0;

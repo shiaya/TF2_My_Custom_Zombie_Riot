@@ -112,7 +112,7 @@ public void Farmer_Reload(int client, int weapon, bool &result, int slot)
 		}
 		else
 		{
-			Rogue_OnAbilityUse(weapon);
+			Rogue_OnAbilityUse(client, weapon);
 			Ability_Apply_Cooldown(client, slot, 10.0);
 		}
 	}

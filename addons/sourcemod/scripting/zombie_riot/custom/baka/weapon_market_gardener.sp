@@ -36,7 +36,7 @@ public void Market_Gardener_AltAttack(int client, int weapon, bool &result, int 
 	int MaxCharger = (Market_Perk[client] == 3 ? 2 : 1);
 	if(Market_AltAttackUse[client]<MaxCharger || CvarInfiniteCash.BoolValue)
 	{
-		Rogue_OnAbilityUse(weapon);
+		Rogue_OnAbilityUse(client, weapon);
 		if(!CvarInfiniteCash.BoolValue)Market_AltAttackUse[client]++;
 		if(Market_AltAttackUse[client] > MaxCharger)Market_AltAttackUse[client]=MaxCharger;
 		Temp_Launch_Power[0]=1000.0,Temp_Launch_Power[1]=800.0,Temp_Launch_Power[2]=1.0;

@@ -146,12 +146,12 @@ public void Still_Hunt_Secondary_Attack(int client, int weapon, bool crit, int s
 	{
 		if(Still_Hunt_charges[client] >= MaxCharge && !IsValidEntity(EntRefToEntIndex(CaydeRetribution_End[client])))
 		{
-			Rogue_OnAbilityUse(weapon);
+			Rogue_OnAbilityUse(client, weapon);
 			float Time = GetGameTime();
 			float duration = 14.5+float(Still_Hunt_Pap[client]);
 			if(Still_Hunt_Pap[client] == 4)duration -= 8.0;
 			Still_Hunt_Pap_Save[client] = Still_Hunt_Pap[client];
-			Rogue_OnAbilityUse(weapon);
+			Rogue_OnAbilityUse(client, weapon);
 			CaydeRetribution_duration[client] = Time + duration;
 			Still_Hunt_charges[client]=0;
 			CaydeRetribution_Ammo[client]=0;

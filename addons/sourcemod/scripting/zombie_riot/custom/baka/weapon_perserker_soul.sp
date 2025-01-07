@@ -54,7 +54,7 @@ public void Perserker_AltAttack(int client, int weapon, bool &result, int slot)
 		}
 		if(!Perserker_Ash[client] && Perserker_Energy[client] >= Perserker_Energy_Max[client])
 		{
-			Rogue_OnAbilityUse(weapon);
+			Rogue_OnAbilityUse(client, weapon);
 			Ability_Apply_Cooldown(client, slot, Attributes_Get(weapon, 249, 120.0));
 			Perserker_Energy[client]=0.0;
 			Perserker_Ash[client]=true;
@@ -130,7 +130,7 @@ public void ScrapMiner_AltAttack(int client, int weapon, bool &result, int slot)
 				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Use Only Alive");
 				return;
 			}
-			Rogue_OnAbilityUse(weapon);
+			Rogue_OnAbilityUse(client, weapon);
 			Ability_Apply_Cooldown(client, slot, Perserker_WeaponPap[client]>=5 ? 45.0 : 30.0);
 			char name[32];
 			GetClientName(target, name, sizeof(name));

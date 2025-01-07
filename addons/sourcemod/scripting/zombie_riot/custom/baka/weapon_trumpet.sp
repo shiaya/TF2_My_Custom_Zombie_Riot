@@ -66,7 +66,7 @@ public void Trumpet_Main_Attack(int client, int weapon, bool crit, int slot)
 {
 	if(Ability_Check_Cooldown(client, slot) < 0.0 || CvarInfiniteCash.BoolValue)
 	{
-		Rogue_OnAbilityUse(weapon);
+		Rogue_OnAbilityUse(client, weapon);
 		Ability_Apply_Cooldown(client, slot, 1.0);
 		EmitSoundToAll("baka_zr/trumpetskeleton.mp3", client, SNDCHAN_WEAPON, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME);
 		SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime(weapon)+1.0);
@@ -90,7 +90,7 @@ public void Trumpet_Secondary_Attack(int client, int weapon, bool crit, int slot
 {
 	if(Ability_Check_Cooldown(client, slot) < 0.0 || CvarInfiniteCash.BoolValue)
 	{
-		Rogue_OnAbilityUse(weapon);
+		Rogue_OnAbilityUse(client, weapon);
 		Ability_Apply_Cooldown(client, slot, 30.0);
 		Ability_Apply_Cooldown(client, 1, 1.0);
 		bool PlaySound=false;
