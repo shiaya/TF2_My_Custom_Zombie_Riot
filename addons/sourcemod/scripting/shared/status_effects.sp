@@ -109,6 +109,7 @@ void InitStatusEffects()
 	StatusEffects_Victoria();
 	StatusEffects_Pernell();
 	StatusEffects_Medieval();
+	StatusEffects_MERLT0N_BUFF();
 	StatusEffects_SupportWeapons();
 	StatusEffects_BobDuck();
 	StatusEffects_ElementalWand();
@@ -297,22 +298,22 @@ void RemoveSpecificBuff(int victim, const char[] name)
 }
 
 //Got lazy, tired of doing so many indexs.
-bool HasSpecificBuff(int victim, const char[] name)
+int HasSpecificBuff(int victim, const char[] name)
 {
 	//doesnt even have abuff...
 	if(!E_AL_StatusEffects[victim])
-		return false;
+		return 0;
 
 	int index = AL_StatusEffects.FindString(name, StatusEffect::BuffName);
 	if(index == -1)
 	{
 		CPrintToChatAll("{crimson} A DEV FUCKED UP!!!!!!!!! Name %s GET AN ADMIN RIGHT NOWWWWWWWWWWWWWW!^!!!!!!!!!!!!!!!!!!one111 (more then 0)",name);
 		LogError("ApplyStatusEffect A DEV FUCKED UP!!!!!!!!! Name %s",name);
-		return false;
+		return 0;
 	}
 	E_StatusEffect Apply_StatusEffect;
 	int ArrayPosition;
-	bool Return = false;
+	int Return = false;
 	ArrayPosition = E_AL_StatusEffects[victim].FindValue(index, E_StatusEffect::BuffIndex);
 	if(ArrayPosition != -1)
 	{
@@ -323,7 +324,10 @@ bool HasSpecificBuff(int victim, const char[] name)
 		}
 		else
 		{
-			Return = true;
+			if(Apply_StatusEffect.TotalOwners[victim])
+				Return = 2;
+			else
+				Return = 1;
 		}
 	}
 	if(E_AL_StatusEffects[victim].Length < 1)
@@ -393,6 +397,10 @@ void ApplyStatusEffect(int owner, int victim, const char[] name, float Duration)
 			return;
 		}
 	}
+
+	if(!Apply_MasterStatusEffect.Positive)
+		Rogue_ParadoxDLC_DebuffTime(victim, Duration);
+
 	int CurrentSlotSaved = Apply_MasterStatusEffect.Slot;
 	int CurrentPriority = Apply_MasterStatusEffect.SlotPriority;
 	if(CurrentSlotSaved > 0)
@@ -631,7 +639,7 @@ void StatusEffect_OnTakeDamage_DealNegative(int victim, int attacker, float &dam
 			Call_PushCell(damagetype);
 			Call_Finish(DamageToNegate);
 		}
-		if(!Apply_MasterStatusEffect.ShouldScaleWithPlayerCount || Apply_StatusEffect.TotalOwners[victim])
+		if(!Apply_MasterStatusEffect.ShouldScaleWithPlayerCount || Apply_StatusEffect.TotalOwners[attacker])
 		{
 			damage *= DamageToNegate;
 		}
@@ -2306,6 +2314,22 @@ void StatusEffects_Medieval()
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
+void StatusEffects_MERLT0N_BUFF()
+{
+	StatusEffect data;
+	strcopy(data.BuffName, sizeof(data.BuffName), "MERLT0N-BUFF");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "Μ");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= 0.5;
+	data.DamageDealMulti			= 0.5;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = true;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
+}
 
 float Hussar_Warscream_DamageDealFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype, float basedamage, float DamageBuffExtraScaling)
 {
@@ -3278,5 +3302,10 @@ void StatusEffects_StatusEffectListOnly()
 	strcopy(data.BuffName, sizeof(data.BuffName), "Iberia Morale Boost");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "W");
 	data.Positive 					= true;
+	StatusEffect_AddGlobal(data);
+
+	strcopy(data.BuffName, sizeof(data.BuffName), "Heavy Laccerations");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "⸗");
+	data.Positive 					= false;
 	StatusEffect_AddGlobal(data);
 }

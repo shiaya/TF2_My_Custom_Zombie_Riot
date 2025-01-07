@@ -914,6 +914,7 @@ methodmap Citizen < CClotBody
 		
 		bool barney = data[0] == 'b';
 		bool alyx = data[0] == 'a';
+		bool chaos = data[0] == 'c';
 		
 		int seed = barney ? -160920040 : (alyx ? -50 : GetURandomInt());
 		bool female = !(seed % 2);
@@ -1005,6 +1006,19 @@ methodmap Citizen < CClotBody
 		{
 			npc.SetDowned(0);
 			npc.m_bStaticNPC = true;
+		}
+		if(chaos)
+		{
+			float flPos[3], flAng[3];
+					
+			npc.GetAttachment("eyes", flPos, flAng);
+			npc.m_iWearable4 = ParticleEffectAt_Parent(flPos, "unusual_smoking", npc.index, "eyes", {10.0,0.0,-5.0});
+			npc.m_iWearable5 = ParticleEffectAt_Parent(flPos, "unusual_psychic_eye_white_glow", npc.index, "eyes", {10.0,0.0,-20.0});
+			npc.StartPathing();
+			SetEntityRenderMode(npc.index, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(npc.index, 125, 125, 125, 255);
+			npc.m_bRebelAgressive = true;
+			FormatEx(c_NpcName[npc.index], sizeof(c_NpcName[]), "Chaos Rebel");
 		}
 		
 		return npc;
@@ -2399,7 +2413,7 @@ public void Citizen_ClotThink(int iNPC)
 	HealEntityGlobal(npc.index, npc.index, ReturnEntityMaxHealth(npc.index) * 0.04 * 0.01, (npc.m_iClassRole == Cit_Medic ? 1.0 : 0.5), 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);
 
 	bool noSafety = (npc.m_bCamo || VIPBuilding_Active());
-	bool autoSeek = (noSafety || npc.m_bRebelAgressive || RaidbossIgnoreBuildingsLogic(1));
+	bool autoSeek = (noSafety || npc.m_bRebelAgressive || RaidbossIgnoreBuildingsLogic(1) || GetTeam(npc.index) != TFTeam_Red);
 
 	// See if our target is still valid
 	int target = npc.m_iTarget;
@@ -2421,7 +2435,8 @@ public void Citizen_ClotThink(int iNPC)
 	// Find new target
 	if(npc.m_flGetClosestTargetTime < gameTime)
 	{
-		int newTarget = GetClosestTarget(npc.index, _, autoSeek ? FAR_FUTURE : (BaseRange[npc.m_iGunType] * npc.m_fGunRangeBonus), npc.m_bCamo, _, _, _, !autoSeek);
+		autoSeek = true;
+		int newTarget = GetClosestTarget(npc.index, _, autoSeek ? FAR_FUTURE : (BaseRange[npc.m_iGunType] * npc.m_fGunRangeBonus), npc.m_bCamo, _, _, _, autoSeek);
 		if(newTarget > 0)
 		{
 			target = newTarget;
@@ -2504,6 +2519,7 @@ public void Citizen_ClotThink(int iNPC)
 	int maxhealth = ReturnEntityMaxHealth(npc.index);
 	bool injured = (health < 60) || (health < (maxhealth / 5));
 	bool seakAlly = npc.m_bGetClosestTargetTimeAlly;
+	
 	float vecMe[3]; WorldSpaceCenter(npc.index, vecMe);
 	float vecTarget[3];
 	static char buffer[32];
@@ -3320,14 +3336,9 @@ public void Citizen_ClotThink(int iNPC)
 						else	// Try to shoot
 						{
 							float npc_pos[3];
-							GetAbsOrigin(npc.index, npc_pos);
-								
-							npc_pos[2] += 30.0;
+							WorldSpaceCenter(npc.index, npc_pos);
 							
-							Handle trace = TR_TraceRayFilterEx(npc_pos, vecTarget, ( MASK_SOLID | CONTENTS_SOLID ), RayType_EndPoint, BulletAndMeleeTrace, npc.index);
-							
-							int enemy = TR_GetEntityIndex(trace);
-							delete trace;
+							int enemy = Can_I_See_Enemy(npc.index, target);
 							
 							if(IsValidEnemy(npc.index, enemy, true))	// We can see a target
 							{
@@ -3385,6 +3396,9 @@ public void Citizen_ClotThink(int iNPC)
 
 								if(npc.m_iWearable1 > 0)
 									AcceptEntityInput(npc.m_iWearable1, "Disable");
+
+								if(autoSeek)
+									walkStatus = 1;
 							}
 						}
 					}
@@ -3433,14 +3447,9 @@ public void Citizen_ClotThink(int iNPC)
 						if(!cooldown)
 						{
 							float npc_pos[3];
-							GetAbsOrigin(npc.index, npc_pos);
-								
-							npc_pos[2] += 30.0;
+							WorldSpaceCenter(npc.index, npc_pos);
 							
-							Handle trace = TR_TraceRayFilterEx(npc_pos, vecTarget, ( MASK_SOLID | CONTENTS_SOLID ), RayType_EndPoint, BulletAndMeleeTrace, npc.index);
-							
-							int enemy = TR_GetEntityIndex(trace);
-							delete trace;
+							int enemy = Can_I_See_Enemy(npc.index, target);
 							
 							if(IsValidEnemy(npc.index, enemy, true))	// We can see a target
 							{
@@ -3482,6 +3491,11 @@ public void Citizen_ClotThink(int iNPC)
 									npc.m_bFirstBlood = true;
 									npc.PlaySound(Cit_FirstBlood);
 								}
+							}
+							else
+							{
+								if(autoSeek)
+									walkStatus = 1;
 							}
 						}
 					}
@@ -3530,14 +3544,9 @@ public void Citizen_ClotThink(int iNPC)
 						if(!cooldown)
 						{
 							float npc_pos[3];
-							GetAbsOrigin(npc.index, npc_pos);
-								
-							npc_pos[2] += 30.0;
+							WorldSpaceCenter(npc.index, npc_pos);
 							
-							Handle trace = TR_TraceRayFilterEx(npc_pos, vecTarget, ( MASK_SOLID | CONTENTS_SOLID ), RayType_EndPoint, BulletAndMeleeTrace, npc.index);
-							
-							int enemy = TR_GetEntityIndex(trace);
-							delete trace;
+							int enemy = Can_I_See_Enemy(npc.index, target);
 							
 							if(IsValidEnemy(npc.index, enemy, true))	// We can see a target
 							{
@@ -3580,6 +3589,11 @@ public void Citizen_ClotThink(int iNPC)
 									npc.PlaySound(Cit_FirstBlood);
 								}
 							}
+							else
+							{
+								if(autoSeek)
+									walkStatus = 1;
+							}
 						}
 					}
 				}
@@ -3619,14 +3633,9 @@ public void Citizen_ClotThink(int iNPC)
 						else	// Try to shoot
 						{
 							float npc_pos[3];
-							GetAbsOrigin(npc.index, npc_pos);
-								
-							npc_pos[2] += 30.0;
-							
-							Handle trace = TR_TraceRayFilterEx(npc_pos, vecTarget, ( MASK_SOLID | CONTENTS_SOLID ), RayType_EndPoint, BulletAndMeleeTrace, npc.index);
-							
-							int enemy = TR_GetEntityIndex(trace);
-							delete trace;
+							WorldSpaceCenter(npc.index, npc_pos);
+
+							int enemy = Can_I_See_Enemy(npc.index, target);
 							
 							if(IsValidEnemy(npc.index, enemy, true))	// We can see a target
 							{
@@ -3678,6 +3687,8 @@ public void Citizen_ClotThink(int iNPC)
 							else
 							{
 								npc.ThinkCombat("Target out of sight!");
+								if(autoSeek)
+									walkStatus = 1;
 							}
 						}
 					}
@@ -3725,14 +3736,9 @@ public void Citizen_ClotThink(int iNPC)
 						else	// Try to shoot
 						{
 							float npc_pos[3];
-							GetAbsOrigin(npc.index, npc_pos);
-								
-							npc_pos[2] += 30.0;
+							WorldSpaceCenter(npc.index, npc_pos);
 							
-							Handle trace = TR_TraceRayFilterEx(npc_pos, vecTarget, ( MASK_SOLID | CONTENTS_SOLID ), RayType_EndPoint, BulletAndMeleeTrace, npc.index);
-							
-							int enemy = TR_GetEntityIndex(trace);
-							delete trace;
+							int enemy = Can_I_See_Enemy(npc.index, target);
 							
 							if(IsValidEnemy(npc.index, enemy, true))	// We can see a target
 							{
@@ -3756,6 +3762,8 @@ public void Citizen_ClotThink(int iNPC)
 							else
 							{
 								npc.ThinkCombat("Target out of sight!");
+								if(autoSeek)
+									walkStatus = 1;
 							}
 						}
 					}
@@ -4491,7 +4499,7 @@ static bool RunFromNPC(int entity)
 	char npc_classname[60];
 	NPC_GetPluginById(i_NpcInternalId[entity], npc_classname, sizeof(npc_classname));
 	if(StrContains(npc_classname, "npc_sawrunner") != -1 ||
-		StrContains(npc_classname, "npc_omega") != -1 ||
+		StrContains(npc_classname, "npc_3650") != -1 ||
 		StrContains(npc_classname, "npc_lastknight") != -1 ||
 		StrContains(npc_classname, "npc_saintcarmen") != -1)
 	{

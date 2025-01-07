@@ -1101,6 +1101,10 @@
 		"nl"		"Rebel"
 		"ko"		"반란군"
 	}
+	"Chaos Rebel"
+	{
+		"en" 		"Chaos Rebel"
+	}
 	"Barney"
 	{
 		"en" 		"Barney"
@@ -2265,11 +2269,21 @@
 		"ru" 		"Морерождённый страж"
 		"ko"		"해사 가드"
 	}
+	"Guard"
+	{
+		"en"		"Guard"
+		"ru" 		"страж"
+	}
 	"Seaborn Defender"
 	{
 		"en"		"Seaborn Defender"
 		"ru" 		"Морерождённый Защитник"
 		"ko"		"해사 디펜더"
+	}
+	"Defender"
+	{
+		"en"		"Defender"
+		"ru" 		"Защитник"
 	}
 	"Seaborn Vanguard"
 	{
@@ -2277,11 +2291,21 @@
 		"ru" 		"Морерождённый Авангард"
 		"ko"		"해사 뱅가드"
 	}
+	"Vanguard"
+	{
+		"en"		"Vanguard"
+		"ru" 		"Авангард"
+	}
 	"Seaborn Caster"
 	{
 		"en"		"Seaborn Caster"
 		"ru" 		"Морерождённый Маг"
 		"ko"		"해사 캐스터"
+	}
+	"Caster"
+	{
+		"en"		"Caster"
+		"ru" 		"Маг"
 	}
 	"Seaborn Specialist"
 	{
@@ -2289,11 +2313,21 @@
 		"ru" 		"Морерождённый Специалист"
 		"ko"		"해사 스페셜리스트"
 	}
+	"Specialist"
+	{
+		"en"		"Specialist"
+		"ru" 		"Специалист"
+	}
 	"Seaborn Supporter"
 	{
 		"en"		"Seaborn Supporter"
 		"ru" 		"Морерождённый Поддерживающий"
 		"ko"		"해사 서포터"
+	}
+	"Supporter"
+	{
+		"en"		"Supporter"
+		"ru" 		"Поддерживающий"
 	}
 	"Theocracy"
 	{
@@ -2554,6 +2588,10 @@
 		"en"	"Stellar Weaver"
 		"ko"	"스텔라 위버"
 	}
+	"Interstellar Weaver"
+	{
+		"en"	"Interstellar Weaver"
+	}
 	"Daedalus"
 	{
 		"en"	"Daedalus"
@@ -2697,6 +2735,14 @@
 	{
 		"en"	"Ancient Demon"
 		"ko"	"고대 악마"
+	}
+	"Hallam's Great Demon"
+	{
+		"en"	"Hallam's Great Demon"
+	}
+	"Ihanal Demon Whisperer"
+	{
+		"en"	"Ihanal Demon Whisperer"
 	}
 	"Winter Sniper"
 	{
@@ -3088,6 +3134,10 @@
 		"en"	"A stronger Variant"
 		"ko"	"더 강한 변종입니다"
 	}
+	"Elite Rulianius"
+	{
+		"en"	"Elite Rulianius"
+	}
 	"Rulianius"
 	{
 		"en"	"Rulianius"
@@ -3119,6 +3169,18 @@
 		"en"	"The ruler of Ruina\nShe isn't fighting you at her actual power...\nShe's only using the power of the creast\nIf you see particles on her hands, it means one of her combo's is ready to fire"
 		"ru" 	"Лидер Руины\nОна не сражается с вами с полную силу...\nОна только использует силу магического гребеня\nЕсли вы увидете эффекты на её руках,Это озночает что одно из её Комбо готово"
 		"ko"	"루이나의 집정관입니다\그녀는 전력으로 싸우지 않습니다...\n그녀는 문장의 힘만을 사용하죠\n그녀의 손에 효과가 보인다면 그녀의 콤보가 준비되었다는 뜻입니다"
+	}
+	"Lelouch Blade"
+	{
+		"en"	"Lelouch's Blade"
+	}
+	"Lelouch Crystal"
+	{
+		"en"	"Lelouch's Crystal"
+	}
+	"Lelouch"
+	{
+		"en"	"Lelouch"
 	}
 	"Fractal Cannon"
 	{
@@ -3509,6 +3571,18 @@
 		"en"	"Its mind fell.\nCauses Earthquakes underneath enemies."
 		"ko"	"그의 마음은 꺾였습니다\n적 아래에 지진을 발생시킵니다"
 	}
+	"Chaos Swordsman"
+	{
+		"en"	"Chaos Swordsman"
+	}
+	"Chaos Swordsman Desc"
+	{
+		"en"	"Its mind fell.\nCauses rapid pulse attacks that, when hitting, teleports them behind you."
+	}
+	"Chaos Mercenaries"
+	{
+		"en"	"Chaos Mercenaries"
+	}
 	"Chaos Knight?"
 	{
 		"en"	"Chaos Knight?"
@@ -3575,11 +3649,11 @@
 		"ru" 		"Зомбайн"
 		"ko"		"좀바인"
 	}
-	"Omega"
+	"3650"
 	{
-		"en"		"Omega"
-		"ru" 		"Омега"
-		"ko"		"오메가"
+		"en"		"3650"
+		"ru" 		"3650"
+		"ko"		"3650"
 	}
 	"Nemal"
 	{
@@ -3602,6 +3676,10 @@
 	{
 		"en"		"If hit too often with a cooldown, Buffs every enemy the map."
 		"ko"		"일정 쿨타임을 두고 너무 많이 맞으면 맵상의 모든 적들을 강하게 버프합니다"
+	}
+	"Antinel"
+	{
+		"en"		"Antinel"
 	}
 	"Ironborus"
 	{
@@ -4033,6 +4111,14 @@
 		"en"	"Victorian Signaller"
 		"ko"	"빅토리아 전령병"
 	}
+	"Chaos Affected Signaller"
+	{
+		"en"	"Chaos Affected Signaller"
+	}
+	"Chaos Affected Eradicator"
+	{
+		"en"	"Chaos Affected Eradicator"
+	}
 	"Humbee"
 	{
 		"en"	"Irongate Humbee"
@@ -4122,6 +4208,10 @@
 	{
 		"en"	"Trooper  Assulter"
 		"ko"	"트루퍼 보병"
+	}
+	"Cyborg Assulter"
+	{
+		"en"	"Cyborg Assulter"
 	}
 	"Anti-Armor Infantry"
 	{
@@ -4473,6 +4563,63 @@
 		"en"		"Smith"
 		"ko"		"스미스"
 	}
+	"Seaborn Metro Cop"
+	{
+		"en"		"Seaborn Metro Cop"
+	}
+	"Seaborn Metro Raider"
+	{
+		"en"		"Seaborn Metro Raider"
+	}
+	"Seaborn W.F. Rifler"
+	{
+		"en"		"Seaborn W.F. Rifler"
+	}
+	"Seaborn W.F. Elite"
+	{
+		"en"		"Seaborn W.F. Elite"
+	}
+	"Seaborn W.F. Shotgunner"
+	{
+		"en"		"Seaborn W.F. Shotgunner"
+	}
+	"Voided Metro Cop"
+	{
+		"en"		"Voided Metro Cop"
+	}
+	"Voided Metro Raider"
+	{
+		"en"		"Voided Metro Raider"
+	}
+	"Voided W.F. Rifler"
+	{
+		"en"		"Voided W.F. Rifler"
+	}
+	"Voided W.F. Elite"
+	{
+		"en"		"Voided W.F. Elite"
+	}
+	"Voided W.F. Shotgunner"
+	{
+		"en"		"Voided W.F. Shotgunner"
+	}
+	"Hunter"
+	{
+		"en"		"Hunter"
+	}
+	"Merlton"
+	{
+		"en"		"Merlton"
+	}
+	"Lost Knight"
+	{
+		"en"		"Lost Knight"
+	}
+	"Omega"
+	{
+		"en"		"Omega"
+		"ru"		"Омега"
+	}
 	"Victoria"
 	{
 		"en"		"Victoria"
@@ -4488,5 +4635,13 @@
 	"Negative"
 	{
 		"en"		"Negative"
+	}
+	"Major Voided"
+	{
+		"en"	"Major Voided"
+	}
+	"Chaos Evil Demon"
+	{
+		"en"	"Chaos Evil Demon"
 	}
 }

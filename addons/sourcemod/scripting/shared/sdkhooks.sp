@@ -694,7 +694,7 @@ public void OnPostThink(int client)
 				else
 				{
 					float MaxHealth = float(SDKCall_GetMaxHealth(client));
-					if(MaxHealth > 3000)
+					if(MaxHealth > 3000.0)
 						MaxHealth = 3000.0;
 						
 					healing_Amount = HealEntityGlobal(client, client, MaxHealth / 100.0, 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
@@ -706,6 +706,8 @@ public void OnPostThink(int client)
 				Attributes_GetOnPlayer(client, 190, false) +
 				Attributes_GetOnPlayer(client, 191, false);
 				
+		//Players should always have atleast 1 HP regen!
+		attrib += 1.0;
 		if(attrib)
 		{
 			if(dieingstate[client] == 0)
@@ -732,9 +734,9 @@ public void OnPostThink(int client)
 			}
 			if(b_NemesisHeart[client])
 			{
-				float HealRate = 1.0;
+				float HealRate = 0.25;
 				if(b_XenoVial[client])
-					HealRate = 1.15;
+					HealRate = 0.33;
 
 				healing_Amount += HealEntityGlobal(client, client, HealRate, 1.0, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);
 			}
@@ -1321,9 +1323,9 @@ public void OnPostThink(int client)
 				//matrix
 				case 4:
 				{
-					red = 0;
-					green = 200;
-					blue = 0;
+					red = 54;
+					green = 77;
+					blue = 43;
 				}
 				//seaborn
 				default:
@@ -2517,7 +2519,8 @@ void ApplyLastmanOrDyingOverlay(int client)
 	}
 }
 
-void CauseFadeInAndFadeOut(int client = 0, float duration_in, float duration_hold, float duration_out)
+char SetRenderDo[MAXTF2PLAYERS][8];
+void CauseFadeInAndFadeOut(int client = 0, float duration_in, float duration_hold, float duration_out, const char[] RenderAmtDo)
 {
 	int SpawnFlags = 0;
 	if(client != 0)
@@ -2529,7 +2532,8 @@ void CauseFadeInAndFadeOut(int client = 0, float duration_in, float duration_hol
 	int FadeEntity = CreateEntityByName("env_fade");
 	DispatchKeyValue(FadeEntity, "spawnflags", Buffer);
 	DispatchKeyValue(FadeEntity, "rendercolor", "0 0 0");
-	DispatchKeyValue(FadeEntity, "renderamt", "235");
+	DispatchKeyValue(FadeEntity, "renderamt", RenderAmtDo);
+	Format(SetRenderDo[client], sizeof(SetRenderDo[]),RenderAmtDo);
 	FloatToString(duration_hold * 3.0, Buffer, sizeof(Buffer));
 	DispatchKeyValue(FadeEntity, "holdtime", Buffer);
 	FloatToString(duration_in, Buffer, sizeof(Buffer));
@@ -2644,7 +2648,7 @@ public Action Timer_CauseFadeInAndFadeOut(Handle timer, float duration_out)
 	int FadeEntity = CreateEntityByName("env_fade");
 	DispatchKeyValue(FadeEntity, "spawnflags", "1");
 	DispatchKeyValue(FadeEntity, "rendercolor", "0 0 0");
-	DispatchKeyValue(FadeEntity, "renderamt", "235");
+	DispatchKeyValue(FadeEntity, "renderamt", SetRenderDo[0]);
 	DispatchKeyValue(FadeEntity, "holdtime", "0");
 	char Buffer[32];
 	FloatToString(duration_out, Buffer, sizeof(Buffer));
@@ -2747,6 +2751,16 @@ void UpdatePlayerFakeModel(int client)
 
 stock void IncreaceEntityDamageTakenBy(int entity, float amount, float duration, bool Flat = false)
 {
+	if(!Flat)
+	{
+		if(amount > 1.0)
+			ApplyStatusEffect(entity, entity, "Heavy Laccerations", duration);
+	}
+	else
+	{
+		if(amount > 0.0)
+			ApplyStatusEffect(entity, entity, "Heavy Laccerations", duration);
+	}
 	if(!Flat)
 		f_MultiDamageTaken[entity] *= amount;
 	else
