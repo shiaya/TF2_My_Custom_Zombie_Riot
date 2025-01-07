@@ -224,7 +224,8 @@ enum
 	WEAPON_LOCKDOWN = 1006,
 	WEAPON_STILLHUNT = 1007,
 	WEAPON_TRUMPET = 1008,
-	WEAPON_HYAKKARYOURAN = 1009
+	WEAPON_TROLLDIER = 1009,
+	WEAPON_TLQKF = 1010
 }
 
 enum
@@ -450,6 +451,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/teuton_sound_override.sp"
 #include "zombie_riot/barney_sound_override.sp"
 #include "zombie_riot/kleiner_sound_override.sp"
+#include "zombie_riot/custom/boicechanger/neuron_activation_sound_override.sp"
 #include "zombie_riot/tutorial.sp"
 #include "zombie_riot/waves.sp"
 #include "zombie_riot/zombie_drops.sp"
@@ -600,7 +602,8 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/weapon_still_hunt.sp"
 #include "zombie_riot/custom/baka/weapon_trumpet.sp"
 #include "zombie_riot/custom/baka/weapon_toolgun.sp"
-#include "zombie_riot/custom/baka/weapon_hyakkaryouran.sp"
+#include "zombie_riot/custom/baka/weapon_trolldier.sp"
+#include "zombie_riot/custom/baka/weapon_tlqkf.sp"
 
 void ZR_PluginLoad()
 {
@@ -665,6 +668,7 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_fake_death_client", Command_FakeDeathCount, ADMFLAG_GENERIC, "Fake Death Count");
 	RegAdminCmd("sm_kill_npc", CommandKillTheNPC, ADMFLAG_ROOT, "You can kill an NPC by aiming at it and hitting it.");
 	RegAdminCmd("sm_dsw", CommandDeployingSupportWeapon, ADMFLAG_ROOT, "Deploying Support Weapon, yep is op");
+	RegAdminCmd("sm_rein", CommandAdminReinforce, ADMFLAG_ROOT, "Deploying Reinforce, yep is op");
 	RegAdminCmd("sm_waveend", Waves_AdminsWaveEndCmd, ADMFLAG_ROOT, "Wave Force END");
 	RegAdminCmd("sm_raidend", Waves_AdminsRaidTimeEndCmd, ADMFLAG_ROOT, "Raid Force END");
 	RegAdminCmd("sm_raidadd", Waves_AdminsRaidTimeAddCmd, ADMFLAG_ROOT, "Raid Time Add");
@@ -714,6 +718,7 @@ void ZR_MapStart()
 	TeutonSoundOverrideMapStart();
 	BarneySoundOverrideMapStart();
 	KleinerSoundOverrideMapStart();
+	Neuron_ActivationSoundOverrideMapStart();
 	Dhooks_BannerMapstart();
 	SkyboxProps_OnMapStart();
 	Rogue_MapStart();
@@ -902,6 +907,7 @@ void ZR_MapStart()
 	LockDown_Wand_MapStart();
 	Still_Hunt_MapStart();
 	Weapon_ToolGun_MapStart();
+	Trolldier_OnMapStart();
 	OnMapStartZealot();
 	
 	Zombies_Currently_Still_Ongoing = 0;
@@ -1837,6 +1843,12 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 							Max_Fractal_Crystals(client);
 							CPrintToChatAll("{purple}Twirl{crimson}'s Essence enters %N...",client);
 							Yakuza_Lastman(3);
+						}
+						if(Soldin_LastMann(client))
+						{
+							Soldin_LastMann_buff(client, true);
+							CPrintToChatAll("{crimson}%N's weapon is Now System Overdrive...",client);
+							Yakuza_Lastman(4);
 						}
 						
 						for(int i=1; i<=MaxClients; i++)

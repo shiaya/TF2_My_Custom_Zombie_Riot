@@ -291,9 +291,9 @@ public Action Waves_AdminsRaidTimeAddCmd(int client, int args)
 	}
 	char arg[12];
 	GetCmdArg(1, arg, sizeof(arg));
-	float AddTime = StringToFloat(arg);
+	float AddTime = float(StringToInt(arg));
 
-	RaidModeTime+=GetGameTime()+AddTime;
+	RaidModeTime+=AddTime;
 	return Plugin_Handled;
 }
 

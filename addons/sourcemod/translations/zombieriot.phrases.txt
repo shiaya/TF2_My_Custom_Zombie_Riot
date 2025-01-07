@@ -3937,6 +3937,21 @@
 		"fr"	"Kleiner"
 		"chi"	"克莱恩"
 	}
+	"Neuron Activation"
+	{
+		"en"	"Neuron Activation"
+		"ko"	"멍끼"
+	}
+	"Lumine"
+	{
+		"en"	"Lumine"
+		"ko"	"여행자"
+	}
+	"Meruna Mint"
+	{
+		"en"	"Meruna Mint"
+		"ko"	"메루나 민트"
+	}
 	"Iberia & Nemal"
 	{
 		"en" "Iberia & Nemal"
@@ -4251,6 +4266,7 @@
 		"#format"	"{1:d}"
 		"en"		"{green}You already have everything in this rarity, but where given {1} XP as a compensation!{default}"
 		"ko"		"{green}현 단계의 모든 아이템을 가지고있습니다. 대신 추가 {1} XP 를 보상으로 받았습니다!{default}"
+	}
 	"freeplay_intro"
 	{
 		"en"		"You shall not proceed further.\nProve you're worthy."

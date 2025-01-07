@@ -818,6 +818,11 @@ void NPC_ConfigSetup()
 	AgentSpencer_OnMapStart_NPC();
 	AgentTodd_OnMapStart_NPC();
 
+	AgentSpencerFreeplay_OnMapStart_NPC();
+	AgentWayneFreeplay_OnMapStart_NPC();
+	AgentDaveFreeplay_OnMapStart_NPC();
+	AgentIanFreeplay_OnMapStart_NPC();
+
 	//Matrix Raids
 	AgentJohnson_OnMapStart_NPC();
 	AgentThompson_OnMapStart_NPC();

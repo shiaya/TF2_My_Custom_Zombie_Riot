@@ -927,8 +927,9 @@ void DestroyBuildingDo(int entity)
 	{
 		int maxhealth = GetEntProp(entity, Prop_Data, "m_iMaxHealth");
 		int client = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-		float damage = 10.0;
+		float damage = 300.0;
 		float AOE_range = 100.0;
+		
 		if(!IsValidClient(client))client=-1;
 		else
 		{
@@ -938,12 +939,11 @@ void DestroyBuildingDo(int entity)
 				
 			damage = attack_speed * damage * Attributes_GetOnPlayer(client, 287, true, true);
 			
-			damage+=float(maxhealth)*0.9;
-			
 			float sentry_range = Attributes_GetOnPlayer(client, 344, true, true);
 			
 			AOE_range *= sentry_range;
 		}
+		damage+=float(maxhealth);
 		KillFeed_SetKillIcon(entity, "ullapool_caber_explosion");
 		Explode_Logic_Custom(damage, client, entity, -1, VecOrigin, AOE_range, 0.75, _, false);
 		EmitSoundToAll(g_ExplosionSounds, entity, SNDCHAN_VOICE, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME, GetRandomInt(80,125));

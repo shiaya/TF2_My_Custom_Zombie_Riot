@@ -1673,6 +1673,13 @@ int CheckInHud()
 
 public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
+	if(IsValidEntity(victim) && b_On_Self_Damage[victim] && TeutonType[victim] == TEUTON_NONE && dieingstate[victim] <= 0 && victim == attacker)
+	{
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TROLLDIER && !(GetEntityFlags(victim)&FL_ONGROUND))
+			RocketJump_Count[victim]++;
+		return Plugin_Continue;
+	}
+
 	if(!CheckInHud())
 	{
 		ClientPassAliveCheck[victim] = false;
@@ -2377,6 +2384,14 @@ public Action SDKHook_NormalSHook(int clients[MAXPLAYERS], int &numClients, char
 						Changed = KleinerSoundOverride(numClients, sample, 
 						entity, channel, volume, level, pitch, flags,seed);
 					}
+					case Neuron_Activation:
+					{
+						Changed = Neuron_ActivationSoundOverride(numClients, sample, 
+						entity, channel, volume, level, pitch, flags,seed);
+					}
+					case Lumine:{}
+					case Meruna_Mint:{}
+					case MM_TRUE_BLITZKRIEG:{return Plugin_Changed;}
 				}
 				if(Changed)
 				{

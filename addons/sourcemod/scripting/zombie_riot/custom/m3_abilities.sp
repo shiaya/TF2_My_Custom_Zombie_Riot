@@ -113,6 +113,18 @@ public Action CommandDeployingSupportWeapon(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action CommandAdminReinforce(int client, int args)
+{
+	if(!IsValidClient(client) || IsFakeClient(client))
+	{
+		PrintToConsole(client, "Command is in-game only");
+		return Plugin_Handled;
+	}
+	Reinforce(client, true);
+	
+	return Plugin_Handled;
+}
+
 public Action OnBombDrop(const char [] output, int caller, int activator, float delay)
 {
 	char name[64];
@@ -385,7 +397,7 @@ public void M3_Abilities(int client)
 		}
 		case 12:
 		{
-			Reinforce(client);
+			Reinforce(client, false);
 		}
 		case 13:
 		{
@@ -394,6 +406,10 @@ public void M3_Abilities(int client)
 		case 14:
 		{
 			DeployingSupportWeapon(client, false);
+		}
+		case 15:
+		{
+			NanomachinePacks(client);
 		}
 	}
 }
@@ -971,9 +987,9 @@ public Action Timer_Orbital_GAS_Stratagems(Handle timer, DataPack pack)
 	}
 }
 
-public void Reinforce(int client)
+public void Reinforce(int client, bool NoCD)
 {
-	if(dieingstate[client] > 0)
+	if(!NoCD && dieingstate[client] > 0)
 	{
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
@@ -983,26 +999,34 @@ public void Reinforce(int client)
 	}
 	else
 	{
-		if(ability_cooldown[client] > GetGameTime())
+		if(!NoCD)
 		{
-			float Ability_CD = ability_cooldown[client] - GetGameTime();
+			if(ability_cooldown[client] > GetGameTime())
+			{
+				float Ability_CD = ability_cooldown[client] - GetGameTime();
 
-			if(Ability_CD <= 0.0)
-				Ability_CD = 0.0;
+				if(Ability_CD <= 0.0)
+					Ability_CD = 0.0;
 
-			ClientCommand(client, "playgamesound items/medshotno1.wav");
-			SetDefaultHudPosition(client);
-			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
-			return;
+				ClientCommand(client, "playgamesound items/medshotno1.wav");
+				SetDefaultHudPosition(client);
+				SetGlobalTransTarget(client);
+				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
+				return;
+			}
+			if(i_ReinforcePoint[client] < i_ReinforcePointMax[client] || i_ReinforcePointMax[client]==0)
+			{
+				ClientCommand(client, "playgamesound items/medshotno1.wav");
+				SetDefaultHudPosition(client);
+				SetGlobalTransTarget(client);
+				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Need Healing Point", (i_ReinforcePointMax[client] - i_ReinforcePoint[client]));
+				return;
+			}
 		}
-		if(i_ReinforcePoint[client] < i_ReinforcePointMax[client] || i_ReinforcePointMax[client]==0)
+		else
 		{
-			ClientCommand(client, "playgamesound items/medshotno1.wav");
-			SetDefaultHudPosition(client);
-			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Need Healing Point", (i_ReinforcePointMax[client] - i_ReinforcePoint[client]));
-			return;
+			i_ReinforcePoint[client] = i_ReinforcePointMax[client];
+			b_ReinforceReady[client]=true;
 		}
 		bool DeadPlayer;
 		for(int client_check=1; client_check<=MaxClients; client_check++)
@@ -1020,7 +1044,7 @@ public void Reinforce(int client)
 			ShowSyncHudText(client,  SyncHud_Notifaction, "Player not detected");
 			return;
 		}
-		i_ReinforcePoint[client]=0;
+		if(!NoCD)i_ReinforcePoint[client]=0;
 		for(int all=1; all<=MaxClients; all++)
 		{
 			if(IsValidClient(all) && !IsFakeClient(all))
@@ -1292,6 +1316,21 @@ public void StimPacks(int client)
 	}
 	else
 	{
+		if(ability_cooldown[client] > GetGameTime())
+		{
+			float Ability_CD = ability_cooldown[client] - GetGameTime();
+
+			if(Ability_CD <= 0.0)
+				Ability_CD = 0.0;
+
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			SetDefaultHudPosition(client);
+			SetGlobalTransTarget(client);
+			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
+			return;
+		}
+		ability_cooldown[client] = GetGameTime() + 15.0;
+		CreateTimer(15.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		int maxhealth = SDKCall_GetMaxHealth(client);
 		int health = GetClientHealth(client);
 		int newhealth=RoundFloat(maxhealth*0.25);
@@ -1309,6 +1348,38 @@ public void StimPacks(int client)
 		TF2_AddCondition(client, TFCond_KingAura, 10.0);
 		TF2_RemoveCondition(client, TFCond_Buffed);
 		TF2_AddCondition(client, TFCond_Buffed, 10.0);
+	}
+}
+
+public void NanomachinePacks(int client)
+{
+	if(dieingstate[client] > 0)
+	{
+		ClientCommand(client, "playgamesound items/medshotno1.wav");
+		SetDefaultHudPosition(client);
+		SetGlobalTransTarget(client);
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Use Only Alive");
+		return;
+	}
+	else
+	{
+		if(ability_cooldown[client] > GetGameTime())
+		{
+			float Ability_CD = ability_cooldown[client] - GetGameTime();
+
+			if(Ability_CD <= 0.0)
+				Ability_CD = 0.0;
+
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			SetDefaultHudPosition(client);
+			SetGlobalTransTarget(client);
+			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
+			return;
+		}
+		ability_cooldown[client] = GetGameTime() + 75.0;
+		CreateTimer(75.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
+		MakePlayerGiveResponseVoice(client, 4);
+		ApplyStatusEffect(client, client, "Nanomachine", 10.0);
 	}
 }
 

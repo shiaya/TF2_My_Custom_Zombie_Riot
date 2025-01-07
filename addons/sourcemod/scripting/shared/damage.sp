@@ -764,7 +764,7 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 		}
 	}
 	
-	if(b_Chaos_Coil[victim])
+	if(!CheckInHud() && b_Chaos_Coil[victim])
 		Elemental_AddChaosDamage(victim, attacker, RoundToCeil(damage));
 	
 	if(b_Iron_Will[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red))
@@ -1142,27 +1142,38 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		}
 		case WEAPON_MARKET_GARDENER:
 		{
-			MarketGardener_NPCTakeDamage(victim, attacker, damage, weapon);
+			if(!CheckInHud())
+				MarketGardener_NPCTakeDamage(victim, attacker, damage, weapon);
 		}
 		case WEAPON_FARMER:
 		{
-			Famrmer_NPCTakeDamage(victim, attacker, damage, weapon);
+			if(!CheckInHud())
+				Famrmer_NPCTakeDamage(victim, attacker, damage, weapon);
 		}
 		case WEAPON_MINECRAFT_SWORD:
 		{
-			MSword_NPCTakeDamage(victim, attacker, damage, weapon);
+			if(!CheckInHud())
+				MSword_NPCTakeDamage(victim, attacker, damage, weapon);
 		}
 		case WEAPON_OVERCLOCKER:
 		{
-			Nitro_NPCTakeDamage(victim, attacker, damage, damagetype, weapon);
+			if(!CheckInHud())
+				Nitro_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
 		}
 		case WEAPON_PERSERKER:
 		{
-			Perserker_NPCTakeDamage(victim, attacker, damage, damagetype, weapon);
+			if(!CheckInHud())
+				Perserker_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
+		}
+		case WEAPON_TROLLDIER:
+		{
+			if(!CheckInHud())
+				Trolldier_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
 		}
 		case WEAPON_SUPPORTWEAPONS:
 		{
-			SupportWeapons_NPCTakeDamage(victim, attacker, damage, damagetype, weapon);
+			if(!CheckInHud())
+				SupportWeapons_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
 		}
 	}
 #endif
@@ -1489,7 +1500,13 @@ static stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int 
 		if(IsValidClient(attacker) && b_Shotgun_Dragonr_Beath_Ammo[attacker] && i_WeaponArchetype[weapon] == 1)
 		{
 			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
-				NPC_Ignite(victim, attacker, 3.0, weapon);
+			{
+				float attackerPos[3], victimPos[3];
+				GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", attackerPos);
+				GetEntPropVector(victim, Prop_Send, "m_vecOrigin", victimPos);
+				float Dist = GetVectorDistance(attackerPos, victimPos);
+				if(Dist<1000.0) NPC_Ignite(victim, attacker, 3.0, weapon);
+			}
 		}
 	}
 	if(IsValidEntity(inflictor))

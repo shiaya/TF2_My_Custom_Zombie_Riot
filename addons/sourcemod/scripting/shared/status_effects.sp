@@ -89,6 +89,7 @@ void InitStatusEffects()
 	}
 	//clear all existing ones
 	StatusEffects_TeslarStick();
+	StatusEffects_Baka();
 	StatusEffects_Ludo();
 	StatusEffects_Cryo();
 	StatusEffects_PotionWand();
@@ -1090,6 +1091,27 @@ stock bool NpcStats_IsEnemyTeslar(int victim, bool High)
 		delete E_AL_StatusEffects[victim];
 
 	return false;
+}
+
+void StatusEffects_Baka()
+{
+	StatusEffect data;
+	strcopy(data.BuffName, sizeof(data.BuffName), "Nanomachine");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "Ｎ");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "Ｎ"); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= 0.8;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = true;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
+	StatusEffect_AddGlobal(data);
 }
 
 void StatusEffects_Ludo()

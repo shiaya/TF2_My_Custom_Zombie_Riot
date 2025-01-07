@@ -4030,6 +4030,18 @@ public int Store_MenuPage(Menu menu, MenuAction action, int client, int choice)
 						FormatEx(buffer, sizeof(buffer), "%t", "Kleiner");
 						menu2.AddItem("-50", buffer);
 
+						FormatEx(buffer, sizeof(buffer), "%t", "Neuron Activation");
+						menu2.AddItem("-1000", buffer);
+
+						FormatEx(buffer, sizeof(buffer), "%t", "Lumine");
+						menu2.AddItem("-1001", buffer);
+
+						FormatEx(buffer, sizeof(buffer), "%t", "Meruna Mint");
+						menu2.AddItem("-1002", buffer);
+						
+						FormatEx(buffer, sizeof(buffer), "%t", "TRUE BLITZKRIEG");
+						menu2.AddItem("-1003", buffer);
+
 						FormatEx(buffer, sizeof(buffer), "%t", "Back");
 						menu2.AddItem("-1", buffer);
 						
@@ -4062,6 +4074,30 @@ public int Store_MenuPage(Menu menu, MenuAction action, int client, int choice)
 					case -50:
 					{
 						OverridePlayerModel(client, KLEINER, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -1000:
+					{
+						OverridePlayerModel(client, Neuron_Activation, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -1001:
+					{
+						OverridePlayerModel(client, Lumine, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -1002:
+					{
+						OverridePlayerModel(client, Meruna_Mint, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -1003:
+					{
+						OverridePlayerModel(client, MM_TRUE_BLITZKRIEG, true);
 						JoinClassInternal(client, CurrentClass[client]);
 						MenuPage(client, -1);
 					}
@@ -6174,7 +6210,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		SupportWeapons_Enable(client, entity);
 		LockDown_Enable(client, entity);
 		Still_Hunt_Enable(client, entity);
-		Enable_HyakkaryouranWeapon(client, entity);
+		Trolldier_Enable(client, entity);
 		//give all revelant things back
 		WeaponSpawn_Reapply(client, entity, StoreWeapon[entity]);
 	}

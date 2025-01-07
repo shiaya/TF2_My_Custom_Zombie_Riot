@@ -231,6 +231,10 @@ bool Viewchanges_PlayerModelsAnims[] =
 	true,
 	false,
 	true,
+	false,
+	false,
+	false,
+	false,
 };
 
 ConVar cvarTimeScale;
@@ -492,6 +496,7 @@ float f_Nailgun_Shotgun_Slug_Ammo[MAXTF2PLAYERS];
 bool b_DrinkRND_BuildingCD_Buff[MAXTF2PLAYERS];
 bool b_Shotgun_Dragonr_Beath_Ammo[MAXTF2PLAYERS];
 bool b_Explosive_Structures[MAXTF2PLAYERS];
+bool b_On_Self_Damage[MAXENTITIES];
 bool b_Interior_ExplosiveBuilding[MAXENTITIES];
 int b_BobsCuringHand_Revived[MAXTF2PLAYERS];
 bool b_StickyExtraGrenades[MAXTF2PLAYERS];

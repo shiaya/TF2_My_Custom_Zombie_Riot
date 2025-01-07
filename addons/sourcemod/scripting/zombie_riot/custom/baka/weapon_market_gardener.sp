@@ -1,7 +1,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static Handle MarketTimer[MAXTF2PLAYERS];
+static Handle MarketTimer[MAXTF2PLAYERS] = {null, ...};
 static float MarketHUDDelay[MAXTF2PLAYERS];
 static float Weapon_Energy[MAXTF2PLAYERS];
 static float Weapon_Energy_Max[MAXTF2PLAYERS];
@@ -276,23 +276,29 @@ public void MarketGardener_NPCTakeDamage(int victim, int attacker, float &damage
 				}
 			}
 			if(OnHIT) Market_OnAttack[attacker]=false;
+			//PrintToChat(attacker, "AoE");
 		}
 	}
 	if(!minicrit)
 	{
-		float DMGNerf = Market_Perk[attacker] ? 5.0 : 10.0;
-		if(Power_Nerf[victim] > gametime)
-			DMGBuff*=(DMGNerf-(Power_Nerf[victim] - gametime))/DMGNerf;
-		Power_Nerf[victim] = gametime + DMGNerf;
+		float DMGNerf = Market_Perk[attacker] == 5 ? 5.0 : 10.0;
+		if(Power_Nerf[victim] < gametime)
+			Power_Nerf[victim] = gametime + DMGNerf;
+		else
+		{
+			DMGBuff*=0.75;
+			//PrintToChat(attacker, "Nerf");
+		}
+		
 		if(Market_Perk[attacker] == 5)
 			DMGBuff*=1.25;
+		//PrintToChat(attacker, "Crit");
 	}
 	if(Market_Perk[attacker] == 2)
 		DMGBuff*=0.95;
 	damage=DMGBuff;
 	DisplayCritAboveNpc(victim, attacker, true, _, _, minicrit);
-	PrintToChat(attacker, "Speed: %.1f", Speed);
-	return;
+	//PrintToChat(attacker, "Speed: %.1f", Speed);
 }
 
 stock void ApplySelfHealEvent(int entindex, int amount)

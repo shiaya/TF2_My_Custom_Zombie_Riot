@@ -260,6 +260,7 @@ void Music_EndLastmann()
 						b_Hero_Of_Concord_LastMan[client]=false;
 					}
 				}
+				Soldin_LastMann_buff(client, false);
 				switch(Yakuza_Lastman())
 				{
 					case 1:
@@ -268,6 +269,8 @@ void Music_EndLastmann()
 						StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/zealot_lastman_1.mp3", 2.0);
 					case 3:
 						StopCustomSound(client, SNDCHAN_STATIC, RAIDBOSS_TWIRL_THEME, 2.0);
+					case 4:
+						StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3", 2.0);
 				}
 
 				SetMusicTimer(client, 0);
@@ -724,8 +727,13 @@ void Music_PostThink(int client)
 					EmitCustomToClient(client, RAIDBOSS_TWIRL_THEME,client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0);
 					SetMusicTimer(client, GetTime() + 285);
 				}
+				case 4:
+				{
+					EmitCustomToClient(client, "#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0);
+					SetMusicTimer(client, GetTime() + 187);
+				}
 				default:
-				{	
+				{
 					EmitCustomToClient(client, "#zombiesurvival/lasthuman.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0);
 					SetMusicTimer(client, GetTime() + 120);	
 				}

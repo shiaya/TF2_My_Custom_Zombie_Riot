@@ -4248,8 +4248,8 @@
 	}
 	"HH Sandvich desc"
 	{
-		"en"	"HP +1 Regen, Added 15% random damage buff"
-		"ko"	"자힐 +1, 무작위 피해량 15% 버프 추가"
+		"en"	"HP +1 Regen, Added 15％ random damage buff"
+		"ko"	"자힐 +1, 무작위 피해량 15％ 버프 추가"
 	}
 	"14gi desc"
 	{
@@ -4421,6 +4421,16 @@
 		"en"	"Removes some debuffs when invincible."
 		"ko"	"무적 상태일때 일부 디버프를 해제 합니다."
 	}
+	"Dragon Breath Shell desc"
+	{
+		"en"	"''Archetype: Multi Pellet'' Only\nBurn on hit.\Damage -25％, Burn dmg reduced -50％"
+		"ko"	"''유형: 산탄'' 전용\n적중시 화상 부여.\n피해량 -25％, 화상 피해 -50％"
+	}
+	"Adam Smith's invisible Hand desc"
+	{
+		"en"	"Building explodes when destroyed!\Building health reduced by -10％"
+		"ko"	"구조물이 파괴될때 폭발합니다!\n구조물 체력 -10％"
+	}
 	
 	"Orbital 120MM Desc"
 	{
@@ -4441,6 +4451,11 @@
 	{
 		"en"	"Take damage equal to 25%% of your maximum health, but your Reload speed and Attack speed increase for 10 seconds."
 		"ko"	"최대 체력의 25％의 피해를 받지만 10초동안 공속,장속이 증가함."
+	}
+	"Nanomachine Device Desc"
+	{
+		"en"	"Resistance increased by 20％ for 10 seconds."
+		"ko"	"10초동안 저항이 20％ 증가."
 	}
 	"See You In Hell Desc"
 	{
@@ -4695,8 +4710,13 @@
 	}
 	"Still Hunt Desc pap 3"
 	{
-		"en"	"Damage increased, ability bullets are changed to one shot, but damage is greatly increased!"
-		"ko"	"피해량 증가, 능력의 탄환이 한발로 변경되지만 피해량이 대폭 증가합니다!"
+		"en"	"Damage increased, ability bullets are changed to one shot, but damage is greatly increased!\nincreases damage to bosses by 25％"
+		"ko"	"피해량 증가, 능력의 탄환이 한발로 변경되지만 피해량이 대폭 증가합니다!\n보스 대상 데미지 25％상승"
+	}
+	"Still Hunt Desc pap 4"
+	{
+		"en"	"Damage increased, changes the ammo of the Golden Gun to 6, headshots are disabled.\nAttack speed increased by 300%.\nOne shot is loaded when killing an enemy, maximum of 6 shots is not exceeded.\nDamage increases with each hit.\nBoss damage reduced by -70%.Duration reduced from 3 seconds to 1 second when firing Retaliation duration reduced by 8 seconds"
+		"ko"	"피해량 증가, 탄약을 6발로 변경, 헤드샷 불가. 공속 대폭 증가. 적중할때마다 데미지 증가.\n적 처치시 한발 장전, 최대 6발을 넘기지 않음.\n보스 대상 데미지 -70% 감소, 발사시 지속시간 감소 3초 -> 1초로 감소, 응징의 지속시간 8초 감소"
 	}
 	"Bone Power Trumpet Desc"
 	{
@@ -4712,6 +4732,11 @@
 	{
 		"en"	"{default}We found supplies at the outpost. We got a special package there. {darkblue}''Atomizer's Special Drink Pack''{default}!"
 		"ko"	"{default}우리는 전초기지에서 보급품을 발견했습니다. 거기서 특별한 패키지를 얻었습니다. {blue}''인수분해의 스페셜 드링크 팩''{default}이 해금 됬습니다."
+	}
+	"Prototype Kit Desc"
+	{
+		"en"	"This is an experimental weapon set.\nYou can rocket jump with your primary weapon. You can deal additional damage during rocket jump with your melee weapon."
+		"ko"	"실험적무기 세트입니다,\n주무기로 로켓점프를 할수있으며. 근접무기로 로켓점프중 추가피해를 줄수있습니다."
 	}
 	"Whistle Stop Desc"
 	{

@@ -188,7 +188,20 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			
 			if(CyberGrind_InternalDifficulty>2)
-				NPC_SpawnNext(true, true, -1);
+			{
+				switch(GetRandomInt(0, 8))
+				{
+					case 0: NPC_SpawnNext(true, true, 0);
+					case 1: NPC_SpawnNext(true, true, 1);
+					case 2: NPC_SpawnNext(true, true, 3);
+					case 3: NPC_SpawnNext(true, true, 4);
+					case 4: NPC_SpawnNext(true, true, 5);
+					case 5: NPC_SpawnNext(true, true, 6);
+					case 6: NPC_SpawnNext(true, true, 7);
+					case 7: NPC_SpawnNext(true, true, 8);
+					case 8: NPC_SpawnNext(true, true, 10);
+				}
+			}
 			WaveStart_SubWaveStart(GetGameTime() + 800.0);
 			b_NpcForcepowerupspawn[npc.index] = 0;
 			i_RaidGrantExtra[npc.index] = 0;

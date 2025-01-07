@@ -62,8 +62,8 @@ public void OnUberDeployed(Event event, const char[] name, bool dontBroadcast)
 		ParticleEffectAt(clientpos, "hightower_explosion", 1.0);
 		EmitSoundToAll("weapons/explode3.wav", 0, SNDCHAN_AUTO, 90, SND_NOFLAGS, 0.8, SNDPITCH_NORMAL, -1, clientpos);
 		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", 0.0);
-		HealPointToReinforce(client, 1, 0.05);
-		AddHealthToUbersaw(client, 1, 0.05);
+		HealPointToReinforce(client, 1, 0.15);
+		AddHealthToUbersaw(client, 1, 0.15);
 		return;
 	}
 	CreateTimer(0.1, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -267,17 +267,17 @@ public void Nitro_NPCTakeDamage(int victim, int attacker, float &damage, int &da
 	char mediclassname[64];
 	if(IsValidEntity(weapon) && GetEntityClassname(weapon, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
 	{
-		if((damagetype | DMG_SLASH))
+		if((damagetype | DMG_TRUEDAMAGE))
 		{
 			Handle AttackPack;
 			CreateDataTimer(0.01, Timer_Delay_Attack, AttackPack, TIMER_FLAG_NO_MAPCHANGE);
-			WritePackCell(AttackPack, damage*0.1);
-			WritePackCell(AttackPack, DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE);
+			WritePackCell(AttackPack, damage*0.15);
+			WritePackCell(AttackPack, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 			WritePackCell(AttackPack, victim);
 			WritePackCell(AttackPack, attacker);
-			damage*=0.9;
+			damage*=0.85;
 		}
-		SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", GetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel")+0.0015);
+		SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", GetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel")+0.0025);
 	}
 }
 

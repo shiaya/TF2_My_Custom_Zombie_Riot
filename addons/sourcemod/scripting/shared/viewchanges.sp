@@ -53,6 +53,10 @@ static const char PlayerModelsCustom[][] =
 	"models/sasamin/oneshot/zombie_riot_edit/niko_05.mdl",
 	"models/bots/skeleton_sniper/skeleton_sniper.mdl",
 	"models/zombie_riot/player_model_add/model_player_2_1.mdl",
+	"models/ff7/soldier/chimp.mdl",
+	"models/bakas/genshin/lumine.mdl",
+	"models/godbless/medic/ba7.mdl",
+	"models/freak_fortress_2/shadow93/dmedic/d_medic2.mdl",
 };
 
 
@@ -63,6 +67,10 @@ static const char PlayerCustomHands[][] =
 	"models/sasamin/oneshot/zombie_riot_edit/niko_arms_01.mdl",
 	"models/bots/skeleton_sniper/skeleton_sniper.mdl",
 	"models/zombie_riot/player_model_add/model_player_hands_1_5.mdl",
+	"",
+	"",
+	"",
+	"",
 };
 
 int PlayerCustomModelBodyGroup[] =
@@ -72,6 +80,10 @@ int PlayerCustomModelBodyGroup[] =
 	0,
 	0,
 	2,
+	0,
+	0,
+	0,
+	0,
 };
 
 enum
@@ -81,6 +93,10 @@ enum
 	NIKO_2 = 2,
 	SKELEBOY = 3,
 	KLEINER = 4,
+	Neuron_Activation = 5,
+	Lumine = 6,
+	Meruna_Mint = 7,
+	MM_TRUE_BLITZKRIEG = 8,
 }
 
 static int HandIndex[10];

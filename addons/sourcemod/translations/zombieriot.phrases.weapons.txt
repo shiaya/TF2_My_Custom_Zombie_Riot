@@ -3598,6 +3598,11 @@
 		"en"	"Stim Packs"
 		"ko"	"전투 자극제"
 	}
+	"Nanomachine Device"
+	{
+		"en"	"Nanomachine Device"
+		"ko"	"나노머신 디바이스"
+	}
 	"See You In Hell"
 	{
 		"en"	"See You In Hell"
@@ -3937,10 +3942,25 @@
 		"en"		"Force Shield Generator [Rare]"
 		"ko"		"포스 실드 제너레이터[희귀한]"
 	}
+	"Dragon Breath Shell [Rare]"
+	{
+		"en"		"12g Dragon Breath Shell [Rare]"
+		"ko"		"12g 용의 숨결 탄 [희귀한]"
+	}
+	"Adam Smith's invisible Hand [Rare]"
+	{
+		"en"		"Adam Smith's invisible Hand [Rare]"
+		"ko"		"애덤스미스의 보이지 않는 손 [희귀한]"
+	}
 	"Trumpet"
 	{
 		"en"		"Trumpet"
 		"ko"		"트럼펫"
+	}
+	"Prototype Kit"
+	{
+		"en"		"Prototype Kit"
+		"ko"		"프로토타입 키트"
 	}
 	"Victorian Launcher"
 	{
