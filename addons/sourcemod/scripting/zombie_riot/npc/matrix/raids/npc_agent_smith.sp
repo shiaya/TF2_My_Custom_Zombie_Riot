@@ -215,6 +215,7 @@ methodmap AgentSmith < CClotBody
 		{
 			npc.m_bThisNpcIsABoss = true;
 			npc.m_bFUCKYOU = false;
+			b_NpcUnableToDie[npc.index] = true;
 		}
 		float gameTime = GetGameTime(npc.index);
 		npc.m_flAbilityOrAttack0 = gameTime + 1.0;
@@ -345,8 +346,9 @@ static void AgentSmith_ClotThink(int iNPC)
 		}
 		if(npc.m_flAbilityOrAttack0 <= gameTime)
         {
+			Smith_Timeslow(GetRandomFloat(1.0, 0.9), 1.0);
 			npc.m_flAbilityOrAttack0 = gameTime + 1.0;
-			Agent_Smith_Cloner(npc, 1, RoundToCeil(75000.0 * MultiGlobalEnemy), 2.0);
+			Agent_Smith_Cloner(npc, 1, RoundToCeil(30000.0 * MultiGlobalEnemy), 2.0);
         }
 	}
 
@@ -733,7 +735,37 @@ static void Smith_Infection(AgentSmith npc)
 			//}
 			float radius = 150.0;
 			GetClientAbsOrigin(victim, vicPos);
-			fl_Infection_Meter[victim] += 0.085;
+			switch(CountPlayersOnRed(2))
+			{
+				case 2:
+				{
+					fl_Infection_Meter[victim] += 0.060;
+				}
+				case 3, 4:
+				{
+					fl_Infection_Meter[victim] += 0.070;
+				}
+				case 5, 6:
+				{
+					fl_Infection_Meter[victim] += 0.080;
+				}
+				case 7, 8:
+				{
+					fl_Infection_Meter[victim] += 0.085;
+				}
+				case 9, 10:
+				{
+					fl_Infection_Meter[victim] += 0.090;
+				}
+				case 11, 12:
+				{
+					fl_Infection_Meter[victim] += 0.095;
+				}
+				case 13, 14:
+				{
+					fl_Infection_Meter[victim] += 0.102;
+				}
+			}
 			PrintCenterText(victim, "Your Infection is rising - %.0f%%% | Cure %.0f%%%", (fl_Infection_Meter[victim] * 10.0), (fl_Cure_Meter[victim] * 10.0));
 			for(int clients = 1 ; clients <= MaxClients ; clients++)
 			{
@@ -755,6 +787,7 @@ static void Smith_Infection(AgentSmith npc)
 			if(fl_Cure_Meter[victim] >= 10.0)
 			{
 				Smith_Reset_Infection(npc, victim);
+				TF2_RemoveCondition(victim, TFCond_Dazed);
 			}
 			return;
 		}
@@ -874,6 +907,7 @@ static void Agent_CloningAmount(AgentSmith npc)
 		case 6:
 		{
 			amount = 32;
+			b_NpcUnableToDie[npc.index] = false;
 			npc.Anger = true;
 		}
 	}
@@ -932,38 +966,6 @@ static void PrepareSmith_Raid(AgentSmith npc)
 			//LookAtTarget(i, npc.index);
 			SetGlobalTransTarget(i);
 			ShowGameText(i, "item_armor", 1, "%s", "Agent Smith Arrived");
-		}
-	}
-	int victim = EntRefToEntIndex(i_Victim_Infection[npc.index]);
-	switch(CountPlayersOnRed(2))
-	{
-		case 2:
-		{
-			fl_Infection_Meter[victim] += 0.060;
-		}
-		case 3, 4:
-		{
-			fl_Infection_Meter[victim] += 0.070;
-		}
-		case 5, 6:
-		{
-			fl_Infection_Meter[victim] += 0.080;
-		}
-		case 7, 8:
-		{
-			fl_Infection_Meter[victim] += 0.085;
-		}
-		case 9, 10:
-		{
-			fl_Infection_Meter[victim] += 0.090;
-		}
-		case 11, 12:
-		{
-			fl_Infection_Meter[victim] += 0.095;
-		}
-		case 13, 14:
-		{
-			fl_Infection_Meter[victim] += 0.102;
 		}
 	}
 	i_NpcWeight[npc.index] = 4;
@@ -1263,4 +1265,17 @@ static void Smith_Weapon_Lines(AgentSmith npc, int client)
 		fl_said_player_weaponline_time[npc.index] = GameTime + GetRandomFloat(17.0, 26.0);
 		b_said_player_weaponline[client] = true;
 	}
+}
+
+static void Smith_Timeslow(float amount = 1.0, float revert = 0.1)
+{
+    for(int i = 1; i <= MaxClients; i++)
+    {
+        if(IsClientInGame(i) && !IsFakeClient(i))
+        {
+            SendConVarValue(i, sv_cheats, "1");
+        }
+    }
+    cvarTimeScale.SetFloat(amount);
+    CreateTimer(revert, SetTimeBack);
 }
