@@ -548,6 +548,57 @@ public void OnPostThink(int client)
 
 	bool Mana_Regen_Tick = false;
 
+	if(Rogue_CanRegen() && (b_ManaFlower_Terrarium[client] && Mana_Regen_Delay_ManaFlower_Terrarium[client] < GameTime))
+	{
+		Mana_Regen_Delay_ManaFlower_Terrarium[client] = GameTime + 0.4;
+		float ManaRegenExtra = 1.0;
+		float ManaMaxExtra = 1.0;
+		int i, entity;
+		while(TF2_GetItem(client, entity, i))
+		{
+			if(i_IsWandWeapon[entity])
+			{
+				has_mage_weapon[client] = true;
+				ManaMaxExtra *= Attributes_Get(entity, 4019, 1.0);
+				ManaRegenExtra *= Attributes_Get(entity, 4020, 1.0);
+			}
+		}
+		Mana_Regen_Tick = true;
+
+		max_mana[client] = 400.0;
+		mana_regen[client] = 10.0;
+		max_mana[client] *= ManaMaxExtra;
+		mana_regen[client] *= ManaRegenExtra;
+				
+		if(i_CurrentEquippedPerk[client] == 4)
+			mana_regen[client] *= 1.35;
+		if(Classic_Mode())
+			mana_regen[client] *= 0.7;
+
+		mana_regen[client] *= Mana_Regen_Level[client];
+		max_mana[client] *= Mana_Regen_Level[client];
+		if(b_TwirlHairpins[client])
+		{
+			mana_regen[client] *= 1.05;
+			max_mana[client] *= 1.05;
+		}
+		mana_regen[client]*=0.05;
+		
+		if(Current_Mana[client] < RoundToCeil(max_mana[client]) && Mana_Regen_Block_Timer[client] < GameTime)
+		{
+			Current_Mana[client] += RoundToCeil(mana_regen[client]);
+				
+			if(Current_Mana[client] > RoundToCeil(max_mana[client])) //Should only apply during actual regen
+			{
+				Current_Mana[client] = RoundToCeil(max_mana[client]);
+				mana_regen[client] = 0.0;
+			}
+		}
+		else
+		{
+			mana_regen[client] = 0.0;
+		}
+	}
 	if(Rogue_CanRegen() && (Mana_Regen_Delay[client] < GameTime || (b_AggreviatedSilence[client] && Mana_Regen_Delay_Aggreviated[client] < GameTime)))
 	{
 		Mana_Regen_Delay[client] = GameTime + 0.4;
@@ -606,6 +657,8 @@ public void OnPostThink(int client)
 				}
 			}
 		}*/
+		
+
 
 		if(b_AggreviatedSilence[client])	
 		{
@@ -1103,7 +1156,7 @@ public void OnPostThink(int client)
 		int Alpha = 255;
 
 #if defined ZR
-		if(has_mage_weapon[client])
+		if(has_mage_weapon[client] || b_Mana_Infusion_Ammunition[client])
 #endif
 		{
 			red = 255;
@@ -1679,6 +1732,8 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 	{
 		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TROLLDIER && !(GetEntityFlags(victim)&FL_ONGROUND))
 			RocketJump_Count[victim]++;
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_KIT_PROTOTYPE && !(GetEntityFlags(victim)&FL_ONGROUND))
+			i_RocketJump_Count[victim]++;
 		return Plugin_Continue;
 	}
 

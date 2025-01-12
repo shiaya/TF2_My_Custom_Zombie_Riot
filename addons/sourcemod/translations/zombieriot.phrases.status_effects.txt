@@ -778,6 +778,16 @@
 		"en"	"Damage dealt increases by 45%% and all damage taken is reduced by 30%%."
 		"ko"	"피해량이 55%%늘어나며 받는 모든 피해를 30%% 경감합니다."
 	}
+	"Nanomachine"
+	{
+		"en"	"Nanomachine"
+		"ko"	"나노머신"
+	}
+	"Nanomachine Desc"
+	{
+		"en"	"all damage taken is reduced by 20%%."
+		"ko"	"받는 모든 피해를 20%% 경감합니다."
+	}
 	"Iberia Morale Boost"
 	{
 		"en" 	"Iberia Morale Boost"

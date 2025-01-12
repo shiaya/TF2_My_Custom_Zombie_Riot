@@ -4363,6 +4363,11 @@
 		"en"	"[GM] Cyber Grind"
 		"ko"	"[GM] Cyber Grind"
 	}
+	"Victoria Precision Strike"
+	{
+		"en"	"Air Precision Strike"
+		"ko"	"공중 정밀 타격"
+	}
 	"Agent John"
 	{
 		"en"		"Agent John"

@@ -787,11 +787,13 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 		}
 		case WEAPON_FARMER:
 		{
-			Famrmer_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
+			if(!CheckInHud())
+				Famrmer_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
 		}
 		case WEAPON_PERSERKER:
 		{
-			Perserker_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
+			if(!CheckInHud())
+				Perserker_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
 		}
 		case WEAPON_ZEALOT_MELEE, WEAPON_ZEALOT_GUN, WEAPON_ZEALOT_POTION:
 		{
@@ -808,7 +810,7 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 	if(!CheckInHud() && b_Chaos_Coil[victim])
 		Elemental_AddChaosDamage(victim, attacker, RoundToCeil(damage));
 	
-	if(b_Iron_Will[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red))
+	if(!CheckInHud() && b_Iron_Will[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red))
 	{
 		int health = GetClientHealth(victim);
 		if(damage>health)
@@ -823,8 +825,11 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 		RemoveAllBuffs(victim, false);
 		ApplyStatusEffect(victim, victim, "Hardened Aura", 0.6);
 	}
+	
+	if(!CheckInHud() && b_MarketGardener_Uniform[victim] && !(GetEntityFlags(attacker)&FL_ONGROUND))
+		damage*=0.97;
 
-	if(LastMann && b_Hero_Of_Concord[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red) && TeutonType[victim] == TEUTON_NONE)
+	if(!CheckInHud() && LastMann && b_Hero_Of_Concord[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red) && TeutonType[victim] == TEUTON_NONE)
 	{
 		float Resist=damage;
 		if(Items_HasNamedItem(victim, "True Concord Hero"))
@@ -1181,6 +1186,11 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 			if(!CheckInHud())
 				WeaponZealot_OnTakeDamage_Gun(attacker, victim, damage);
 		}
+		case WEAPON_KIT_PROTOTYPE:
+		{
+			if(!CheckInHud())
+				Wkit_Soldin_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
+		}
 		case WEAPON_MARKET_GARDENER:
 		{
 			if(!CheckInHud())
@@ -1535,6 +1545,12 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 		float YPOS = GetVectorDistance(attackerPos, victimPos);
 		if(YPOS>100.0) damage *= 1.10;
 	}
+	if(IsValidClient(attacker) && b_MarketGardener_Uniform[attacker] && !(GetEntityFlags(attacker)&FL_ONGROUND))
+	{
+		float Speed = MoveSpeed(attacker, _, true);
+		damage += Speed*0.25;
+		damage *= 1.05;
+	}
 	if(IsValidEntity(weapon))
 	{
 		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TEUTON_DEAD)
@@ -1551,6 +1567,23 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 				GetEntPropVector(victim, Prop_Send, "m_vecOrigin", victimPos);
 				float Dist = GetVectorDistance(attackerPos, victimPos);
 				if(Dist<1000.0) NPC_Ignite(victim, attacker, 3.0, weapon);
+			}
+		}
+		if(IsValidClient(attacker) && b_Mana_Infusion_Ammunition[attacker] &&
+		(i_WeaponArchetype[weapon] == 1 || i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3 || i_WeaponArchetype[weapon] == 5))
+		{
+			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
+			{
+				int mana_max = RoundToCeil(400.0*Mana_Regen_Level[attacker]);
+				int mana_cost = RoundToCeil(mana_max*((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.025 : 0.1));
+				if(mana_cost <= Current_Mana[attacker])
+				{
+					Current_Mana[attacker] -=mana_cost;
+					SDKhooks_SetManaRegenDelayTime(attacker, 2.0);
+					damage+=float(mana_max)*((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.1 : 0.15);
+					damage *= Attributes_Get(weapon, 410, 1.00);
+				}
+				else damage*=0.9;
 			}
 		}
 	}

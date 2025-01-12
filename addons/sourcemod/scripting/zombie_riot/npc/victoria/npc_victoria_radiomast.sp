@@ -16,6 +16,8 @@ static const char g_HurtSounds[][] = {
 	")physics/metal/metal_box_impact_bullet2.wav",
 	")physics/metal/metal_box_impact_bullet3.wav",
 };
+bool NoEmptyMode[MAXENTITIES]={false};
+
 /*
 int RadioMastID;
 
@@ -43,9 +45,9 @@ void VictoriaRadiomast_OnMapStart_NPC()
 }
 
 
-static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally)
+static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 {
-	return VictoriaRadiomast(client, vecPos, vecAng, ally);
+	return VictoriaRadiomast(client, vecPos, vecAng, ally, data);
 }
 methodmap VictoriaRadiomast < CClotBody
 {
@@ -65,7 +67,7 @@ methodmap VictoriaRadiomast < CClotBody
 		EmitSoundToAll(g_DeathSounds[GetRandomInt(0, sizeof(g_DeathSounds) - 1)], this.index, SNDCHAN_STATIC, BOSS_ZOMBIE_SOUNDLEVEL, _, 0.3);
 	}
 	
-	public VictoriaRadiomast(int client, float vecPos[3], float vecAng[3], int ally)
+	public VictoriaRadiomast(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
 		VictoriaRadiomast npc = view_as<VictoriaRadiomast>(CClotBody(vecPos, vecAng, TOWER_MODEL, TOWER_SIZE,"1000000", ally, false,true,_,_,{30.0,30.0,200.0}));
 		
@@ -83,7 +85,8 @@ methodmap VictoriaRadiomast < CClotBody
 		SetVariantString("0.95");
 		AcceptEntityInput(npc.m_iWearable2, "SetModelScale");
 
-		
+		if(StrContains(data, "NoEmpty") != -1)
+			NoEmptyMode[npc.index]=true;
 		npc.m_flMeleeArmor = 2.5;
 		npc.m_flRangedArmor = 1.0;
 
@@ -194,7 +197,7 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 	npc.m_flNextRangedSpecialAttack = 0.0;
 
 	gameTime = GetGameTime() + 0.5;
-	float InfiniteWave = 5.0;
+	float InfiniteWave = NoEmptyMode[npc.index] ? 15.0 : 5.0;
 	int team = GetTeam(npc.index);
 	if(team == 2)
 	{
@@ -214,7 +217,7 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 		else
 			RaidModeScaling = ((InfiniteWave-(npc.m_flNextMeleeAttack - gameTime))/InfiniteWave)*19.721;
 	}
-	if(Waves_IsEmpty() && npc.m_flNextMeleeAttack<gameTime)
+	if((NoEmptyMode[npc.index] || Waves_IsEmpty()) && npc.m_flNextMeleeAttack<gameTime)
 	{
 		int ISVOLI= 1;
 		ISVOLI = RoundToNearest(4.0); 

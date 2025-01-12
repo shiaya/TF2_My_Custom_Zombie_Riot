@@ -5255,6 +5255,11 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	b_Force_Shield_Generator[client] = false;
 	b_Shotgun_Dragonr_Beath_Ammo[client] = false;
 	b_Explosive_Structures[client] = false;
+	b_Energy_Backpack[client] = false;
+	b_MarketGardener_Uniform[client] = false;
+	b_ManaFlower_Terrarium[client] = false;
+	b_Golden_Crown[client] = false;
+	b_Mana_Infusion_Ammunition[client] = false;
 	i_MaxSupportBuildingsLimit[client] = 0;
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
 	BannerOnEntityCreated(client);
@@ -5938,6 +5943,26 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					{
 						b_Explosive_Structures[client] = true;
 					}
+					if(info.SpecialAdditionViaNonAttribute == 26)
+					{
+						b_Energy_Backpack[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 27)
+					{
+						b_MarketGardener_Uniform[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 28)
+					{
+						b_ManaFlower_Terrarium[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 29)
+					{
+						b_Golden_Crown[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 30)
+					{
+						b_Mana_Infusion_Ammunition[client] = true;
+					}
 
 					int CostDo;
 
@@ -6194,6 +6219,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		LockDown_Enable(client, entity);
 		Still_Hunt_Enable(client, entity);
 		Trolldier_Enable(client, entity);
+		Wkit_Soldin_Enable(client, entity);
 		//give all revelant things back
 		WeaponSpawn_Reapply(client, entity, StoreWeapon[entity]);
 	}

@@ -20,7 +20,7 @@ void Invisible_TRIGGER_Man_OnMapStart_NPC()
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Invisible Trigger Man");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_invisible_trigger_man");
-	//strcopy(data.Icon, sizeof(data.Icon), "");
+	strcopy(data.Icon, sizeof(data.Icon), "victoria_precision_strike");
 	data.IconCustom = true;
 	data.Flags = -1;
 	data.Category = Type_Hidden;

@@ -215,6 +215,7 @@ enum
 	WEAPON_ZEALOT_GUN = 133,
 	WEAPON_ZEALOT_POTION = 134,
 	WEAPON_KIT_FRACTAL	= 135,
+	WEAPON_KIT_PROTOTYPE	= 136,
 	WEAPON_MARKET_GARDENER = 1000,
 	WEAPON_FARMER = 1001,
 	WEAPON_MINECRAFT_SWORD = 1002,
@@ -592,6 +593,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/weapon_walter.sp"
 #include "zombie_riot/custom/wand/weapon_wand_nymph.sp"
 #include "zombie_riot/custom/weapon_castlebreaker.sp"
+#include "zombie_riot/custom/kit_soldine.sp"
 #include "zombie_riot/custom/baka/weapon_market_gardener.sp"
 #include "zombie_riot/custom/baka/weapon_farmer.sp"
 #include "zombie_riot/custom/baka/weapon_minecraft_sword.sp"
@@ -909,6 +911,7 @@ void ZR_MapStart()
 	Weapon_ToolGun_MapStart();
 	Trolldier_OnMapStart();
 	OnMapStartZealot();
+	Wkit_Soldin_OnMapStart();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)
@@ -1844,9 +1847,10 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 							CPrintToChatAll("{purple}Twirl{crimson}'s Essence enters %N...",client);
 							Yakuza_Lastman(3);
 						}
-						if(Soldin_LastMann(client))
+						if(Soldin_LastMann(client) || Wkit_Soldin_LastMann(client))
 						{
 							Soldin_LastMann_buff(client, true);
+							Wkit_Soldin_LastMann_buff(client, true);
 							CPrintToChatAll("{crimson}%N's weapon is Now System Overdrive...",client);
 							Yakuza_Lastman(4);
 						}

@@ -853,6 +853,7 @@ void NPC_ConfigSetup()
 	TrumpetSkeleton_OnMapStart_NPC();
 	CyberGrindGM_OnMapStart_NPC();
 	Invisible_TRIGGER_Man_OnMapStart_NPC();
+	Victoria_Precision_Strike_OnMapStart_NPC();
 
 	//Combine Mutation
 	OmegaRaid_OnMapStart_NPC();
@@ -1165,11 +1166,6 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/object/obj_barracks.sp"
 #include "zombie_riot/object/obj_brewing_stand.sp"
 #include "zombie_riot/object/obj_revenant.sp"
-
-//Special
-#include "zombie_riot/npc/special/npc_sans.sp"
-#include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"
-#include "zombie_riot/npc/baka/npc_invisible_trigger_man.sp"
 
 //NORMAL
 
@@ -1872,6 +1868,12 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/npc/raidmode_bosses/victoria/npc_the_wall.sp"
 #include "zombie_riot/npc/raidmode_bosses/victoria/npc_harrison.sp"
 #include "zombie_riot/npc/raidmode_bosses/victoria/npc_castellan.sp"
+
+//Special
+#include "zombie_riot/npc/special/npc_sans.sp"
+#include "zombie_riot/npc/special/npc_victoria_precision_strike.sp"
+#include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"
+#include "zombie_riot/npc/baka/npc_invisible_trigger_man.sp"
 
 //Matrix Enemies
 #include "zombie_riot/npc/matrix/15/npc_agentalan.sp"

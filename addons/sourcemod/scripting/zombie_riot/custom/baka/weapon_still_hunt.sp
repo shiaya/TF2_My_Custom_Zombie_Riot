@@ -10,6 +10,7 @@ static int CaydeRetribution_Ammo[MAXTF2PLAYERS+1];
 static int CaydeRetribution_charges[MAXTF2PLAYERS+1];
 static float CaydeRetribution_duration[MAXTF2PLAYERS+1];
 static int CaydeRetribution_End[MAXTF2PLAYERS+1];
+static int CaydeRetribution_Original[MAXTF2PLAYERS+1];
 static float fl_hud_timer[MAXTF2PLAYERS+1];
 
 public void Still_Hunt_MapStart()
@@ -23,6 +24,7 @@ public void Still_Hunt_MapStart()
 	Zero(CaydeRetribution_duration);
 	Zero(Still_HuntTimer);
 	Zero(CaydeRetribution_End);
+	Zero(CaydeRetribution_Original);
 }
 
 public void Still_Hunt_Enable(int client, int weapon)
@@ -77,30 +79,7 @@ public Action Timer_Still_Hunt(Handle timer, DataPack pack)
 				CaydeRetribution_duration[client] = GameTime + 0.5;
 			else if(Still_Hunt_Pap_Save[client] < 3 && CaydeRetribution_Ammo[client] >= 3)
 				CaydeRetribution_duration[client] = GameTime + 0.5;
-			int entity = EntRefToEntIndex(i_Still_HuntParticle[client]);
-			if(!IsValidEntity(entity))
-			{
-				float flPos[3];
-				GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", flPos);
-				int particle = ParticleEffectAt(flPos, "medic_radiusheal_red_spikes", 0.0);
-				SetParent(client, particle, "m_vecAbsOrigin");
-				i_Still_HuntParticle[client] = EntIndexToEntRef(particle);
-			}
 		}
-		else
-		{
-			int  entity = EntRefToEntIndex(i_Still_HuntParticle[client]);
-			if(IsValidEntity(entity))
-				RemoveEntity(entity);
-			i_Still_HuntParticle[client] = INVALID_ENT_REFERENCE;
-		}
-	}
-	else
-	{
-		int  entity = EntRefToEntIndex(i_Still_HuntParticle[client]);
-		if(IsValidEntity(entity))
-			RemoveEntity(entity);
-		i_Still_HuntParticle[client] = INVALID_ENT_REFERENCE;
 	}
 
 	return Plugin_Continue;
@@ -147,6 +126,7 @@ public void Still_Hunt_Secondary_Attack(int client, int weapon, bool crit, int s
 		if(Still_Hunt_charges[client] >= MaxCharge && !IsValidEntity(EntRefToEntIndex(CaydeRetribution_End[client])))
 		{
 			Rogue_OnAbilityUse(client, weapon);
+			CaydeRetribution_Original[client] = EntIndexToEntRef(weapon);
 			float Time = GetGameTime();
 			float duration = 14.5+float(Still_Hunt_Pap[client]);
 			if(Still_Hunt_Pap[client] == 4)duration -= 8.0;
@@ -158,16 +138,22 @@ public void Still_Hunt_Secondary_Attack(int client, int weapon, bool crit, int s
 			CaydeRetribution_charges[client]=0;
 			char name[32];
 			GetClientName(client, name, sizeof(name));
-		//	CPrintToChatAll("%t", "Still_Hunt_Cayde", name);
-			float EntLoc[3];
-			GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", EntLoc);
-			ParticleEffectAt(EntLoc, "mannpower_imbalance_red", 0.8);
+			int entity = EntRefToEntIndex(i_Still_HuntParticle[client]);
+			if(!IsValidEntity(entity))
+			{
+				float flPos[3];
+				GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", flPos);
+				int particle = ParticleEffectAt(flPos, "medic_radiusheal_red_spikes", 0.0);
+				SetParent(client, particle, "m_vecAbsOrigin");
+				i_Still_HuntParticle[client] = EntIndexToEntRef(particle);
+			}
 			MakePlayerGiveResponseVoice(client, 1);
 			int CaydeRetribution = Store_GiveSpecificItem(client, "Weapon CaydeRetribution");
 			EmitSoundToAll("baka_zr/goldengun_sfx.mp3", client, SNDCHAN_AUTO, 75,_,1.0,100);
 			Attributes_Set(CaydeRetribution, 2, Attributes_Get(weapon, 2, 1.0));
 			if(Still_Hunt_Pap_Save[client] == 4)Attributes_Set(CaydeRetribution, 6, 0.2);
 			Attributes_Set(CaydeRetribution, 391, Attributes_Get(weapon, 391, 0.0));
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", CaydeRetribution);
 			SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", Time+1.5);
 			SetEntPropFloat(CaydeRetribution, Prop_Send, "m_flNextPrimaryAttack", Time+1.5);
 			SetEntPropFloat(client, Prop_Send, "m_flNextAttack", Time+1.5);
@@ -205,23 +191,24 @@ public void CaydeRetribution_Think(int client)
 	{
 		Store_RemoveSpecificItem(client, "Weapon CaydeRetribution");
 		int WeaponIslive = EntRefToEntIndex(CaydeRetribution_End[client]);
+		int WeaponOriginal = EntRefToEntIndex(CaydeRetribution_Original[client]);
 		if(IsValidEntity(WeaponIslive))
-		{
 			TF2_RemoveItem(client, WeaponIslive);
-		}
+		if(IsValidEntity(WeaponOriginal))
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", WeaponOriginal);
 		Store_ApplyAttribs(client);
 		Store_GiveAll(client, GetClientHealth(client));
-		TF2_AutoSetActiveWeapon(client);
 		Still_Hunt_charges[client]=0;
 		CaydeRetribution_Ammo[client]=0;
 		CaydeRetribution_charges[client]=0;
 		Ability_Apply_Cooldown(client, 3, 25.0);
+		DestroyStill_Hunt_Effect(client);
 		SDKUnhook(client, SDKHook_PreThink, CaydeRetribution_Think);
 		return;
 	}
 	else
 	{
-		Ability_Apply_Cooldown(client, 3, 25.0);
+		Ability_Apply_Cooldown(client, 3, (Still_Hunt_Pap_Save[client] == 4 ? 20.0 : 25.0));
 		Still_Hunt_charges[client]=0;
 	}
 }
@@ -344,4 +331,12 @@ public void Still_Hunt_OnKill(int attacker)
 {
 	if(IsValidClient(attacker) && Still_Hunt_Pap_Save[attacker] == 4 && CaydeRetribution_duration[attacker] > GetGameTime() + 0.5 && CaydeRetribution_Ammo[attacker]>1)
 		CaydeRetribution_Ammo[attacker]-=1;
+}
+
+static void DestroyStill_Hunt_Effect(int client)
+{
+	int entity = EntRefToEntIndex(i_Still_HuntParticle[client]);
+	if(IsValidEntity(entity))
+		RemoveEntity(entity);
+	i_Still_HuntParticle[client] = INVALID_ENT_REFERENCE;
 }

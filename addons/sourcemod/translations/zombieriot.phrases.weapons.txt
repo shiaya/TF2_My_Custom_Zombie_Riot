@@ -3952,6 +3952,76 @@
 		"en"		"Adam Smith's invisible Hand [Rare]"
 		"ko"		"애덤스미스의 보이지 않는 손 [희귀한]"
 	}
+	"Energy Backpack [Legendary]"
+	{
+		"en"		"Energy Backpack [Legendary]"
+		"ko"		"에너지 배낭 [전설]"
+	}
+	"Market Gardener Office Uniform [Legendary]"
+	{
+		"en"		"Market Gardener Office Uniform [Legendary]"
+		"ko"		"마켓가드너 사무소 유니폼 [저은설]"
+	}
+	"Medieval alloy Boots [Uncommon]"
+	{
+		"en"		"Medieval alloy Boots [Uncommon]"
+		"ko"		"중세 합금 부츠 [드문]"
+	}
+	"Thaumium Belt [Uncommon]"
+	{
+		"en"		"Thaumium Belt [Uncommon]"
+		"ko"		"사우뮴 벨트 [드문]"
+	}
+	"Enchanted Wizard Hat [Rare]"
+	{
+		"en"		"Enchanted Wizard Hat [Rare]"
+		"ko"		"인첸트된 마법사 모자 [희귀한]"
+	}
+	"Mana Flower Terrarium [Legendary]"
+	{
+		"en"		"Mana Flower Terrarium [Legendary]"
+		"ko"		"마나꽃 테라리움 [전설]"
+	}
+	"SSh-68 Helmet [Common]"
+	{
+		"en"		"SSh-68 Helmet [Common]"
+		"ko"		"SSh-68 헬멧 [흔한]"
+	}
+	"6B47 Helmet [Uncommon]"
+	{
+		"en"		"6B47 Helmet [Uncommon]"
+		"ko"		"6B47 헬멧 [드문]"
+	}
+	"Golden Crown [Rare]"
+	{
+		"en"		"Golden Crown [Rare]"
+		"ko"		"황금 왕관 [희귀한]"
+	}
+	"Mana Infusion Ammunition [Legendary]"
+	{
+		"en"		"Mana Infusion Ammunition [Legendary]"
+		"ko"		"마나 인퓨전 탄약 [전설]"
+	}
+	"Widemouth Refill Port"
+	{
+		"en"		"Widemouth Refill Port"
+		"ko"		"넓쩍한 재보급 포드"
+	}
+	"Builder's Blueprints"
+	{
+		"en"		"Builder's Blueprints"
+		"ko"		"건축가의 청사진"
+	}
+	"Quick Draw Belt [Uncommon]"
+	{
+		"en"		"Quick Draw Belt [Uncommon]"
+		"ko"		"퀵드로우 벨트 [드문]"
+	}
+	"Sardis Gold"
+	{
+		"en"		"Sardis Gold"
+		"ko"		"사르디스 골드"
+	}
 	"Trumpet"
 	{
 		"en"		"Trumpet"

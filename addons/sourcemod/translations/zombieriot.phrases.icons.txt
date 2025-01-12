@@ -478,6 +478,21 @@
 		"en"		"A Trumpet is heard from somewhere."
 		"ko"		"등''골''이 오싹해집니다.."
 	}
+	"The Victoria Precision Strike 1"
+	{
+		"en"		"Someone is targeting you!"
+		"ko"		"누군가 당신을 조준합니다!"
+	}
+	"The Victoria Precision Strike 2"
+	{
+		"en"		"Cannon fully loaded."
+		"ko"		"수성포 장전 완료."
+	}
+	"The Victoria Precision Strike 3"
+	{
+		"en"		"Take care of your head."
+		"ko"		"경고, ''일격에 주님곁으로''(이)가 감지됨."
+	}
 	"Atomizer Arrived"
 	{
 		"en" 		"Incoming Atomizer."

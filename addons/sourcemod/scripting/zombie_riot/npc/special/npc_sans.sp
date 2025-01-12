@@ -379,6 +379,8 @@ static void TrumpetSkeleton_ClotThink(int iNPC)
 				npc.m_bFUCKYOU=false;
 				IncreaceEntityDamageTakenBy(npc.index, 0.005, 1.0);
 				b_NpcIsInvulnerable[npc.index] = false;
+				Is_a_Medic[npc.index] = false;
+				npc.m_bStaticNPC = false;
 				EmitSoundToAll("npc/zombie_poison/pz_alert1.wav", _, _, _, _, 1.0);	
 				EmitSoundToAll("npc/zombie_poison/pz_alert1.wav", _, _, _, _, 1.0);	
 				strcopy(c_NpcName[npc.index], sizeof(c_NpcName[]), "Rare bloodsucking TrumpetSkeleton of Conflagration");

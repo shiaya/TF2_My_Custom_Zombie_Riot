@@ -1751,6 +1751,32 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) / 0.8));
 			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 0.8));
 		}
+		if(!b_Golden_Crown[entity] && b_Golden_Crown[client])
+		{
+			b_Golden_Crown[entity] = true;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 1.15));
+			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.15));
+		}
+		if(b_Golden_Crown[entity] && !b_Golden_Crown[client])
+		{
+			b_Golden_Crown[entity] = false;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) / 1.15));
+			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 1.15));
+		}
+		if(!b_Energy_Backpack[entity] && b_Energy_Backpack[client])
+		{
+			b_Energy_Backpack[entity] = true;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.5));
+		}
+		if(b_Energy_Backpack[entity] && !b_Energy_Backpack[client])
+		{
+			b_Energy_Backpack[entity] = false;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 1.5));
+		}
 
 		//	
 		//	//FOR PERK MACHINE!

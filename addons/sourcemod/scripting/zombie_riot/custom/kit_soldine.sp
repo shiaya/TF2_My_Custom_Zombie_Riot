@@ -8,7 +8,7 @@ static int Market_Perk[MAXTF2PLAYERS];
 static int i_MarketParticleOne[MAXTF2PLAYERS];
 static int i_MarketParticleTwo[MAXTF2PLAYERS];
 static int i_RocketJump_AirboneTime[MAXTF2PLAYERS];
-int RocketJump_Count[MAXTF2PLAYERS];
+int i_RocketJump_Count[MAXTF2PLAYERS];
 
 static float i_SoldinAmmoSet[MAXTF2PLAYERS];
 static float i_SoldinFierRateSet[MAXTF2PLAYERS];
@@ -20,20 +20,20 @@ static bool b_SoldinLastMann_Buff;
 
 static const char g_BoomSounds[] = "mvm/mvm_tank_explode.wav";
 
-bool Soldin_BvB(int client)
+bool Wkit_Soldin_BvB(int client)
 {
 	return MarketTimer[client] != null;
 }
 
-bool Soldin_LastMann(int client)
+bool Wkit_Soldin_LastMann(int client)
 {
 	bool SoldinTHEME=false;
 	switch(Market_WeaponPap[client])
 	{
-		case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+		case 0, 1:
 		{
 		}
-		case 3, 4, 5, 6, 7, 8, 9:
+		case 2, 3, 4, 5, 6, 7, 8:
 		{
 			if(MarketTimer[client] != null)SoldinTHEME=true;
 		}
@@ -41,17 +41,17 @@ bool Soldin_LastMann(int client)
 	return SoldinTHEME;
 }
 
-void Soldin_LastMann_buff(int client, bool b_On)
+void Wkit_Soldin_LastMann_buff(int client, bool b_On)
 {
 	b_SoldinLastMann_Buff=b_On;
 	if(b_On)
 	{
 		switch(Market_WeaponPap[client])
 		{
-			case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+			case 0, 1:
 			{
 			}
-			case 3, 4, 5, 6, 7, 8, 9:
+			case 2, 3, 4, 5, 6, 7, 8:
 			{
 				if(MarketTimer[client] != null)
 				{
@@ -62,25 +62,22 @@ void Soldin_LastMann_buff(int client, bool b_On)
 	}
 }
 
-public void Trolldier_OnMapStart()
+public void Wkit_Soldin_OnMapStart()
 {
 	Zero(Market_WeaponPap);
 	Zero(Market_Perk);
 	Zero(MarketHUDDelay);
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3",_,1);
-	PrecacheSound("player/doubledonk.wav");
-	PrecacheSound(g_BoomSounds);
 }
 
-public void Trolldier_Enable(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
+public void Wkit_Soldin_Enable(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
 {
 	if(MarketTimer[client] != null)
 	{
-		if(i_CustomWeaponEquipLogic[weapon]==WEAPON_TROLLDIER)
+		if(i_CustomWeaponEquipLogic[weapon]==WEAPON_KIT_PROTOTYPE)
 		{
 			Market_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
 			Market_Perk[client]=i_CurrentEquippedPerk[client];
-			b_On_Self_Damage[client] = true;
 			int getweapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 			if(IsValidEntity(getweapon))
 			{
@@ -92,18 +89,17 @@ public void Trolldier_Enable(int client, int weapon) // Enable management, handl
 			delete MarketTimer[client];
 			MarketTimer[client] = null;
 			DataPack pack;
-			MarketTimer[client] = CreateDataTimer(0.1, Timer_Trolldier, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			MarketTimer[client] = CreateDataTimer(0.1, Timer_Wkit_Soldin, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			pack.WriteCell(client);
 			pack.WriteCell(EntIndexToEntRef(weapon));
 			pack.WriteCell(EntIndexToEntRef(melee));
 		}
 		return;
 	}
-	if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TROLLDIER)
+	if(i_CustomWeaponEquipLogic[weapon] == WEAPON_KIT_PROTOTYPE)
 	{
 		Market_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
 		Market_Perk[client]=i_CurrentEquippedPerk[client];
-		b_On_Self_Damage[client] = true;
 		int getweapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 		if(IsValidEntity(getweapon))
 		{
@@ -113,14 +109,14 @@ public void Trolldier_Enable(int client, int weapon) // Enable management, handl
 		}
 		int melee = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 		DataPack pack;
-		MarketTimer[client] = CreateDataTimer(0.1, Timer_Trolldier, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		MarketTimer[client] = CreateDataTimer(0.1, Timer_Wkit_Soldin, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		pack.WriteCell(client);
 		pack.WriteCell(EntIndexToEntRef(weapon));
 		pack.WriteCell(EntIndexToEntRef(melee));
 	}
 }
 
-static Action Timer_Trolldier(Handle timer, DataPack pack)
+static Action Timer_Wkit_Soldin(Handle timer, DataPack pack)
 {
 	pack.Reset();
 	int client = pack.ReadCell();
@@ -147,13 +143,13 @@ static Action Timer_Trolldier(Handle timer, DataPack pack)
 	{
 		//wtf???
 	}
-	Trolldier_HUD(client, IsMelee);
-	Trolldier_Effect(client, IsMelee);
+	Wkit_Soldin_HUD(client, IsMelee);
+	Wkit_Soldin_Effect(client, IsMelee);
 
 	return Plugin_Continue;
 }
 
-public void Trolldier_NPCTakeDamage(int attacker, int victim, float &damage, int weapon, int damagetype)
+public void Wkit_Soldin_NPCTakeDamage(int attacker, int victim, float &damage, int weapon, int damagetype)
 {
 	int melee = GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee);
 	float Attackerpos[3]; GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Attackerpos);
@@ -161,117 +157,14 @@ public void Trolldier_NPCTakeDamage(int attacker, int victim, float &damage, int
 	{
 		switch(Market_WeaponPap[attacker])
 		{
-			case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+			case 0, 1:
 			{
-				if(RocketJump_Count[attacker])
-				{
-					bool TrueDMG=false;
-					if(Market_WeaponPap[attacker] == 2
-						|| Market_WeaponPap[attacker] == 10
-						|| Market_WeaponPap[attacker] == 11
-						|| Market_WeaponPap[attacker] == 12
-						|| Market_WeaponPap[attacker] == 13
-						|| Market_WeaponPap[attacker] == 14
-						|| Market_WeaponPap[attacker] == 15)
-						TrueDMG=true;
-					else if(RaidbossIgnoreBuildingsLogic(1))
-						damage*=2.0;
-					float DMGBuff = damage;
-					float Speed = MoveSpeed(attacker, _, true);
-					float f_AirboneScale = Attributes_Get(weapon, 19, 0.01);
-					float f_RocketJumpScale = Attributes_Get(weapon, 426, 0.15);
-					float f_SpeedScale = Attributes_Get(weapon, 401, 0.4);
-					float f_DMGHealthPer_Scale = Attributes_Get(weapon, 399, 0.0);
-					float f_HealHealthPer_Scale = Attributes_Get(weapon, 158, 0.0);
-					
-					bool minicrit=true;
-					DMGBuff+=Speed*f_SpeedScale;
-					DMGBuff*=1.0+(float(RocketJump_Count[attacker])*f_RocketJumpScale);
-					DMGBuff*=1.0+(float(i_RocketJump_AirboneTime[attacker])*f_AirboneScale);
-					if(RocketJump_Count[attacker]>1 || i_RocketJump_AirboneTime[attacker]>15)
-					{
-						if(f_DMGHealthPer_Scale>0.0)
-						{
-							float DMGBuff_TwoND;
-							float NPCHEALTH = float(ReturnEntityMaxHealth(victim));
-							DMGBuff_TwoND=(NPCHEALTH*f_DMGHealthPer_Scale);
-							DMGBuff_TwoND*=1.0+(float(RocketJump_Count[attacker])*f_RocketJumpScale*0.5);
-							DMGBuff_TwoND*=1.0+(float(i_RocketJump_AirboneTime[attacker])*f_AirboneScale*0.5);
-							DMGBuff+=DMGBuff_TwoND;
-						}
-						if(f_HealHealthPer_Scale>0.0)
-						{
-							int maxhealth = SDKCall_GetMaxHealth(attacker);
-							int health = GetClientHealth(attacker);
-							int newhealth = RoundToNearest(maxhealth*f_HealHealthPer_Scale);
-							if(health < maxhealth)
-							{
-								newhealth=RoundToNearest(float(newhealth)*(1.0+(float(RocketJump_Count[attacker])*f_RocketJumpScale*0.25)));
-								newhealth=RoundToNearest(float(newhealth)*(1.0+(float(i_RocketJump_AirboneTime[attacker])*f_AirboneScale*0.9)));
-								newhealth+=health;
-								if(newhealth > maxhealth)
-									newhealth=maxhealth;
-								SetEntityHealth(attacker, newhealth);
-								ApplySelfHealEvent(attacker, newhealth - health);
-							}
-						}
-						minicrit=false;
-						EmitSoundToAll("player/doubledonk.wav", 0, SNDCHAN_AUTO, 90, SND_NOFLAGS, 0.8, SNDPITCH_NORMAL, -1, Attackerpos);
-					}
-					else if(TrueDMG)
-					{
-						if(f_DMGHealthPer_Scale>0.0)
-						{
-							float DMGBuff_TwoND;
-							float NPCHEALTH = float(ReturnEntityMaxHealth(victim));
-							DMGBuff_TwoND=(NPCHEALTH*f_DMGHealthPer_Scale);
-							DMGBuff_TwoND*=1.0+(float(RocketJump_Count[attacker])*f_RocketJumpScale*0.5);
-							DMGBuff_TwoND*=1.0+(float(i_RocketJump_AirboneTime[attacker])*f_AirboneScale*0.5);
-							DMGBuff+=DMGBuff_TwoND*0.5;
-						}
-						if(f_HealHealthPer_Scale>0.0)
-						{
-							int maxhealth = SDKCall_GetMaxHealth(attacker);
-							int health = GetClientHealth(attacker);
-							int newhealth = RoundToNearest(maxhealth*f_HealHealthPer_Scale);
-							if(health < maxhealth)
-							{
-								newhealth=RoundToNearest(float(newhealth)*(1.0+(float(RocketJump_Count[attacker])*f_RocketJumpScale*0.25)));
-								newhealth=RoundToNearest(float(newhealth)*(1.0+(float(i_RocketJump_AirboneTime[attacker])*f_AirboneScale*0.9)));
-								newhealth=RoundToNearest(float(newhealth)*0.5);
-								newhealth+=health;
-								if(newhealth > maxhealth)
-									newhealth=maxhealth;
-								SetEntityHealth(attacker, newhealth);
-								ApplySelfHealEvent(attacker, newhealth - health);
-							}
-						}
-					}
-					if(TrueDMG)
-					{
-						if(!(damagetype & DMG_TRUEDAMAGE))
-						{
-							Handle AttackPack;
-							CreateDataTimer(0.01, Timer_Delay_Attack, AttackPack, TIMER_FLAG_NO_MAPCHANGE);
-							WritePackCell(AttackPack, DMGBuff*0.15);
-							WritePackCell(AttackPack, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
-							WritePackCell(AttackPack, victim);
-							WritePackCell(AttackPack, attacker);
-						}
-						damage=DMGBuff*0.85;
-					}
-					else
-						damage=DMGBuff;
-
-					DisplayCritAboveNpc(victim, attacker, true, _, _, minicrit);
-				}
-				else damage *= 0.35;
 			}
-			case 3, 4, 5, 6, 7, 8, 9:
+			case 2, 3, 4, 5, 6, 7, 8:
 			{
 				if(!b_SoldinPowerHit[attacker])
 				{
-					i_SoldinCharging[attacker]+=1+RocketJump_Count[attacker];
+					i_SoldinCharging[attacker]+=1+i_RocketJump_Count[attacker];
 					if(i_SoldinCharging[attacker]>i_SoldinChargingMAX[attacker])
 						i_SoldinCharging[attacker]=i_SoldinChargingMAX[attacker];
 				}
@@ -297,37 +190,15 @@ public void Trolldier_NPCTakeDamage(int attacker, int victim, float &damage, int
 	{
 		switch(Market_WeaponPap[attacker])
 		{
-			case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+			case 0, 1:
 			{
-				if(RocketJump_Count[attacker])
-				{
-					float DMGBuff = damage;
-					float f_AirboneScale = Attributes_Get(weapon, 19, 0.01);
-					float f_RocketJumpScale = Attributes_Get(weapon, 426, 0.15);
-					DMGBuff*=1.0+(RocketJump_Count[attacker]*f_RocketJumpScale);
-					DMGBuff*=1.0+(i_RocketJump_AirboneTime[attacker]*f_AirboneScale);
-					damage=DMGBuff;
-				}
-				else
-				{
-					if(Market_WeaponPap[attacker] == 2
-						|| Market_WeaponPap[attacker] == 10
-						|| Market_WeaponPap[attacker] == 11
-						|| Market_WeaponPap[attacker] == 12
-						|| Market_WeaponPap[attacker] == 13
-						|| Market_WeaponPap[attacker] == 14
-						|| Market_WeaponPap[attacker] == 15)
-						damage *= 0.5;
-					else
-						damage *= 0.9;
-				}
 			}
-			case 3, 4, 5, 6, 7, 8, 9:
+			case 2, 3, 4, 5, 6, 7, 8:
 			{
 				if(RaidbossIgnoreBuildingsLogic(1))damage *= 2.0;
 				if(i_SoldinCharging[attacker])
 					damage *= 1.0+(float(i_SoldinCharging[attacker])*(b_SoldinLastMann_Buff ? 0.1 : 0.05));
-				if(RocketJump_Count[attacker]>0 && i_RocketJump_AirboneTime[attacker]>5)
+				if(i_RocketJump_Count[attacker]>0 && i_RocketJump_AirboneTime[attacker]>5)
 				{
 					damage *= 1.15;
 					DisplayCritAboveNpc(victim, attacker, true, _, _, true);
@@ -337,14 +208,14 @@ public void Trolldier_NPCTakeDamage(int attacker, int victim, float &damage, int
 	}
 }
 
-static void Trolldier_Effect(int client, bool weapons)
+static void Wkit_Soldin_Effect(int client, bool weapons)
 {
 	switch(Market_WeaponPap[client])
 	{
-		case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+		case 0, 1:
 		{
 		}
-		case 3, 4, 5, 6, 7, 8, 9:
+		case 2, 3, 4, 5, 6, 7, 8:
 		{
 			int getweapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 			if(IsValidEntity(getweapon))
@@ -362,11 +233,11 @@ static void Trolldier_Effect(int client, bool weapons)
 	}
 	if(GetEntityFlags(client)&FL_ONGROUND || !TF2_IsPlayerInCondition(client, TFCond_BlastJumping))
 	{
-		RocketJump_Count[client]=0;
+		i_RocketJump_Count[client]=0;
 		i_RocketJump_AirboneTime[client]=0;
 		switch(Market_WeaponPap[client])
 		{
-			case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+			case 0, 1:
 			{
 				if(weapons)
 				{
@@ -375,7 +246,7 @@ static void Trolldier_Effect(int client, bool weapons)
 				{
 				}
 			}
-			case 3, 4, 5, 6, 7, 8, 9:
+			case 2, 3, 4, 5, 6, 7, 8:
 			{
 				if(weapons)
 				{
@@ -383,30 +254,29 @@ static void Trolldier_Effect(int client, bool weapons)
 				}
 				else
 				{
+					if(i_SoldinCharging[client]>=i_SoldinChargingMAX[client] && !b_SoldinPowerHit[client])b_On_Self_Damage[client] = true;
 				}
 			}
 		}
 		if(b_SoldinPowerHit[client])
 			i_SoldinCharging[client]=0;
-		DestroyTrolldier_Effect(client);
+		DestroyWkit_Soldin_Effect(client);
 	}
-	else if(RocketJump_Count[client])
+	else if(i_RocketJump_Count[client])
 	{
 		i_RocketJump_AirboneTime[client]++;
 		switch(Market_WeaponPap[client])
 		{
-			case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+			case 0, 1:
 			{
 				if(weapons)
 				{
-					if(RocketJump_Count[client]>1 || i_RocketJump_AirboneTime[client]>15)
-						TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.2);
 				}
 				else
 				{
 				}
 			}
-			case 3, 4, 5, 6, 7, 8, 9:
+			case 2, 3, 4, 5, 6, 7, 8:
 			{
 				if(weapons)
 				{
@@ -437,6 +307,7 @@ static void Trolldier_Effect(int client, bool weapons)
 								Rogue_OnAbilityUse(client, getweapon);
 							}
 							b_SoldinPowerHit[client]=true;
+							b_On_Self_Damage[client] = false;
 						}
 						int getweapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 						if(IsValidEntity(getweapon))
@@ -486,7 +357,7 @@ static void Trolldier_Effect(int client, bool weapons)
 		}
 	}
 }
-static void DestroyTrolldier_Effect(int client)
+static void DestroyWkit_Soldin_Effect(int client)
 {
 	int entity = EntRefToEntIndex(i_MarketParticleOne[client]);
 	if(IsValidEntity(entity))
@@ -498,22 +369,16 @@ static void DestroyTrolldier_Effect(int client)
 	i_MarketParticleTwo[client] = INVALID_ENT_REFERENCE;
 }
 
-static void Trolldier_HUD(int client, bool weapons)
+static void Wkit_Soldin_HUD(int client, bool weapons)
 {
 	if(MarketHUDDelay[client] < GetGameTime())
 	{
 		char C_point_hints[512]="";
 		switch(Market_WeaponPap[client])
 		{
-			case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+			case 0, 1:
 			{
 				b_IsCannibal[client]=false;
-				if(RocketJump_Count[client])
-					Format(C_point_hints, sizeof(C_point_hints),
-					"RocketJump: %i\n", RocketJump_Count[client]);
-				if(i_RocketJump_AirboneTime[client])
-					Format(C_point_hints, sizeof(C_point_hints),
-					"%sAirborne Time: %.1f", C_point_hints, float(i_RocketJump_AirboneTime[client])*0.1);
 				if(weapons)
 				{
 				
@@ -523,11 +388,11 @@ static void Trolldier_HUD(int client, bool weapons)
 				
 				}
 			}
-			case 3, 4, 5, 6, 7, 8, 9:
+			case 2, 3, 4, 5, 6, 7, 8:
 			{
 				b_IsCannibal[client]=true;
 				i_SoldinChargingMAX[client]=(b_SoldinLastMann_Buff ? 13 : 15);
-				if(RocketJump_Count[client] && b_SoldinPowerHit[client])
+				if(i_RocketJump_Count[client] && b_SoldinPowerHit[client])
 					Format(C_point_hints, sizeof(C_point_hints),
 					"Rocket Barrage Online!");
 				else if(i_SoldinCharging[client]<i_SoldinChargingMAX[client])
@@ -547,9 +412,6 @@ static void Trolldier_HUD(int client, bool weapons)
 						{
 							Format(C_point_hints, sizeof(C_point_hints),
 							"%s\nMelee Hit To Battery Charge.", C_point_hints);
-							if(RocketJump_Count[client])
-								Format(C_point_hints, sizeof(C_point_hints),
-								"%s [Charge Bonus +%i％]", C_point_hints, RoundToCeil(float(RocketJump_Count[client])*10.0));
 						}
 					}
 					else
@@ -560,7 +422,7 @@ static void Trolldier_HUD(int client, bool weapons)
 				{
 					Format(C_point_hints, sizeof(C_point_hints),
 					"%s\nRocket DMG Bonus +%i％", C_point_hints, RoundToCeil(float(i_SoldinCharging[client])*2.5));
-					if(i_SoldinCharging[client]>=i_SoldinChargingMAX[client] && !b_SoldinPowerHit[client] && RocketJump_Count[client]<1)
+					if(i_SoldinCharging[client]>=i_SoldinChargingMAX[client] && !b_SoldinPowerHit[client] && i_RocketJump_Count[client]<1)
 						Format(C_point_hints, sizeof(C_point_hints),
 						"%s\nNow Rocket Jump!", C_point_hints);
 				}
@@ -583,9 +445,9 @@ static void Ground_Slam(int entity, int victim, float damage, int weapon)
 	{
 		ApplyStatusEffect(entity, victim, "Silenced", (b_thisNpcIsARaid[victim] ? 1.0 : 1.5));
 		if(b_thisNpcIsARaid[victim])
-			NpcStats_SpeedModifyEnemy(victim, 1.5, 0.25, true);
+			FreezeNpcInTime(victim, 0.5);
 		else
-			FreezeNpcInTime(victim, 1.5, true);
+			FreezeNpcInTime(victim, 1.0);
 		Custom_Knockback(entity, victim, 600.0, true, true, true);
 	}
 }
