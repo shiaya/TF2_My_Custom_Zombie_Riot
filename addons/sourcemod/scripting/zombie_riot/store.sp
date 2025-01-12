@@ -1144,7 +1144,7 @@ bool Store_CanPapItem(int client, int index)
 	{
 		static Item item;
 		StoreItems.GetArray(index, item);
-		
+		/*
 		if(Rogue_UnlockStore())
 		{
 			if(item.ChildKit)
@@ -1160,7 +1160,7 @@ bool Store_CanPapItem(int client, int index)
 				return false;
 			}
 		}
-		
+		*/
 		if(item.Owned[client])
 		{
 			ItemInfo info;
@@ -3478,8 +3478,7 @@ static void MenuPage(int client, int section)
 				}
 				else if(!item.WhiteOut && Rogue_UnlockStore() && !item.NPCSeller && !item.RogueAlwaysSell && !CvarInfiniteCash.BoolValue)
 				{
-					FormatEx(buffer, sizeof(buffer), "%s [NOT FOUND]", TranslateItemName(client, item.Name, info.Custom_Name));
-					style = (info.Cost_Unlock > 1000 || !StarterCashMode[client]) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+					FormatEx(buffer, sizeof(buffer), "%s [↓]", TranslateItemName(client, item.Name, info.Custom_Name));
 				}
 				else if(!item.WhiteOut && info.Cost_Unlock > 1000 && !Rogue_UnlockStore() && info.Cost_Unlock > CurrentCash)
 				{
@@ -6171,6 +6170,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		Enable_SpikeLayer(client, entity);
 		Enable_SensalWeapon(client, entity);
 		Enable_FusionWeapon(client, entity);
+		Wkit_Soldin_Enable(client, entity);
 //		Enable_Blemishine(client, entity);
 		Gladiia_Enable(client, entity);
 		Vampire_KnifesDmgMulti(client, entity);
@@ -6470,7 +6470,10 @@ static void ItemCost(int client, Item item, int &cost)
 	cost += item.Scale * scaled; 
 	cost += item.CostPerWave * Rogue_GetRoundScale();
 
-
+	if(Rogue_UnlockStore() && !item.NPCSeller && !item.RogueAlwaysSell && !CvarInfiniteCash.BoolValue)
+	{
+		cost = RoundToNearest(float(cost) * 1.2); 
+	}
 	static ItemInfo info;
 	item.GetItemInfo(0, info);
 	if(StarterCashMode[client])
@@ -6564,6 +6567,26 @@ static stock void ItemCostPap(int client, const Item item, const ItemInfo info, 
 		if(Rogue_UnlockStore() && item.NPCSeller)
 			cost = RoundFloat(cost * item.NPCSeller_Discount);
 		
+		bool NotFoundCost = false;
+		if(Rogue_UnlockStore())
+		{
+			if(item.ChildKit)
+			{
+				static Item parent;
+				StoreItems.GetArray(item.Section, parent);
+
+				if(!parent.NPCSeller && !parent.RogueAlwaysSell)
+					NotFoundCost = true;
+			}
+			else if(!item.NPCSeller && !item.RogueAlwaysSell)
+			{
+				NotFoundCost = true;
+			}
+		}
+		if(NotFoundCost)
+		{
+			cost = RoundToNearest(float(cost) * 1.2); 
+		}
 		Rogue_Curse_PackPriceMulti(cost);
 	}
 }

@@ -216,6 +216,7 @@ enum
 	WEAPON_ZEALOT_POTION = 134,
 	WEAPON_KIT_FRACTAL	= 135,
 	WEAPON_KIT_PROTOTYPE	= 136,
+	WEAPON_KIT_PROTOTYPE_MELEE	= 137,
 	WEAPON_MARKET_GARDENER = 1000,
 	WEAPON_FARMER = 1001,
 	WEAPON_MINECRAFT_SWORD = 1002,
@@ -251,6 +252,7 @@ enum
 	Type_WhiteflowerSpecial,
 	Type_Victoria,
 	Type_Matrix,
+	Type_Mutation
 }
 
 //int Bob_To_Player[MAXENTITIES];
@@ -593,7 +595,6 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/weapon_walter.sp"
 #include "zombie_riot/custom/wand/weapon_wand_nymph.sp"
 #include "zombie_riot/custom/weapon_castlebreaker.sp"
-#include "zombie_riot/custom/kit_soldine.sp"
 #include "zombie_riot/custom/baka/weapon_market_gardener.sp"
 #include "zombie_riot/custom/baka/weapon_farmer.sp"
 #include "zombie_riot/custom/baka/weapon_minecraft_sword.sp"
@@ -606,6 +607,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/weapon_toolgun.sp"
 #include "zombie_riot/custom/baka/weapon_trolldier.sp"
 #include "zombie_riot/custom/baka/weapon_tlqkf.sp"
+#include "zombie_riot/custom/kit_soldine.sp"
 
 void ZR_PluginLoad()
 {
@@ -1847,11 +1849,17 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 							CPrintToChatAll("{purple}Twirl{crimson}'s Essence enters %N...",client);
 							Yakuza_Lastman(3);
 						}
-						if(Soldin_LastMann(client) || Wkit_Soldin_LastMann(client))
+						if(Soldin_LastMann(client))
 						{
 							Soldin_LastMann_buff(client, true);
-							Wkit_Soldin_LastMann_buff(client, true);
-							CPrintToChatAll("{crimson}%N's weapon is Now System Overdrive...",client);
+							CPrintToChatAll("{crimson}Expidonsa Activates %N's emergency protocols...",client);
+							Yakuza_Lastman(4);
+						}
+						if(Wkit_Soldin_LastMann(client))
+						{
+							ChargeSoldineMeleeHit(client,true, 999.9);
+							ChargeSoldineRocketJump(client, true, 999.9);
+							CPrintToChatAll("{crimson}Expidonsa Activates %N's emergency protocols...",client);
 							Yakuza_Lastman(4);
 						}
 						
@@ -2045,13 +2053,7 @@ stock int MaxArmorCalculation(int ArmorLevel = -1, int client, float multiplyier
 										
 	else if(ArmorLevel == 200)
 		Armor_Max = 2000;	
-
-	else if(ArmorLevel == 250)
-		Armor_Max = 4000;
-
-	else if(ArmorLevel == 300)
-		Armor_Max = 7500;
-
+		
 	else
 		Armor_Max = 200;
 
