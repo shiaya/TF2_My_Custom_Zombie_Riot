@@ -188,14 +188,6 @@ stock void SDKHook_HookClient(int client)
 #endif
 }
 
-#if defined ZR 
-bool WeaponWasGivenInfiniteDelay[MAXENTITIES];
-
-void WeaponWeaponAdditionOnRemoved(int entity)
-{
-	WeaponWasGivenInfiniteDelay[entity] = false;
-}
-
 public void CheckWeaponAmmoLogicExternal(DataPack pack)
 {
 	pack.Reset();
@@ -206,6 +198,13 @@ public void CheckWeaponAmmoLogicExternal(DataPack pack)
 		
 	delete pack;
 }
+bool WeaponWasGivenInfiniteDelay[MAXENTITIES];
+
+void WeaponWeaponAdditionOnRemoved(int entity)
+{
+	WeaponWasGivenInfiniteDelay[entity] = false;
+}
+
 bool IsWeaponEmptyCompletly(int client, int weapon, bool CheckOnly = false)
 {
 	int Ammo_type = GetAmmoType_WeaponPrimary(weapon);
@@ -317,7 +316,7 @@ void WeaponSwtichToWarningPostFrame(int ref)
 		SetEntProp(WeaponToForce, Prop_Send, "m_iPrimaryAmmoType", GetAmmoType_WeaponPrimary(WeaponToForce));
 	}
 }
-#endif
+
 #if defined ZR || defined RPG
 public void OnPreThinkPost(int client)
 {
@@ -1728,6 +1727,7 @@ int CheckInHud()
 
 public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
+#if defined ZR
 	if(IsValidEntity(victim) && (b_On_Self_Damage[victim] || CanSelfHurtAndJump(victim)) && TeutonType[victim] == TEUTON_NONE && dieingstate[victim] <= 0 && victim == attacker)
 	{
 		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TROLLDIER && !(GetEntityFlags(victim)&FL_ONGROUND))
@@ -1741,7 +1741,7 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 		}
 		return Plugin_Continue;
 	}
-
+#endif
 	if(!CheckInHud())
 	{
 		ClientPassAliveCheck[victim] = false;
@@ -1954,12 +1954,13 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 #endif
 
 #if defined RPG
-	if(Ability_TrueStrength_Shield_OnTakeDamage(victim))
+	if(!CheckInHud() && Ability_TrueStrength_Shield_OnTakeDamage(victim))
 	{
 		damage = 0.0;
 		return Plugin_Handled;	
 	}
-	f_InBattleDelay[victim] = GetGameTime() + 3.0;
+	if(!CheckInHud())
+		f_InBattleDelay[victim] = GetGameTime() + 3.0;
 #endif
 	float GetCurrentDamage = damage;
 	f_LatestDamageRes[victim] = 1.0;

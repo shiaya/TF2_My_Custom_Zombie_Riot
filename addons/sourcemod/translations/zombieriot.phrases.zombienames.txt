@@ -864,17 +864,10 @@
 		"ru" 		"Элитный Комбайн"
 		"ko"		"배럭스 정예병"
 	}
-	"Barracks Deflector"
+	"Barracks Peacekeeper"
 	{
-		"en" 		"Barracks Deflector"
-		"ru" 		"Комбайн Отражатель"
+		"en" 		"Combine Peacekeeper"
 		"ko"		"배럭스 굴절병"
-	}
-	"Barracks Sniper"
-	{
-		"en" 		"Barracks Sniper"
-		"ru" 		"Комбайн Снайпер"
-		"ko"		"배럭스 저격수"
 	}
 	"Barracks Super"
 	{
@@ -887,6 +880,10 @@
 		"en" 		"Barracks Commander"
 		"ru" 		"Комбайн Командир"
 		"ko"		"배럭스 지휘관"
+	}
+	"Barracks Chaos Containment Unit"
+	{
+		"en" 		"Chaos Containment Unit"
 	}
 	"Barracks Giant ddt"
 	{
@@ -947,6 +944,10 @@
 		"ru" 		"Стражи Иберии"
 		"ko"		"이베리아 경비병"
 	}
+	"Barracks Iberian Commando"
+	{
+		"en"		"Iberian Commando"
+	}
 	"Barracks Iberian Elite Gunner"
 	{
 		"en"		"Iberian Elite Gunner"
@@ -959,12 +960,16 @@
 		"ru" 		"Охотник за головами Иберии"
 		"ko"		"이베리아 헤드헌터"
 	}	
+	"Barracks Iberia Inquisitor Lynsen"
+	{
+		"en"		"Inquisitor Lynsen"
+	}
 	"Barracks Iberian Lighthouse Guardian"
 	{
 		"en"		"Guardian of the Lighthouse"
 		"ru" 		"Хранитель Маяка"
 		"ko"		"이베리아 등대 수호자"
-	}	
+	}
 	"Barracks Militia"
 	{
 		"en" 		"Militia"
@@ -2123,6 +2128,10 @@
 		"ru"		"Средний маг-медик"
 		"ko"		"중급 마법사"
 	}
+	"Barracks Advanced Mage"
+	{
+		"en"		"Advanced Medic Mage"
+	}
 	"Barracks Ikunagae"
 	{
 		"en"		"Iku Nagae"
@@ -2165,11 +2174,10 @@
 		"ru"		"Бомбардир"
 		"ko"		"배럭스 폭격수"
 	}
-	"Barracks Berserker"
+	"Barracks Mecha Loader"
 	{
-		"en"		"Berserker"
-		"ru"		"Берсерк"
-		"ko"		"배럭스 버서커"
+		"en"		"Mecha Loader"
+		"ko"		"배럭스 메카로더"
 	}
 	"Barracks Crossbow Medic"
 	{

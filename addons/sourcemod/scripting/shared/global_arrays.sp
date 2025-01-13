@@ -258,8 +258,14 @@ Handle SyncHud_ArmorCounter;
 
 bool i_WeaponCannotHeadshot[MAXENTITIES];
 float i_WeaponDamageFalloff[MAXENTITIES];
+#if defined ZR
 float f_Weapon_BackwardsWalkPenalty[MAXENTITIES]={0.7, ...};
 float f_Client_BackwardsWalkPenalty[MAXTF2PLAYERS]={0.7, ...};
+#else
+float f_Weapon_BackwardsWalkPenalty[MAXENTITIES]={0.9, ...};
+float f_Client_BackwardsWalkPenalty[MAXTF2PLAYERS]={0.9, ...};
+#endif
+
 float f_Client_LostFriction[MAXTF2PLAYERS]={0.1, ...};
 int i_SemiAutoWeapon[MAXENTITIES];
 int i_SemiAutoWeapon_AmmoCount[MAXENTITIES];
@@ -356,7 +362,6 @@ float f_TimeFrozenStill[MAXENTITIES];
 float f_StunExtraGametimeDuration[MAXENTITIES];
 float f_RaidStunResistance[MAXENTITIES];
 float f_BannerDurationActive[MAXENTITIES];
-float f_BannerAproxDur[MAXENTITIES];
 //0 means bad, 1 means good
 float f_BubbleProcStatus[MAXENTITIES][2];
 float f_DuelStatus[MAXENTITIES];
@@ -412,6 +417,7 @@ int i_Hex_WeaponUsesTheseAbilities[MAXENTITIES];
 //Used for any double arrays like lantean wand or health hose.
 float f_GlobalHitDetectionLogic[MAXENTITIES][MAXENTITIES];
 #if defined ZR
+float f_BannerAproxDur[MAXENTITIES];
 bool b_AlreadyHitTankThrow[MAXENTITIES][MAXENTITIES];
 #endif
 

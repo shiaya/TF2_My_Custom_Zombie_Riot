@@ -97,7 +97,9 @@ void InitStatusEffects()
 	StatusEffects_BuildingAntiRaid();
 	StatusEffects_WidowsWine();
 	StatusEffects_CrippleDebuff();
+#if defined ZR
 	StatusEffects_MagnesisStrangle();
+#endif
 	StatusEffects_Cudgel();
 	StatusEffects_MaimDebuff();
 	StatusEffects_Prosperity();
@@ -221,7 +223,9 @@ public int Items_StatusEffectListMenuH(Menu menu, MenuAction action, int client,
 			{
 				if(CategoryPage[client] == -1)
 				{
+#if defined ZR
 					Store_Menu(client);
+#endif
 				}
 				else
 				{
@@ -271,7 +275,7 @@ int StatusEffect_AddGlobal(StatusEffect data)
 	return AL_StatusEffects.PushArray(data);
 }
 
-void RemoveSpecificBuff(int victim, const char[] name)
+stock void RemoveSpecificBuff(int victim, const char[] name)
 {
 	int index = AL_StatusEffects.FindString(name, StatusEffect::BuffName);
 	if(index == -1)
@@ -334,7 +338,7 @@ int HasSpecificBuff(int victim, const char[] name)
 		delete E_AL_StatusEffects[victim];
 	return Return;
 }
-void RemoveAllBuffs(int victim, bool RemoveGood, bool Everything = false)
+stock void RemoveAllBuffs(int victim, bool RemoveGood, bool Everything = false)
 {
 	if(!E_AL_StatusEffects[victim])
 		return;
@@ -398,9 +402,10 @@ void ApplyStatusEffect(int owner, int victim, const char[] name, float Duration)
 		}
 	}
 
+#if defined ZR
 	if(!Apply_MasterStatusEffect.Positive)
 		Rogue_ParadoxDLC_DebuffTime(victim, Duration);
-
+#endif
 	int CurrentSlotSaved = Apply_MasterStatusEffect.Slot;
 	int CurrentPriority = Apply_MasterStatusEffect.SlotPriority;
 	if(CurrentSlotSaved > 0)
@@ -663,7 +668,11 @@ void StatusEffect_OnTakeDamage_DealNegative(int victim, int attacker, float &dam
 }
 
 //Damage vulnerabilities, when i get HURT, this means i TAKE more damage
+#if defined ZR
 float StatusEffect_OnTakeDamage_TakenNegative(int victim, int attacker, int inflictor, float &basedamage, int damagetype)
+#else
+float StatusEffect_OnTakeDamage_TakenNegative(int victim, int attacker, float &basedamage, int damagetype)
+#endif
 {
 	if(!E_AL_StatusEffects[victim])
 		return 0.0;
@@ -679,6 +688,7 @@ float StatusEffect_OnTakeDamage_TakenNegative(int victim, int attacker, int infl
 			DamageBuffExtraScaling = PlayerCountBuffScaling;
 	}
 #endif
+
 	static StatusEffect Apply_MasterStatusEffect;
 	static E_StatusEffect Apply_StatusEffect;
 	//No debuffs or status effects, skip.
@@ -744,7 +754,11 @@ float StatusEffect_OnTakeDamage_TakenNegative(int victim, int attacker, int infl
 }
 
 //Damage Buffs, when i attack!
+#if defined ZR
 float StatusEffect_OnTakeDamage_DealPositive(int victim, int attacker, int inflictor, float &basedamage, int damagetype)
+#else
+float StatusEffect_OnTakeDamage_DealPositive(int victim, int attacker, float &basedamage, int damagetype)
+#endif
 {
 	if(!E_AL_StatusEffects[attacker])
 		return 0.0;
@@ -1447,6 +1461,7 @@ void StatusEffects_CrippleDebuff()
 	StatusEffect_AddGlobal(data);
 }
 
+#if defined ZR
 void StatusEffects_MagnesisStrangle()
 {
 	StatusEffect data;
@@ -1501,7 +1516,7 @@ void StatusEffects_MagnesisStrangle()
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
-
+#endif
 void StatusEffects_Freeplay1()
 {
 	StatusEffect data;
@@ -3202,8 +3217,10 @@ void OsmosisHud_Func(int attacker, int victim, StatusEffect Apply_MasterStatusEf
 	if(attacker < 0 && attacker > MaxClients)
 		return;
 
+#if defined ZR
 	if(!Osmosis_ClientGaveBuff[victim][attacker])
 		Format(HudToDisplay, SizeOfChar, "⟁");
+#endif
 }
 
 
