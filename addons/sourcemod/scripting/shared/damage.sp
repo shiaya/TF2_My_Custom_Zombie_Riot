@@ -1585,14 +1585,20 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 			{
 				int mana_max = RoundToCeil(400.0*Mana_Regen_Level[attacker]);
 				int mana_cost = RoundToCeil(mana_max*((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.025 : 0.1));
+				bool IsBoomStick=false;
+				if(i_CustomWeaponEquipLogic[weapon] == WEAPON_BOOMSTICK)
+				{
+					mana_cost = RoundToCeil(mana_max*0.99);
+					IsBoomStick=true;
+				}
 				if(mana_cost <= Current_Mana[attacker])
 				{
 					Current_Mana[attacker] -=mana_cost;
-					SDKhooks_SetManaRegenDelayTime(attacker, 2.0);
-					damage+=float(mana_max)*((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.1 : 0.15);
+					SDKhooks_SetManaRegenDelayTime(attacker, (IsBoomStick ? 3.5 : 2.0));
+					damage+=float(mana_max)*(IsBoomStick ? 0.2 : ((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.1 : 0.15));
 					damage *= Attributes_Get(weapon, 410, 1.00);
 				}
-				else damage*=0.9;
+				else damage*=(IsBoomStick ? 0.65 : 0.9);
 			}
 		}
 	}

@@ -262,7 +262,6 @@ void Music_EndLastmann()
 					}
 				}
 				Soldin_LastMann_buff(client, false);
-				Wkit_Soldin_LastMann_buff(client, false);
 				switch(Yakuza_Lastman())
 				{
 					case 1:

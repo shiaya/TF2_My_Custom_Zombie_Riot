@@ -197,7 +197,7 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 	npc.m_flNextRangedSpecialAttack = 0.0;
 
 	gameTime = GetGameTime() + 0.5;
-	float InfiniteWave = NoEmptyMode[npc.index] ? 15.0 : 5.0;
+	float InfiniteWave = 5.0;
 	int team = GetTeam(npc.index);
 	if(team == 2)
 	{
@@ -217,7 +217,7 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 		else
 			RaidModeScaling = ((InfiniteWave-(npc.m_flNextMeleeAttack - gameTime))/InfiniteWave)*19.721;
 	}
-	if((NoEmptyMode[npc.index] || Waves_IsEmpty()) && npc.m_flNextMeleeAttack<gameTime)
+	if(((NoEmptyMode[npc.index] && !IsValidAlly(npc.index, GetClosestAlly(npc.index)) || Waves_IsEmpty()) && npc.m_flNextMeleeAttack<gameTime)
 	{
 		int ISVOLI= 1;
 		ISVOLI = RoundToNearest(4.0); 

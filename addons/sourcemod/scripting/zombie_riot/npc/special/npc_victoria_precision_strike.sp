@@ -277,6 +277,9 @@ static void Victoria_Precision_Strike_NPCDeath(int entity)
 				SetMusicTimer(client, GetTime() + 1);
 		}
 	}
+	
+	Vs_RechargeTime[npc.index]=0.0;
+	Vs_RechargeTimeMax[npc.index]=0.0;
 
 	for(int client=1; client<=MaxClients; client++)
 	{
@@ -306,6 +309,8 @@ static bool Victoria_Support(Victoria_Precision_Strike npc)
 {
 	float GameTime = GetGameTime();
 	if(Vs_DelayTime[npc.index] > GameTime)
+		return false;
+	if(!Waves_Started() || InSetup)
 		return false;
 	Vs_DelayTime[npc.index] = GameTime + 0.1;
 	

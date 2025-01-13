@@ -268,22 +268,22 @@ public void Still_Hunt_Primary_Attack(int client, int weapon, bool crit)
 		{
 			if(Still_Hunt_Pap_Save[client] == 3)
 			{
-				damage *= 53.1;
-				if(b_thisNpcIsARaid[victim] || b_thisNpcIsABoss[victim] || b_IsGiant[victim])
-					damage *= 1.25;
+				damage *= 38.65;
+				if(Still_Hunt_Pap_Save[client] == 4 && (b_thisNpcIsARaid[victim] || b_thisNpcIsABoss[victim] || b_IsGiant[victim]))
+					damage *= 1.05;
 			}
 			else
 			{
 				if(Still_Hunt_Pap_Save[client] == 4)
 				{
 					++CaydeRetribution_charges[client];
-					damage *= 11.0;
+					damage *= 9.95;
 				}
 				else
-					damage *= 8.0+float(Still_Hunt_Pap_Save[client]);
+					damage *= 8.0+(float(CaydeRetribution_charges[client])*0.65);
 				damage *= 1.0+(float(CaydeRetribution_charges[client])*0.2);
-				if(b_thisNpcIsARaid[victim] || b_thisNpcIsABoss[victim] || b_IsGiant[victim])
-					damage *= 0.3;
+				if(Still_Hunt_Pap_Save[client] == 4 && (b_thisNpcIsARaid[victim] || b_thisNpcIsABoss[victim] || b_IsGiant[victim]))
+					damage *= 0.4;
 			}
 			if(Still_Hunt_Pap_Save[client] != 4)
 			{

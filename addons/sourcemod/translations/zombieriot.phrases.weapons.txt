@@ -3952,7 +3952,7 @@
 		"en"		"Adam Smith's invisible Hand [Rare]"
 		"ko"		"애덤스미스의 보이지 않는 손 [희귀한]"
 	}
-	"Energy Backpack [Legendary]"
+	"Barrack Backup [Legendary]"
 	{
 		"en"		"Energy Backpack [Legendary]"
 		"ko"		"에너지 배낭 [전설]"

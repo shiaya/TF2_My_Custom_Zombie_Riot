@@ -269,6 +269,8 @@ public Action Waves_RevoteCmd(int client, int args)
 
 public Action Waves_AdminsWaveEndCmd(int client, int args)
 {
+	Waves_ClearWaves();
+	Waves_ResetCashGiveWaveEnd();
 	strcopy(LastWaveWas, sizeof(LastWaveWas), "none");
 	DeleteAndRemoveAllNpcs = 10.0;
 	mp_bonusroundtime.IntValue = (12 * 2);
