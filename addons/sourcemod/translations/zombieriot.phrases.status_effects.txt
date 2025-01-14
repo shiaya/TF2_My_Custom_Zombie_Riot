@@ -796,6 +796,16 @@
 		"en"	"all damage taken is reduced by 20%%."
 		"ko"	"받는 모든 피해를 20%% 경감합니다."
 	}
+	"Major Steam's Launcher Resistance"
+	{
+		"en"	"Major Steam's Resistance"
+		"ko"	"주요 증기 저항"
+	}
+	"Major Steam's Launcher Resistance Desc"
+	{
+		"en"	"all damage taken is reduced"
+		"ko"	"받는 모든 피해를 경감합니다."
+	}
 	"Iberia Morale Boost"
 	{
 		"en" 	"Iberia Morale Boost"

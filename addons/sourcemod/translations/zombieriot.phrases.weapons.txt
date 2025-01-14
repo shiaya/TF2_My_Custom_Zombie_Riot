@@ -3628,6 +3628,11 @@
 		"en"	"Deploying Support Weapon"
 		"ko"	"지원 무기 배치"
 	}
+	"Reconstructive Teleporter"
+	{
+		"en"	"Reconstructive Teleporter"
+		"ko"	"재구성 텔레포터"
+	}
 	
 	"Extra Upgrades"//Extra Upgrades HERE!!!
 	{
@@ -3954,8 +3959,8 @@
 	}
 	"Barrack Backup [Legendary]"
 	{
-		"en"		"Energy Backpack [Legendary]"
-		"ko"		"에너지 배낭 [전설]"
+		"en"		"Barrack Backup [Legendary]"
+		"ko"		"배럭스 지원 [전설]"
 	}
 	"Market Gardener Office Uniform [Legendary]"
 	{
@@ -4027,10 +4032,10 @@
 		"en"		"Trumpet"
 		"ko"		"트럼펫"
 	}
-	"Prototype Kit"
+	"Rocket Jump Proto"
 	{
-		"en"		"Prototype Kit"
-		"ko"		"프로토타입 키트"
+		"en"		"Rocket Jump Proto"
+		"ko"		"로켓 점프 프로토"
 	}
 	"Victorian Launcher"
 	{
@@ -4046,11 +4051,6 @@
 	{
 		"en"	"Steam Knight's Spear"
 		"ko"	"증기 기사의 창"
-	}
-	"Prototype Kit"
-	{
-		"en"		"Prototype Kit"
-		"ko"		"프로토타입 키트"
 	}
 	"Expidonsa's Prototype"
 	{

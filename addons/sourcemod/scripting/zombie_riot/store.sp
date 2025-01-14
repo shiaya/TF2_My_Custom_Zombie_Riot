@@ -5254,7 +5254,7 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	b_Force_Shield_Generator[client] = false;
 	b_Shotgun_Dragonr_Beath_Ammo[client] = false;
 	b_Explosive_Structures[client] = false;
-	b_Energy_Backpack[client] = false;
+	b_Barrack_Backup[client] = false;
 	b_MarketGardener_Uniform[client] = false;
 	b_ManaFlower_Terrarium[client] = false;
 	b_Golden_Crown[client] = false;
@@ -5944,7 +5944,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					}
 					if(info.SpecialAdditionViaNonAttribute == 26)
 					{
-						b_Energy_Backpack[client] = true;
+						b_Barrack_Backup[client] = true;
 					}
 					if(info.SpecialAdditionViaNonAttribute == 27)
 					{
@@ -6219,6 +6219,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		LockDown_Enable(client, entity);
 		Still_Hunt_Enable(client, entity);
 		Trolldier_Enable(client, entity);
+		Enable_MajorSteam_Launcher(client, entity);
 		Wkit_Soldin_Enable(client, entity);
 		//give all revelant things back
 		WeaponSpawn_Reapply(client, entity, StoreWeapon[entity]);

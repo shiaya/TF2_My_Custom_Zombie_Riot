@@ -1,31 +1,11 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static const char g_BoomSounds[] = "mvm/mvm_tank_explode.wav";
-static const char g_IncomingBoomSounds[] = "weapons/drg_wrench_teleport.wav";
-static int NPCId;
-
-static float Vs_DelayTime[MAXENTITIES];
-static int Vs_Target[MAXENTITIES];
-static int Vs_ParticleSpawned[MAXENTITIES];
-static float Vs_Temp_Pos[MAXENTITIES][3];
-static int Vs_RNDTarget;
-
-static int gLaser1;
-static int gRedPoint;
-static int g_BeamIndex_heal;
-static int g_HALO_Laser;
-
-int VictorianPrecisionStrike_ID()
-{
-	return NPCId;
-}
-
-void Victoria_Precision_Strike_OnMapStart_NPC()
+void inventory_hunter_OnMapStart_NPC()
 {
 	NPCData data;
-	strcopy(data.Name, sizeof(data.Name), "Victoria Precision Strike");
-	strcopy(data.Plugin, sizeof(data.Plugin), "npc_victoria_precision_strike");
+	strcopy(data.Name, sizeof(data.Name), "Inventory Hunter");
+	strcopy(data.Plugin, sizeof(data.Plugin), "npc_inventory_hunter");
 	strcopy(data.Icon, sizeof(data.Icon), "victoria_precision_strike");
 	data.IconCustom = true;
 	data.Flags = 0;
@@ -122,6 +102,7 @@ methodmap Victoria_Precision_Strike < CClotBody
 		npc.m_flNextMeleeAttack = 0.0;
 		npc.m_flNextRangedAttack = 0.0;
 		Vs_RechargeTimeMax[npc.index] = 20.0;
+		Victoria_Support_RechargeTimeMax(npc.index, 20.0);
 		Vs_RNDTarget = GetRandomInt(0, 4);
 		
 		AddNpcToAliveList(npc.index, 1);
@@ -136,13 +117,6 @@ methodmap Victoria_Precision_Strike < CClotBody
 		MakeObjectIntangeable(npc.index);
 		b_NoHealthbar[npc.index]=true;
 		npc.i_GunMode = Waves_GetRound();
-		
-		if(npc.i_GunMode>50)Victoria_Support_RechargeTimeMax(npc.index, 14.0);
-		else if(npc.i_GunMode>45)Victoria_Support_RechargeTimeMax(npc.index, 15.0);
-		else if(npc.i_GunMode>30)Victoria_Support_RechargeTimeMax(npc.index, 16.0);
-		else if(npc.i_GunMode>15)Victoria_Support_RechargeTimeMax(npc.index, 18.0);
-		else Victoria_Support_RechargeTimeMax(npc.index, 20.0);
-		
 		if(IsValidEntity(i_InvincibleParticle[npc.index]))
 		{
 			int particle = EntRefToEntIndex(i_InvincibleParticle[npc.index]);
@@ -316,7 +290,7 @@ static bool Victoria_Support(Victoria_Precision_Strike npc)
 	float GameTime = GetGameTime();
 	if(Vs_DelayTime[npc.index] > GameTime)
 		return false;
-	if(Waves_InSetup())
+	if(!Waves_Started() || InSetup)
 		return false;
 	Vs_DelayTime[npc.index] = GameTime + 0.1;
 	
@@ -407,11 +381,6 @@ static bool Victoria_Support(Victoria_Precision_Strike npc)
 		float damageDealt = 100.0;
 		if(ZR_GetWaveCount()+1 > 12)
 			damageDealt *= float(ZR_GetWaveCount()+1)*0.7;
-		if(ZR_GetWaveCount()+1>50)damageDealt *= 1.5;
-		else if(ZR_GetWaveCount()+1>45)damageDealt *= 1.35;
-		else if(ZR_GetWaveCount()+1>30)damageDealt *= 1.25;
-		else if(ZR_GetWaveCount()+1>15)damageDealt *= 1.1;
-		else Victoria_Support_RechargeTimeMax(npc.index, 20.0);
 		if(damageDealt>9000.0)damageDealt=9000.0;
 		
 		i_ExplosiveProjectileHexArray[npc.index] = EP_DEALS_TRUE_DAMAGE;

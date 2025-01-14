@@ -2434,6 +2434,7 @@ void WaveEndLogicExtra()
 	ZombieDrops_AllowExtraCash();
 	Zero(i_MaxArmorTableUsed);
 	Farmer_WaveEnd();
+	MajorSteam_Launcher_WaveEnd();
 	b_Hero_Of_Concord_Deadman=false;
 	for(int client; client <= MaxClients; client++)
 	{

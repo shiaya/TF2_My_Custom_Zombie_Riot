@@ -811,6 +811,11 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 			if(!CheckInHud())
 				Perserker_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
 		}
+		case WEAPON_MAJORSTEAM_LAUNCHER:
+		{
+			if(!CheckInHud())
+				MajorSteam_Launcher_PlayerTakeDamage(victim, attacker, damage, equipped_weapon);
+		}
 		case WEAPON_ZEALOT_MELEE, WEAPON_ZEALOT_GUN, WEAPON_ZEALOT_POTION:
 		{
 			if(!CheckInHud())

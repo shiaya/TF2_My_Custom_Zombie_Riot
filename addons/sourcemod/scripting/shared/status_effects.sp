@@ -1134,6 +1134,28 @@ void StatusEffects_Baka()
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Major Steam's Launcher Resistance");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= 0.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	data.OnTakeDamage_TakenFunc 	= MajorSteam_Launcher_ResistanceFunc;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
+	StatusEffect_AddGlobal(data);
+}
+
+float MajorSteam_Launcher_ResistanceFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
+{
+	return f_MajorSteam_Launcher_Resistance(victim);
 }
 
 void StatusEffects_Ludo()

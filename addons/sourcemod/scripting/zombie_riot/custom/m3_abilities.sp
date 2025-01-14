@@ -411,6 +411,10 @@ public void M3_Abilities(int client)
 		{
 			NanomachinePacks(client);
 		}
+		case 16:
+		{
+			ReconstructiveTeleporter(client);
+		}
 	}
 }
 
@@ -429,10 +433,34 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 		return;
 	float Healing_Amount=Attributes_GetOnPlayer(client, 8, true, true)/2.0;
 	if(Healing_Amount<1.0)Healing_Amount=1.0;
-	i_ReinforcePointMax[client] = RoundToCeil(1500.0 * Healing_Amount);
+	int Base_HealingMaxPoints;
+	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+	if(IsValidEntity(weapon))
+	{
+		switch(i_CustomWeaponEquipLogic[weapon])
+		{
+			case WEAPON_FLAGELLANT_HEAL:
+			{
+				Healing_Amount=Attributes_Get(weapon, 868, 0.0)/2.0;
+				if(Healing_Amount<1.0)Healing_Amount=1.0;
+				Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
+			}
+			case WEAPON_SEABORN_MISC:
+			{
+				Healing_Amount=Attributes_Get(weapon, 8, 0.0)/2.0;
+				if(Healing_Amount<1.0)Healing_Amount=1.0;
+				Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
+			}
+			default: Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
+		}
+	}
+	if(i_ReinforcePointMax[client]!= Base_HealingMaxPoints)
+	{
+		i_ReinforcePointMax[client] = Base_HealingMaxPoints;
+		b_ReinforceReady[client]=false;
+	}
 	if(autoscale != 0.0) healthvalue = RoundToCeil(float(i_ReinforcePointMax[client]) * autoscale);
 	if(b_ReinforceReady[client]) healthvalue=0;
-
 	i_ReinforcePoint[client] += healthvalue;
 	if(i_ReinforcePoint[client] >= i_ReinforcePointMax[client])
 	{
@@ -1351,6 +1379,60 @@ public void StimPacks(int client)
 	}
 }
 
+public void ReconstructiveTeleporter(int client)
+{
+	if(ability_cooldown[client] < GetGameTime() || CvarInfiniteCash.BoolValue)
+	{
+		float WorldSpaceVec[3];
+		bool IsLiveBarrackUnits=false;
+		for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+		{
+			int ally = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+			if(IsValidEntity(ally) && !b_NpcHasDied[ally] && !i_IsABuilding[ally] && GetTeam(ally) == TFTeam_Red)
+			{
+				if(BarrackOwner[ally] == GetClientUserId(client))
+				{
+					IsLiveBarrackUnits=true;
+					WorldSpaceCenter(ally, WorldSpaceVec);
+					ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
+					SetEntProp(ally, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(ally)) * 1.5));
+					IncreaceEntityDamageTakenBy(ally, 0.05, 2.0);
+					WorldSpaceCenter(client, WorldSpaceVec);
+					TeleportEntity(ally, WorldSpaceVec, NULL_VECTOR, NULL_VECTOR);
+				}
+			}
+		}
+		if(!IsLiveBarrackUnits)
+		{
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			SetDefaultHudPosition(client);
+			SetGlobalTransTarget(client);
+			ShowSyncHudText(client,  SyncHud_Notifaction, "Barrack Unit not detected");
+			return;
+		}
+		if(!CvarInfiniteCash.BoolValue)
+		{
+			ability_cooldown[client] = GetGameTime() + 70.0;
+			CreateTimer(70.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
+		}
+		WorldSpaceCenter(client, WorldSpaceVec);
+		ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
+		EmitSoundToAll(g_TeleSounds[GetRandomInt(0, sizeof(g_TeleSounds) - 1)], client, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
+	}
+	else
+	{
+		float Ability_CD = ability_cooldown[client] - GetGameTime();
+		
+		if(Ability_CD <= 0.0)
+			Ability_CD = 0.0;
+			
+		ClientCommand(client, "playgamesound items/medshotno1.wav");
+		SetDefaultHudPosition(client);
+		SetGlobalTransTarget(client);
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);	
+	}
+}
+
 public void NanomachinePacks(int client)
 {
 	if(dieingstate[client] > 0)
@@ -1385,7 +1467,7 @@ public void NanomachinePacks(int client)
 
 public void EagleBomb(int client)
 {
-	if (ability_cooldown[client] < GetGameTime())
+	if(ability_cooldown[client] < GetGameTime())
 	{
 		if(i_EagleCount[client] >= 1)
 		{

@@ -4552,6 +4552,11 @@
 		"en"	"You can throw a beacon to receive Support Weapon.\nDon't stand under the pod!.\nIts Strength scales with your money you have spend in total.\nWhen you approach the box, you will receive a random weapon.\nBoxes and weapons you receive have a duration."
 		"ko"	"비콘을 던져 무기를 지원받을수있습니다.\n포드밑에 서있지마십시요!\n돈을 소비한 만큼 피해량이 증가합니다.\n상자에 접근하면 랜덤한 무기를 지급받습니다.\n상자및 지급받은 무기는 지속시간이 존재합니다."
 	}
+	"Reconstructive Teleporter Desc"
+	{
+		"en"	"Teleports barrack units to you, granting overheal and high resistance for 1 second."
+		"ko"	"아쎄이를 자신에게 텔레포트시키고 과치료및 1초동안 높은 저항을 제공합니다"
+	}
 	
 	"Market Gardener Desc"
 	{
@@ -4803,7 +4808,7 @@
 		"en"	"{default}We found supplies at the outpost. We got a special package there. {darkblue}''Atomizer's Special Drink Pack''{default}!"
 		"ko"	"{default}우리는 전초기지에서 보급품을 발견했습니다. 거기서 특별한 패키지를 얻었습니다. {blue}''인수분해의 스페셜 드링크 팩''{default}이 해금 됬습니다."
 	}
-	"Prototype Kit Desc"
+	"Rocket Jump Proto Desc"
 	{
 		"en"	"This is an experimental weapon set.\nYou can rocket jump with your primary weapon. You can deal additional damage during rocket jump with your melee weapon."
 		"ko"	"실험적무기 세트입니다,\n주무기로 로켓점프를 할수있으며. 근접무기로 로켓점프중 추가피해를 줄수있습니다."

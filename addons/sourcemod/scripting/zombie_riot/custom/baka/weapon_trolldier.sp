@@ -62,6 +62,28 @@ void Soldin_LastMann_buff(int client, bool b_On)
 	}
 }
 
+bool OldProtokit_CanSelfHurtAndJump(int client)
+{
+	switch(Market_WeaponPap[client])
+	{
+		case 0, 1, 2, 10, 11, 12, 13, 14, 15:
+		{
+			if(MarketTimer[client] != null)return true;
+		}
+		case 3, 4, 5, 6, 7, 8, 9:
+		{
+			if((Ability_Check_Cooldown(client, 1) < 0.0 || CvarInfiniteCash.BoolValue) && MarketTimer[client] != null)
+			{
+				Ability_Apply_Cooldown(client, 1, 30.0);
+				return true;
+			}
+			else if(i_SoldinCharging[client]>=i_SoldinChargingMAX[client] && !b_SoldinPowerHit[client])
+				return true;
+		}
+	}
+	return false;
+}
+
 public void Trolldier_OnMapStart()
 {
 	Zero(Market_WeaponPap);
@@ -70,6 +92,11 @@ public void Trolldier_OnMapStart()
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3",_,1);
 	PrecacheSound("player/doubledonk.wav");
 	PrecacheSound(g_BoomSounds);
+}
+
+public void Trolldier_RJCoolDown(int client, int weapon, bool &result, int slot)
+{
+	//none
 }
 
 public void Trolldier_Enable(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
@@ -175,7 +202,7 @@ public void Trolldier_NPCTakeDamage(int attacker, int victim, float &damage, int
 						|| Market_WeaponPap[attacker] == 15)
 						TrueDMG=true;
 					else if(RaidbossIgnoreBuildingsLogic(1))
-						damage*=2.0;
+						damage*=1.1;
 					float DMGBuff = damage;
 					float Speed = MoveSpeed(attacker, _, true);
 					float f_AirboneScale = Attributes_Get(weapon, 19, 0.01);

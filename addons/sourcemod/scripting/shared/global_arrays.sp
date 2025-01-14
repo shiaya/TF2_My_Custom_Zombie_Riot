@@ -505,7 +505,7 @@ bool b_Shotgun_Dragonr_Beath_Ammo[MAXTF2PLAYERS];
 bool b_Explosive_Structures[MAXTF2PLAYERS];
 bool b_On_Self_Damage[MAXENTITIES];
 bool b_Interior_ExplosiveBuilding[MAXENTITIES];
-bool b_Energy_Backpack[MAXENTITIES];
+bool b_Barrack_Backup[MAXENTITIES];
 bool b_MarketGardener_Uniform[MAXTF2PLAYERS];
 bool b_ManaFlower_Terrarium[MAXTF2PLAYERS];
 bool b_Golden_Crown[MAXENTITIES];

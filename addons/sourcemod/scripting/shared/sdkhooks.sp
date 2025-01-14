@@ -1730,8 +1730,12 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 #if defined ZR
 	if(IsValidEntity(victim) && (b_On_Self_Damage[victim] || CanSelfHurtAndJump(victim)) && TeutonType[victim] == TEUTON_NONE && dieingstate[victim] <= 0 && victim == attacker)
 	{
-		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TROLLDIER && !(GetEntityFlags(victim)&FL_ONGROUND))
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TROLLDIER && OldProtokit_CanSelfHurtAndJump(victim) && !(GetEntityFlags(victim)&FL_ONGROUND))
+		{
 			RocketJump_Count[victim]++;
+			return Plugin_Continue;
+		}
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_KIT_PROTOTYPE || i_CustomWeaponEquipLogic[weapon] == WEAPON_KIT_PROTOTYPE_MELEE){
 		if(CanSelfHurtAndJump(victim))
 		{
 			damage = 1.0;
@@ -1740,6 +1744,7 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 			return Plugin_Changed;
 		}
 		return Plugin_Continue;
+		}
 	}
 #endif
 	if(!CheckInHud())

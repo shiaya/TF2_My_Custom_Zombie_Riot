@@ -227,7 +227,8 @@ enum
 	WEAPON_STILLHUNT = 1007,
 	WEAPON_TRUMPET = 1008,
 	WEAPON_TROLLDIER = 1009,
-	WEAPON_TLQKF = 1010
+	WEAPON_TLQKF = 1010,
+	WEAPON_MAJORSTEAM_LAUNCHER = 1011
 }
 
 enum
@@ -607,6 +608,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/weapon_toolgun.sp"
 #include "zombie_riot/custom/baka/weapon_trolldier.sp"
 #include "zombie_riot/custom/baka/weapon_tlqkf.sp"
+#include "zombie_riot/custom/baka/weapon_majorsteam_launcher.sp"
 #include "zombie_riot/custom/kit_soldine.sp"
 
 void ZR_PluginLoad()
@@ -912,6 +914,7 @@ void ZR_MapStart()
 	Still_Hunt_MapStart();
 	Weapon_ToolGun_MapStart();
 	Trolldier_OnMapStart();
+	MajorSteam_Launcher_OnMapStart();
 	OnMapStartZealot();
 	Wkit_Soldin_OnMapStart();
 	
