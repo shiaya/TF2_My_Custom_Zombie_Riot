@@ -683,6 +683,41 @@ stock bool Damage_BuildingAttacker(int victim, int &attacker, int &inflictor, fl
 #if defined ZR
 static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, int equipped_weapon, float damagePosition[3])
 {
+	if(!CheckInHud() && b_Barricade_Stabilizer[victim])
+	{
+		int building = EntRefToEntIndex(i2_MountedInfoAndBuilding[1][victim]);
+		if(building != -1)
+		{
+			if(StrEqual(c_NpcName[building], "Barricade"))
+			{
+				int health = GetEntProp(building, Prop_Data, "m_iHealth") - RoundToCeil(damage*(RaidbossIgnoreBuildingsLogic(1) ? 1.2 : 0.8));
+				if(health > 0)
+				{
+					SetEntProp(building, Prop_Data, "m_iHealth", health);
+				}
+				else
+				{
+					int entity = EntRefToEntIndex(i2_MountedInfoAndBuilding[1][victim]);
+					if(IsValidEntity(i2_MountedInfoAndBuilding[1][victim]))
+					{
+						float posStacked[3]; 
+						GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", posStacked);
+						AcceptEntityInput(i2_MountedInfoAndBuilding[1][victim], "ClearParent");
+						SDKCall_SetLocalOrigin(entity, posStacked);	
+						i2_MountedInfoAndBuilding[1][victim] = INVALID_ENT_REFERENCE;
+					}
+					if(IsValidEntity(i2_MountedInfoAndBuilding[0][victim]))
+					{
+						RemoveEntity(i2_MountedInfoAndBuilding[0][victim]);
+						i2_MountedInfoAndBuilding[0][victim] = INVALID_ENT_REFERENCE;
+					}
+					DestroyBuildingDo(building);
+				}
+				damage*=0.9;
+			}
+		}
+	}
+
 	switch(i_CustomWeaponEquipLogic[equipped_weapon])
 	{
 		case WEAPON_ARK: // weapon_ark
@@ -1241,6 +1276,11 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		{
 			if(!CheckInHud())
 				SupportWeapons_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
+		}
+		case WEAPON_MAJORSTEAM_LAUNCHER:
+		{
+			if(!CheckInHud())
+				MajorSteam_Launcher_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
 		}
 		case WEAPON_KIT_PROTOTYPE_MELEE:
 		{

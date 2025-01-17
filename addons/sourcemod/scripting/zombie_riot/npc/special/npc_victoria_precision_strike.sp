@@ -10,6 +10,7 @@ static int Vs_Target[MAXENTITIES];
 static int Vs_ParticleSpawned[MAXENTITIES];
 static float Vs_Temp_Pos[MAXENTITIES][3];
 static int Vs_RNDTarget;
+static int Temp_Target[MAXENTITIES];
 
 static int gLaser1;
 static int gRedPoint;
@@ -122,7 +123,7 @@ methodmap Victoria_Precision_Strike < CClotBody
 		npc.m_flNextMeleeAttack = 0.0;
 		npc.m_flNextRangedAttack = 0.0;
 		Vs_RechargeTimeMax[npc.index] = 20.0;
-		Vs_RNDTarget = GetRandomInt(0, 4);
+		Vs_RNDTarget = GetRandomInt(1, 8);
 		
 		AddNpcToAliveList(npc.index, 1);
 		Is_a_Medic[npc.index] = true;
@@ -232,7 +233,14 @@ static void Victoria_Precision_Strike_ClotThink(int iNPC)
 	}
 	
 	bool GETVictoria_Support = Victoria_Support(npc);
-	if(GETVictoria_Support)Vs_RNDTarget = GetRandomInt(0, 4);
+	if(GETVictoria_Support)
+	{
+		Vs_RNDTarget = GetRandomInt(1, 8);
+		if(Vs_RNDTarget==4||Vs_RNDTarget==5||Vs_RNDTarget==6||Vs_RNDTarget==7||Vs_RNDTarget==8)
+		{
+			Temp_Target[npc.index]=GetRNDTarget(npc.index);
+		}
+	}
 	
 	bool sniper = view_as<bool>((npc.i_GunMode + 1) == Waves_GetRound());
 	if(sniper)
@@ -323,14 +331,15 @@ static bool Victoria_Support(Victoria_Precision_Strike npc)
 	switch(Vs_RNDTarget)
 	{
 		case 1:Vs_Target[npc.index] = Victoria_GetTargetDistance(npc.index, false, false);
-		case 2, 3, 4:Vs_Target[npc.index] = GetClosestTarget(npc.index, true, _, _, true);
-		default:Vs_Target[npc.index] = Victoria_GetTargetDistance(npc.index, true, false);
+		case 2:Vs_Target[npc.index] = Victoria_GetTargetDistance(npc.index, true, false);
+		case 3:Vs_Target[npc.index] = GetClosestTarget(npc.index, true, _, _, true);
+		default:Vs_Target[npc.index] = Temp_Target[npc.index];
 	}
 	if(!IsValidEnemy(npc.index, Vs_Target[npc.index]))
 	{
 		if(npc.m_flGetClosestTargetTime < GameTime)
 		{
-			Vs_RNDTarget = GetRandomInt(0, 4);
+			Vs_RNDTarget = GetRandomInt(1, 8);
 			npc.m_flGetClosestTargetTime = GameTime + GetRandomRetargetTime();
 		}
 		return false;
@@ -411,7 +420,6 @@ static bool Victoria_Support(Victoria_Precision_Strike npc)
 		else if(ZR_GetWaveCount()+1>45)damageDealt *= 1.35;
 		else if(ZR_GetWaveCount()+1>30)damageDealt *= 1.25;
 		else if(ZR_GetWaveCount()+1>15)damageDealt *= 1.1;
-		else Victoria_Support_RechargeTimeMax(npc.index, 20.0);
 		if(damageDealt>9000.0)damageDealt=9000.0;
 		
 		i_ExplosiveProjectileHexArray[npc.index] = EP_DEALS_TRUE_DAMAGE;
@@ -425,4 +433,18 @@ static bool Victoria_Support(Victoria_Precision_Strike npc)
 		return true;
 	}
 	return false;
+}
+
+public int GetRNDTarget(int entity)
+{
+	int i_Temp_Target=-1;
+	UnderTides npcGetInfo = view_as<UnderTides>(entity);
+	int enemy[MAXENTITIES];
+	GetHighDefTargets(npcGetInfo, enemy, sizeof(enemy));
+	do
+	{
+		i_Temp_Target = enemy[GetRandomInt(0, sizeof(enemy) - 1)];
+	}
+	while(!IsValidEntity(i_Temp_Target) || GetTeam(entity) == GetTeam(i_Temp_Target) || entity==i_Temp_Target);
+	return i_Temp_Target;
 }

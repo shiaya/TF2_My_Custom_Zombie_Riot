@@ -1034,6 +1034,8 @@ void StatusEffects_TeslarStick()
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	LowTeslarIndex = StatusEffect_AddGlobal(data);
@@ -1050,6 +1052,8 @@ void StatusEffects_TeslarStick()
 	data.SlotPriority				= 2;
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	HighTeslarIndex = StatusEffect_AddGlobal(data);
@@ -1068,6 +1072,8 @@ void StatusEffects_TeslarStick()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1085,6 +1091,8 @@ void StatusEffects_TeslarStick()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1133,6 +1141,8 @@ void StatusEffects_Baka()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1150,7 +1160,28 @@ void StatusEffects_Baka()
 	data.SlotPriority				= 0;
 	data.OnTakeDamage_TakenFunc 	= MajorSteam_Launcher_ResistanceFunc;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
+	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Cybergrind EX-Hard Enemy Buff");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "⛡");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= 0.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	data.OnTakeDamage_TakenFunc 	= Cybergrind_EX_Hard_ResistanceFunc;
+	data.OnTakeDamage_DealFunc 	= Cybergrind_EX_Hard_DamageFunc;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= Cybergrind_EX_Hard_SpeedFunc;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
@@ -1158,6 +1189,30 @@ void StatusEffects_Baka()
 float MajorSteam_Launcher_ResistanceFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
 {
 	return f_MajorSteam_Launcher_Resistance(victim);
+}
+
+float Cybergrind_EX_Hard_ResistanceFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
+{
+	if(ZR_GetWaveCount()+1>58)return 0.95;
+	else if(ZR_GetWaveCount()+1>43)return 0.9;
+	else if(ZR_GetWaveCount()+1>28)return 0.85;
+	return 0.8;
+}
+
+float Cybergrind_EX_Hard_DamageFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
+{
+	if(ZR_GetWaveCount()+1>58)return 1.5;
+	else if(ZR_GetWaveCount()+1>43)return 1.1;
+	else if(ZR_GetWaveCount()+1>28)return 1.15;
+	return 1.2;
+}
+
+float Cybergrind_EX_Hard_SpeedFunc(int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect)
+{
+	if(ZR_GetWaveCount()+1>58)return 1.02;
+	else if(ZR_GetWaveCount()+1>43)return 1.03;
+	else if(ZR_GetWaveCount()+1>28)return 1.04;
+	return 1.05;
 }
 
 void StatusEffects_Ludo()
@@ -1176,6 +1231,8 @@ void StatusEffects_Ludo()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1192,6 +1249,8 @@ void StatusEffects_Ludo()
 	data.SlotPriority				= 0;
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1217,6 +1276,8 @@ void StatusEffects_Cryo()
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	Cryo1Index = StatusEffect_AddGlobal(data);
@@ -1233,6 +1294,8 @@ void StatusEffects_Cryo()
 	data.SlotPriority				= 2;
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	Cryo2Index = StatusEffect_AddGlobal(data);
@@ -1249,6 +1312,8 @@ void StatusEffects_Cryo()
 	data.SlotPriority				= 3;
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	Cryo3Index = StatusEffect_AddGlobal(data);
@@ -1266,6 +1331,8 @@ void StatusEffects_Cryo()
 	data.SlotPriority				= 0;
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	data.ElementalLogic				= true;
@@ -1326,6 +1393,8 @@ void StatusEffects_PotionWand()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	ShrinkingStatusEffectIndex = StatusEffect_AddGlobal(data);
@@ -1343,6 +1412,8 @@ void StatusEffects_PotionWand()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1389,6 +1460,8 @@ void StatusEffects_Enfeeble()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= Enfeeble_Internal_DamageDealFunc;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	data.ElementalLogic				= true;
@@ -1422,6 +1495,8 @@ void StatusEffects_BuildingAntiRaid()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1442,6 +1517,8 @@ void StatusEffects_WidowsWine()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= WidowsWine_SlowdownFunc;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1480,6 +1557,8 @@ void StatusEffects_CrippleDebuff()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1502,6 +1581,8 @@ void StatusEffects_MagnesisStrangle()
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1519,6 +1600,8 @@ void StatusEffects_MagnesisStrangle()
 	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1536,6 +1619,8 @@ void StatusEffects_MagnesisStrangle()
 	data.SlotPriority				= 3; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1555,6 +1640,12 @@ void StatusEffects_Freeplay1()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 	
 	strcopy(data.BuffName, sizeof(data.BuffName), "Freeplay Eloquence I");
@@ -1568,6 +1659,12 @@ void StatusEffects_Freeplay1()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 7; //0 means ignored
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Freeplay Eloquence II");
@@ -1581,6 +1678,12 @@ void StatusEffects_Freeplay1()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 7; //0 means ignored
 	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Freeplay Eloquence III");
@@ -1594,6 +1697,12 @@ void StatusEffects_Freeplay1()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 7; //0 means ignored
 	data.SlotPriority				= 3; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
 
@@ -1611,6 +1720,12 @@ void StatusEffects_Freeplay2()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 8; //0 means ignored
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Freeplay Rampart II");
@@ -1624,6 +1739,12 @@ void StatusEffects_Freeplay2()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 8; //0 means ignored
 	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Freeplay Rampart III");
@@ -1637,6 +1758,12 @@ void StatusEffects_Freeplay2()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 8; //0 means ignored
 	data.SlotPriority				= 3; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
 
@@ -1656,6 +1783,8 @@ void StatusEffects_Cudgel()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1677,6 +1806,8 @@ void StatusEffects_MaimDebuff()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1697,6 +1828,8 @@ void StatusEffects_Prosperity()
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1714,6 +1847,8 @@ void StatusEffects_Prosperity()
 	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1731,6 +1866,8 @@ void StatusEffects_Prosperity()
 	data.SlotPriority				= 3; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1752,6 +1889,8 @@ void StatusEffects_LogosDebuff()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc	= Aeternam_Internal_DamageTakenFunc;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1786,6 +1925,8 @@ void StatusEffects_Silence()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	SilenceIndex = StatusEffect_AddGlobal(data);
@@ -1804,6 +1945,8 @@ void StatusEffects_Silence()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1822,6 +1965,8 @@ void StatusEffects_Silence()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -1840,6 +1985,8 @@ void StatusEffects_Silence()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	RapidSuturingIndex = StatusEffect_AddGlobal(data);
@@ -1856,6 +2003,12 @@ void StatusEffects_Silence()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	//Immunity to stun effects
@@ -1870,6 +2023,12 @@ void StatusEffects_Silence()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	//Immunity to displacing
@@ -1884,6 +2043,12 @@ void StatusEffects_Silence()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	//Immunity to slows
@@ -1898,6 +2063,12 @@ void StatusEffects_Silence()
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
 
@@ -1995,6 +2166,8 @@ void StatusEffects_DebuffMarked()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	DebuffMarkedIndex = StatusEffect_AddGlobal(data);
@@ -2045,6 +2218,8 @@ void StatusEffects_VoidLogic()
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2062,6 +2237,8 @@ void StatusEffects_VoidLogic()
 	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= Void_Internal_1_DamageTakenFunc;
 	data.OnTakeDamage_DealFunc 	= Void_Internal_1_DamageDealFunc;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	VoidStrengthIndex1 = StatusEffect_AddGlobal(data);
@@ -2079,6 +2256,8 @@ void StatusEffects_VoidLogic()
 	data.SlotPriority				= 3; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= Void_Internal_2_DamageTakenFunc;
 	data.OnTakeDamage_DealFunc 	= Void_Internal_2_DamageDealFunc;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	VoidStrengthIndex2 = StatusEffect_AddGlobal(data);
@@ -2189,6 +2368,8 @@ void StatusEffects_CombineCommander()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2211,6 +2392,8 @@ void StatusEffects_Victoria()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2229,6 +2412,8 @@ void StatusEffects_Victoria()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2245,6 +2430,8 @@ void StatusEffects_Victoria()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2263,6 +2450,8 @@ void StatusEffects_Victoria()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	VictoriaCallToArmsIndex = StatusEffect_AddGlobal(data);
@@ -2310,6 +2499,8 @@ void StatusEffects_Pernell()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2331,6 +2522,8 @@ void StatusEffects_Medieval()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2349,6 +2542,8 @@ void StatusEffects_Medieval()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= Hussar_Warscream_DamageDealFunc;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2396,6 +2591,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2414,6 +2611,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2431,6 +2630,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2448,6 +2649,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2465,6 +2668,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2482,6 +2687,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2499,6 +2706,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2516,6 +2725,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= AdaptiveMedigun_MeleeFunc;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2533,6 +2744,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= AdaptiveMedigun_RangedFunc;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2551,6 +2764,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2568,6 +2783,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2585,6 +2802,8 @@ void StatusEffects_SupportWeapons()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	AncientBannerIndex = StatusEffect_AddGlobal(data);
@@ -2601,6 +2820,11 @@ void StatusEffects_SupportWeapons()
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Zealot's Rush");
@@ -2615,6 +2839,11 @@ void StatusEffects_SupportWeapons()
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
 
@@ -2682,6 +2911,8 @@ void StatusEffects_BobDuck()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
@@ -2704,6 +2935,8 @@ void StatusEffects_ElementalWand()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	ElementalWandIndex = StatusEffect_AddGlobal(data);
@@ -2753,6 +2986,8 @@ void StatusEffects_FallenWarrior()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	FallenWarriorIndex = StatusEffect_AddGlobal(data);
@@ -2800,6 +3035,8 @@ void StatusEffects_CasinoDebuff()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= GamblersRuin_DamageTakenFunc;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	CasinoDebuffIndex = StatusEffect_AddGlobal(data);
@@ -2858,6 +3095,8 @@ void StatusEffects_Ruiania()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= RuinasAgility_Func;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	RuinaBuffSpeed = StatusEffect_AddGlobal(data);
@@ -2875,6 +3114,8 @@ void StatusEffects_Ruiania()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= RuinasDefense_Func;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	RuinaBuffDefense = StatusEffect_AddGlobal(data);
@@ -2892,6 +3133,8 @@ void StatusEffects_Ruiania()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= Ruinas_DamageFunc;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	RuinaBuffDamage = StatusEffect_AddGlobal(data);
@@ -3011,6 +3254,8 @@ void StatusEffects_WeaponSpecific_VisualiseOnly()
 	StatusEffect data;
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	strcopy(data.BuffName, sizeof(data.BuffName), "Waterless Training");
@@ -3254,6 +3499,8 @@ void StatusEffects_StatusEffectListOnly()
 	StatusEffect data;
 	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");

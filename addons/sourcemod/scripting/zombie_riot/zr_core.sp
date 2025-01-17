@@ -680,6 +680,7 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_dsw", CommandDeployingSupportWeapon, ADMFLAG_ROOT, "Deploying Support Weapon, yep is op");
 	RegAdminCmd("sm_rein", CommandAdminReinforce, ADMFLAG_ROOT, "Deploying Reinforce, yep is op");
 	RegAdminCmd("sm_waveend", Waves_AdminsWaveEndCmd, ADMFLAG_ROOT, "Wave Force END");
+	RegAdminCmd("sm_wavewin", Waves_AdminsWaveWinCmd, ADMFLAG_ROOT, "Wave Force END");
 	RegAdminCmd("sm_raidend", Waves_AdminsRaidTimeEndCmd, ADMFLAG_ROOT, "Raid Force END");
 	RegAdminCmd("sm_raidadd", Waves_AdminsRaidTimeAddCmd, ADMFLAG_ROOT, "Raid Time Add");
 	CookieXP = new Cookie("zr_xp", "Your XP", CookieAccess_Protected);
@@ -2104,6 +2105,9 @@ stock int MaxArmorCalculation(int ArmorLevel = -1, int client, float multiplyier
 										
 	else if(ArmorLevel == 200)
 		Armor_Max = 2000;	
+										
+	else if(ArmorLevel > 200)	//Over 200!
+		Armor_Max = 2000+RoundToNearest(ArmorLevel*1.5);	
 		
 	else
 		Armor_Max = 200;

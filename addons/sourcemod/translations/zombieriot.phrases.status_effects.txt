@@ -806,6 +806,16 @@
 		"en"	"all damage taken is reduced"
 		"ko"	"받는 모든 피해를 경감합니다."
 	}
+	"Cybergrind EX-Hard Enemy Buff"
+	{
+		"en"	"Major Steam's Resistance"
+		"ko"	"주요 증기 저항"
+	}
+	"Cybergrind EX-Hard Enemy Buff Desc"
+	{
+		"en"	"Enemies gain additional effects."
+		"ko"	"적이 추가적인 효과를 얻습니다."
+	}
 	"Iberia Morale Boost"
 	{
 		"en" 	"Iberia Morale Boost"

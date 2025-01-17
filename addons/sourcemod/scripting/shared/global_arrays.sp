@@ -510,6 +510,7 @@ bool b_MarketGardener_Uniform[MAXTF2PLAYERS];
 bool b_ManaFlower_Terrarium[MAXTF2PLAYERS];
 bool b_Golden_Crown[MAXENTITIES];
 bool b_Mana_Infusion_Ammunition[MAXTF2PLAYERS];
+bool b_Barricade_Stabilizer[MAXTF2PLAYERS];
 int b_BobsCuringHand_Revived[MAXTF2PLAYERS];
 bool b_StickyExtraGrenades[MAXTF2PLAYERS];
 bool FinalBuilder[MAXENTITIES];

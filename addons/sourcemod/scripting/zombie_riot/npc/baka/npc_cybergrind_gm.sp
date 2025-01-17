@@ -16,7 +16,6 @@ static bool TeleToU[MAXENTITIES];
 
 void CyberGrindGM_OnMapStart_NPC()
 {
-	
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Cyber Grind GM");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_cybergrind_gm");
@@ -33,7 +32,13 @@ static void ClotPrecache()
 {
 	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
 	PrecacheModel("models/player/spy.mdl");
+	PrecacheModel("models/items/tf_gift.mdl", true);
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3");
+	PrecacheSoundCustom("#zombiesurvival/ruina/wave60.mp3");
+	PrecacheSoundCustom("#zombiesurvival/ruina/wave45.mp3");
+	PrecacheSoundCustom("#zombiesurvival/victoria/wave_30.mp3");
+	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_60_music_1.mp3");
+	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/raid_sensal_group.mp3");
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
@@ -66,6 +71,7 @@ methodmap CyberGrindGM < CClotBody
 		SetVariantInt(2);
 		AcceptEntityInput(npc.index, "SetBodyGroup");
 		
+		b_NoKillFeed[npc.index] = true;
 		if(!StrContains(data, "nextwave"))
 		{
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
@@ -181,6 +187,47 @@ methodmap CyberGrindGM < CClotBody
 			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
+		else if(!StrContains(data, "go_60or65_raidrush"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsValidClient(target))
+					Ammo_Count_Used[target] -= (CyberGrind_InternalDifficulty>2 ? 20 : 15);
+			}
+			if(CyberGrind_InternalDifficulty==4)
+			{
+				Waves_ClearWaves();
+				CurrentRound = 63;
+				CurrentWave = -1;
+				Waves_Progress();
+			}
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "delete_timerlimit"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			WaveStart_SubWaveStart(GetGameTime() + 3000.0);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
 		else if(!StrContains(data, "difficulty"))
 		{
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
@@ -202,7 +249,7 @@ methodmap CyberGrindGM < CClotBody
 					case 8: NPC_SpawnNext(true, true, 10);
 				}
 			}
-			WaveStart_SubWaveStart(GetGameTime() + 800.0);
+			WaveStart_SubWaveStart(GetGameTime() + 3000.0);
 			b_NpcForcepowerupspawn[npc.index] = 0;
 			i_RaidGrantExtra[npc.index] = 0;
 			b_DissapearOnDeath[npc.index] = true;
@@ -216,6 +263,13 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
 			MusicEnum music;
 			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3");
 			music.Time = 187;
@@ -223,6 +277,151 @@ methodmap CyberGrindGM < CClotBody
 			music.Custom = true;
 			strcopy(music.Name, sizeof(music.Name), "The Game");
 			strcopy(music.Artist, sizeof(music.Artist), "Disturbed");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "victoria_wave_30_bgm"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/victoria/wave_30.mp3");
+			music.Time = 288;
+			music.Volume = 2.0;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "Guard Down (remix)");
+			strcopy(music.Artist, sizeof(music.Artist), "Half-Life 2: Episode One/morch kovalski");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "ruina_wave_45_bgm"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/ruina/wave45.mp3");
+			music.Time = 284;
+			music.Volume = 1.3;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "Nuclear Fusion (Electro Remix)");
+			strcopy(music.Artist, sizeof(music.Artist), "JustSomeRandomMusician");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "zenzal_60_bgm"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/expidonsa_waves/wave_60_music_1.mp3");
+			music.Time = 167;
+			music.Volume = 1.2;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "Half-Life - Hard Technology Rock [Remix]");
+			strcopy(music.Artist, sizeof(music.Artist), "Vandoorea");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "powerful_wait"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/ruina/wave60.mp3");
+			music.Time = 257;
+			music.Volume = 1.0;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "[RoseChain (Satori Maiden ~ 3rd Eye)]");
+			strcopy(music.Artist, sizeof(music.Artist), "maritumix/まりつみ");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "the_trio_bgm"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/expidonsa_waves/raid_sensal_group.mp3");
+			music.Time = 257;
+			music.Volume = 1.0;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "Rock Orchestra 2");
+			strcopy(music.Artist, sizeof(music.Artist), "Goukisan");
 			Music_SetRaidMusic(music);
 			
 			b_NpcForcepowerupspawn[npc.index] = 0;
@@ -263,6 +462,43 @@ methodmap CyberGrindGM < CClotBody
 
 			SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
 			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
+			return npc;
+		}
+		
+		bool Grigori_Refresh=false;
+		bool GrigoriMaxSellsItems_Overide=false;
+		bool EX_HardModeOnly=false;
+		int GrigoriMaxSellsItems=-1;
+		static char countext[20][1024];
+		int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
+		for(int i = 0; i < count; i++)
+		{
+			if(i>=count)break;
+			else if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
+			else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
+			else if(!StrContains(countext[i], "ex_hardmode_only"))EX_HardModeOnly=true;
+			GrigoriMaxSellsItems = StringToInt(countext[i]);
+		}
+		
+		if(Grigori_Refresh || (GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			if(!EX_HardModeOnly || (EX_HardModeOnly && CyberGrind_InternalDifficulty==4))
+			{
+				if(Grigori_Refresh)
+					Store_RandomizeNPCStore(0);
+				if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
+					GrigoriMaxSells = GrigoriMaxSellsItems;
+			}
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
 		
@@ -386,10 +622,46 @@ static void CyberGrindGM_Final_Item(int iNPC)
 							Format(Give_me_the_item, sizeof(Give_me_the_item),
 							"%s\n{collectors}[Expert]{gold}''Sardis Gold''{default}", Give_me_the_item);
 						}
+						if(CyberGrind_InternalDifficulty>3)
+						{
+							if(!(Items_HasNamedItem(client, "Originium")))
+							{
+								Items_GiveNamedItem(client, "Originium");
+								Format(Give_me_the_item, sizeof(Give_me_the_item),
+								"%s\n{maroon}[EX Hard]{darkgoldenrod}''Originium''{default}", Give_me_the_item);
+							}
+							Format(Give_me_the_item, sizeof(Give_me_the_item),
+							"%s\n{maroon}[EX Hard]{olive}''Inventory Items!''{default}", Give_me_the_item);
+							float VecOrigin[3];
+							GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", VecOrigin);
+							VecOrigin[2] += 45.0;
+
+							if(!(Item_ClientHasAllRarity(client, 2)))
+								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 1);
+							if(!(Item_ClientHasAllRarity(client, 3)))
+								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 2);
+							else if(!(Item_ClientHasAllRarity(client, 4)))
+								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 3);
+							else if(!(Item_ClientHasAllRarity(client, 5)))
+								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 4);
+						}
+
+						int TempCalc = Level[client];
+						if(TempCalc >= 100)
+							TempCalc = 100;
+
+						TempCalc = LevelToXp(TempCalc) - LevelToXp(TempCalc - 1);
+						TempCalc /= 40;
+
+						int XpToGive = TempCalc * 25;
+						XP[client] += XpToGive;
+						GiveXP(client, 0);
+						Format(Give_me_the_item, sizeof(Give_me_the_item),
+						"%s\n{maroon}[EX Hard]{green}Everyone gains %i XP!{default}", Give_me_the_item, XpToGive);
 						CPrintToChat(client,"%s", Give_me_the_item);
 					}
 				}
-				npc.m_flNextMeleeAttack = gameTime + 0.5;
+				npc.m_flNextMeleeAttack = gameTime + 1.0;
 				npc.m_iOverlordComboAttack=2;
 			}
 			case 2:
@@ -531,13 +803,19 @@ static void CyberGrindGM_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Oh, I See...");
+					if(CyberGrind_Difficulty==4)
+						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: What, really?");
+					else
+						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Oh, I See...");
 					npc.m_flNextMeleeAttack = gameTime + 1.0;
 					npc.m_iOverlordComboAttack=1;
 				}
 				case 1:
 				{
-					CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: I checked. Have a Funny Time.");
+					if(CyberGrind_Difficulty==4)
+						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Okay, {crimson}Good Luck.{default}");
+					else
+						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: I checked. Have a Funny Time.");
 					CyberGrind_InternalDifficulty = CyberGrind_Difficulty;
 					npc.m_flNextMeleeAttack = gameTime + 1.0;
 					npc.m_iOverlordComboAttack=2;
@@ -546,8 +824,36 @@ static void CyberGrindGM_ClotThink(int iNPC)
 				{
 					Citizen_SpawnAtPoint("b");
 					Citizen_SpawnAtPoint();
+					if(CyberGrind_Difficulty==4)
+					{
+						Spawn_Cured_Grigori();
+						float SelfPos[3];
+						GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
+						float AllyAng[3];
+						GetEntPropVector(npc.index, Prop_Data, "m_angRotation", AllyAng);
+						int Spawner_entity = GetRandomActiveSpawner();
+						if(IsValidEntity(Spawner_entity))
+						{
+							GetEntPropVector(Spawner_entity, Prop_Data, "m_vecOrigin", SelfPos);
+							GetEntPropVector(Spawner_entity, Prop_Data, "m_angRotation", AllyAng);
+						}
+						NPC_CreateByName("npc_invisible_trigger_man", -1, SelfPos, AllyAng, TFTeam_Stalkers, "cybergrind_ex_hard");
+					}
+					else
+					{
+						float SelfPos[3];
+						GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
+						float AllyAng[3];
+						GetEntPropVector(npc.index, Prop_Data, "m_angRotation", AllyAng);
+						int Spawner_entity = GetRandomActiveSpawner();
+						if(IsValidEntity(Spawner_entity))
+						{
+							GetEntPropVector(Spawner_entity, Prop_Data, "m_vecOrigin", SelfPos);
+							GetEntPropVector(Spawner_entity, Prop_Data, "m_angRotation", AllyAng);
+						}
+						NPC_CreateByName("npc_invisible_trigger_man", -1, SelfPos, AllyAng, TFTeam_Stalkers, "delete_timerlimit");
+					}
 					CPrintToChatAll("{gray}Barney: {default}Hey! We came late to assist! Got a friend too!");
-				
 					b_NpcForcepowerupspawn[npc.index] = 0;
 					i_RaidGrantExtra[npc.index] = 0;
 					b_DissapearOnDeath[npc.index] = true;
@@ -633,6 +939,12 @@ static void RaidMode_SetupVote()
 	strcopy(vote.Desc, sizeof(vote.Desc), "Expert Desc");
 	vote.Config[0] = 0;
 	vote.Level = 200;
+	Voting.PushArray(vote);
+	
+	strcopy(vote.Name, sizeof(vote.Name), "EX-Hard");
+	strcopy(vote.Desc, sizeof(vote.Desc), "EX-Hard Desc");
+	vote.Config[0] = 0;
+	vote.Level = 250;
 	Voting.PushArray(vote);
 
 	CreateTimer(1.0, RaidMode_VoteDisplayTimer, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -861,7 +1173,18 @@ static Action RaidMode_EndVote(Handle timer, float time)
 			Voting.GetArray(highest, vote);
 			delete Voting;
 			
-			if(!StrContains(vote.Name, "Expert"))
+			if(!StrContains(vote.Name, "EX-Hard"))
+			{
+				CyberGrind_Difficulty = 4;
+				CurrentCash = 4100;
+				for(int client = 1; client <= MaxClients; client++)
+				{
+					if(IsValidClient(client))
+						Ammo_Count_Used[client] = -25;
+				}
+				
+			}
+			else if(!StrContains(vote.Name, "Expert"))
 			{
 				CyberGrind_Difficulty = 3;
 				CurrentCash = 4500;

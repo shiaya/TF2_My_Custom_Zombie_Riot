@@ -80,8 +80,15 @@ methodmap Invisible_TRIGGER_Man < CClotBody
 
 	public Invisible_TRIGGER_Man(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
+		bool Cybergrind_EX_Hard_Mode=false;
+		if(!StrContains(data, "cybergrind_ex_hard"))
+		{
+			Cybergrind_EX_Hard_Mode=true;
+			ally = TFTeam_Stalkers;
+		}
 		Invisible_TRIGGER_Man npc = view_as<Invisible_TRIGGER_Man>(CClotBody(vecPos, vecAng, "models/player/spy.mdl", "1.0", "12000", ally));
 		
+		b_NoKillFeed[npc.index] = true;
 		i_NpcWeight[npc.index] = 1;
 		FormatEx(c_HeadPlaceAttachmentGibName[npc.index], sizeof(c_HeadPlaceAttachmentGibName[]), "head");
 		
@@ -90,11 +97,64 @@ methodmap Invisible_TRIGGER_Man < CClotBody
 		
 		SetVariantInt(2);
 		AcceptEntityInput(npc.index, "SetBodyGroup");
+		
 		npc.i_NPCStats=0;
+		
+		if(Cybergrind_EX_Hard_Mode)
+		{
+			func_NPCDeath[npc.index] = view_as<Function>(Invisible_TRIGGER_Man_NPCDeath);
+			func_NPCOnTakeDamage[npc.index] = view_as<Function>(Invisible_TRIGGER_Man_OnTakeDamage);
+			func_NPCThink[npc.index] = view_as<Function>(Cybergrind_EX_Hard_Mode_ClotThink);
+			
+			npc.m_iBleedType = BLEEDTYPE_NORMAL;
+			npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
+			npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+			
+			//IDLE
+			npc.m_iState = 0;
+			npc.m_flGetClosestTargetTime = 0.0;
+			npc.StartPathing();
+			npc.m_flSpeed = 0.0;
+			npc.m_iOverlordComboAttack = 0;
+			npc.m_flNextMeleeAttack = 0.0;
+			npc.m_flNextRangedAttack = 0.0;
+			
+			AddNpcToAliveList(npc.index, 1);
+			Is_a_Medic[npc.index] = true;
+			npc.m_bStaticNPC = true;
+			b_ThisNpcIsImmuneToNuke[npc.index] = true;
+			b_DoNotUnStuck[npc.index] = true;
+			b_NoKnockbackFromSources[npc.index] = true;
+			b_NpcIsInvulnerable[npc.index] = true;
+			b_ThisEntityIgnored[npc.index] = true;
+			b_ThisEntityIgnoredByOtherNpcsAggro[npc.index] = true;
+			MakeObjectIntangeable(npc.index);
+			b_NoHealthbar[npc.index]=true;
+			
+			if(IsValidEntity(i_InvincibleParticle[npc.index]))
+			{
+				int particle = EntRefToEntIndex(i_InvincibleParticle[npc.index]);
+				SetEntityRenderMode(particle, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(particle, 255, 255, 255, 1);
+				SetEntPropFloat(particle, Prop_Send, "m_fadeMinDist", 1.0);
+				SetEntPropFloat(particle, Prop_Send, "m_fadeMaxDist", 1.0);
+			}
+			SetEntityRenderMode(npc.index, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(npc.index, 255, 255, 255, 1);
+			SetEntPropFloat(npc.index, Prop_Send, "m_fadeMinDist", 1.0);
+			SetEntPropFloat(npc.index, Prop_Send, "m_fadeMaxDist", 1.0);
+			if(IsValidEntity(npc.m_iTeamGlow))
+				RemoveEntity(npc.m_iTeamGlow);
+			
+			return npc;
+		}
+		
 		if(!StrContains(data, "cover_blitzkrieg"))
 			npc.i_NPCStats=1;
 		if(!StrContains(data, "cover_bobthefirst"))
 			npc.i_NPCStats=2;
+		if(!StrContains(data, "delete_timerlimit"))
+			npc.i_NPCStats=3000;
 
 		func_NPCDeath[npc.index] = view_as<Function>(Invisible_TRIGGER_Man_NPCDeath);
 		func_NPCOnTakeDamage[npc.index] = view_as<Function>(Invisible_TRIGGER_Man_OnTakeDamage);
@@ -137,6 +197,37 @@ methodmap Invisible_TRIGGER_Man < CClotBody
 		
 		return npc;
 	}
+}
+
+static void Cybergrind_EX_Hard_Mode_ClotThink(int iNPC)
+{
+	Invisible_TRIGGER_Man npc = view_as<Invisible_TRIGGER_Man>(iNPC);
+	float gameTime = GetGameTime(npc.index);
+	if(npc.m_flNextDelayTime > gameTime)
+		return;
+	npc.m_flNextDelayTime = gameTime + DEFAULT_UPDATE_DELAY_FLOAT;
+	npc.Update();
+	
+	if(Waves_InSetup())
+		return;
+	
+	for(int i; i < i_MaxcountNpcTotal; i++)
+	{
+		int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[i]);
+		if(entity != npc.index && entity != INVALID_ENT_REFERENCE && IsEntityAlive(entity) && GetTeam(entity) == TFTeam_Blue)
+		{
+			ApplyStatusEffect(npc.index, entity, "Cybergrind EX-Hard Enemy Buff", 0.5);
+		}
+	}
+	if(npc.m_flNextMeleeAttack < gameTime)
+	{
+		WaveStart_SubWaveStart(GetGameTime() + 3000.0);
+		npc.m_flNextMeleeAttack = gameTime + 2250.0;
+	}
+	
+	if(npc.m_flNextThinkTime > gameTime)
+		return;
+	npc.m_flNextThinkTime = gameTime + 0.1;
 }
 
 static void Invisible_TRIGGER_Man_ClotThink(int iNPC)
@@ -318,6 +409,14 @@ static void Invisible_TRIGGER_Man_ClotThink(int iNPC)
 						SmiteNpcToDeath(npc.index);
 					}
 				}
+			}
+		}
+		case 3000:
+		{
+			if(npc.m_flNextMeleeAttack < gameTime)
+			{
+				WaveStart_SubWaveStart(GetGameTime() + 3000.0);
+				npc.m_flNextMeleeAttack = gameTime + 2250.0;
 			}
 		}
 	}

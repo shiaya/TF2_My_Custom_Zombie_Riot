@@ -277,6 +277,37 @@ public Action Waves_AdminsWaveEndCmd(int client, int args)
 	ZR_NpcTauntWinClear();
 	ForcePlayerLoss();
 	RaidBossActive = INVALID_ENT_REFERENCE;
+	Waves_RoundEnd();
+	Waves_Progress();
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsWaveWinCmd(int client, int args)
+{
+	RaidBossActive = INVALID_ENT_REFERENCE;
+	ResetReplications();
+	cvarTimeScale.SetFloat(0.1);
+	CreateTimer(0.5, SetTimeBack);
+	if(!Music_Disabled())
+		EmitCustomToAll("#zombiesurvival/music_win_1.mp3", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+		
+	ConVar roundtime = FindConVar("mp_bonusroundtime");
+	float last = roundtime.FloatValue;
+	roundtime.FloatValue = 20.0;
+
+	MVMHud_Disable();
+	int entity = CreateEntityByName("game_round_win"); 
+	DispatchKeyValue(entity, "force_map_reset", "1");
+	SetEntProp(entity, Prop_Data, "m_iTeamNum", TFTeam_Red);
+	DispatchSpawn(entity);
+	AcceptEntityInput(entity, "RoundWin");
+	roundtime.FloatValue = last;
+	for(int target = 1; target <= MaxClients; target++)
+	{
+		if(IsClientInGame(target) && !b_IsPlayerABot[target])
+			Music_Stop_All(target);
+	}
+	RemoveAllCustomMusic();
 	return Plugin_Handled;
 }
 

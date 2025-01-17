@@ -67,6 +67,7 @@ void Items_PluginStart()
 {
 	OwnedItems = new ArrayList(sizeof(OwnedItem));
 	RegAdminCmd("zr_give_item", Items_GiveCmd, ADMFLAG_RCON);
+	RegAdminCmd("zr_remove_item", Items_RemoveCmd, ADMFLAG_RCON);
 	RegAdminCmd("zr_give_allitems", Items_GiveAllCmd, ADMFLAG_RCON);
 	RegAdminCmd("zr_remove_allitems", Items_RemoveAllCmd, ADMFLAG_RCON);
 }
@@ -121,6 +122,19 @@ void Items_ClearArray(int client)
 	}
 }
 
+/*void Items_RemoveIdItem(int client, int fine)
+{
+	int id;
+	while((id = OwnedItems.FindValue(client, OwnedItem::Client)) != -1)
+	{
+		if(fine==id)
+		{
+			OwnedItems.Erase(id);
+			break;
+		}
+	}
+}*/
+
 void Items_AddArray(int client, int level, int flags)
 {
 	if(flags && level >= 0)
@@ -149,6 +163,55 @@ bool Items_GetNextItem(int client, int &i, int &level, int &flags)
 	}
 
 	return false;
+}
+
+public Action Items_RemoveCmd(int client, int args)
+{
+	if(args > 1)
+	{
+		char targetName[MAX_TARGET_LENGTH];
+		GetCmdArg(2, targetName, sizeof(targetName));
+		
+		int id = Items_NameToId(targetName);
+		if(id == -1)
+		{
+			ReplyToCommand(client, "Invalid item name");
+			return Plugin_Handled;
+		}
+
+		char pattern[PLATFORM_MAX_PATH];
+		GetCmdArg(1, pattern, sizeof(pattern));
+
+		int length;
+		int targets[MAXPLAYERS];
+		bool targetNounIsMultiLanguage;
+		if((length=ProcessTargetString(pattern, client, targets, sizeof(targets), COMMAND_FILTER_NO_IMMUNITY|COMMAND_FILTER_NO_BOTS, targetName, sizeof(targetName), targetNounIsMultiLanguage)) > 0)
+		{
+			for(int i; i < length; i++)
+			{
+				if(Items_HasIdItem(targets[i], id))
+				{
+					//Items_RemoveIdItem(targets[i], id);
+					/*id = OwnedItems.FindValue(client, OwnedItem::Client);
+					OwnedItems.Erase(id);*/
+					ReplyToCommand(client, "Remove %N this item", targets[i]);
+				}
+				else
+				{
+					ReplyToCommand(client, "%N already do not have this item.", targets[i]);
+				}
+			}
+		}
+		else
+		{
+			ReplyToTargetError(client, length);
+		}
+	}
+	else
+	{
+		ReplyToCommand(client, "[SM] Usage: zr_give_item <client> <item name>");
+	}
+	return Plugin_Handled;
 }
 
 public Action Items_GiveCmd(int client, int args)

@@ -3780,7 +3780,6 @@
 		"en"	"Katana [Rare]"
 		"ko"	"카타나 [희귀한]"
 	}
-
 	"Hoovy Hamstrong's Sandvich [Uncommon]"
 	{
 		"en"	"Hoovy Hamstrong's Sandvich [Uncommon]"
@@ -4007,6 +4006,16 @@
 		"en"		"Mana Infusion Ammunition [Legendary]"
 		"ko"		"마나 인퓨전 탄약 [전설]"
 	}
+	"Optimize Magic Casting [Rare]"
+	{
+		"en"		"Optimize Magic Casting [Rare]"
+		"ko"		"마법 캐스팅 최적화 [희귀한]"
+	}
+	"It's Magic, I Added Some Magic [Uncommon]"
+	{
+		"en"		"It's Magic, I Added Some Magic [Uncommon]"
+		"ko"		"마법이야, 내가 마법을 추가했어 [드문]"
+	}
 	"Widemouth Refill Port"
 	{
 		"en"		"Widemouth Refill Port"
@@ -4022,6 +4031,11 @@
 		"en"		"Quick Draw Belt [Uncommon]"
 		"ko"		"퀵드로우 벨트 [드문]"
 	}
+	"Barricade Stabilizer [Mythic]"
+	{
+		"en"		"Barricade Stabilizer [Mythic]"
+		"ko"		"장벽 안정 장치 [신화]"
+	}
 	"Sardis Gold"
 	{
 		"en"		"Sardis Gold"
@@ -4031,6 +4045,16 @@
 	{
 		"en"		"Trumpet"
 		"ko"		"트럼펫"
+	}
+	"Chaos Infected Launcher"
+	{
+		"en"		"Chaos Infected Launcher"
+		"ko"		"카오스 침식 발사기"
+	}
+	"Major Steam's Launcher"
+	{
+		"en"		"Major Steam's Launcher"
+		"ko"		"주요 증기의 발사기"
 	}
 	"Rocket Jump Proto"
 	{

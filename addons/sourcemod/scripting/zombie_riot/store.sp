@@ -570,6 +570,9 @@ void Store_OnCached(int client)
 			
 		if(Items_HasNamedItem(client, "Sardis Gold"))
 			amount += 20;
+			
+		if(Items_HasNamedItem(client, "Originium"))
+			amount += 30;
 		
 		amount += SkillTree_GetByName(client, "Cash Up 1") * 2;
 		amount += SkillTree_GetByName(client, "Cash Up 1 Infinite") * 1 / 5;
@@ -5263,6 +5266,7 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	b_ManaFlower_Terrarium[client] = false;
 	b_Golden_Crown[client] = false;
 	b_Mana_Infusion_Ammunition[client] = false;
+	b_Barricade_Stabilizer[client] = false;
 	i_MaxSupportBuildingsLimit[client] = 0;
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
 	BannerOnEntityCreated(client);
@@ -5971,6 +5975,10 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					if(info.SpecialAdditionViaNonAttribute == 30)
 					{
 						b_Mana_Infusion_Ammunition[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 31)
+					{
+						b_Barricade_Stabilizer[client] = true;
 					}
 
 					int CostDo;

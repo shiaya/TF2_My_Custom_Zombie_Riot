@@ -314,7 +314,7 @@ public void Trolldier_NPCTakeDamage(int attacker, int victim, float &damage, int
 					SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime(weapon)+1.0);
 					SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", GetGameTime(attacker)+1.0);
 					damage *= 3.0;
-					GiveArmorViaPercentage(attacker, 0.25, 1.0);
+					GiveArmorViaPercentage(attacker, 1.0, 1.0);
 					b_SoldinPowerHit[attacker]=false;
 				}
 			}
