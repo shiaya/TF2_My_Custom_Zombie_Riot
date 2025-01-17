@@ -130,6 +130,7 @@ static int WaveGiftItem;
 static char LastWaveWas[64];
 
 static int Freeplay_Info;
+static bool Freeplay_w500reached;
 
 public Action Waves_ProgressTimer(Handle timer)
 {
@@ -192,6 +193,7 @@ void Waves_MapStart()
 	SkyNameRestore[0] = 0;
 	FakeMaxWaves = 0;
 	Freeplay_Info = 0;
+	Freeplay_w500reached = false;
 
 	int objective = GetObjectiveResource();
 	if(objective != -1)
@@ -1816,7 +1818,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 				}
 			}
 			
-			if(!rogue && CurrentRound == 4 && !round.NoBarney)
+			if(!rogue && ((!Classic_Mode() && CurrentRound == 4) || (Classic_Mode() && CurrentRound == 1)) && !round.NoBarney)
 			{
 				Citizen_SpawnAtPoint("b");
 				Citizen_SpawnAtPoint();
@@ -2604,7 +2606,15 @@ float Zombie_DelayExtraSpeed()
 void DoGlobalMultiScaling()
 {
 	float playercount = ZRStocks_PlayerScalingDynamic();
-			
+
+	playercount = Pow ((playercount * 0.65), 1.2);
+	//on low player counts it does not scale well.
+	
+	/*
+		at 14 players, it scales fine, at lower, it starts getting really hard, tihs 
+
+	*/
+
 	float multi = Pow(1.08, playercount);
 
 	multi -= 0.31079601; //So if its 4 players, it defaults to 1.0
@@ -2615,10 +2625,10 @@ void DoGlobalMultiScaling()
 	//raids or super bosses health
 	MultiGlobalHighHealthBoss = playercount * 0.34;
 
-	//Enemy bosses amount
+	//Enemy bosses AMOUNT
 	MultiGlobalEnemyBoss = playercount * 0.3; 
 
-	//certain maps need this.
+	//certain maps need this, if they are too big and raids have issues etc.
 	MultiGlobalHighHealthBoss *= zr_raidmultihp.FloatValue;
 
 	float cap = zr_enemymulticap.FloatValue;
@@ -3413,18 +3423,52 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 
 		if((CurrentRound % 5) == 4)
 		{
-			Freeplay_SetupStart(true);
+			if(CurrentRound >= 249 && !Freeplay_w500reached)
+			{
+				for (int client = 0; client < MaxClients; client++)
+				{
+					if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING)
+					{
+						Items_GiveNamedItem(client, "A Block of Cheese");
+						CPrintToChat(client, "Hmm.... You guys sure are something. Reaching a point this far in Freeplay isn't an easy task.");
+						CPrintToChat(client, "I shall now give you some time to rest, you must be really exhausted after that. And...");
+						CPrintToChat(client, "{lime}As a reward for your perseverance, I am giving you something to fend off a specific someone.");
+						CPrintToChat(client, "{white}(Your backpack feels heavier. {gold}Check your unlocks.{white}");
+					}
+				}
 
-			Cooldown = GetGameTime() + 15.0;
+				InSetup = true;
+				ExcuteRelay("zr_setuptime");
+				Waves_SetReadyStatus(1);
+				Freeplay_w500reached = true;
+			}
+			else
+			{
+				Freeplay_SetupStart(true);
+
+				Cooldown = GetGameTime() + 15.0;
+				
+				InSetup = true;
+				ExcuteRelay("zr_setuptime");
+				
+				SpawnTimer(15.0);
+				CreateTimer(15.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+			}
 			
-			InSetup = true;
-			ExcuteRelay("zr_setuptime");
-			
-			SpawnTimer(15.0);
-			CreateTimer(15.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 			RequestFrames(StopMapMusicAll, 60);
 			
 			Citizen_SetupStart();
+			if(CurrentRound+1 == 150)
+			{
+				for (int client = 0; client < MaxClients; client++)
+				{
+					if(IsValidClient(client) && !b_IsPlayerABot[client])
+					{
+						SetHudTextParams(-1.0, -1.0, 5.0, 255, 255, 0, 255);
+						ShowHudText(client, -1, "--ALERT--\nWave 150 reached.\nRaids will now have x2 HP.");
+					}
+				}
+			}
 		}
 		else
 		{

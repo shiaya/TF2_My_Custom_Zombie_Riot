@@ -798,6 +798,10 @@
 		"nl"		"Ware Fuzie Krijger"
 		"ko"		"트루 퓨전 워리어"
 	}
+	"Silvester's Past Afterimage"
+	{
+		"en" 		"Silvester's Past Afterimage"
+	}
 	"Medic Charger"
 	{
 		"en" 		"Medic Charger"
