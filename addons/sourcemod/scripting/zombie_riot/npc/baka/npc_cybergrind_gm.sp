@@ -39,6 +39,7 @@ static void ClotPrecache()
 	PrecacheSoundCustom("#zombiesurvival/victoria/wave_30.mp3");
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_60_music_1.mp3");
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/raid_sensal_group.mp3");
+	PrecacheSoundCustom("#zombiesurvival/ruina/raid_ruina_trio.mp3");
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
@@ -201,7 +202,7 @@ methodmap CyberGrindGM < CClotBody
 			if(CyberGrind_InternalDifficulty==4)
 			{
 				Waves_ClearWaves();
-				CurrentRound = 63;
+				CurrentRound = 62;
 				CurrentWave = -1;
 				Waves_Progress();
 			}
@@ -402,7 +403,7 @@ methodmap CyberGrindGM < CClotBody
 			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
-		else if(!StrContains(data, "the_trio_bgm"))
+		else if(!StrContains(data, "the_expidonsa_trio_bgm"))
 		{
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
@@ -417,11 +418,40 @@ methodmap CyberGrindGM < CClotBody
 			
 			MusicEnum music;
 			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/expidonsa_waves/raid_sensal_group.mp3");
-			music.Time = 257;
-			music.Volume = 1.0;
+			music.Time = 172;
+			music.Volume = 2.0;
 			music.Custom = true;
 			strcopy(music.Name, sizeof(music.Name), "Rock Orchestra 2");
 			strcopy(music.Artist, sizeof(music.Artist), "Goukisan");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "the_ruina_trio_bgm"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/ruina/raid_ruina_trio.mp3");
+			music.Time = 164;
+			music.Volume = 2.0;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "Cyberfantasia");
+			strcopy(music.Artist, sizeof(music.Artist), "tn-shi");
 			Music_SetRaidMusic(music);
 			
 			b_NpcForcepowerupspawn[npc.index] = 0;
@@ -477,7 +507,7 @@ methodmap CyberGrindGM < CClotBody
 			else if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
 			else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
 			else if(!StrContains(countext[i], "ex_hardmode_only"))EX_HardModeOnly=true;
-			GrigoriMaxSellsItems = StringToInt(countext[i]);
+			else GrigoriMaxSellsItems = StringToInt(countext[i]);
 		}
 		
 		if(Grigori_Refresh || (GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide))

@@ -211,15 +211,21 @@ static void Cybergrind_EX_Hard_Mode_ClotThink(int iNPC)
 	if(Waves_InSetup())
 		return;
 	
+	bool there_is_no_one=true;
 	for(int i; i < i_MaxcountNpcTotal; i++)
 	{
 		int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[i]);
 		if(entity != npc.index && entity != INVALID_ENT_REFERENCE && IsEntityAlive(entity) && GetTeam(entity) == TFTeam_Blue)
 		{
 			ApplyStatusEffect(npc.index, entity, "Cybergrind EX-Hard Enemy Buff", 0.5);
+			there_is_no_one=false;
 		}
 	}
-	if(npc.m_flNextMeleeAttack < gameTime)
+	if(there_is_no_one)
+	{
+		npc.m_flNextMeleeAttack = gameTime + 1.0;
+	}
+	else if(npc.m_flNextMeleeAttack < gameTime)
 	{
 		WaveStart_SubWaveStart(GetGameTime() + 3000.0);
 		npc.m_flNextMeleeAttack = gameTime + 2250.0;
@@ -413,7 +419,20 @@ static void Invisible_TRIGGER_Man_ClotThink(int iNPC)
 		}
 		case 3000:
 		{
-			if(npc.m_flNextMeleeAttack < gameTime)
+			bool there_is_no_one=true;
+			for(int i; i < i_MaxcountNpcTotal; i++)
+			{
+				int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[i]);
+				if(entity != npc.index && entity != INVALID_ENT_REFERENCE && IsEntityAlive(entity) && GetTeam(entity) == TFTeam_Blue)
+				{
+					there_is_no_one=false;
+				}
+			}
+			if(there_is_no_one)
+			{
+				npc.m_flNextMeleeAttack = gameTime + 1.0;
+			}
+			else if(npc.m_flNextMeleeAttack < gameTime)
 			{
 				WaveStart_SubWaveStart(GetGameTime() + 3000.0);
 				npc.m_flNextMeleeAttack = gameTime + 2250.0;
