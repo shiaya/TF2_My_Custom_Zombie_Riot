@@ -217,6 +217,8 @@ enum
 	WEAPON_KIT_FRACTAL	= 135,
 	WEAPON_KIT_PROTOTYPE	= 136,
 	WEAPON_KIT_PROTOTYPE_MELEE	= 137,
+	WEAPON_PURNELL_MELEE = 138,
+	WEAPON_PURNELL_PRIMARY = 139,
 	WEAPON_MARKET_GARDENER = 1000,
 	WEAPON_FARMER = 1001,
 	WEAPON_MINECRAFT_SWORD = 1002,
@@ -229,6 +231,7 @@ enum
 	WEAPON_TROLLDIER = 1009,
 	WEAPON_TLQKF = 1010,
 	WEAPON_MAJORSTEAM_LAUNCHER = 1011
+
 }
 
 enum
@@ -563,6 +566,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/weapon_class_leper.sp"
 #include "zombie_riot/custom/kit_flagellant.sp"
 #include "zombie_riot/custom/kit_zealot.sp"
+#include "zombie_riot/custom/kit_purnell.sp"
 #include "zombie_riot/custom/cosmetics/silvester_cosmetics_yay.sp"
 #include "zombie_riot/custom/cosmetics/magia_cosmetics.sp"
 #include "zombie_riot/custom/wand/weapon_wand_impact_lance.sp"
@@ -923,6 +927,7 @@ void ZR_MapStart()
 	MajorSteam_Launcher_OnMapStart();
 	OnMapStartZealot();
 	Wkit_Soldin_OnMapStart();
+	Purnell_MapStart();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)
@@ -1619,12 +1624,12 @@ public Action Timer_Dieing(Handle timer, int client)
 					if(b_DyingTextOff[client])
 					{
 						b_DyingTextOff[client] = false;
-						SetVariantString("DOWNED [R]");
+						SetVariantString("DOWNED [T]");
 						AcceptEntityInput(TextFormat, "SetText");
 					}
 					else
 					{
-						SetVariantString("REVIVE [R]");
+						SetVariantString("REVIVE [T]");
 						AcceptEntityInput(TextFormat, "SetText");
 						b_DyingTextOff[client] = true;
 					}
@@ -1914,6 +1919,16 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 							ChargeSoldineRocketJump(client, client, true, 999.9);
 							CPrintToChatAll("{crimson}Expidonsa Activates %N's emergency protocols...",client);
 							Yakuza_Lastman(4);
+						}
+						if(Purnell_Lastman(client))
+						{
+							CPrintToChatAll("{crimson}%N gets filled with the unyielding desire to avenge his patients.",client);
+							Yakuza_Lastman(5);
+						}
+						if(Blacksmith_Lastman(client))
+						{
+							CPrintToChatAll("{crimson}%N Seems to be completly and utterly screwed.",client);
+							Yakuza_Lastman(6);
 						}
 						
 						for(int i=1; i<=MaxClients; i++)

@@ -4081,6 +4081,14 @@
 		"en"		"Expidonsa's Prototype"
 		"ko"		"엑스피돈산 프로토타입"
 	}
+	"Taurus Revolver"
+	{
+		"en"	"Taurus Revolver"
+	}
+	"Hand"
+	{
+		"en"	"Hand"
+	}
 	"Blue Cheese"
 	{
 		"en" "Blue Cheese"

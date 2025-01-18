@@ -155,6 +155,7 @@ void Music_MapStart()
 	
 	EventRoundStartMusicFilter();
 	PrecacheMusicZr();
+	PrecacheSound("#music/hl2_song23_suitsong3.mp3");
 }
 
 void EventRoundStartMusicFilter()
@@ -272,6 +273,10 @@ void Music_EndLastmann()
 						StopCustomSound(client, SNDCHAN_STATIC, RAIDBOSS_TWIRL_THEME, 2.0);
 					case 4:
 						StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3", 2.0);
+					case 5:
+						StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/purnell_lastman.mp3", 2.0);
+					case 6:
+ 						StopSound(client, SNDCHAN_STATIC, "#music/hl2_song23_suitsong3.mp3");
 				}
 
 				SetMusicTimer(client, 0);
@@ -734,6 +739,16 @@ void Music_PostThink(int client)
 				{
 					EmitCustomToClient(client, "#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0);
 					SetMusicTimer(client, GetTime() + 187);
+				}
+				case 5:
+				{
+					EmitCustomToClient(client, "#zombiesurvival/purnell_lastman.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+					SetMusicTimer(client, GetTime() + 192);
+				}
+				case 6:
+				{
+					EmitSoundToClient(client, "#music/hl2_song23_suitsong3.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0);
+					SetMusicTimer(client, GetTime() + 150);
 				}
 				default:
 				{
