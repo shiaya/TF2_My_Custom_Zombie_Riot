@@ -937,9 +937,8 @@ void DestroyBuildingDo(int entity)
 	VecOrigin[2] += 15.0;
 	if(b_Interior_ExplosiveBuilding[entity])
 	{
-		int maxhealth = GetEntProp(entity, Prop_Data, "m_iMaxHealth");
 		int client = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-		float damage = 300.0;
+		float damage = float(b_Interior_ExplosiveBuilding_MaxHP[entity])+300.0;
 		float AOE_range = 100.0;
 		
 		if(!IsValidClient(client))client=-1;
@@ -955,7 +954,6 @@ void DestroyBuildingDo(int entity)
 			
 			AOE_range *= sentry_range;
 		}
-		damage+=float(maxhealth);
 		KillFeed_SetKillIcon(entity, "ullapool_caber_explosion");
 		Explode_Logic_Custom(damage, client, entity, -1, VecOrigin, AOE_range, 0.75, _, false);
 		EmitSoundToAll(g_ExplosionSounds, entity, SNDCHAN_VOICE, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME, GetRandomInt(80,125));

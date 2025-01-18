@@ -489,7 +489,10 @@ methodmap CyberGrindGM < CClotBody
 			if(!EX_HardModeOnly || (EX_HardModeOnly && CyberGrind_InternalDifficulty==4))
 			{
 				if(Grigori_Refresh)
+				{
+					Store_RandomizeNPCStore(0, _, true);
 					Store_RandomizeNPCStore(0);
+				}
 				if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
 					GrigoriMaxSells = GrigoriMaxSellsItems;
 			}
@@ -661,7 +664,7 @@ static void CyberGrindGM_Final_Item(int iNPC)
 						CPrintToChat(client,"%s", Give_me_the_item);
 					}
 				}
-				npc.m_flNextMeleeAttack = gameTime + 1.0;
+				npc.m_flNextMeleeAttack = gameTime + 1.5;
 				npc.m_iOverlordComboAttack=2;
 			}
 			case 2:

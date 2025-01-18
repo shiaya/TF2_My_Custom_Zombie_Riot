@@ -576,6 +576,7 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 											CooldownGive=0.0;
 									}
 									b_Interior_ExplosiveBuilding[entity]=b_Explosive_Structures[client];
+									b_Interior_ExplosiveBuilding_MaxHP[entity]=GetEntProp(entity, Prop_Data, "m_iMaxHealth");
 									Cooldowns[client][id] = GetGameTime() + CooldownGive;
 								}
 							}
