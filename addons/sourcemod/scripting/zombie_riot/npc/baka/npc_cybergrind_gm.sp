@@ -496,6 +496,7 @@ methodmap CyberGrindGM < CClotBody
 		}
 		
 		bool Grigori_Refresh=false;
+		bool Grigori_RefreshTwo=false;
 		bool GrigoriMaxSellsItems_Overide=false;
 		bool EX_HardModeOnly=false;
 		int GrigoriMaxSellsItems=-1;
@@ -506,6 +507,7 @@ methodmap CyberGrindGM < CClotBody
 			if(i>=count)break;
 			else if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
 			else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
+			else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
 			else if(!StrContains(countext[i], "ex_hardmode_only"))EX_HardModeOnly=true;
 			else GrigoriMaxSellsItems = StringToInt(countext[i]);
 		}
@@ -516,15 +518,17 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			
-			if(!EX_HardModeOnly || (EX_HardModeOnly && CyberGrind_InternalDifficulty==4))
+			if(!EX_HardModeOnly || (EX_HardModeOnly && (CyberGrind_InternalDifficulty>3 || CyberGrind_Difficulty>3)))
 			{
+				if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
+					GrigoriMaxSells = GrigoriMaxSellsItems;
+				if(Grigori_RefreshTwo)
+					Store_RandomizeNPCStore(1);
 				if(Grigori_Refresh)
 				{
 					Store_RandomizeNPCStore(0, _, true);
 					Store_RandomizeNPCStore(0);
 				}
-				if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
-					GrigoriMaxSells = GrigoriMaxSellsItems;
 			}
 			
 			b_NpcForcepowerupspawn[npc.index] = 0;

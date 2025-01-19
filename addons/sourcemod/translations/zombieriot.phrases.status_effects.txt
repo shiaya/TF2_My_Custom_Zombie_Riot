@@ -766,6 +766,16 @@
 		"en"	"The weapon's stats are improved and mana is continuously restored."
 		"ko"	"무기의 스텟이 향상되며, 마나가 지속적으로 회복됩니다."
 	}
+	"Weapon Overclock"
+	{
+		"en"	"Overclock"
+		"ko"	"과부하"
+	}
+	"Weapon Overclock Desc"
+	{
+		"en"	"The weapon's stats are improved and mana is continuously restored."
+		"ko"	"무기의 스텟이 향상되며, 마나가 지속적으로 회복됩니다."
+	}
 	"Concord Hero"
 	{
 		"en"	"Concord Hero"
@@ -808,13 +818,13 @@
 	}
 	"Cybergrind EX-Hard Enemy Buff"
 	{
-		"en"	"Major Steam's Resistance"
-		"ko"	"주요 증기 저항"
+		"en"	"Cybergrind EX Hard Enemy Buff"
+		"ko"	"Cybergrind EX Hard 적 버프"
 	}
 	"Cybergrind EX-Hard Enemy Buff Desc"
 	{
-		"en"	"Enemies gain additional effects."
-		"ko"	"적이 추가적인 효과를 얻습니다."
+		"en"	"Enemies gain additional effects..."
+		"ko"	"적이 추가적인 효과를 얻습니다..."
 	}
 	"Iberia Morale Boost"
 	{

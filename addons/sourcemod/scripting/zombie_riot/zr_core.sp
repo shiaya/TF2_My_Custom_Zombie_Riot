@@ -219,6 +219,7 @@ enum
 	WEAPON_KIT_PROTOTYPE_MELEE	= 137,
 	WEAPON_PURNELL_MELEE = 138,
 	WEAPON_PURNELL_PRIMARY = 139,
+	WEAPON_KRITZKRIEG = 140,
 	WEAPON_MARKET_GARDENER = 1000,
 	WEAPON_FARMER = 1001,
 	WEAPON_MINECRAFT_SWORD = 1002,
@@ -619,6 +620,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/weapon_tlqkf.sp"
 #include "zombie_riot/custom/baka/weapon_majorsteam_launcher.sp"
 #include "zombie_riot/custom/kit_soldine.sp"
+#include "zombie_riot/custom/weapon_kritzkrieg.sp"
 
 void ZR_PluginLoad()
 {
@@ -928,6 +930,7 @@ void ZR_MapStart()
 	OnMapStartZealot();
 	Wkit_Soldin_OnMapStart();
 	Purnell_MapStart();
+	Kritzkrieg_OnMapStart();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)

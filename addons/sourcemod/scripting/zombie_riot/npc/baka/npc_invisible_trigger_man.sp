@@ -1,6 +1,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+static bool JUST_TOGGLE[MAXENTITIES];
+
 static char g_BlitzkriegVioce_StartSounds[][] = {
 	"zombiesurvival/altwaves_and_blitzkrieg/music/dm_start1.mp3",
 	"zombiesurvival/altwaves_and_blitzkrieg/music/dm_start2.mp3",
@@ -56,6 +58,11 @@ methodmap Invisible_TRIGGER_Man < CClotBody
 	{
 		public get()							{ return i_TimesSummoned[this.index]; }
 		public set(int TempValueForProperty) 	{ i_TimesSummoned[this.index] = TempValueForProperty; }
+	}
+	property int i_GetWave
+	{
+		public get()							{ return i_MedkitAnnoyance[this.index]; }
+		public set(int TempValueForProperty) 	{ i_MedkitAnnoyance[this.index] = TempValueForProperty; }
 	}
 
 	public void PlayBlitzkriegStartSound() 
@@ -209,7 +216,30 @@ static void Cybergrind_EX_Hard_Mode_ClotThink(int iNPC)
 	npc.Update();
 	
 	if(Waves_InSetup())
+	{
+		if(JUST_TOGGLE[npc.index])
+		{
+			bool YESISWAVE=false;
+			/*switch(ZR_GetWaveCount()+1)
+			{
+				case 16:CPrintToChatAll("{crimson}Enemies grow restless...{default}");
+				case 31:CPrintToChatAll("{crimson}Enemies power gauge increases...{default}");
+				case 46:CPrintToChatAll("{crimson}Enemies Power The limit is lifted...{default}");
+				case 65:CPrintToChatAll("{crimson}Is 9001!!{default}");
+				default:
+				{
+					//none
+				}
+			}*/
+			if(YESISWAVE)
+			{
+				npc.i_GetWave=ZR_GetWaveCount()+1;
+				JUST_TOGGLE[npc.index]=true;
+			}
+		}
 		return;
+	}
+	JUST_TOGGLE[npc.index]=false;
 	
 	bool there_is_no_one=true;
 	for(int i; i < i_MaxcountNpcTotal; i++)

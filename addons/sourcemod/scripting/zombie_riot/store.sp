@@ -5926,23 +5926,24 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					{
 						b_ArmorVisualiser[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 14 && !LastMann)
-					{
-						b_Hero_Of_Concord[client] = true;
-					}
-					if(info.SpecialAdditionViaNonAttribute == 15)
-					{
-						b_Box_Office[client] = true;
-					}
-					if(info.SpecialAdditionViaNonAttribute == 16)
-					{
-						b_Sandvich_SafeHouse[client] = true;
-					}
-					if(info.SpecialAdditionViaNonAttribute == 17)
+					if(info.SpecialAdditionViaNonAttribute == 14)
 					{
 						b_Reinforce[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 18)
+					if(info.SpecialAdditionViaNonAttribute == 1001 && !LastMann)
+					{
+						b_Hero_Of_Concord[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 1002)
+					{
+						b_Box_Office[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 1003)
+					{
+						b_Sandvich_SafeHouse[client] = true;
+					}
+
+					if(info.SpecialAdditionViaNonAttribute == 1004)
 					{
 						if(!b_POWERHEAL[client])
 						{
@@ -5956,56 +5957,56 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 						}
 						b_POWERHEAL[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 19)
+					if(info.SpecialAdditionViaNonAttribute == 1005)
 					{
 						b_Sandvich_Crits[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 20)
+					if(info.SpecialAdditionViaNonAttribute == 1006)
 					{
 						b_DeathfromAbove[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 21)
+					if(info.SpecialAdditionViaNonAttribute == 1007)
 					{
 						b_Chaos_Coil[client] = true;
 						if(IsValidEntity(entity))i_Chaos_Coil_Speed[client] = EntIndexToEntRef(entity);
 					}
-					if(info.SpecialAdditionViaNonAttribute == 22)
+					if(info.SpecialAdditionViaNonAttribute == 1008)
 					{
 						b_Shotgun_Slug_Ammo[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 23)
+					if(info.SpecialAdditionViaNonAttribute == 1009)
 					{
 						b_Force_Shield_Generator[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 24)
+					if(info.SpecialAdditionViaNonAttribute == 1010)
 					{
 						b_Shotgun_Dragonr_Beath_Ammo[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 25)
+					if(info.SpecialAdditionViaNonAttribute == 1011)
 					{
 						b_Explosive_Structures[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 26)
+					if(info.SpecialAdditionViaNonAttribute == 1012)
 					{
 						b_Barrack_Backup[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 27)
+					if(info.SpecialAdditionViaNonAttribute == 1013)
 					{
 						b_MarketGardener_Uniform[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 28)
+					if(info.SpecialAdditionViaNonAttribute == 1014)
 					{
 						b_ManaFlower_Terrarium[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 29)
+					if(info.SpecialAdditionViaNonAttribute == 1015)
 					{
 						b_Golden_Crown[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 30)
+					if(info.SpecialAdditionViaNonAttribute == 1016)
 					{
 						b_Mana_Infusion_Ammunition[client] = true;
 					}
-					if(info.SpecialAdditionViaNonAttribute == 31)
+					if(info.SpecialAdditionViaNonAttribute == 1017)
 					{
 						b_Barricade_Stabilizer[client] = true;
 					}

@@ -2,7 +2,7 @@
 #pragma newdecls required
 
 static bool OC_Weapon_On[MAXTF2PLAYERS][MAXTF2PLAYERS];
-static bool Kritzkrieg_One[MAXTF2PLAYERS];\
+static bool Kritzkrieg_One[MAXTF2PLAYERS];
 static float Kritzkrieg_Buff2[MAXENTITIES];
 static float Kritzkrieg_Buff3[MAXENTITIES];
 static bool UberOn[MAXTF2PLAYERS];
@@ -69,7 +69,7 @@ public void OnUberDeployed(Event event, const char[] name, bool dontBroadcast)
 	CreateTimer(0.1, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	if(Attributes_Get(medigun, 304, 0.0)==0.0 || Attributes_Get(medigun, 2046, 0.0)!=5.0)
 	{
-		int target = GetHealingTarget(client);
+		int target = old_GetHealingTarget(client);
 		if(IsValidClient(target) && IsPlayerAlive(target)) GiveArmorViaPercentage(target, 0.5, 1.0);
 		GiveArmorViaPercentage(client, 0.5, 1.0);
 		UberOn[client]=true;
@@ -82,7 +82,7 @@ public Action Timer_Uber(Handle timer, any medigunid)
 	int medigun = EntRefToEntIndex(medigunid);
 	if(!IsValidEntity(medigun))return Plugin_Stop;
 	int client = GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
-	int target = GetHealingTarget(client);
+	int target = old_GetHealingTarget(client);
 	float charge = GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
 	for(int NonHealingTarget=1; NonHealingTarget<=MaxClients; NonHealingTarget++)
 	{
@@ -291,7 +291,7 @@ public Action Timer_Delay_Attack(Handle timer, Handle AttackPack)
 	return Plugin_Continue;
 }
 
-stock int GetHealingTarget(int client, bool checkgun=false)
+stock int old_GetHealingTarget(int client, bool checkgun=false)
 {
 	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if(!checkgun)

@@ -1195,32 +1195,54 @@ float MajorSteam_Launcher_ResistanceFunc(int attacker, int victim, StatusEffect 
 
 float Cybergrind_EX_Hard_ResistanceFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
 {
-	if(ZR_GetWaveCount()+1>63)return 0.95;
-	else if(ZR_GetWaveCount()+1>62)return 0.9;
-	else if(ZR_GetWaveCount()+1>58)return 0.8;
-	else if(ZR_GetWaveCount()+1>43)return 0.9;
-	else if(ZR_GetWaveCount()+1>28)return 0.85;
-	return 0.8;
+	float f_Resistance = 0.8;
+	if(ZR_GetWaveCount()+1>64)f_Resistance = 0.95;
+	else if(ZR_GetWaveCount()+1>63)f_Resistance = 0.9;
+	else if(ZR_GetWaveCount()+1>62)f_Resistance = 0.9;
+	else if(ZR_GetWaveCount()+1>59)f_Resistance = 0.8;
+	else if(ZR_GetWaveCount()+1>58)f_Resistance = 0.8;
+	else if(ZR_GetWaveCount()+1>44)f_Resistance = 0.8;
+	else if(ZR_GetWaveCount()+1>43)f_Resistance = 0.8;
+	else if(ZR_GetWaveCount()+1>29)f_Resistance = 0.75;
+	else if(ZR_GetWaveCount()+1>28)f_Resistance = 0.8;
+	else if(ZR_GetWaveCount()+1>14)f_Resistance = 0.75;
+	if(NpcStats_IsEnemySilenced(victim))f_Resistance*=1.0/(f_Resistance*1.25);
+	if(f_Resistance>1.0)f_Resistance=1.0;
+	
+	return f_Resistance;
 }
 
 float Cybergrind_EX_Hard_DamageFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
 {
-	if(ZR_GetWaveCount()+1>63)return 1.05;
-	else if(ZR_GetWaveCount()+1>62)return 1.25;
-	else if(ZR_GetWaveCount()+1>58)return 1.5;
-	else if(ZR_GetWaveCount()+1>43)return 1.15;
-	else if(ZR_GetWaveCount()+1>28)return 1.25;
-	return 1.2;
+	float f_Damage = 1.25;
+	if(NpcStats_IsEnemySilenced(victim))f_Damage = 1.1;
+	else if(ZR_GetWaveCount()+1>64)f_Damage = 1.25;
+	else if(ZR_GetWaveCount()+1>63)f_Damage = 1.25;
+	else if(ZR_GetWaveCount()+1>62)f_Damage = 1.25;
+	else if(ZR_GetWaveCount()+1>58)f_Damage = 1.3;
+	else if(ZR_GetWaveCount()+1>44)f_Damage = 1.25;
+	else if(ZR_GetWaveCount()+1>43)f_Damage = 1.35;
+	else if(ZR_GetWaveCount()+1>29)f_Damage = 1.25;
+	else if(ZR_GetWaveCount()+1>28)f_Damage = 1.3;
+	else if(ZR_GetWaveCount()+1>14)f_Damage = 1.25;
+	if(f_Damage<1.0)f_Damage=1.0;
+	return f_Damage;
 }
 
 float Cybergrind_EX_Hard_SpeedFunc(int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect)
 {
-	if(ZR_GetWaveCount()+1>63)return 1.00;
-	else if(ZR_GetWaveCount()+1>62)return 1.02;
-	else if(ZR_GetWaveCount()+1>58)return 1.03;
-	else if(ZR_GetWaveCount()+1>43)return 1.04;
-	else if(ZR_GetWaveCount()+1>28)return 1.05;
-	return 1.06;
+	float f_Speed = 1.06;
+	if(NpcStats_IsEnemySilenced(victim))f_Speed = 1.0;
+	else if(ZR_GetWaveCount()+1>64)f_Speed = 1.01;
+	else if(ZR_GetWaveCount()+1>63)f_Speed = 1.01;
+	else if(ZR_GetWaveCount()+1>62)f_Speed = 1.01;
+	else if(ZR_GetWaveCount()+1>58)f_Speed = 1.04;
+	else if(ZR_GetWaveCount()+1>44)f_Speed = 1.05;
+	else if(ZR_GetWaveCount()+1>43)f_Speed = 1.06;
+	else if(ZR_GetWaveCount()+1>29)f_Speed = 1.05;
+	else if(ZR_GetWaveCount()+1>28)f_Speed = 1.06;
+	else if(ZR_GetWaveCount()+1>14)f_Speed = 1.06;
+	return f_Speed;
 }
 
 void StatusEffects_Ludo()
@@ -2866,6 +2888,31 @@ void StatusEffects_SupportWeapons()
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Weapon Overclock");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "Ω");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= 1.5;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= OverclockHudDisplay_Func;
+	StatusEffect_AddGlobal(data);
+}
+
+void OverclockHudDisplay_Func(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int SizeOfChar, char[] HudToDisplay)
+{
+	if(KritzkriegBuffOnline(victim))
+		Format(HudToDisplay, SizeOfChar, "Ω");
 }
 
 stock bool NpcStats_AncientBanner(int victim)

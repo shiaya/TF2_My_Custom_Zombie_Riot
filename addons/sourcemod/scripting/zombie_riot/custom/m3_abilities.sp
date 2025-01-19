@@ -183,7 +183,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 					ForcePlayerCrouch(RandomHELLDIVER, false);
 					DataPack pack;
 					CreateDataTimer(0.5, Timer_DelayTele, pack, TIMER_FLAG_NO_MAPCHANGE);
-					if(LastMann)Music_EndLastmann();
+					Music_EndLastmann(true);
 					pack.WriteCell(GetClientUserId(RandomHELLDIVER));
 					pack.WriteFloat(position[0]);
 					pack.WriteFloat(position[1]);
@@ -369,49 +369,53 @@ public void M3_Abilities(int client)
 		}
 		case 5:
 		{
-			Orbital120MMHEBarrage(client);
+			Reinforce(client, false);
 		}
 		case 6:
 		{
 			PlaceableTempomaryRepairGrenade(client);
 		}
-		case 7:
+		case 1001:
+		{
+			Orbital120MMHEBarrage(client);
+		}
+		case 1002:
 		{
 			DrinkRND(client);
 		}
-		case 8:
+		case 1003:
 		{
 			EagleBomb(client);
 		}
-		case 9:
+		case 1004:
 		{
 			StimPacks(client);
 		}
-		case 10:
+		case 1005:
 		{
 			Seeyou_in_HELL(client);
 		}
-		case 11:
+		case 1006:
 		{
 			Iron_Will(client);
 		}
-		case 12:
+		case 1007:
 		{
 			Reinforce(client, false);
 		}
-		case 13:
+		case 1008:
 		{
 			OrbitalGASStrike(client);
 		}
-		case 14:
+		case 1009:
 		{
 			DeployingSupportWeapon(client, false);
 		}
-		case 15:
+		case 1010:
 		{
 			NanomachinePacks(client);
 		}
-		case 16:
+		case 1011:
 		{
 			ReconstructiveTeleporter(client);
 		}
@@ -454,6 +458,7 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 			default: Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
 		}
 	}
+	else Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
 	if(i_ReinforcePointMax[client]!= Base_HealingMaxPoints)
 	{
 		i_ReinforcePointMax[client] = Base_HealingMaxPoints;
@@ -1390,7 +1395,9 @@ public void ReconstructiveTeleporter(int client)
 			int ally = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
 			if(IsValidEntity(ally) && !b_NpcHasDied[ally] && !i_IsABuilding[ally] && GetTeam(ally) == TFTeam_Red)
 			{
-				if(BarrackOwner[ally] == GetClientUserId(client))
+				char npc_classname[60];
+				NPC_GetPluginById(i_NpcInternalId[ally], npc_classname, sizeof(npc_classname));
+				if(BarrackOwner[ally] == GetClientUserId(client) && !(StrEqual(npc_classname, "npc_barrack_building")))
 				{
 					IsLiveBarrackUnits=true;
 					WorldSpaceCenter(ally, WorldSpaceVec);
@@ -1407,7 +1414,7 @@ public void ReconstructiveTeleporter(int client)
 			ClientCommand(client, "playgamesound items/medshotno1.wav");
 			SetDefaultHudPosition(client);
 			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "Barrack Unit not detected");
+			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Barrack Unit not detected");
 			return;
 		}
 		if(!CvarInfiniteCash.BoolValue)

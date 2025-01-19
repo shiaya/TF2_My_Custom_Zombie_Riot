@@ -4220,6 +4220,11 @@
 		"en"	"Player not detected"
 		"ko"	"플레이어를 감지 할 수 없습니다."	
 	}
+	"Barrack Unit not detected"
+	{
+		"en"	"Barrack Unit not detected"
+		"ko"	"배럭 유닛를 감지 할 수 없습니다."	
+	}
 	"Not enough energy"
 	{
 		"en"	"Not enough energy"

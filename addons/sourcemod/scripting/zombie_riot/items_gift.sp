@@ -23,7 +23,7 @@ public Action CommandKillTheNPC(int client, int args)
 	GetClientEyeAngles(client, ang);
 	
 	int victim;
-	Handle trace = TR_TraceRayFilterEx(pos, ang, MASK_SHOT, RayType_Infinite, BulletAndMeleeTrace, client);
+	Handle trace = TR_TraceRayFilterEx(pos, ang, MASK_SHOT, RayType_Infinite, KillCommand_TraceNotMe, client);
 	if(TR_GetFraction(trace) < 1.0)
 	{
 		int target = TR_GetEntityIndex(trace);
@@ -39,10 +39,12 @@ public Action CommandKillTheNPC(int client, int args)
 	}
 	if(mode==2)
 	{
-		if(GetTeam(client) != GetTeam(victim))
+		if(GetTeam(client) != GetTeam(victim) && !IsValidClient(victim))
 			SDKHooks_TakeDamage(victim, client, client, DMG, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE, -1);
-		else
+		else if(GetTeam(client) == GetTeam(victim) || GetTeam(client) != TFTeam_Red)
 			SDKHooks_TakeDamage(victim, 0, 0, DMG, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE, -1);
+		else
+			SDKHooks_TakeDamage(victim, client, client, DMG, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE, -1);
 		return Plugin_Handled;
 	}
 	else if(mode==1)
@@ -55,6 +57,14 @@ public Action CommandKillTheNPC(int client, int args)
 	SmiteNpcToDeath(victim);
 	
 	return Plugin_Handled;
+}
+
+static bool KillCommand_TraceNotMe(int entity, int contentsMask, any data)
+{
+	if(entity == data)
+		return false;
+
+	return true;
 }
 
 enum struct InvGiftItem
