@@ -242,66 +242,6 @@ void M3_AbilitiesWaveEnd()
 	Zero(b_ReinforceReady);
 }
 
-void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
-{
-	if(!b_Reinforce[client])
-		return;
-	float Healing_Amount=Attributes_GetOnPlayer(client, 8, true, true)/2.0;
-	if(Healing_Amount<1.0)Healing_Amount=1.0;
-	int Base_HealingMaxPoints;
-	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-	if(IsValidEntity(weapon))
-	{
-		switch(i_CustomWeaponEquipLogic[weapon])
-		{
-			case WEAPON_FLAGELLANT_HEAL:
-			{
-				Healing_Amount=Attributes_Get(weapon, 868, 0.0)/2.0;
-				if(Healing_Amount<1.0)Healing_Amount=1.0;
-				Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
-			}
-			case WEAPON_SEABORN_MISC:
-			{
-				Healing_Amount=Attributes_Get(weapon, 8, 0.0)/2.0;
-				if(Healing_Amount<1.0)Healing_Amount=1.0;
-				Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
-			}
-			default: Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
-		}
-	}
-	else Base_HealingMaxPoints=RoundToCeil(1500.0 * Healing_Amount);
-	if(i_ReinforcePointMax[client]!= Base_HealingMaxPoints)
-	{
-		i_ReinforcePointMax[client] = Base_HealingMaxPoints;
-		b_ReinforceReady[client]=false;
-	}
-	if(autoscale != 0.0) healthvalue = RoundToCeil(float(i_ReinforcePointMax[client]) * autoscale);
-	if(b_ReinforceReady[client]) healthvalue=0;
-	i_ReinforcePoint[client] += healthvalue;
-	if(i_ReinforcePoint[client] >= i_ReinforcePointMax[client])
-	{
-		if(!b_ReinforceReady[client])
-			b_ReinforceReady[client]=true;
-		if(!b_ReinforceReady_soundonly[client])
-		{
-			b_ReinforceReady_soundonly[client]=true;
-			ClientCommand(client, "playgamesound \"baka_zr/sa_hellpod_ready.mp3\"");
-		}
-		i_ReinforcePoint[client] = i_ReinforcePointMax[client];
-	}
-	else
-		b_ReinforceReady_soundonly[client]=false;
-}
-
-int ReinforcePoint(int client)
-{
-	if(!b_Reinforce[client])
-		return 0;
-	if(i_ReinforcePoint[client]<=0 || i_ReinforcePointMax[client]<=0)
-		return 0;
-	return RoundToFloor((float(i_ReinforcePoint[client])/float(i_ReinforcePointMax[client]))*100.0);
-}
-
 public void DeployingSupportWeapon(int client, bool NoCD)
 {
 	if(ability_cooldown[client] < GetGameTime() || NoCD)
@@ -831,154 +771,6 @@ public Action Timer_Orbital_GAS_Stratagems(Handle timer, DataPack pack)
 	}
 }
 
-public void Reinforce(int client, bool NoCD)
-{
-	if(!NoCD && dieingstate[client] > 0)
-	{
-		ClientCommand(client, "playgamesound items/medshotno1.wav");
-		SetDefaultHudPosition(client);
-		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Use Only Alive");
-		return;
-	}
-	else
-	{
-		if(!NoCD)
-		{
-			if(ability_cooldown[client] > GetGameTime())
-			{
-				float Ability_CD = ability_cooldown[client] - GetGameTime();
-
-				if(Ability_CD <= 0.0)
-					Ability_CD = 0.0;
-
-				ClientCommand(client, "playgamesound items/medshotno1.wav");
-				SetDefaultHudPosition(client);
-				SetGlobalTransTarget(client);
-				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
-				return;
-			}
-			if(i_ReinforcePoint[client] < i_ReinforcePointMax[client] || i_ReinforcePointMax[client]==0)
-			{
-				ClientCommand(client, "playgamesound items/medshotno1.wav");
-				SetDefaultHudPosition(client);
-				SetGlobalTransTarget(client);
-				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Need Healing Point", (i_ReinforcePointMax[client] - i_ReinforcePoint[client]));
-				return;
-			}
-		}
-		else
-		{
-			i_ReinforcePoint[client] = i_ReinforcePointMax[client];
-			b_ReinforceReady[client]=true;
-		}
-		bool DeadPlayer;
-		for(int client_check=1; client_check<=MaxClients; client_check++)
-		{
-			if(!IsValidClient(client_check))continue;
-			if(TeutonType[client_check] == TEUTON_NONE)continue;
-			if(client==client_check || GetTeam(client_check) != TFTeam_Red)continue;
-			DeadPlayer=true;
-		}
-		if(!DeadPlayer)
-		{
-			ClientCommand(client, "playgamesound items/medshotno1.wav");
-			SetDefaultHudPosition(client);
-			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "Player not detected");
-			return;
-		}
-		if(!NoCD)i_ReinforcePoint[client]=0;
-		for(int all=1; all<=MaxClients; all++)
-		{
-			if(IsValidClient(all) && !IsFakeClient(all))
-			{
-				if(GetRandomInt(1, 10)<=5)
-					EmitSoundToClient(all, "baka/sd_reinforce01.mp3", _, _, _, _, 0.8, _, _, _, _, false);
-				else
-					EmitSoundToClient(all, "baka/sd_reinforce02.mp3", _, _, _, _, 0.8, _, _, _, _, false);
-			}
-		}
-		float position[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
-		Handle Reinforcement = CreateDataPack();
-		WritePackFloat(Reinforcement, position[0]);
-		WritePackFloat(Reinforcement, position[1]);
-		WritePackFloat(Reinforcement, position[2]);
-		WritePackFloat(Reinforcement, 145.0);
-		WritePackCell(Reinforcement, false);
-		WritePackFloat(Reinforcement, 1200.0);
-		WritePackString(Reinforcement, "ZR_ReinforcePOD_");
-		WritePackString(Reinforcement, "models/props_urban/urban_crate002.mdl");
-		WritePackString(Reinforcement, "weapons/air_burster_explode3.wav");
-		WritePackCell(Reinforcement, client);
-		ResetPack(Reinforcement);
-		Deploy_Drop(Reinforcement);
-	}
-}
-
-public void Deploy_Drop(Handle data)
-{
-	float position[3];
-	static char PropName[512];
-	static char Worldmodel_Patch[PLATFORM_MAX_PATH];
-	static char Sound_Patch[PLATFORM_MAX_PATH];
-	position[0] = ReadPackFloat(data);
-	position[1] = ReadPackFloat(data);
-	position[2] = ReadPackFloat(data);
-	float Delay = ReadPackFloat(data);
-	bool NoDrawBeam =ReadPackCell(data);
-	float Prop_Speed = ReadPackFloat(data);
-	ReadPackString(data, PropName, sizeof(PropName));
-	ReadPackString(data, Worldmodel_Patch, sizeof(Worldmodel_Patch));
-	ReadPackString(data, Sound_Patch, sizeof(Sound_Patch));
-	int client = ReadPackCell(data);
-	if(!IsValidClient(client))return;
-	if(!b_ReinforceReady[client])return;
-	
-	if(Delay > 0 && !NoDrawBeam)
-	{
-		float Laserpos[3];
-		EmitSoundToAll("ambient/energy/weld1.wav", 0, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, position);
-		Laserpos[0] = position[0];
-		Laserpos[1] = position[1];
-		Laserpos[2] = position[2] + 1500.0;
-		
-		TE_SetupBeamPoints(Laserpos, position, gLaser1, 0, 0, 0, 0.15, 25.0, 25.0, 0, 1.0, {0, 150, 255, 255}, 3);
-		TE_SendToAll();
-		Laserpos[2] -= 1490.0;
-		TE_SetupGlowSprite(Laserpos, gBluePoint2, 1.0, 1.0, 255);
-		TE_SendToAll();
-	}
-	Delay -= 5;
-	
-	Handle DDPack = CreateDataPack();
-	WritePackFloat(DDPack, position[0]);
-	WritePackFloat(DDPack, position[1]);
-	WritePackFloat(DDPack, position[2]);
-	WritePackFloat(DDPack, Delay);
-	WritePackCell(DDPack, NoDrawBeam);
-	WritePackFloat(DDPack, Prop_Speed);
-	WritePackString(DDPack, PropName);
-	WritePackString(DDPack, Worldmodel_Patch);
-	WritePackString(DDPack, Sound_Patch);
-	WritePackCell(DDPack, client);
-	ResetPack(DDPack);
-	if(Delay > -50)
-		CreateTimer(0.1, Recycle_DropProp, DDPack, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-	else
-	{
-		if(!StrEqual(Sound_Patch, "No_Sound", true))EmitSoundToAll(Sound_Patch, 0, SNDCHAN_AUTO, SNDLEVEL_TRAIN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, position);
-		Drop_Prop(client, position, Prop_Speed, PropName, Worldmodel_Patch);
-	}
-}
-
-public Action Recycle_DropProp(Handle timer, any data)
-{
-	Deploy_Drop(data);
-	return Plugin_Stop;
-}
-
 public void Iron_Will(int client)
 {
 	if(dieingstate[client] > 0)
@@ -1195,62 +987,6 @@ public void StimPacks(int client)
 	}
 }
 
-public void ReconstructiveTeleporter(int client)
-{
-	if(ability_cooldown[client] < GetGameTime() || CvarInfiniteCash.BoolValue)
-	{
-		float WorldSpaceVec[3];
-		bool IsLiveBarrackUnits=false;
-		for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
-		{
-			int ally = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
-			if(IsValidEntity(ally) && !b_NpcHasDied[ally] && !i_IsABuilding[ally] && GetTeam(ally) == TFTeam_Red)
-			{
-				char npc_classname[60];
-				NPC_GetPluginById(i_NpcInternalId[ally], npc_classname, sizeof(npc_classname));
-				if(BarrackOwner[ally] == GetClientUserId(client) && !(StrEqual(npc_classname, "npc_barrack_building")))
-				{
-					IsLiveBarrackUnits=true;
-					WorldSpaceCenter(ally, WorldSpaceVec);
-					ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
-					SetEntProp(ally, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(ally)) * 1.5));
-					IncreaceEntityDamageTakenBy(ally, 0.05, 2.0);
-					WorldSpaceCenter(client, WorldSpaceVec);
-					TeleportEntity(ally, WorldSpaceVec, NULL_VECTOR, NULL_VECTOR);
-				}
-			}
-		}
-		if(!IsLiveBarrackUnits)
-		{
-			ClientCommand(client, "playgamesound items/medshotno1.wav");
-			SetDefaultHudPosition(client);
-			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Barrack Unit not detected");
-			return;
-		}
-		if(!CvarInfiniteCash.BoolValue)
-		{
-			ability_cooldown[client] = GetGameTime() + 70.0;
-			CreateTimer(70.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
-		}
-		WorldSpaceCenter(client, WorldSpaceVec);
-		ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
-		EmitSoundToAll(g_TeleSounds[GetRandomInt(0, sizeof(g_TeleSounds) - 1)], client, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
-	}
-	else
-	{
-		float Ability_CD = ability_cooldown[client] - GetGameTime();
-		
-		if(Ability_CD <= 0.0)
-			Ability_CD = 0.0;
-			
-		ClientCommand(client, "playgamesound items/medshotno1.wav");
-		SetDefaultHudPosition(client);
-		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);	
-	}
-}
-
 public void NanomachinePacks(int client)
 {
 	if(dieingstate[client] > 0)
@@ -1449,62 +1185,6 @@ public Action Timer_EagleBomb_Stratagems(Handle timer, DataPack pack)
 	}
 }
 
-stock int Drop_Prop(int client, float fPos[3], float PropSpeed=1200.0, const char [] PropNeam_patch="No_Name", const char [] worldmodel_patch="No_Worldmodel")
-{
-	int PropMove = CreateEntityByName("func_movelinear");
-	if(StrEqual(PropNeam_patch, "No_Name", true))
-	{
-		LogError("[Prop] Drop_Prop No_Name!!!");
-		return -1;
-	}
-	if(StrEqual(worldmodel_patch, "No_Worldmodel", true))
-	{
-		LogError("[Prop] Drop_Prop No_Worldmodel!!!");
-		return -1;
-	}
-	if(IsValidEntity(PropMove))
-	{
-		char buffer[32];
-		fPos[2]+=5010.0;
-		float Down[3]={90.0,0.0,0.0};
-		DispatchKeyValueVector(PropMove, "origin", fPos);
-		DispatchKeyValueVector(PropMove, "movedir", Down);
-		DispatchKeyValue(PropMove, "movedir", "90 0 0");
-		DispatchKeyValue(PropMove, "modelscale", "3");
-		Format(buffer, sizeof(buffer), "%.2f", 5000.0);
-		DispatchKeyValue(PropMove, "movedistance", buffer);
-		Format(buffer, sizeof(buffer), "%.2f", PropSpeed);
-		DispatchKeyValue(PropMove, "speed", buffer);
-		FormatEx(buffer, sizeof(buffer), "%s_Drop_%d", PropNeam_patch, client);
-		DispatchKeyValue(PropMove, "targetname", buffer);
-		DispatchKeyValue(PropMove, "startsound", "none");
-		DispatchKeyValue(PropMove, "stopsound", "none");
-		TeleportEntity(PropMove, fPos, NULL_VECTOR, NULL_VECTOR);
-		DispatchSpawn(PropMove);
-		
-		int Prop = CreateEntityByName("prop_dynamic");
-		if(IsValidEntity(Prop))
-		{
-			DispatchKeyValue(Prop, "model", worldmodel_patch);
-			DispatchKeyValue(Prop, "angles", "-90 0 0");
-			DispatchKeyValue(Prop, "parentname", buffer);
-			DispatchKeyValue(Prop, "solid", "0");
-			FormatEx(buffer, sizeof(buffer), "%s_%d", PropNeam_patch, client);
-			DispatchKeyValue(Prop, "targetname", buffer);
-			TeleportEntity(Prop, fPos, NULL_VECTOR, NULL_VECTOR);
-			DispatchSpawn(Prop);
-			
-			FormatEx(buffer, sizeof(buffer), "%s_Drop_%d", PropNeam_patch, client);
-			SetVariantString(buffer);
-			AcceptEntityInput(Prop, "SetParent");
-		}
-		AcceptEntityInput(PropMove, "Open");
-		SetEntProp(PropMove, Prop_Data, "m_iHammerID", client+1972);
-		return PropMove;
-	}
-	return -1;
-}
-
 public Action Timer_EagleRearm_Stratagems(Handle timer, int ref)
 {
 	int client = GetClientOfUserId(ref);
@@ -1699,8 +1379,9 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 					f_PDelay[client] = GetGameTime() + 60.0;
 					f_PDuration[client] = GetGameTime() + 20.0;
 				}
-				Overclock_Magical(client, 1.0, true);
-				f_Overclocker_Buff[client] = GetGameTime() + 0.2;
+				ApplyStatusEffect(client, client, "Weapon Overclock Detect", 0.5);
+				ApplyStatusEffect(client, client, "Weapon Overclock", 1.0);
+				Kritzkrieg_Magical(client, 0.2, true);
 			}
 			case 11:
 			{

@@ -120,7 +120,5 @@ public void SupportWeapons_NPCTakeDamage(int victim, int attacker, float &damage
 	{
 		damagetype &= DMG_SLASH|DMG_PREVENT_PHYSICS_FORCE;
 		damage*=SupportWeapon_Energy[attacker]*12.0;
-		if(f_Overclocker_Buff[attacker] > GetGameTime())
-			damage*=3.0;
 	}
 }

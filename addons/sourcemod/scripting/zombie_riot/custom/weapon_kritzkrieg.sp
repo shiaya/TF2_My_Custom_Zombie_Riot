@@ -127,7 +127,7 @@ static int GetHealingTarget(int client, bool checkgun=false)
 	return -1;
 }
 
-static void Kritzkrieg_Magical(int client, float Scale, bool apply)
+stock void Kritzkrieg_Magical(int client, float Scale, bool apply)
 {
 	int primary = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	int secondary = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);

@@ -980,11 +980,6 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		NPC_TraceAttack(victim, attacker, inflictor, damage, damagetype, DummyAmmotype, 0, i_MeleeHitboxHit[attacker]);
 	}
 	
-	if(f_Overclocker_Buff[attacker] > GetGameTime())
-	{
-		damage *=1.5;
-	}
-	
 	switch(i_CustomWeaponEquipLogic[weapon])
 	{
 		case WEAPON_BOUNCING:
@@ -2170,14 +2165,6 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 		//Display morale!
 		MoraleIconShowHud(victim, Debuff_Adder_right, SizeOfChar);
 	}
-	if(f_Overclocker_Buff[victim] > GetGameTime())
-	{
-		Format(Debuff_Adder_right, SizeOfChar, "Ω%s", Debuff_Adder_right);
-		if(IsValidClient(victim)) ModifyOverclockBuff(victim, 1, 0.7, true, 5.0, 2.0);
-		else ModifyOverclockBuff(victim, 2, 0.7, true, 5.0, 2.0);
-	}
-	else if(IsValidClient(victim)) ModifyOverclockBuff(victim, 1, 0.7, false, 5.0, 2.0);
-	else ModifyOverclockBuff(victim, 2, 0.7, false, 5.0, 2.0);
 	if(LastMann && GetTeam(victim) == TFTeam_Red)
 	{
 		if(IsValidClient(victim))

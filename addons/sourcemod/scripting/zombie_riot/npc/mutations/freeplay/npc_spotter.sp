@@ -1,29 +1,29 @@
 // HEAVILY INTENDED AS A RED-SUPPORT ALLY DO NOT USE ON BLU PLEEAAASE
 
 /*
-    Spotter - A support voidspeaker hired by Bob the Second, tasked to support the Worthy in freeplay.
+	Spotter - A support voidspeaker hired by Bob the Second, tasked to support the Worthy in freeplay.
 
-    Melee Damage: 75000 base.
-    Attack Delay: 2.5s
-    Melee Effects:
-    - Silences the target for 3s
-    - Grants Spotter the Void Strength II buff for 1 second.
-    - Knocks the target away.
-    - Charges Spotter's Ally Buff by 1.
+	Melee Damage: 75000 base.
+	Attack Delay: 2.5s
+	Melee Effects:
+	- Silences the target for 3s
+	- Grants Spotter the Void Strength II buff for 1 second.
+	- Knocks the target away.
+	- Charges Spotter's Ally Buff by 1.
 
-    Spotter's Ally Buff:
-    Buffs all allied NPCS and Players in the map. Takes 30 hits to charge, and can be reused.
-    When activated, grants the following:
+	Spotter's Ally Buff:
+	Buffs all allied NPCS and Players in the map. Takes 30 hits to charge, and can be reused.
+	When activated, grants the following:
 
-    NPCS:
-    - Void Strength II for 15s
-    - 750HP instant heal
-    - Spotter's Rally for 15s
+	NPCS:
+	- Void Strength II for 15s
+	- 750HP instant heal
+	- Spotter's Rally for 15s
 
-    Players:
-    - Speedboost for 1.5s
-    - Battalion's Backup for 2.5s
-    - Spotter's Rally for 7.5s
+	Players:
+	- Speedboost for 1.5s
+	- Battalion's Backup for 2.5s
+	- Spotter's Rally for 7.5s
 */
 
 #pragma semicolon 1
@@ -53,10 +53,10 @@ static const char g_MeleeAttackSounds[][] = {
 
 static const char g_MeleeHitSounds[][] = {
 	"weapons/bumper_car_hit1.wav",
-    "weapons/bumper_car_hit2.wav",
-    "weapons/bumper_car_hit3.wav",
-    "weapons/bumper_car_hit4.wav",
-    "weapons/bumper_car_hit5.wav",
+	"weapons/bumper_car_hit2.wav",
+	"weapons/bumper_car_hit3.wav",
+	"weapons/bumper_car_hit4.wav",
+	"weapons/bumper_car_hit5.wav",
 };
 
 static const char g_BuffUpReactions[][] = {
@@ -178,44 +178,44 @@ methodmap Spotter < CClotBody
 		npc.m_iWearable1 = npc.EquipItem("head", "models/weapons/c_models/c_tw_eagle/c_tw_eagle.mdl");
 		SetVariantString("1.3");
 		AcceptEntityInput(npc.m_iWearable1, "SetModelScale");
-        npc.m_iWearable2 = npc.EquipItem("head", "models/workshop/player/items/sniper/dec24_snug_sharpshooter/dec24_snug_sharpshooter.mdl");
+		npc.m_iWearable2 = npc.EquipItem("head", "models/workshop/player/items/sniper/dec24_snug_sharpshooter/dec24_snug_sharpshooter.mdl");
 		npc.m_iWearable3 = npc.EquipItem("head", "models/workshop/player/items/sniper/hwn2022_headhunters_brim/hwn2022_headhunters_brim.mdl");
 		npc.m_iWearable4 = npc.EquipItem("head", "models/workshop/player/items/sniper/invasion_final_frontiersman/invasion_final_frontiersman.mdl");
-        npc.m_iWearable5 = npc.EquipItem("head", "models/workshop/player/items/sniper/headhunters_wrap/headhunters_wrap.mdl");
+		npc.m_iWearable5 = npc.EquipItem("head", "models/workshop/player/items/sniper/headhunters_wrap/headhunters_wrap.mdl");
 
-        SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
-        SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
-        SetEntProp(npc.m_iWearable3, Prop_Send, "m_nSkin", skin);
-        SetEntProp(npc.m_iWearable4, Prop_Send, "m_nSkin", skin);
-        SetEntProp(npc.m_iWearable5, Prop_Send, "m_nSkin", skin);
-    
-        SetEntityRenderMode(npc.m_iWearable1, RENDER_TRANSCOLOR);
+		SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
+		SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
+		SetEntProp(npc.m_iWearable3, Prop_Send, "m_nSkin", skin);
+		SetEntProp(npc.m_iWearable4, Prop_Send, "m_nSkin", skin);
+		SetEntProp(npc.m_iWearable5, Prop_Send, "m_nSkin", skin);
+	
+		SetEntityRenderMode(npc.m_iWearable1, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable1, 75, 0, 145);
-        SetEntityRenderMode(npc.m_iWearable2, RENDER_TRANSCOLOR);
+		SetEntityRenderMode(npc.m_iWearable2, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable2, 75, 0, 145);
 		SetEntityRenderMode(npc.m_iWearable3, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable3, 75, 0, 145);
-        SetEntityRenderMode(npc.m_iWearable4, RENDER_TRANSCOLOR);
+		SetEntityRenderMode(npc.m_iWearable4, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable4, 75, 0, 145);
-        SetEntityRenderMode(npc.m_iWearable5, RENDER_TRANSCOLOR);
+		SetEntityRenderMode(npc.m_iWearable5, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable5, 75, 0, 145);
 
 
-        switch(GetRandomInt(1, 3))
-	    {
-		    case 1:
-		    {
-		    	CPrintToChatAll("{orange}Spotter: {white}Aaaalright Bob, lets see what you put me into...");
-		    }
-		    case 2:
-		    {
-		    	CPrintToChatAll("{orange}Spotter: {white}Well heello there, hope you have space in here for a lil' bit of the {purple}void...");
-		    }
-		    default:
-		    {
-		    	CPrintToChatAll("{orange}Spotter: {white}Im hoping that little {lightblue}Ant {white}Bob told me about shows up now.");
-		    }
-	    }
+		switch(GetRandomInt(1, 3))
+		{
+			case 1:
+			{
+				CPrintToChatAll("{orange}Spotter: {white}Aaaalright Bob, lets see what you put me into...");
+			}
+			case 2:
+			{
+				CPrintToChatAll("{orange}Spotter: {white}Well heello there, hope you have space in here for a lil' bit of the {purple}void...");
+			}
+			default:
+			{
+				CPrintToChatAll("{orange}Spotter: {white}Im hoping that little {lightblue}Ant {white}Bob told me about shows up now.");
+			}
+		}
 
 		return npc;
 	}
@@ -267,7 +267,7 @@ public void Spotter_ClotThink(int iNPC)
 		npc.m_iTarget = GetClosestTarget(npc.index);
 	}
 
-    if(npc.m_blPlayHurtAnimation)
+	if(npc.m_blPlayHurtAnimation)
 	{
 		npc.AddGesture("ACT_MP_GESTURE_FLINCH_CHEST", false);
 		npc.m_blPlayHurtAnimation = false;
@@ -344,11 +344,11 @@ public void Spotter_NPCDeath(int entity)
 		RemoveEntity(npc.m_iWearable1);
 	if(IsValidEntity(npc.m_iWearable2))
 		RemoveEntity(npc.m_iWearable2);
-    if(IsValidEntity(npc.m_iWearable3))
+	if(IsValidEntity(npc.m_iWearable3))
 		RemoveEntity(npc.m_iWearable3);
-    if(IsValidEntity(npc.m_iWearable4))
+	if(IsValidEntity(npc.m_iWearable4))
 		RemoveEntity(npc.m_iWearable4);
-    if(IsValidEntity(npc.m_iWearable5))
+	if(IsValidEntity(npc.m_iWearable5))
 		RemoveEntity(npc.m_iWearable5);
 }
 
