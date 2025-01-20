@@ -4665,9 +4665,9 @@
 	{
 		"en"	"Chaos Evil Demon"
 	}
-	"Dimensional Fragment"
+	"Disturbed Umbral"
 	{
-		"en" "Dimensional Fragment"
+		"en" "Disturbed Umbral"
 	}
 	"Immutable Heavy"
 	{

@@ -232,7 +232,6 @@ enum
 	WEAPON_TROLLDIER = 1009,
 	WEAPON_TLQKF = 1010,
 	WEAPON_MAJORSTEAM_LAUNCHER = 1011
-
 }
 
 enum
@@ -1715,6 +1714,7 @@ void CheckAlivePlayersforward(int killed=0)
 void CheckLastMannStanding(int killed)
 {
 	int PlayersLeftNotDowned = 0;
+	LastMann_BeforeLastman = false;
 	for(int client=1; client<=MaxClients; client++)
 	{
 		if(IsClientInGame(client) && GetClientTeam(client)==2 && !IsFakeClient(client) && TeutonType[client] != TEUTON_WAITING)

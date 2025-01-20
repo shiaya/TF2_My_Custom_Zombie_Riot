@@ -4051,6 +4051,11 @@ stock void WorldSpaceCenter(int entity, float vecPos[3])
 	else
 	{
 		SDKCall(g_hSDKWorldSpaceCenter, entity, vecPos);
+		/*
+		//downwards breaks.
+		if(b_ThisWasAnNpc[entity])
+			vecPos[2] += f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
+			*/
 	}
 }
 

@@ -1,29 +1,29 @@
 // HEAVILY INTENDED AS A RED-SUPPORT ALLY DO NOT USE ON BLU PLEEAAASE
 
 /*
-	Spotter - A support voidspeaker hired by Bob the Second, tasked to support the Worthy in freeplay.
+    Spotter - A support voidspeaker hired by Bob the Second, tasked to support the Worthy in freeplay.
 
-	Melee Damage: 10000 base.
-	Attack Delay: 3s
-	Melee Effects:
-	- Silences the target for 3s
-	- Grants Spotter the Void Strength II buff for 1 second.
-	- Knocks the target away.
-	- Charges Spotter's Ally Buff by 1.
+    Melee Damage: 75000 base.
+    Attack Delay: 2.5s
+    Melee Effects:
+    - Silences the target for 3s
+    - Grants Spotter the Void Strength II buff for 1 second.
+    - Knocks the target away.
+    - Charges Spotter's Ally Buff by 1.
 
-	Spotter's Ally Buff:
-	Buffs all allied NPCS and Players in the map. Takes 30 hits to charge, and can be reused.
-	When activated, grants the following:
+    Spotter's Ally Buff:
+    Buffs all allied NPCS and Players in the map. Takes 30 hits to charge, and can be reused.
+    When activated, grants the following:
 
-	NPCS:
-	- Void Strength II for 15s
-	- 750HP instant heal
-	- Spotter's Rally for 15s
+    NPCS:
+    - Void Strength II for 15s
+    - 750HP instant heal
+    - Spotter's Rally for 15s
 
-	Players:
-	- Speedboost for 1.5s
-	- Battalion's Backup for 2.5s
-	- Spotter's Rally for 7.5s
+    Players:
+    - Speedboost for 1.5s
+    - Battalion's Backup for 2.5s
+    - Spotter's Rally for 7.5s
 */
 
 #pragma semicolon 1
@@ -53,16 +53,20 @@ static const char g_MeleeAttackSounds[][] = {
 
 static const char g_MeleeHitSounds[][] = {
 	"weapons/bumper_car_hit1.wav",
-	"weapons/bumper_car_hit2.wav",
-	"weapons/bumper_car_hit3.wav",
-	"weapons/bumper_car_hit4.wav",
-	"weapons/bumper_car_hit5.wav",
+    "weapons/bumper_car_hit2.wav",
+    "weapons/bumper_car_hit3.wav",
+    "weapons/bumper_car_hit4.wav",
+    "weapons/bumper_car_hit5.wav",
 };
 
 static const char g_BuffUpReactions[][] = {
 	"vo/sniper_battlecry02.mp3",
 	"vo/sniper_battlecry03.mp3",
 	"vo/sniper_battlecry04.mp3",
+};
+
+static const char g_WarCry[][] = {
+	"items/powerup_pickup_supernova_activate.wav",
 };
 
 void Spotter_OnMapStart_NPC()
@@ -73,6 +77,7 @@ void Spotter_OnMapStart_NPC()
 	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
 	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
 	for (int i = 0; i < (sizeof(g_BuffUpReactions)); i++) { PrecacheSound(g_BuffUpReactions[i]); }
+	for (int i = 0; i < (sizeof(g_WarCry)); i++) { PrecacheSound(g_WarCry[i]); }
 	PrecacheModel("models/player/sniper.mdl");
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Spotter");
@@ -130,7 +135,10 @@ methodmap Spotter < CClotBody
 	{
 		EmitSoundToAll(g_BuffUpReactions[GetRandomInt(0, sizeof(g_BuffUpReactions) - 1)], this.index, SNDCHAN_VOICE, BOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 	}
-	
+	public void PlayMeleeWarCry() 
+	{
+		EmitSoundToAll(g_WarCry[GetRandomInt(0, sizeof(g_WarCry) - 1)], this.index, SNDCHAN_STATIC, 110, _, BOSS_ZOMBIE_VOLUME);
+	}
 	
 	public Spotter(float vecPos[3], float vecAng[3], int ally)
 	{
@@ -170,44 +178,44 @@ methodmap Spotter < CClotBody
 		npc.m_iWearable1 = npc.EquipItem("head", "models/weapons/c_models/c_tw_eagle/c_tw_eagle.mdl");
 		SetVariantString("1.3");
 		AcceptEntityInput(npc.m_iWearable1, "SetModelScale");
-		npc.m_iWearable2 = npc.EquipItem("head", "models/workshop/player/items/sniper/dec24_snug_sharpshooter/dec24_snug_sharpshooter.mdl");
+        npc.m_iWearable2 = npc.EquipItem("head", "models/workshop/player/items/sniper/dec24_snug_sharpshooter/dec24_snug_sharpshooter.mdl");
 		npc.m_iWearable3 = npc.EquipItem("head", "models/workshop/player/items/sniper/hwn2022_headhunters_brim/hwn2022_headhunters_brim.mdl");
 		npc.m_iWearable4 = npc.EquipItem("head", "models/workshop/player/items/sniper/invasion_final_frontiersman/invasion_final_frontiersman.mdl");
-		npc.m_iWearable5 = npc.EquipItem("head", "models/workshop/player/items/sniper/headhunters_wrap/headhunters_wrap.mdl");
+        npc.m_iWearable5 = npc.EquipItem("head", "models/workshop/player/items/sniper/headhunters_wrap/headhunters_wrap.mdl");
 
-		SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
-		SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
-		SetEntProp(npc.m_iWearable3, Prop_Send, "m_nSkin", skin);
-		SetEntProp(npc.m_iWearable4, Prop_Send, "m_nSkin", skin);
-		SetEntProp(npc.m_iWearable5, Prop_Send, "m_nSkin", skin);
-	
-		SetEntityRenderMode(npc.m_iWearable1, RENDER_TRANSCOLOR);
+        SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
+        SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
+        SetEntProp(npc.m_iWearable3, Prop_Send, "m_nSkin", skin);
+        SetEntProp(npc.m_iWearable4, Prop_Send, "m_nSkin", skin);
+        SetEntProp(npc.m_iWearable5, Prop_Send, "m_nSkin", skin);
+    
+        SetEntityRenderMode(npc.m_iWearable1, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable1, 75, 0, 145);
-		SetEntityRenderMode(npc.m_iWearable2, RENDER_TRANSCOLOR);
+        SetEntityRenderMode(npc.m_iWearable2, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable2, 75, 0, 145);
 		SetEntityRenderMode(npc.m_iWearable3, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable3, 75, 0, 145);
-		SetEntityRenderMode(npc.m_iWearable4, RENDER_TRANSCOLOR);
+        SetEntityRenderMode(npc.m_iWearable4, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable4, 75, 0, 145);
-		SetEntityRenderMode(npc.m_iWearable5, RENDER_TRANSCOLOR);
+        SetEntityRenderMode(npc.m_iWearable5, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable5, 75, 0, 145);
 
 
-		switch(GetRandomInt(1, 3))
-		{
-			case 1:
-			{
-				CPrintToChatAll("{orange}Spotter: {white}Aaaalright Bob, lets see what you put me into...");
-			}
-			case 2:
-			{
-				CPrintToChatAll("{orange}Spotter: {white}Well heello there, hope you have space in here for a lil' bit of the {purple}void...");
-			}
-			default:
-			{
-				CPrintToChatAll("{orange}Spotter: {white}Im hoping that little {lightblue}Ant {white}Bob told me about shows up now.");
-			}
-		}
+        switch(GetRandomInt(1, 3))
+	    {
+		    case 1:
+		    {
+		    	CPrintToChatAll("{orange}Spotter: {white}Aaaalright Bob, lets see what you put me into...");
+		    }
+		    case 2:
+		    {
+		    	CPrintToChatAll("{orange}Spotter: {white}Well heello there, hope you have space in here for a lil' bit of the {purple}void...");
+		    }
+		    default:
+		    {
+		    	CPrintToChatAll("{orange}Spotter: {white}Im hoping that little {lightblue}Ant {white}Bob told me about shows up now.");
+		    }
+	    }
 
 		return npc;
 	}
@@ -259,7 +267,7 @@ public void Spotter_ClotThink(int iNPC)
 		npc.m_iTarget = GetClosestTarget(npc.index);
 	}
 
-	if(npc.m_blPlayHurtAnimation)
+    if(npc.m_blPlayHurtAnimation)
 	{
 		npc.AddGesture("ACT_MP_GESTURE_FLINCH_CHEST", false);
 		npc.m_blPlayHurtAnimation = false;
@@ -336,11 +344,11 @@ public void Spotter_NPCDeath(int entity)
 		RemoveEntity(npc.m_iWearable1);
 	if(IsValidEntity(npc.m_iWearable2))
 		RemoveEntity(npc.m_iWearable2);
-	if(IsValidEntity(npc.m_iWearable3))
+    if(IsValidEntity(npc.m_iWearable3))
 		RemoveEntity(npc.m_iWearable3);
-	if(IsValidEntity(npc.m_iWearable4))
+    if(IsValidEntity(npc.m_iWearable4))
 		RemoveEntity(npc.m_iWearable4);
-	if(IsValidEntity(npc.m_iWearable5))
+    if(IsValidEntity(npc.m_iWearable5))
 		RemoveEntity(npc.m_iWearable5);
 }
 
@@ -365,15 +373,14 @@ void SpotterSelfDefense(Spotter npc, float gameTime, int target, float distance)
 				
 				if(IsValidEnemy(npc.index, target))
 				{
-					float damageDealt = 10000.0;
+					float damageDealt = 75000.0;
 					
 					SDKHooks_TakeDamage(target, npc.index, npc.index, damageDealt, DMG_CLUB, -1, _, vecHit);
 					ApplyStatusEffect(npc.index, target, "Silenced", 3.0);
-					ApplyStatusEffect(npc.index, npc.index, "Void Strength II", 1.0);
 					Custom_Knockback(npc.index, target, 500.0, true); 
 					
 					npc.m_iAttacksTillReload++;
-					if(npc.m_iAttacksTillReload >= 30)
+					if(npc.m_iAttacksTillReload >= 25)
 					{
 						npc.Anger = true;
 					}
@@ -402,7 +409,7 @@ void SpotterSelfDefense(Spotter npc, float gameTime, int target, float distance)
 						
 				npc.m_flAttackHappens = gameTime + 0.25;
 				npc.m_flDoingAnimation = gameTime + 0.25;
-				npc.m_flNextMeleeAttack = gameTime + 3.0;
+				npc.m_flNextMeleeAttack = gameTime + 2.5;
 			}
 		}
 	}
@@ -420,7 +427,6 @@ void SpotterAllyBuff(Spotter npc)
 			if(GetTeam(entitycount) == GetTeam(npc.index) && IsEntityAlive(entitycount))
 			{
 				HealEntityGlobal(npc.index, entitycount, 750.0, 1.0, 0.0, HEAL_ABSOLUTE);
-				ApplyStatusEffect(npc.index, entitycount, "Void Strength II", 15.0);
 				ApplyStatusEffect(npc.index, entitycount, "Spotter's Rally", 15.0);
 			}
 		}
@@ -430,8 +436,8 @@ void SpotterAllyBuff(Spotter npc)
 	{
 		if(IsValidClient(client) && IsPlayerAlive(client))
 		{
-			TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.5);
-			ApplyStatusEffect(npc.index, client, "Battilons Backup", 2.5);
+			TF2_AddCondition(client, TFCond_SpeedBuffAlly, 3.0);
+			ApplyStatusEffect(npc.index, client, "Battilons Backup", 5.0);
 			ApplyStatusEffect(npc.index, client, "Spotter's Rally", 7.5);
 		}
 	}
@@ -451,6 +457,7 @@ void SpotterAllyBuff(Spotter npc)
 			CPrintToChatAll("{orange}Spotter: {gold}KEEP ON THE PRESSURE!!!!");
 		}
 	}
-	
+
+	npc.PlayMeleeWarCry();
 	npc.PlayBuffReaction();
 }
