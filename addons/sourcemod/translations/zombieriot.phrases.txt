@@ -4250,6 +4250,10 @@
 	{
 		"en"		"Alright guys...\nProve you're worthy."
 	}
+	"Need Healing Point"
+	{
+		"en"	"More Healing Required."
+	}
 
 	"freeplay_start_1"
 	{
