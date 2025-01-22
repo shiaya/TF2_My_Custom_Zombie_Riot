@@ -5059,13 +5059,13 @@ void Store_ApplyAttribs(int client)
 	Jesus_Blessing[client] = 0;
 	i_HeadshotAffinity[client] = 0;
 	i_SoftShoes[client] = 0;
-	i_BadHealthRegen[client] = 0;
 
 	SkillTree_ApplyAttribs(client, map);
 	Rogue_ApplyAttribs(client, map);
 	Waves_ApplyAttribs(client, map);
 	FullMoonDoubleHp(client, map);
 
+	/*
 	int entity = -1;
 	while(TF2_GetWearable(client, entity))
 	{
@@ -5077,13 +5077,16 @@ void Store_ApplyAttribs(int client)
 		
 		Attributes_RemoveAll(entity);
 	}
+	*/
 
 	StringMapSnapshot snapshot = map.Snapshot();
-	entity = client;
+//	entity = client;
 	int length = snapshot.Length;
 	int attribs = 0;
+//	int ClientsideAttribs = 0;
 	for(int i; i < length; i++)
 	{
+		/*
 		if(attribs && !(attribs % 16))
 		{
 			if(!TF2_GetWearable(client, entity))
@@ -5098,6 +5101,7 @@ void Store_ApplyAttribs(int client)
 			//Attributes_RemoveAll(entity);
 			attribs++;
 		}
+		*/
 
 		snapshot.GetKey(i, buffer1, sizeof(buffer1));
 		if(map.GetValue(buffer1, value))
@@ -5125,19 +5129,13 @@ void Store_ApplyAttribs(int client)
 					i_SoftShoes[client] = RoundToNearest(value);
 					continue;
 				}
-				case 805:
-				{
-					i_BadHealthRegen[client] = RoundToNearest(value);
-					continue;
-				}
 			}
 
-			if(Attributes_Set(entity, index, value))
+			if(Attributes_Set(client, index, value))
 				attribs++;
 
 		}
 	}
-
 	if(dieingstate[client] > 0)
 	{
 		ForcePlayerCrouch(client, true);
@@ -5277,7 +5275,6 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	if(!LastMann) b_Hero_Of_Concord[client] = false;
 	b_Box_Office[client] = false;
 	b_Sandvich_SafeHouse[client] = false;
-	b_Reinforce[client] = false;
 	b_Sandvich_Crits[client] = false;
 	b_DeathfromAbove[client] = false;
 	if(IsValidEntity(EntRefToEntIndex(i_Chaos_Coil_Speed[client])))
@@ -5296,6 +5293,7 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	b_Golden_Crown[client] = false;
 	b_Mana_Infusion_Ammunition[client] = false;
 	b_Barricade_Stabilizer[client] = false;
+	b_Reinforce[client] = false;
 	i_MaxSupportBuildingsLimit[client] = 0;
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
 	BannerOnEntityCreated(client);

@@ -223,8 +223,16 @@ void Building_GiveRewardsUse(int client, int trueOwner, int Cash, bool CashLimit
 	{
 		//affected by limit.
 		int MaxCashBuildings = MAX_CASH_VIA_BUILDINGS;
-		MaxCashBuildings += RoundToNearest(Attributes_FindOnPlayerZR(owner, Attrib_ExtendExtraCashGain, false, 0.0));
-		if(i_GiveCashBuilding[owner] < MaxCashBuildings)
+		MaxCashBuildings += RoundToNearest(Attributes_GetOnPlayer(owner, Attrib_ExtendExtraCashGain, false, _,0.0));
+		//max cash overall should be 50000
+		int MaxBuildingCashAllow = CurrentCash / 7;
+		if(MaxBuildingCashAllow <= 1000)
+			MaxBuildingCashAllow = 1000;
+
+		if(MaxBuildingCashAllow >= MaxCashBuildings)
+			MaxBuildingCashAllow = MaxCashBuildings;
+
+		if(i_GiveCashBuilding[owner] < MaxBuildingCashAllow)
 		{
 			i_GiveCashBuilding[owner] += Cash;
 			GiveCredits(owner, Cash, true);
