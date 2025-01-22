@@ -209,6 +209,13 @@ void OverridePlayerModel(int client, int index = -1, bool DontShowCosmetics = fa
 	}
 }
 
+bool Has_OverridePlayerModel(int client, int index = -1)
+{
+	if(i_PlayerModelOverrideIndexWearable[client] == index)
+		return true;
+	return false;
+}
+
 void ViewChange_PlayerModel(int client)
 {
 	int ViewmodelPlayerModel = EntRefToEntIndex(i_Viewmodel_PlayerModel[client]);

@@ -209,6 +209,7 @@ void PrecacheBlitzMusic()
 	
 	b_musicprecached = true;
 	PrecacheSoundCustom("#zombiesurvival/altwaves_and_blitzkrieg/music/blitz_theme.mp3");
+	PrecacheSoundCustom("#zombiesurvival/altwaves_and_blitzkrieg/music/dm_loop1.mp3");
 }
 
 static void ClotPrecache()

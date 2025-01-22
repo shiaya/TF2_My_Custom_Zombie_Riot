@@ -40,6 +40,7 @@ static void ClotPrecache()
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_60_music_1.mp3");
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/raid_sensal_group.mp3");
 	PrecacheSoundCustom("#zombiesurvival/ruina/raid_ruina_trio.mp3");
+	PrecacheSoundCustom(RAIDBOSS_TWIRL_THEME);
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
@@ -452,6 +453,64 @@ methodmap CyberGrindGM < CClotBody
 			music.Custom = true;
 			strcopy(music.Name, sizeof(music.Name), "Cyberfantasia");
 			strcopy(music.Artist, sizeof(music.Artist), "tn-shi");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "is_twirl"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), RAIDBOSS_TWIRL_THEME);
+			music.Time = 285;
+			music.Volume = 2.0;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "Solar Sect of Mystic Wisdom ~ Nuclear Fusion");
+			strcopy(music.Artist, sizeof(music.Artist), "maritumix/まりつみ");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "Worlds_End"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/altwaves_and_blitzkrieg/music/dm_loop1.mp3");
+			music.Time = 356;
+			music.Volume = 2.0;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "感情の魔天楼　～ World's End");
+			strcopy(music.Artist, sizeof(music.Artist), "Demetori");
 			Music_SetRaidMusic(music);
 			
 			b_NpcForcepowerupspawn[npc.index] = 0;

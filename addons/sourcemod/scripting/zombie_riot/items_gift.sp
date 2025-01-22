@@ -27,7 +27,7 @@ public Action CommandKillTheNPC(int client, int args)
 	if(TR_GetFraction(trace) < 1.0)
 	{
 		int target = TR_GetEntityIndex(trace);
-		if(target > 0 && IsValidEntity(target) && !IsValidClient(target))
+		if(target > 0 && IsValidEntity(target))
 			victim = target;
 	}
 	delete trace;
