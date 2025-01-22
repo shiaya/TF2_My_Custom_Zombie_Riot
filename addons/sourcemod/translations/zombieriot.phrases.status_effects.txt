@@ -756,26 +756,6 @@
 	{
 		"en"	"Randomly changes damage and HUD elements depending on it's level."
 	}
-	"Overclock"
-	{
-		"en"	"Overclock"
-		"ko"	"과부하"
-	}
-	"Overclock Desc"
-	{
-		"en"	"The weapon's stats are improved and mana is continuously restored."
-		"ko"	"무기의 스텟이 향상되며, 마나가 지속적으로 회복됩니다."
-	}
-	"Weapon Overclock"
-	{
-		"en"	"Overclock"
-		"ko"	"과부하"
-	}
-	"Weapon Overclock Desc"
-	{
-		"en"	"The weapon's stats are improved and mana is continuously restored."
-		"ko"	"무기의 스텟이 향상되며, 마나가 지속적으로 회복됩니다."
-	}
 	"Concord Hero"
 	{
 		"en"	"Concord Hero"
@@ -809,7 +789,7 @@
 	"Major Steam's Launcher Resistance"
 	{
 		"en"	"Major Steam's Resistance"
-		"ko"	"주요 증기 저항"
+		"ko"	"거대 증기 기사의 저항"
 	}
 	"Major Steam's Launcher Resistance Desc"
 	{

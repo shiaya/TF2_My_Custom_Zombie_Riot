@@ -32,9 +32,9 @@ public Action CommandKillTheNPC(int client, int args)
 	}
 	delete trace;
 	
-	if(!IsValidEntity(victim) && IsValidClient(victim))
+	if(!IsValidEntity(victim))
 	{
-		PrintToConsole(client, "No NPCs detected.");
+		PrintToConsole(client, "No NPC/Client detected.");
 		return Plugin_Handled;
 	}
 	if(mode==2)

@@ -13,18 +13,18 @@ bool KritzkriegBuffOnline(int client)
 		if(HasSpecificBuff(client, "Weapon Overclock Detect"))
 		{
 			if(IsValidClient(client))
-				ModifyKritzkriegBuff(client, 1, 0.7, true, 5.0, 2.0);
+				ModifyKritzkriegBuff(client, 1, 0.8, true, 5.0, 2.0);
 			else 
-				ModifyKritzkriegBuff(client, 2, 0.7, true, 5.0, 2.0);
+				ModifyKritzkriegBuff(client, 2, 0.8, true, 5.0, 2.0);
 
 			return true;
 		}
 		else
 		{
 			if(IsValidClient(client)) 
-				ModifyKritzkriegBuff(client, 1, 0.7, false, 5.0, 2.0);
+				ModifyKritzkriegBuff(client, 1, 0.8, false, 5.0, 2.0);
 			else 
-				ModifyKritzkriegBuff(client, 2, 0.7, false, 5.0, 2.0);
+				ModifyKritzkriegBuff(client, 2, 0.8, false, 5.0, 2.0);
 
 			return false;
 		}

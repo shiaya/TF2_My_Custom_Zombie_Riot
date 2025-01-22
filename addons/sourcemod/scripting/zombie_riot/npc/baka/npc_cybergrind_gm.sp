@@ -509,7 +509,7 @@ methodmap CyberGrindGM < CClotBody
 			else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
 			else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
 			else if(!StrContains(countext[i], "ex_hardmode_only"))EX_HardModeOnly=true;
-			else GrigoriMaxSellsItems = StringToInt(countext[i]);
+			GrigoriMaxSellsItems = StringToInt(countext[i]);
 		}
 		
 		if(Grigori_Refresh || (GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide))

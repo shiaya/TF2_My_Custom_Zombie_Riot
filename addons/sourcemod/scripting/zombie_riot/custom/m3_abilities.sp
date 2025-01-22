@@ -20,7 +20,6 @@ bool b_Iron_Will[MAXTF2PLAYERS];
 static bool b_OneWave[MAXTF2PLAYERS];
 static bool b_OneDown[MAXTF2PLAYERS];
 static float f_ReinforceTillMax[MAXTF2PLAYERS];
-static bool b_ReinforceReady[MAXTF2PLAYERS];
 static bool b_ReinforceReady_soundonly[MAXTF2PLAYERS];
 static int i_MaxRevivesAWave;
 static int i_SupportWeapons[MAXTF2PLAYERS];

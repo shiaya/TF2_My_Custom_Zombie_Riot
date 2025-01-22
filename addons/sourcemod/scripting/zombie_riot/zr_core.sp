@@ -231,7 +231,8 @@ enum
 	WEAPON_TRUMPET = 1008,
 	WEAPON_TROLLDIER = 1009,
 	WEAPON_TLQKF = 1010,
-	WEAPON_MAJORSTEAM_LAUNCHER = 1011
+	WEAPON_MAJORSTEAM_LAUNCHER = 1011,
+	WEAPON_KIT_ARSENALS = 1012
 }
 
 enum
@@ -618,6 +619,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/weapon_trolldier.sp"
 #include "zombie_riot/custom/baka/weapon_tlqkf.sp"
 #include "zombie_riot/custom/baka/weapon_majorsteam_launcher.sp"
+#include "zombie_riot/custom/baka/kit_arsenals.sp"
 #include "zombie_riot/custom/kit_soldine.sp"
 #include "zombie_riot/custom/weapon_kritzkrieg.sp"
 
@@ -689,6 +691,7 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_wavewin", Waves_AdminsWaveWinCmd, ADMFLAG_ROOT, "Wave Force END");
 	RegAdminCmd("sm_raidend", Waves_AdminsRaidTimeEndCmd, ADMFLAG_ROOT, "Raid Force END");
 	RegAdminCmd("sm_raidadd", Waves_AdminsRaidTimeAddCmd, ADMFLAG_ROOT, "Raid Time Add");
+	RegAdminCmd("zr_get_ammotype", CommandGetAmmoTypes, ADMFLAG_ROOT, "Get Ammo Type");
 	CookieXP = new Cookie("zr_xp", "Your XP", CookieAccess_Protected);
 	CookieScrap = new Cookie("zr_Scrap", "Your Scrap", CookieAccess_Protected);
 	
@@ -1150,6 +1153,16 @@ public void OnMapInit()
 			delete entry;
 		}
 	}
+}
+
+public Action CommandGetAmmoTypes(int client, int args)
+{
+	for(int i=Ammo_Pistol; i<Ammo_MAX; i++)
+	{
+		LogMessage("tpye: %i, GetAmmo: %i ", i, CurrentAmmo[0][i]);
+		PrintToConsole(client, "tpye: %i, GetAmmo: %i ", i, CurrentAmmo[0][i]);
+	}
+	return Plugin_Handled;
 }
 
 public Action OnReloadCommand(int args)

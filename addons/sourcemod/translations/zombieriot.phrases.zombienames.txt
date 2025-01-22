@@ -2899,7 +2899,7 @@
 	"Major Steam"
 	{
 		"en"	"Major Steam"
-		"ko"	"주요 증기"
+		"ko"	"거대 증기 기사"
 	}
 	"The Messenger"
 	{

@@ -4,6 +4,7 @@
 static Handle h_kitArsenals_Timer[MAXTF2PLAYERS] = {null, ...};
 static float f_kitArsenals_HUDDelay[MAXTF2PLAYERS];
 static int i_kitArsenals_GunType[MAXTF2PLAYERS];
+static int i_kitArsenals_GunIndex[MAXTF2PLAYERS];
 static int i_kitArsenals_WeaponPap[MAXTF2PLAYERS];
 static bool b_kitArsenals_Toggle[MAXTF2PLAYERS];
 
@@ -12,42 +13,34 @@ public void kitArsenals_OnMapStart()
 	Zero(f_kitArsenals_HUDDelay);
 	Zero(i_kitArsenals_WeaponPap);
 	Zero(i_kitArsenals_GunType);
+	Zero(i_kitArsenals_GunIndex);
 	Zero(b_kitArsenals_Toggle);
-}
-
-public void kitArsenals_WaveEnd()
-{
-	for(int client = 1; client <= MaxClients; client++)
-	{
-		if(IsClientInGame(client) && !b_IsPlayerABot[client])
-			i_kitArsenals_Resistance[client]=1000;
-	}
 }
 
 public void Enable_kitArsenals(int client, int weapon)
 {
-	if(h_TimerkitArsenals[client] != null)
+	if(h_kitArsenals_Timer[client] != null)
 	{
-		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_kitArsenals)
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_KIT_ARSENALS)
 		{
 			i_kitArsenals_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
 			b_kitArsenals_Toggle[client] = false;
-			delete h_TimerkitArsenals[client];
-			h_TimerkitArsenals[client] = null;
+			delete h_kitArsenals_Timer[client];
+			h_kitArsenals_Timer[client] = null;
 			DataPack pack;
-			h_TimerkitArsenals[client] = CreateDataTimer(0.1, Timer_kitArsenals, pack, TIMER_REPEAT);
+			h_kitArsenals_Timer[client] = CreateDataTimer(0.1, Timer_kitArsenals, pack, TIMER_REPEAT);
 			pack.WriteCell(client);
 			pack.WriteCell(EntIndexToEntRef(weapon));
 		}
 	}
 	else
 	{
-		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_kitArsenals)
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_KIT_ARSENALS)
 		{
 			i_kitArsenals_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
 			b_kitArsenals_Toggle[client] = false;
 			DataPack pack;
-			h_TimerkitArsenals[client] = CreateDataTimer(0.1, Timer_kitArsenals, pack, TIMER_REPEAT);
+			h_kitArsenals_Timer[client] = CreateDataTimer(0.1, Timer_kitArsenals, pack, TIMER_REPEAT);
 			pack.WriteCell(client);
 			pack.WriteCell(EntIndexToEntRef(weapon));
 		}
@@ -61,7 +54,7 @@ static Action Timer_kitArsenals(Handle timer, DataPack pack)
 	int weapon = EntRefToEntIndex(pack.ReadCell());
 	if(!IsValidClient(client) || !IsClientInGame(client) || !IsPlayerAlive(client) || !IsValidEntity(weapon))
 	{
-		h_TimerkitArsenals[client] = null;
+		h_kitArsenals_Timer[client] = null;
 		return Plugin_Stop;
 	}	
 
@@ -74,7 +67,7 @@ static Action Timer_kitArsenals(Handle timer, DataPack pack)
 	else
 		holding=false;
 	kitArsenals_Function(client, weapon, holding);
-	kitArsenals_HUD(client, holding);
+	kitArsenals_HUD(client);
 
 	return Plugin_Continue;
 }
@@ -103,75 +96,71 @@ public void kitArsenals_NPCTakeDamage(int attacker, int victim, float &damage, i
 
 static void kitArsenals_Function(int client, int weapon, bool holding)
 {
-	if(Armor_Charge[client] < 1)
-	{
-		//none
-	}
-	else if(Waves_InSetup())
-	{
-		i_kitArsenals_Resistance[client]=1000;
-	}
-	else if(holding && f_kitArsenals_Delay[client] < GetGameTime())
-	{
-		i_kitArsenals_Recharging[client]+=(RaidbossIgnoreBuildingsLogic(1) ? 2 : 1);
-		if(i_kitArsenals_Recharging[client]>30 && i_kitArsenals_Resistance[client]<1000)
-		{
-			i_kitArsenals_Recharging[client]=0;
-			i_kitArsenals_Resistance[client]+=(i_kitArsenals_WeaponPap[client]==1 ? 50 : 25);
-			if(i_kitArsenals_Resistance[client]>1000)
-				i_kitArsenals_Resistance[client]=1000;
-		}
-	}
-	else i_kitArsenals_Recharging[client]=0;
-	
-	if(IsValidEntity(weapon))
-	{
-		int RocketLoad = GetEntData(weapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"));
-		if(holding && RocketLoad<=0 && !b_kitArsenals_Toggle[client] && (GetClientButtons(client) & IN_ATTACK))
-		{
-			if(!b_kitArsenals_Toggle[client])
-			{
-				b_kitArsenals_Toggle[client]=true;
-				SDKUnhook(client, SDKHook_PreThink, kitArsenals_M1_PreThink);
-				SDKHook(client, SDKHook_PreThink, kitArsenals_M1_PreThink);
-			}
-		}
-	}
+
 }
 
-static void kitArsenals_M1_PreThink(int client)
+public void kitArsenals_RKey(int client, int weapon, bool crit, int slot)
 {
-	int getweapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
-	if(h_TimerkitArsenals[client] != null && IsValidEntity(getweapon))
+	if(Ability_Check_Cooldown(client, slot) < 0.0 || CvarInfiniteCash.BoolValue)
 	{
-		if(GetClientButtons(client) & IN_ATTACK)
-		{
-		}
-		else
-		{
-			int RocketLoad = GetEntData(getweapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"));
-			int RockeyAmmo=GetAmmo(client, 8);
-			int RocketAmmoMAX=(i_kitArsenals_WeaponPap[client]==1 ? 11 : 6);
-			if(RocketLoad<RocketAmmoMAX)
-			{
-				SetAmmo(client, 8, RockeyAmmo+RocketLoad);
-				SetEntData(getweapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"), 0);
-				Store_GiveAll(client, GetClientHealth(client));
-				ClientCommand(client, "playgamesound items/medshotno1.wav");
-				SetDefaultHudPosition(client);
-				SetGlobalTransTarget(client);
-				ShowSyncHudText(client,  SyncHud_Notifaction, "You need to Reload by %i!", (i_kitArsenals_WeaponPap[client]==1 ? 11 : 6));
-			}
-			b_kitArsenals_Toggle[client]=false;
-			SDKUnhook(client, SDKHook_PreThink, kitArsenals_M1_PreThink);
-			return;
-		}
+		kitArsenals_GUN_Selector_Function(client);
+		Ability_Apply_Cooldown(client, slot, 0.6);
 	}
 	else
 	{
-		b_kitArsenals_Toggle[client]=false;
-		SDKUnhook(client, SDKHook_PreThink, kitArsenals_M1_PreThink);
+		float Ability_CD = Ability_Check_Cooldown(client, slot);
+		
+		if(Ability_CD <= 0.0)
+			Ability_CD = 0.0;
+			
+		ClientCommand(client, "playgamesound items/medshotno1.wav");
+		SetDefaultHudPosition(client);
+		SetGlobalTransTarget(client);
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);	
 		return;
+	}
+}
+
+static void kitArsenals_GUN_Selector_Function(int client, int OverrideGunType=-1)
+{
+	int weapon_new=-1;
+	float Time = GetGameTime(client);
+	bool WeaponSwap=false;
+	if(OverrideGunType<1)
+		i_kitArsenals_GunType[client]++;
+	else
+		i_kitArsenals_GunType[client]=OverrideGunType;
+	if(GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon")!=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee))
+		WeaponSwap=true;
+	switch(i_kitArsenals_GunType[client])
+	{
+		case 1:
+		{
+			weapon_new=Store_GiveSpecificItem(client, "kitArsenals Shotgun Default");
+		}
+		case 2:
+		{
+			weapon_new=Store_GiveSpecificItem(client, "kitArsenals AssaultRifle Default");
+		}
+		case 3:
+		{
+			weapon_new=Store_GiveSpecificItem(client, "kitArsenals MiniGun Default");
+		}
+		case 4:
+		{
+			weapon_new=Store_GiveSpecificItem(client, "kitArsenals GrenadeLauncher Default");
+		}
+	}
+	int DeleteThisGun = EntRefToEntIndex(i_kitArsenals_GunIndex[client]);
+	if(IsValidEntity(DeleteThisGun))
+		TF2_RemoveItem(client, DeleteThisGun);
+	if(IsValidEntity(weapon_new))
+	{
+		if(WeaponSwap)
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon_new);
+		SetEntPropFloat(weapon_new, Prop_Send, "m_flNextPrimaryAttack", Time+1.5);
+		SetEntPropFloat(client, Prop_Send, "m_flNextAttack", Time+1.5);
+		i_kitArsenals_GunIndex[client] = EntIndexToEntRef(weapon_new);
 	}
 }
 
@@ -179,7 +168,7 @@ static void kitArsenals_HUD(int client)
 {
 	if(f_kitArsenals_HUDDelay[client] < GetGameTime())
 	{
-		char C_point_hints[512]="";
+		/*char C_point_hints[512]="";
 		
 		Format(C_point_hints, sizeof(C_point_hints),
 		"Shield: %1.f％", (float(i_kitArsenals_Resistance[client])/1000.0)*100.0);
@@ -228,10 +217,10 @@ static void kitArsenals_HUD(int client)
 			PrintHintText(client,"%s", C_point_hints);
 			StopSound(client, SNDCHAN_STATIC, "UI/hint.wav");
 			f_kitArsenals_HUDDelay[client] = GetGameTime() + 0.5;
-		}
+		}*/
 	}
 }
-
+/*
 static void Add_Chaos_ParticleEffect(int client)
 {
 	int entity = EntRefToEntIndex(Chaos_ParticleEffect_I[client]);
@@ -276,4 +265,4 @@ static void DestroyChaos_ParticleEffect(int client)
 	if(IsValidEntity(entity))
 		RemoveEntity(entity);
 	Chaos_ParticleEffect_II[client] = INVALID_ENT_REFERENCE;
-}
+}*/
