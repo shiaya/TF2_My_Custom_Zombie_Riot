@@ -2927,8 +2927,8 @@ methodmap CClotBody < CBaseCombatCharacter
 			if(m_flGroundSpeed != 0.0)
 			{
 				float PlaybackSpeed = clamp((flNextBotGroundSpeed / m_flGroundSpeed), -4.0, 12.0);
-				if(PlaybackSpeed > 2.0)
-					PlaybackSpeed = 2.0;
+				if(PlaybackSpeed > f_MaxAnimationSpeed[this.index])
+					PlaybackSpeed > f_MaxAnimationSpeed[this.index];
 				if(PlaybackSpeed <= 0.01)
 					PlaybackSpeed = 0.01;
 					
@@ -7415,7 +7415,7 @@ static void PredictSubjectPositionInternal(CClotBody npc, int subject, float Ext
 static float f_PickThisDirectionForabit[MAXENTITIES];
 static int i_PickThisDirectionForabit[MAXENTITIES];
 
-stock void BackoffFromOwnPositionAndAwayFromEnemy(CClotBody npc, int subject, float extra_backoff = 64.0, float pathTarget[3])
+stock void BackoffFromOwnPositionAndAwayFromEnemy(CClotBody npc, int subject, float extra_backoff = 64.0, float pathTarget[3], int customlogic = -1)
 {
 	float botPos[3];
 	WorldSpaceCenter(npc.index, botPos);
@@ -7457,7 +7457,6 @@ stock void BackoffFromOwnPositionAndAwayFromEnemy(CClotBody npc, int subject, fl
 		
 		
 		//Make sure to actually back off...
-		
 		//I could reuse this code for if npcs get stuck, might actually work out....
 		
 		TR_GetEndPosition(pathTarget, trace);
@@ -7472,7 +7471,10 @@ stock void BackoffFromOwnPositionAndAwayFromEnemy(CClotBody npc, int subject, fl
 	}
 	
 	//Check of on if its too close, if yes, try again, but left or right, randomly chosen!
-	if(flDistanceToTarget < ((extra_backoff * extra_backoff)) / 2.0)
+	/*
+		This means that theyare touching a wall!
+	*/
+	if(customlogic == 1 || customlogic == 2 || flDistanceToTarget < ((extra_backoff * extra_backoff)) / 2.0)
 	{
 		int Direction = GetRandomInt(1, 2);
 		
@@ -7497,6 +7499,9 @@ stock void BackoffFromOwnPositionAndAwayFromEnemy(CClotBody npc, int subject, fl
 			GetVectorAngles(vecForward_2, vecForward_2);
 			
 			ang[1] += 90.0; //try to the left/right.
+			if(customlogic == 1)
+				ang[1] += 45.0; //try to the left/right.
+
 			
 			vecForward_2[1] = ang[1];
 			GetAngleVectors(vecForward_2, vecForward_2, vecRight_2, vecTarget_2);
@@ -7524,6 +7529,8 @@ stock void BackoffFromOwnPositionAndAwayFromEnemy(CClotBody npc, int subject, fl
 			GetVectorAngles(vecForward_2, vecForward_2);
 			
 			ang[1] -= 90.0; //try to the left/right.
+			if(customlogic == 1)
+				ang[1] -= 45.0; //try to the left/right.
 			
 			vecForward_2[1] = ang[1];
 			GetAngleVectors(vecForward_2, vecForward_2, vecRight_2, vecTarget_2);
@@ -8214,6 +8221,7 @@ public void SetDefaultValuesToZeroNPC(int entity)
 #endif
 //	i_MasterSequenceNpc[entity] = -1;
 	ResetAllArmorStatues(entity);
+	f_MaxAnimationSpeed[entity] = 2.0;
 	b_OnDeathExtraLogicNpc[entity] = 0;
 	f_DoNotUnstuckDuration[entity] = 0.0;
 	f_UnstuckTimerCheck[entity][0] = 0.0;
