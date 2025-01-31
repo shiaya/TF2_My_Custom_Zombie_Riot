@@ -232,7 +232,7 @@ enum
 	WEAPON_TROLLDIER = 1009,
 	WEAPON_TLQKF = 1010,
 	WEAPON_MAJORSTEAM_LAUNCHER = 1011,
-	WEAPON_KIT_ARSENALS = 1012
+	WEAPON_KIT_OMEGA = 1012
 }
 
 enum
@@ -619,7 +619,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/weapon_trolldier.sp"
 #include "zombie_riot/custom/baka/weapon_tlqkf.sp"
 #include "zombie_riot/custom/baka/weapon_majorsteam_launcher.sp"
-#include "zombie_riot/custom/baka/kit_arsenals.sp"
+#include "zombie_riot/custom/baka/kit_omega.sp"
 #include "zombie_riot/custom/kit_soldine.sp"
 #include "zombie_riot/custom/weapon_kritzkrieg.sp"
 

@@ -2,6 +2,12 @@
 #pragma newdecls required
 
 static bool JUST_TOGGLE[MAXENTITIES];
+static bool b_Already_Link[MAXENTITIES]={false};
+static int TempTargetOne[MAXENTITIES];
+static int TempTargetTwo[MAXENTITIES];
+static int TempTargetTree[MAXENTITIES];
+static float TempDelayOne[MAXENTITIES];
+//static float TempDelayTwo[MAXENTITIES];
 
 static char g_BlitzkriegVioce_StartSounds[][] = {
 	"zombiesurvival/altwaves_and_blitzkrieg/music/dm_start1.mp3",
@@ -16,6 +22,11 @@ static const char g_TeleSounds[][] = {
 	"weapons/rescue_ranger_teleport_receive_01.wav",
 	"weapons/rescue_ranger_teleport_receive_02.wav"
 };
+
+void ResetITMLogic()
+{
+	Zero(b_Already_Link);
+}
 
 void Invisible_TRIGGER_Man_OnMapStart_NPC()
 {
@@ -125,6 +136,8 @@ methodmap Invisible_TRIGGER_Man < CClotBody
 			npc.m_iOverlordComboAttack = 0;
 			npc.m_flNextMeleeAttack = 0.0;
 			npc.m_flNextRangedAttack = 0.0;
+			npc.m_flDead_Ringer_Invis = 0.0;
+			TempDelayOne[npc.index] = 0.0;
 			
 			AddNpcToAliveList(npc.index, 1);
 			Is_a_Medic[npc.index] = true;
@@ -160,6 +173,10 @@ methodmap Invisible_TRIGGER_Man < CClotBody
 			npc.i_NPCStats=1;
 		if(!StrContains(data, "cover_bobthefirst"))
 			npc.i_NPCStats=2;
+		if(!StrContains(data, "cover_corruptedbarney"))
+			npc.i_NPCStats=3;
+		if(!StrContains(data, "cover_twins"))
+			npc.i_NPCStats=4;
 		if(!StrContains(data, "delete_timerlimit"))
 			npc.i_NPCStats=3000;
 
@@ -437,6 +454,412 @@ static void Invisible_TRIGGER_Man_ClotThink(int iNPC)
 						npc.m_flNextMeleeAttack = gameTime + 1.0;
 					}
 					case 1:
+					{
+						b_NpcForcepowerupspawn[npc.index] = 0;
+						i_RaidGrantExtra[npc.index] = 0;
+						b_DissapearOnDeath[npc.index] = true;
+						b_DoGibThisNpc[npc.index] = true;
+						SmiteNpcToDeath(npc.index);
+					}
+				}
+			}
+		}
+		case 3:
+		{
+			if(npc.m_flNextMeleeAttack < gameTime)
+			{
+				float WorldSpaceVec[3];
+				switch(npc.m_iOverlordComboAttack)
+				{
+					case 0:
+					{
+						for(int i; i < i_MaxcountNpcTotal; i++)
+						{
+							int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[i]);
+							if(IsValidEntity(entity))
+							{
+								char npc_classname[60];
+								NPC_GetPluginById(i_NpcInternalId[entity], npc_classname, sizeof(npc_classname));
+								if(entity != INVALID_ENT_REFERENCE && StrEqual(npc_classname, "npc_corruptedbarney") && IsEntityAlive(entity))
+								{
+									float SelfPos[3];
+									GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
+									float AllyAng[3];
+									GetEntPropVector(npc.index, Prop_Data, "m_angRotation", AllyAng);
+									int Spawner_entity = GetRandomActiveSpawner();
+									if(IsValidEntity(Spawner_entity))
+									{
+										GetEntPropVector(Spawner_entity, Prop_Data, "m_vecOrigin", SelfPos);
+										GetEntPropVector(Spawner_entity, Prop_Data, "m_angRotation", AllyAng);
+									}
+									int IsThatSawRunner = NPC_CreateByName("npc_sawrunner", -1, SelfPos, AllyAng, GetTeam(entity), "no_play_music");
+									if(IsValidEntity(IsThatSawRunner))
+									{
+										b_ThisNpcIsImmuneToNuke[IsThatSawRunner] = true;
+										b_NoKnockbackFromSources[IsThatSawRunner] = true;
+										b_NpcIsInvulnerable[IsThatSawRunner] = true;
+										b_ThisEntityIgnored[IsThatSawRunner] = true;
+										b_NoHealthbar[IsThatSawRunner]=true;
+										fl_Extra_Speed[IsThatSawRunner] = 1.25;
+										if(IsValidEntity(i_InvincibleParticle[IsThatSawRunner]))
+										{
+											int particle = EntRefToEntIndex(i_InvincibleParticle[IsThatSawRunner]);
+											SetEntityRenderMode(particle, RENDER_TRANSCOLOR);
+											SetEntityRenderColor(particle, 255, 255, 255, 1);
+											SetEntPropFloat(particle, Prop_Send, "m_fadeMinDist", 1.0);
+											SetEntPropFloat(particle, Prop_Send, "m_fadeMaxDist", 1.0);
+										}
+										TempTargetTwo[npc.index] = EntIndexToEntRef(IsThatSawRunner);
+										npc.m_flNextRangedAttack = gameTime + 15.0;
+									}
+									TempTargetOne[npc.index] = EntIndexToEntRef(entity);
+									GrantEntityArmor(entity, false, 0.075, 0.5, 0);
+									npc.m_iOverlordComboAttack=1;
+									break;
+								}
+							}
+						}
+						npc.m_flNextMeleeAttack = gameTime + 1.0;
+					}
+					case 1:
+					{
+						int entity = EntRefToEntIndex(TempTargetOne[npc.index]);
+						if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+						{
+							int Health = GetEntProp(entity, Prop_Data, "m_iHealth");
+							int MaxHealth = ReturnEntityMaxHealth(entity);
+							entity = EntRefToEntIndex(TempTargetTwo[npc.index]);
+							if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+							{
+								if(npc.m_flNextRangedAttack < gameTime)
+								{
+									GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", WorldSpaceVec);
+									ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+									int Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 750.0);
+									if(Decicion == 2)
+									{
+										Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 375.0);
+										if(Decicion == 2)
+										{
+											Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 187.5);
+											if(Decicion == 2)
+											{
+												Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 0.0);
+											}
+										}
+									}
+									npc.PlayTeleSound();
+									GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", WorldSpaceVec);
+									ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+									npc.m_flNextRangedAttack = gameTime + 30.0;
+								}
+								if(float(Health)<=float(MaxHealth)*0.5)
+								{
+									float SelfPos[3];
+									GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
+									float AllyAng[3];
+									GetEntPropVector(npc.index, Prop_Data, "m_angRotation", AllyAng);
+									int Spawner_entity = GetRandomActiveSpawner();
+									if(IsValidEntity(Spawner_entity))
+									{
+										GetEntPropVector(Spawner_entity, Prop_Data, "m_vecOrigin", SelfPos);
+										GetEntPropVector(Spawner_entity, Prop_Data, "m_angRotation", AllyAng);
+									}
+									int IsThatSawRunner = NPC_CreateByName("npc_sawrunner", -1, SelfPos, AllyAng, GetTeam(entity), "no_play_music");
+									if(IsValidEntity(IsThatSawRunner))
+									{
+										b_ThisNpcIsImmuneToNuke[IsThatSawRunner] = true;
+										b_NoKnockbackFromSources[IsThatSawRunner] = true;
+										b_NpcIsInvulnerable[IsThatSawRunner] = true;
+										b_ThisEntityIgnored[IsThatSawRunner] = true;
+										b_NoHealthbar[IsThatSawRunner]=true;
+										fl_Extra_Speed[IsThatSawRunner] = 1.25;
+										if(IsValidEntity(i_InvincibleParticle[IsThatSawRunner]))
+										{
+											int particle = EntRefToEntIndex(i_InvincibleParticle[IsThatSawRunner]);
+											SetEntityRenderMode(particle, RENDER_TRANSCOLOR);
+											SetEntityRenderColor(particle, 255, 255, 255, 1);
+											SetEntPropFloat(particle, Prop_Send, "m_fadeMinDist", 1.0);
+											SetEntPropFloat(particle, Prop_Send, "m_fadeMaxDist", 1.0);
+										}
+										TempTargetTree[npc.index] = EntIndexToEntRef(IsThatSawRunner);
+										npc.m_flNextRangedAttack = gameTime + 6.0;
+									}
+									entity = EntRefToEntIndex(TempTargetOne[npc.index]);
+									GrantEntityArmor(entity, false, 0.075, 0.5, 0);
+									npc.m_iOverlordComboAttack=2;
+								}
+							}
+						}
+						else
+						{
+							entity = EntRefToEntIndex(TempTargetTwo[npc.index]);
+							if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+							{
+								b_NoKillFeed[entity] = true;
+								b_NpcForcepowerupspawn[entity] = 0;
+								i_RaidGrantExtra[entity] = 0;
+								b_DissapearOnDeath[entity] = true;
+								b_DoGibThisNpc[entity] = true;
+								SmiteNpcToDeath(entity);
+							}
+							npc.m_iOverlordComboAttack=3;
+						}
+					}
+					case 2:
+					{
+						int entity = EntRefToEntIndex(TempTargetOne[npc.index]);
+						if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+						{
+							if(npc.m_flNextRangedAttack < gameTime)
+							{
+								bool TeleON=false;
+								entity = EntRefToEntIndex(TempTargetTwo[npc.index]);
+								if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+								{
+									GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", WorldSpaceVec);
+									ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+									int Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 750.0);
+									if(Decicion == 2)
+									{
+										Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 375.0);
+										if(Decicion == 2)
+										{
+											Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 187.5);
+											if(Decicion == 2)
+											{
+												Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 0.0);
+											}
+										}
+									}
+									TeleON=true;
+									GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", WorldSpaceVec);
+									ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+								}
+								entity = EntRefToEntIndex(TempTargetTree[npc.index]);
+								if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+								{
+									GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", WorldSpaceVec);
+									ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+									int Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 750.0);
+									if(Decicion == 2)
+									{
+										Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 375.0);
+										if(Decicion == 2)
+										{
+											Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 187.5);
+											if(Decicion == 2)
+											{
+												Decicion = TeleportDiversioToRandLocation(entity, true, 750.0, 0.0);
+											}
+										}
+									}
+									TeleON=true;
+									GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", WorldSpaceVec);
+									ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+								}
+								if(TeleON)
+								{
+									npc.m_flNextRangedAttack = gameTime + 24.0;
+									npc.PlayTeleSound();
+								}
+								else npc.m_flNextRangedAttack = gameTime + 1.0;
+							}
+						}
+						else
+						{
+							entity = EntRefToEntIndex(TempTargetTwo[npc.index]);
+							if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+							{
+								b_NoKillFeed[entity] = true;
+								b_NpcForcepowerupspawn[entity] = 0;
+								i_RaidGrantExtra[entity] = 0;
+								b_DissapearOnDeath[entity] = true;
+								b_DoGibThisNpc[entity] = true;
+								SmiteNpcToDeath(entity);
+							}
+							entity = EntRefToEntIndex(TempTargetTree[npc.index]);
+							if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+							{
+								b_NoKillFeed[entity] = true;
+								b_NpcForcepowerupspawn[entity] = 0;
+								i_RaidGrantExtra[entity] = 0;
+								b_DissapearOnDeath[entity] = true;
+								b_DoGibThisNpc[entity] = true;
+								SmiteNpcToDeath(entity);
+							}
+							npc.m_iOverlordComboAttack=3;
+						}
+					}
+					case 3:
+					{
+						b_NpcForcepowerupspawn[npc.index] = 0;
+						i_RaidGrantExtra[npc.index] = 0;
+						b_DissapearOnDeath[npc.index] = true;
+						b_DoGibThisNpc[npc.index] = true;
+						SmiteNpcToDeath(npc.index);
+					}
+				}
+			}
+		}
+		case 4:
+		{
+			if(npc.m_flNextMeleeAttack < gameTime)
+			{
+				switch(npc.m_iOverlordComboAttack)
+				{
+					case 0:
+					{
+						bool YESAlready_Linkss=false;
+						for(int i; i < i_MaxcountNpcTotal; i++)
+						{
+							int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[i]);
+							if(IsValidEntity(entity))
+							{
+								char npc_classname[60];
+								NPC_GetPluginById(i_NpcInternalId[entity], npc_classname, sizeof(npc_classname));
+								if(entity != INVALID_ENT_REFERENCE && StrEqual(npc_classname, "npc_twins") && IsEntityAlive(entity))
+								{
+									if(b_Already_Link[entity])
+										YESAlready_Linkss=true;
+									else
+									{
+										strcopy(npc_classname, sizeof(npc_classname), c_NpcName[entity]);
+										if(StrContains(npc_classname, "Twin No. 1"))
+										{
+											TempTargetOne[npc.index] = EntIndexToEntRef(entity);
+											VausMagicaGiveShield(entity, 48+RoundToNearest(float(CountPlayersOnRed(1)) * 2.0));
+											b_Already_Link[entity]=true;
+										}
+										else if(StrContains(npc_classname, "Twin No. 2"))
+										{
+											TempTargetTwo[npc.index] = EntIndexToEntRef(entity);
+											VausMagicaGiveShield(entity, 48+RoundToNearest(float(CountPlayersOnRed(1)) * 2.0));
+											b_Already_Link[entity]=true;
+										}
+									}
+								}
+							}
+						}
+						if(YESAlready_Linkss)
+						{
+							npc.m_flNextRangedAttack = gameTime + 29.5;
+							npc.m_flDead_Ringer_Invis = gameTime + 24.5;
+							TempDelayOne[npc.index] = GetGameTime() + 15.5;
+							npc.m_iOverlordComboAttack=1;
+						}
+						npc.m_flNextMeleeAttack = gameTime + 1.0;
+					}
+					case 1:
+					{
+						bool AllDieTwins=false;
+						bool TwinsTele=false;
+						int entity = EntRefToEntIndex(TempTargetOne[npc.index]);
+						if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+						{
+							if(npc.m_flNextRangedAttack < gameTime)
+							{
+								VausMagicaGiveShield(entity, CountPlayersOnRed(1) * 2);
+								GrantEntityArmor(entity, false, 1.0, 0.5, 0, float(ReturnEntityMaxHealth(entity))*0.075);
+								npc.m_flNextRangedAttack = gameTime + 29.5;
+							}
+							if(TempDelayOne[npc.index] < GetGameTime())
+							{
+								int Temp_Target = Victoria_GetTargetDistance(entity, true, false);
+								if(IsValidEnemy(entity, Temp_Target))
+								{
+									static float hullcheckmaxs[3];
+									static float hullcheckmins[3];
+									hullcheckmaxs = view_as<float>( { 24.0, 24.0, 82.0 } );
+									hullcheckmins = view_as<float>( { -24.0, -24.0, 0.0 } );
+									float VecEnemy[3]; WorldSpaceCenter(Temp_Target, VecEnemy);
+									float vPredictedPos[3];
+									PredictSubjectPosition(npc, Temp_Target,_,_, vPredictedPos);
+									vPredictedPos = GetBehindTarget(Temp_Target, 30.0 ,vPredictedPos);
+
+									float PreviousPos[3];
+									WorldSpaceCenter(entity, PreviousPos);
+									float WorldSpaceVec[3]; WorldSpaceCenter(entity, WorldSpaceVec);
+									
+									bool Succeed = Npc_Teleport_Safe(entity, vPredictedPos, hullcheckmins, hullcheckmaxs, true);
+									if(Succeed)
+									{
+										Matrix_Twins npcGetInfo = view_as<Matrix_Twins>(entity);
+										float pos[3]; GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", pos);
+										float ang[3]; GetEntPropVector(entity, Prop_Data, "m_angRotation", ang);
+
+										TE_Particle("pyro_blast", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										TE_Particle("pyro_blast_lines", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										TE_Particle("pyro_blast_warp", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										TE_Particle("pyro_blast_flash", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										npcGetInfo.FaceTowards(VecEnemy, 15000.0);
+										Elemental_AddCorruptionDamage(Temp_Target, entity, 20);
+										TwinsTele=true;
+									}
+								}
+							}
+							AllDieTwins=false;
+						}
+						else
+							AllDieTwins=true;
+						entity = EntRefToEntIndex(TempTargetTwo[npc.index]);
+						if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
+						{
+							if(npc.m_flDead_Ringer_Invis < gameTime)
+							{
+								VausMagicaGiveShield(entity, CountPlayersOnRed(1) * 2);
+								GrantEntityArmor(entity, false, 1.0, 0.5, 0, float(ReturnEntityMaxHealth(entity))*0.075);
+								npc.m_flDead_Ringer_Invis = gameTime + 24.5;
+							}
+							if(TempDelayOne[npc.index] < GetGameTime())
+							{
+								int Temp_Target = Victoria_GetTargetDistance(entity, true, false);
+								if(IsValidEnemy(entity, Temp_Target))
+								{
+									static float hullcheckmaxs[3];
+									static float hullcheckmins[3];
+									hullcheckmaxs = view_as<float>( { 24.0, 24.0, 82.0 } );
+									hullcheckmins = view_as<float>( { -24.0, -24.0, 0.0 } );
+									float VecEnemy[3]; WorldSpaceCenter(Temp_Target, VecEnemy);
+									float vPredictedPos[3];
+									PredictSubjectPosition(npc, Temp_Target,_,_, vPredictedPos);
+									vPredictedPos = GetBehindTarget(Temp_Target, 30.0 ,vPredictedPos);
+
+									float PreviousPos[3];
+									WorldSpaceCenter(entity, PreviousPos);
+									float WorldSpaceVec[3]; WorldSpaceCenter(entity, WorldSpaceVec);
+									
+									bool Succeed = Npc_Teleport_Safe(entity, vPredictedPos, hullcheckmins, hullcheckmaxs, true);
+									if(Succeed)
+									{
+										Matrix_Twins npcGetInfo = view_as<Matrix_Twins>(entity);
+										float pos[3]; GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", pos);
+										float ang[3]; GetEntPropVector(entity, Prop_Data, "m_angRotation", ang);
+
+										TE_Particle("pyro_blast", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										TE_Particle("pyro_blast_lines", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										TE_Particle("pyro_blast_warp", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										TE_Particle("pyro_blast_flash", WorldSpaceVec, NULL_VECTOR, NULL_VECTOR, -1, _, _, _, _, _, _, _, _, _, 0.0);
+										npcGetInfo.FaceTowards(VecEnemy, 15000.0);
+										Elemental_AddCorruptionDamage(Temp_Target, entity, 20);
+										TwinsTele=true;
+									}
+								}
+							}
+							AllDieTwins=false;
+						}
+						else
+							AllDieTwins=true;
+						if(TwinsTele)
+						{
+							npc.PlayTeleSound();
+							TempDelayOne[npc.index] = GetGameTime() + 20.0;
+						}
+						if(AllDieTwins)
+							npc.m_iOverlordComboAttack=2;
+						npc.m_flNextMeleeAttack = gameTime + 1.0;
+					}
+					case 2:
 					{
 						b_NpcForcepowerupspawn[npc.index] = 0;
 						i_RaidGrantExtra[npc.index] = 0;

@@ -6265,6 +6265,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		LockDown_Enable(client, entity);
 		Still_Hunt_Enable(client, entity);
 		Trolldier_Enable(client, entity);
+		Enable_KitOmega(client, entity);
 		Enable_MajorSteam_Launcher(client, entity);
 		Wkit_Soldin_Enable(client, entity);
 		Purnell_Enable(client, entity);

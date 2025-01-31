@@ -51,13 +51,14 @@ void SawRunner_OnMapStart_NPC()
 	NPC_Add(data);
 }
 
-static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team)
+static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, const char[] data)
 {
-	return SawRunner(vecPos, vecAng, team);
+	return SawRunner(vecPos, vecAng, team, data);
 }
 static int i_PlayIdleAlertSound[MAXENTITIES];
 static int i_PlayMusicSound[MAXENTITIES];
 static float fl_AlreadyStrippedMusic[MAXTF2PLAYERS];
+static bool b_NoplayMusicSound;
 
 static char[] GetSawRunnerHealth()
 {
@@ -122,6 +123,8 @@ methodmap SawRunner < CClotBody
 	}
 	
 	public void PlayMusicSound() {
+		if(b_NoplayMusicSound)
+			return;
 		if(this.m_iPlayMusicSound > GetTime())
 			return;
 		
@@ -153,7 +156,7 @@ methodmap SawRunner < CClotBody
 	}
 	
 	
-	public SawRunner(float vecPos[3], float vecAng[3], int ally)
+	public SawRunner(float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
 		SawRunner npc = view_as<SawRunner>(CClotBody(vecPos, vecAng, "models/zombie_riot/cof/sawrunner_2.mdl", "1.35", GetSawRunnerHealth(), ally, false, false, true));
 		
@@ -168,15 +171,17 @@ methodmap SawRunner < CClotBody
 		
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_GIANT;	
-		npc.m_iNpcStepVariation = STEPSOUND_NORMAL;		
-		
-		
-		
-		npc.m_bDoSpawnGesture = true;
-		
-		for(int client_clear=1; client_clear<=MaxClients; client_clear++)
+		npc.m_iNpcStepVariation = STEPSOUND_NORMAL;
+		npc.m_bDoSpawnGesture = true;		
+		b_NoplayMusicSound=false;
+		if(!StrContains(data, "no_play_music"))
+			b_NoplayMusicSound=true;
+		else
 		{
-			fl_AlreadyStrippedMusic[client_clear] = 0.0; //reset to 0
+			for(int client_clear=1; client_clear<=MaxClients; client_clear++)
+			{
+				fl_AlreadyStrippedMusic[client_clear] = 0.0; //reset to 0
+			}
 		}
 		
 		func_NPCDeath[npc.index] = SawRunner_NPCDeath;

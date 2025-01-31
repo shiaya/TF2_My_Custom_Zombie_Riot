@@ -259,6 +259,40 @@ methodmap CyberGrindGM < CClotBody
 			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
+		else if(!StrContains(data, "giverevive"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			GiveOneRevive(false);
+			Music_EndLastmann(true);
+			LastMann = false;
+			applied_lastmann_buffs_once = false;
+
+			for(int i=0 ; i < MaxClients ; i++)
+			{
+				if(IsValidClient(i) && IsClientInGame(i) && IsPlayerAlive(i) && TeutonType[i] == TEUTON_NONE && dieingstate[i] == 0)
+				{
+					SDKHooks_UpdateMarkForDeath(i, true);
+					SDKHooks_UpdateMarkForDeath(i, false);
+					TF2_AddCondition(i, TFCond_SpeedBuffAlly, 2.0);
+					int maxhealth = SDKCall_GetMaxHealth(i);
+					if(GetClientHealth(i)<maxhealth)
+						SetEntityHealth(i, maxhealth);
+					GiveArmorViaPercentage(i, 0.5, 1.0);
+					CPrintToChat(i, "{green}Adrenalive rushes through your body, healing you and giving you an extra revive.");
+					GiveCompleteInvul(i, 3.5);
+				}
+			}
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
 		else if(!StrContains(data, "we_got_soldine"))
 		{
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
@@ -557,7 +591,6 @@ methodmap CyberGrindGM < CClotBody
 		bool Grigori_Refresh=false;
 		bool Grigori_RefreshTwo=false;
 		bool GrigoriMaxSellsItems_Overide=false;
-		bool EX_HardModeOnly=false;
 		int GrigoriMaxSellsItems=-1;
 		static char countext[20][1024];
 		int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
@@ -567,7 +600,6 @@ methodmap CyberGrindGM < CClotBody
 			else if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
 			else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
 			else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
-			else if(!StrContains(countext[i], "ex_hardmode_only"))EX_HardModeOnly=true;
 			GrigoriMaxSellsItems = StringToInt(countext[i]);
 		}
 		
@@ -576,18 +608,14 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
-			
-			if(!EX_HardModeOnly || (EX_HardModeOnly && (CyberGrind_InternalDifficulty>3 || CyberGrind_Difficulty>3)))
+			if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
+				GrigoriMaxSells = GrigoriMaxSellsItems;
+			if(Grigori_RefreshTwo)
+				Store_RandomizeNPCStore(1);
+			if(Grigori_Refresh)
 			{
-				if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
-					GrigoriMaxSells = GrigoriMaxSellsItems;
-				if(Grigori_RefreshTwo)
-					Store_RandomizeNPCStore(1);
-				if(Grigori_Refresh)
-				{
-					Store_RandomizeNPCStore(0, _, true);
-					Store_RandomizeNPCStore(0);
-				}
+				Store_RandomizeNPCStore(0, _, true);
+				Store_RandomizeNPCStore(0);
 			}
 			
 			b_NpcForcepowerupspawn[npc.index] = 0;
@@ -762,33 +790,6 @@ static void CyberGrindGM_Final_Item(int iNPC)
 			}
 			case 2:
 			{
-				ResetReplications();
-				cvarTimeScale.SetFloat(0.1);
-				CreateTimer(0.5, SetTimeBack);
-				if(!Music_Disabled())
-					EmitCustomToAll("#zombiesurvival/music_win_1.mp3", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
-					
-				ConVar roundtime = FindConVar("mp_bonusroundtime");
-				float last = roundtime.FloatValue;
-				roundtime.FloatValue = 20.0;
-
-				MVMHud_Disable();
-				int entity = CreateEntityByName("game_round_win"); 
-				DispatchKeyValue(entity, "force_map_reset", "1");
-				SetEntProp(entity, Prop_Data, "m_iTeamNum", TFTeam_Red);
-				DispatchSpawn(entity);
-				AcceptEntityInput(entity, "RoundWin");
-				roundtime.FloatValue = last;
-				for(int client = 1; client <= MaxClients; client++)
-				{
-					if(IsClientInGame(client) && !b_IsPlayerABot[client])
-						Music_Stop_All(client);
-				}
-				RemoveAllCustomMusic();
-				npc.m_iOverlordComboAttack=3;
-			}
-			case 3:
-			{
 				float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
 				ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
 				npc.PlayDeathSound();
@@ -826,6 +827,35 @@ static void CyberGrindGM_Final_Item(int iNPC)
 				}
 				if(IsValidEntity(npc.m_iTeamGlow))
 					RemoveEntity(npc.m_iTeamGlow);
+				npc.m_iOverlordComboAttack=3;
+				npc.m_flNextMeleeAttack = gameTime + 5.0;
+			}
+			case 3:
+			{
+				ResetReplications();
+				cvarTimeScale.SetFloat(0.1);
+				CreateTimer(0.5, SetTimeBack);
+				if(!Music_Disabled())
+					EmitCustomToAll("#zombiesurvival/music_win_1.mp3", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+					
+				ConVar roundtime = FindConVar("mp_bonusroundtime");
+				float last = roundtime.FloatValue;
+				roundtime.FloatValue = 20.0;
+
+				MVMHud_Disable();
+				int entity = CreateEntityByName("game_round_win"); 
+				DispatchKeyValue(entity, "force_map_reset", "1");
+				SetEntProp(entity, Prop_Data, "m_iTeamNum", TFTeam_Red);
+				DispatchSpawn(entity);
+				AcceptEntityInput(entity, "RoundWin");
+				roundtime.FloatValue = last;
+				for(int client = 1; client <= MaxClients; client++)
+				{
+					if(IsClientInGame(client) && !b_IsPlayerABot[client])
+						Music_Stop_All(client);
+				}
+				RemoveAllCustomMusic();
+				npc.m_iOverlordComboAttack=4;
 			}
 		}
 	}

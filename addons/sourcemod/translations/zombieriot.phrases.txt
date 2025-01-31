@@ -4015,7 +4015,7 @@
 	"Preference Speed"
 	{
 		"en"	"I like wepaons with a little more fire rate."
-		"ko"	"난 빠르게 연사로 갈길수있는 무기가 무난하다 생각해."
+		"ko"	"난 빠르게 연사로 갈길수있는 무기가 무난해."
 	}
 	"Preference Heavy"
 	{
