@@ -17,10 +17,8 @@
 #include <morecolors>
 #include <cbasenpc>
 #include <tf2utils>
-#if !defined UseDownloadTable
 #include <filenetwork>
-#endif
-//#include <profiler>
+#include <profiler>
 #include <sourcescramble>
 //#include <handledebugger>
 
@@ -94,6 +92,8 @@ public float OFF_THE_MAP_NONCONST[3] = { 16383.0, 16383.0, -16383.0 };
 #if defined ZR
 ConVar zr_downloadconfig;
 ConVar CvarSkillPoints;
+ConVar CvarRogueSpecialLogic;
+ConVar CvarFileNetworkDisable;
 ConVar CvarLeveling;
 #endif
 
@@ -163,14 +163,14 @@ bool b_MarkForReload = false; //When you wanna reload the plugin on map change..
 #include "shared/global_arrays.sp"
 //This model is used to do custom models for npcs, mainly so we can make cool animations without bloating downloads
 #define COMBINE_CUSTOM_MODEL 		"models/zombie_riot/combine_attachment_police_221.mdl"
-#define WEAPON_CUSTOM_WEAPONRY_1 	"models/zombie_riot/weapons/custom_weaponry_1_36.mdl"
+#define WEAPON_CUSTOM_WEAPONRY_1 	"models/zombie_riot/weapons/custom_weaponry_1_47.mdl"
 /*
 	1 - sensal scythe
 	2 - scythe_throw
 */
 //#define ZR_TEST_MODEL	"models/zombie_riot/weapons/test_models9.mdl"
 
-#define WINGS_MODELS_1 	"models/zombie_riot/weapons/custom_wings_1_1.mdl"
+#define WINGS_MODELS_1 	"models/zombie_riot/weapons/custom_wings_1_2.mdl"
 enum
 {
 	WINGS_FUSION 	= 1,
@@ -182,7 +182,7 @@ enum
 	WINGS_KARLAS	= 64
 }
 
-#define RUINA_CUSTOM_MODELS_1	"models/zombie_riot/weapons/ruina_models_1_1.mdl"
+#define RUINA_CUSTOM_MODELS_1	"models/zombie_riot/weapons/ruina_models_1_2.mdl"
 enum	//it appears if I try to make it go above 14 it starts glitching out
 {		
 	RUINA_ICBM 				= 1,		//1
@@ -200,7 +200,7 @@ enum	//it appears if I try to make it go above 14 it starts glitching out
 	RUINA_W30_HAND_CREST	= 4096,		//13
 	RUINA_IANA_BLADE		= 8192,		//14
 }
-#define RUINA_CUSTOM_MODELS_2	"models/zombie_riot/weapons/ruina_models_2_2.mdl"
+#define RUINA_CUSTOM_MODELS_2	"models/zombie_riot/weapons/ruina_models_2_3.mdl"
 enum
 {
 	RUINA_QUINCY_BOW_2		= 1,			//1
@@ -225,7 +225,7 @@ enum
 	RUINA_LAZER_CANNON_2	= 524288,		//20
 	RUINA_WINGS_2			= 1048576		//21	going beyond this it legit cannot compile anymore, likely due to too many things
 }
-#define RUINA_CUSTOM_MODELS_3	"models/zombie_riot/weapons/ruina_models_3_1.mdl"
+#define RUINA_CUSTOM_MODELS_3	"models/zombie_riot/weapons/ruina_models_3_2.mdl"
 enum
 {
 	RUINA_WINGS_4			= 1,			//1
@@ -244,7 +244,7 @@ enum
 	RUINA_TWIRL_CREST_4		= 8192,			//14
 	RUINA_QUINCY_BOW_3		= 16384			//15
 }
-#define RUINA_CUSTOM_MODELS_4	"models/zombie_riot/weapons/ruina_models_4_2.mdl"
+#define RUINA_CUSTOM_MODELS_4	"models/zombie_riot/weapons/ruina_models_4_3.mdl"
 enum
 {
 	RUINA_STELLA_CREST			= 1,			//1
@@ -851,6 +851,19 @@ public void OnPluginStart()
 
 	TickrateModify = tickrate / 66.0;
 }
+
+public void OnLibraryAdded(const char[] name)
+{
+	FileNetwork_LibraryAdded(name);
+	SteamWorks_LibraryAdded(name);
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	FileNetwork_LibraryRemoved(name);
+	SteamWorks_LibraryRemoved(name);
+}
+
 /*
 public void OnAllPluginsLoaded()
 {
@@ -1017,7 +1030,7 @@ public void OnMapStart()
 	Zero(Mana_Hud_Delay);
 	Zero(Mana_Regen_Delay);
 	Zero(Mana_Regen_Delay_Aggreviated);
-	Zero(RollAngle_Regen_Delay);
+//	Zero(RollAngle_Regen_Delay);
 	Zero(f_InBattleHudDisableDelay);
 	Zero(f_InBattleDelay);
 	Building_MapStart();
@@ -1532,7 +1545,7 @@ public void OnClientDisconnect(int client)
 #endif
 
 	b_HudScreenShake[client] = true;
-	b_HudLowHealthShake[client] = true;
+	b_HudLowHealthShake_UNSUED[client] = true;
 	b_HudHitMarker[client] = true;
 	f_ZombieVolumeSetting[client] = 0.0;
 }
@@ -1935,7 +1948,8 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] classname,
 			if(ConsumeAmmoReserve >= 1)
 			{
 				int Ammo_type = GetAmmoType_WeaponPrimary(weapon);
-				SetAmmo(client, Ammo_type, GetAmmo(client, Ammo_type) + ConsumeAmmoReserve);
+				if(Ammo_type >= 1)
+					SetAmmo(client, Ammo_type, GetAmmo(client, Ammo_type) + ConsumeAmmoReserve);
 			}
 		}
 	}
@@ -2193,7 +2207,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 		b_FaceStabber[entity] = false;
 		i_CustomWeaponEquipLogic[entity] = -1;
 		Resistance_for_building_High[entity] = 0.0;
-		Building_Mounted[entity] = 0;
 		BarracksEntityCreated(entity);
 		SetEntitySpike(entity, false);
 		StoreWeapon[entity] = -1;
@@ -3404,7 +3417,7 @@ void ReviveClientFromOrToEntity(int target, int client, int extralogic = 0, int 
 		EmitSoundToAll("mvm/mvm_revive.wav", target, SNDCHAN_AUTO, 90, _, 1.0);
 		MakePlayerGiveResponseVoice(target, 3); //Revived response!
 		f_ClientBeingReviveDelay[target] = 0.0;
-		if(b_KahmlLastWish[target])
+	//	if(b_KahmlLastWish[target])
 		{
 			HealEntityGlobal(client, target, float(SDKCall_GetMaxHealth(target)) * 0.1, 0.1, 1.0, HEAL_ABSOLUTE);
 			GiveArmorViaPercentage(target, 0.1, 1.0, false);
@@ -3429,12 +3442,14 @@ public Action ReviveDisplayMessageDelay(Handle timer, int ref)
 			SetGlobalTransTarget(target);
 			ShowSyncHudText(target,  SyncHud_Notifaction, "%t", "Last Down Warning");	
 		}
+		/*
 		else if(b_KahmlLastWish[target])
 		{
 			SetDefaultHudPosition(target, 0, 0, 255, 1.5);
 			SetGlobalTransTarget(target);
 			ShowSyncHudText(target,  SyncHud_Notifaction, "%t", "Kahmlstein Courage");	
 		}
+		*/
 	}
 	return Plugin_Continue;
 }

@@ -2561,13 +2561,12 @@ public void Citizen_ClotThink(int iNPC)
 						continue;
 					}
 
-					/*if(Citizen_ThatIsDowned(entity))
+					if(Citizen_ThatIsDowned(entity))
 					{
-						if(npc.m_iGunType != npc.m_iHasPerk)
+						if(GetClosestTarget(entity, true, 600.0, true, .IgnorePlayers = true) > MaxClients)
 							continue;
 					}
-					else*/
-					if(combat)
+					else if(combat)
 					{
 						if(GetEntProp(entity, Prop_Data, "m_iHealth") > (ReturnEntityMaxHealth(entity) / 2))
 							continue;
@@ -2595,13 +2594,12 @@ public void Citizen_ClotThink(int iNPC)
 				{
 					if(TeutonType[client] == TEUTON_NONE && IsClientInGame(client) && IsPlayerAlive(client))
 					{
-						/*if(dieingstate[client] > 0)
+						if(dieingstate[client] > 0)
 						{
-							if(npc.m_iGunType != npc.m_iHasPerk)
+							if(GetClosestTarget(client, true, 600.0, true, .IgnorePlayers = true) > MaxClients)
 								continue;
 						}
-						else */
-						if(combat)
+						else if(combat)
 						{
 							if(GetClientHealth(client) > (ReturnEntityMaxHealth(client) / 2))
 								continue;
@@ -3304,7 +3302,7 @@ public void Citizen_ClotThink(int iNPC)
 
 						if(reloadStatus == 2 || (outOfRange && reloadStatus == 1))	// We need to reload now
 						{
-							if(!noSafety && distance < 250000.0 && CanOutRun(npc.index, target))
+							if(!noSafety && distance < 250000.0 && CanOutRun(target))
 							{
 								npc.ThinkCombat("Too close to reload!");
 
@@ -3327,7 +3325,7 @@ public void Citizen_ClotThink(int iNPC)
 							if(npc.m_iWearable1 > 0)
 								AcceptEntityInput(npc.m_iWearable1, "Disable");
 						}
-						else if(!noSafety && distance < 100000.0 && CanOutRun(npc.index, target))	// Too close for the Pistol
+						else if(!noSafety && distance < 100000.0 && CanOutRun(target))	// Too close for the Pistol
 						{
 							npc.ThinkCombat("Too close to fight!");
 
@@ -3414,7 +3412,7 @@ public void Citizen_ClotThink(int iNPC)
 					
 					if(!cooldown && (reloadStatus == 2 || (reloadStatus == 1 && outOfRange)))	// We need to reload now
 					{
-						if(!noSafety && distance < 250000.0 && CanOutRun(npc.index, target))
+						if(!noSafety && distance < 250000.0 && CanOutRun(target))
 						{
 							npc.ThinkCombat("Too close to reload!");
 
@@ -3511,7 +3509,7 @@ public void Citizen_ClotThink(int iNPC)
 					
 					if(!cooldown && (reloadStatus == 2 || (reloadStatus == 1 && outOfRange)))	// We need to reload now
 					{
-						if(!noSafety && distance < 250000.0 && CanOutRun(npc.index, target))
+						if(!noSafety && distance < 250000.0 && CanOutRun(target))
 						{
 							npc.ThinkCombat("Too close to reload!");
 
@@ -3617,7 +3615,7 @@ public void Citizen_ClotThink(int iNPC)
 						
 						if(reloadStatus == 2 || (reloadStatus == 1 && outOfRange))	// We need to reload now
 						{
-							if(!noSafety && distance < 150000.0 && CanOutRun(npc.index, target))
+							if(!noSafety && distance < 150000.0 && CanOutRun(target))
 							{
 								npc.ThinkCombat("Too close to reload!");
 
@@ -3713,7 +3711,7 @@ public void Citizen_ClotThink(int iNPC)
 						
 						if(reloadStatus == 2 || (reloadStatus == 1 && outOfRange))	// We need to reload now
 						{
-							if(!noSafety && distance < 250000.0 && CanOutRun(npc.index, target))
+							if(!noSafety && distance < 250000.0 && CanOutRun(target))
 							{
 								npc.ThinkCombat("Too close to reload!");
 
@@ -3730,7 +3728,7 @@ public void Citizen_ClotThink(int iNPC)
 							npc.SetActivity("ACT_RUN_RPG", 320.0);
 							walkStatus = 1;
 						}
-						else if(!noSafety && distance < 100000.0 && CanOutRun(npc.index, target))	// Too close for the RPG
+						else if(!noSafety && distance < 100000.0 && CanOutRun(target))	// Too close for the RPG
 						{
 							npc.ThinkCombat("Too close to fight!");
 
@@ -4352,9 +4350,9 @@ public void Citizen_ClotThink(int iNPC)
 	}
 }
 
-static bool CanOutRun(int entity, int target)
+static bool CanOutRun(int target)
 {
-	return (target <= MaxClients || (view_as<CClotBody>(entity).GetRunSpeed() * 0.9) > view_as<CClotBody>(target).GetRunSpeed());
+	return (target <= MaxClients || (300.0 > view_as<CClotBody>(target).GetRunSpeed()));
 }
 
 void Citizen_MiniBossSpawn()

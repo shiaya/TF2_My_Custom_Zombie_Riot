@@ -2091,13 +2091,16 @@ methodmap CClotBody < CBaseCombatCharacter
 	}
 	public void StartPathing()
 	{
-		this.m_bPathing = true;
+		if(!this.m_bPathing)
+		{
 #if defined ZR
-		if((VIPBuilding_Active() && GetTeam(this.index) != TFTeam_Red))
-			this.GetPathFollower().SetMinLookAheadDistance(25.0);
-		else
+			if((VIPBuilding_Active() && GetTeam(this.index) != TFTeam_Red))
+				this.GetPathFollower().SetMinLookAheadDistance(25.0);
+			else
 #endif
-			this.GetPathFollower().SetMinLookAheadDistance(100.0);
+				this.GetPathFollower().SetMinLookAheadDistance(100.0);	
+		}
+		this.m_bPathing = true;
 	}
 	public void StopPathing()
 	{
@@ -2928,7 +2931,8 @@ methodmap CClotBody < CBaseCombatCharacter
 			{
 				float PlaybackSpeed = clamp((flNextBotGroundSpeed / m_flGroundSpeed), -4.0, 12.0);
 				if(PlaybackSpeed > f_MaxAnimationSpeed[this.index])
-					PlaybackSpeed > f_MaxAnimationSpeed[this.index];
+					PlaybackSpeed = f_MaxAnimationSpeed[this.index];
+
 				if(PlaybackSpeed <= 0.01)
 					PlaybackSpeed = 0.01;
 					
@@ -4251,6 +4255,9 @@ public bool IsEntityTraversable(CBaseNPC_Locomotion loco, int other_entidx, Trav
 #else
 	if(i_IsABuilding[other_entidx])
 	{
+		if(b_AvoidBuildingsAtAllCosts[bot_entidx])
+			return false;
+
 		return true;
 	}
 
@@ -4912,12 +4919,7 @@ stock int GetClosestTarget(int entity,
 						if(!WasValid)
 							continue;
 					}
-					int vehicle = GetEntPropEnt(i, Prop_Data, "m_hVehicle");
-					if(vehicle != -1)
-					{
-						GetClosestTarget_AddTarget(vehicle, 1);
-					}
-					else if(!npc.m_bCamo || camoDetection)
+					if(!npc.m_bCamo || camoDetection)
 					{
 						GetClosestTarget_AddTarget(i, 1);
 					}			
@@ -5310,7 +5312,7 @@ int GetClosestTarget_Internal(int entity, float fldistancelimit, float fldistanc
 				}
 				case 4:
 				{
-					distance_limit = fldistancelimitAllyNPC;
+					distance_limit = fldistancelimit;
 				}
 				default:
 				{
@@ -5354,7 +5356,7 @@ stock int GetClosestAllyPlayer(int entity, bool Onlyplayers = false, int ignore 
 		if (i != ignore && IsValidClient(i))
 		{
 			CClotBody npc = view_as<CClotBody>(i);
-			if (GetTeam(i)== GetTeam(entity) && !npc.m_bThisEntityIgnored && IsEntityAlive(i, true) && GetEntPropEnt(i, Prop_Data, "m_hVehicle") == -1) //&& CheckForSee(i)) we dont even use this rn and probably never will.
+			if (GetTeam(i)== GetTeam(entity) && !npc.m_bThisEntityIgnored && IsEntityAlive(i, true)) //&& CheckForSee(i)) we dont even use this rn and probably never will.
 			{
 				float EntityLocation[3], TargetLocation[3]; 
 				GetEntPropVector( entity, Prop_Data, "m_vecAbsOrigin", EntityLocation ); 
@@ -5765,7 +5767,8 @@ public void NpcBaseThink(int iNPC)
 	if(f_TextEntityDelay[iNPC] < GetGameTime())
 	{
 		//this is just as a temp fix, remove whenver.
-		SetEntityMoveType(iNPC, MOVETYPE_CUSTOM);
+		//If it isnt custom, then these npcs ignore triggers
+	//	SetEntityMoveType(iNPC, MOVETYPE_CUSTOM);
 		NpcDrawWorldLogic(iNPC);
 		f_TextEntityDelay[iNPC] = GetGameTime() + GetRandomFloat(0.25, 0.35);
 		Npc_DebuffWorldTextUpdate(npc);
@@ -5778,38 +5781,40 @@ public void NpcBaseThink(int iNPC)
 	}
 
 #if defined ZR
-	if((i_CurrentEquippedPerk[iNPC] == 1 || HasSpecificBuff(iNPC, "Regenerating Therapy") ||  NpcStats_WeakVoidBuff(iNPC) || NpcStats_StrongVoidBuff(iNPC)) && f_QuickReviveHealing[iNPC] < GetGameTime())
+	if(f_QuickReviveHealing[iNPC] < GetGameTime())
 	{
 		f_QuickReviveHealing[iNPC] = GetGameTime() + 0.1;
-
-		float HealingAmount = float(ReturnEntityMaxHealth(npc.index)) * 0.01;
-		
-		float HpScalingDecreace = 1.0;
-
-		if(b_thisNpcIsARaid[iNPC])
+		if(i_CurrentEquippedPerk[iNPC] == 1 || HasSpecificBuff(iNPC, "Regenerating Therapy") ||  NpcStats_WeakVoidBuff(iNPC)|| NpcStats_StrongVoidBuff(iNPC))
 		{
-			HealingAmount *= 0.025;
-			//this means it uses scaling somehow.
-			HpScalingDecreace = NpcDoHealthRegenScaling();
-		}
-		else if(b_thisNpcIsABoss[iNPC])
-		{
-			HealingAmount *= 0.125;
-			HpScalingDecreace = NpcDoHealthRegenScaling();
-		}
-		if(NpcStats_StrongVoidBuff(iNPC))
-			HealingAmount *= 1.25;
-		
-		//Reduce Healing
-		if(GetTeam(iNPC) == TFTeam_Red)
-		{
-			HealingAmount *= 0.2;
-		}
-		HealingAmount *= HpScalingDecreace;
+			float HealingAmount = float(ReturnEntityMaxHealth(npc.index)) * 0.01;
+			
+			float HpScalingDecreace = 1.0;
 
-		f_QuickReviveHealing[iNPC] = GetGameTime() + 0.25;
-		
-		HealEntityGlobal(iNPC, iNPC, HealingAmount, 1.25, 0.0, HEAL_SELFHEAL);
+			if(b_thisNpcIsARaid[iNPC])
+			{
+				HealingAmount *= 0.025;
+				//this means it uses scaling somehow.
+				HpScalingDecreace = NpcDoHealthRegenScaling();
+			}
+			else if(b_thisNpcIsABoss[iNPC])
+			{
+				HealingAmount *= 0.125;
+				HpScalingDecreace = NpcDoHealthRegenScaling();
+			}
+			if(NpcStats_StrongVoidBuff(iNPC))
+				HealingAmount *= 1.25;
+			
+			//Reduce Healing
+			if(GetTeam(iNPC) == TFTeam_Red)
+			{
+				HealingAmount *= 0.2;
+			}
+			HealingAmount *= HpScalingDecreace;
+
+			f_QuickReviveHealing[iNPC] = GetGameTime() + 0.25;
+			
+			HealEntityGlobal(iNPC, iNPC, HealingAmount, 1.25, 0.0, HEAL_SELFHEAL);
+		}
 	}
 #endif
 #if defined RPG
@@ -5867,10 +5872,13 @@ public void NpcSetGravity(CClotBody npc, int iNPC)
 }
 public void NpcOutOfBounds(CClotBody npc, int iNPC)
 {
+	if(i_NpcIsABuilding[iNPC])
+		return;
+
 #if defined RTS
 	if(!i_NpcIsABuilding[iNPC])
 #else
-	if(!IsEntityTowerDefense(iNPC) && GetTeam(iNPC) != TFTeam_Red && !i_NpcIsABuilding[iNPC])
+	if(!IsEntityTowerDefense(iNPC) && GetTeam(iNPC) != TFTeam_Red)
 #endif
 	{
 		static float flMyPos[3];
@@ -5936,7 +5944,7 @@ public void NpcOutOfBounds(CClotBody npc, int iNPC)
 		}
 	}
 #if defined ZR
-	else if(GetTeam(iNPC) == TFTeam_Red && !i_NpcIsABuilding[iNPC])
+	else if(GetTeam(iNPC) == TFTeam_Red)
 	{
 		float GameTime = GetGameTime();
 		if(f_StuckOutOfBoundsCheck[iNPC] < GameTime)
@@ -8221,6 +8229,7 @@ public void SetDefaultValuesToZeroNPC(int entity)
 #endif
 //	i_MasterSequenceNpc[entity] = -1;
 	ResetAllArmorStatues(entity);
+	b_AvoidBuildingsAtAllCosts[entity] = false;
 	f_MaxAnimationSpeed[entity] = 2.0;
 	b_OnDeathExtraLogicNpc[entity] = 0;
 	f_DoNotUnstuckDuration[entity] = 0.0;
@@ -9443,13 +9452,7 @@ public void Npc_DebuffWorldTextUpdate(CClotBody npc)
 	{
 		Format(HealthText, sizeof(HealthText), "%sS(%i)",HealthText,VausMagicaShieldLeft(npc.index));
 	}
-
-	/*
-	if(IgniteFor[npc.index] > 0)
-	{
-		Format(HealthText, sizeof(HealthText), "%s~",HealthText);
-	}
-	*/
+	
 	if(f_DuelStatus[npc.index] > GetGameTime(npc.index))
 	{
 		Format(HealthText, sizeof(HealthText), "%sVS",HealthText);
@@ -10110,14 +10113,13 @@ public void SaveLastValidPositionEntity(int entity)
 	f_GameTimeTeleportBackSave_OutOfBounds[entity] = GetGameTime() + GetRandomFloat(1.5, 2.2);
 	//dont save location too often
 
+	//Am i a player?
 	if(entity <= MaxClients)
 	{
 		if (!IsPlayerAlive(entity))
 			return;
-		
-		/*
-		additional logic, if they are on a slope, make sure they cant slide on it
-		*/
+
+		//am i on the ground? If not, then dont save.
 		bool SavePosition = true;
 		if (!(GetEntityFlags(entity) & FL_ONGROUND))
 		{
@@ -10143,6 +10145,7 @@ public void SaveLastValidPositionEntity(int entity)
 		hullcheckmaxs_Player = view_as<float>( { 24.0, 24.0, 82.0 } );
 		hullcheckmins_Player = view_as<float>( { -24.0, -24.0, 0.0 } );	
 		b_AntiSlopeCamp[entity] = false;
+		//Make sure they arent on a slope!
 		if(!SavePosition)
 		{
 			float AbsOrigin_after[3];

@@ -36,6 +36,11 @@ int Building_BuildingBeingCarried[MAXENTITIES];
 float f_DamageTakenFloatObj[MAXENTITIES];
 int OwnerOfText[MAXENTITIES];
 
+//Performance improvement, no need to check this littearlly every fucking frame
+//other things DO need it, but not this.
+float f_TransmitDelayCheck[MAXENTITIES][MAXTF2PLAYERS];
+Action b_TransmitBiasDo[MAXENTITIES][MAXTF2PLAYERS];
+
 int i_NormalBarracks_HexBarracksUpgrades_2[MAXENTITIES];
 
 #define ZR_BARRACKS_TROOP_CLASSES			(1 << 3) //Allows training of units, although will limit support buildings to 1.
@@ -73,6 +78,7 @@ void Object_MapStart()
 	PrecacheSoundArray(g_DeathSounds);
 	PrecacheSoundArray(g_HurtSounds);
 	PrecacheSound(g_ExplosionSounds);
+	Zero2(f_TransmitDelayCheck);
 }
 void Object_PluginStart()
 {
@@ -145,6 +151,7 @@ methodmap ObjectGeneric < CClotBody
 		i_IsABuilding[obj] = true;
 		b_NoKnockbackFromSources[obj] = true;
 		f_DamageTakenFloatObj[obj] = 0.0;
+
 		SDKHook(obj, SDKHook_Think, ObjBaseThink);
 		SDKHook(obj, SDKHook_ThinkPost, ObjBaseThinkPost);
 		objstats.SetNextThink(GetGameTime());
@@ -405,16 +412,38 @@ methodmap ObjectGeneric < CClotBody
 
 public Action SetTransmit_BuildingNotReady(int entity, int client)
 {
-	return SetTransmit_BuildingShared(entity, client, true);
+	if(f_TransmitDelayCheck[entity][client] > GetGameTime())
+	{
+		return b_TransmitBiasDo[entity][client];
+	}
+	f_TransmitDelayCheck[entity][client] = GetGameTime() + 0.25;
+
+	b_TransmitBiasDo[entity][client] = SetTransmit_BuildingShared(entity, client, true);
+	return b_TransmitBiasDo[entity][client];
 }
+
 
 public Action SetTransmit_BuildingReady(int entity, int client)
 {
-	return SetTransmit_BuildingShared(entity, client, false);
+	if(f_TransmitDelayCheck[entity][client] > GetGameTime())
+	{
+		return b_TransmitBiasDo[entity][client];
+	}
+	f_TransmitDelayCheck[entity][client] = GetGameTime() + 0.25;
+
+	b_TransmitBiasDo[entity][client] = SetTransmit_BuildingShared(entity, client, false);
+	return b_TransmitBiasDo[entity][client];
 }
 public Action SetTransmit_BuildingReadyTestThirdPersonIgnore(int entity, int client)
 {
-	return SetTransmit_BuildingShared(entity, client, false, true);
+	if(f_TransmitDelayCheck[entity][client] > GetGameTime())
+	{
+		return b_TransmitBiasDo[entity][client];
+	}
+	f_TransmitDelayCheck[entity][client] = GetGameTime() + 0.25;
+
+	b_TransmitBiasDo[entity][client] = SetTransmit_BuildingShared(entity, client, false, true);
+	return b_TransmitBiasDo[entity][client];
 }
 
 static Action SetTransmit_BuildingShared(int entity, int client, bool reverse, bool Ignorethird = false)
@@ -510,7 +539,6 @@ bool ObjectGeneric_ClotThink(ObjectGeneric objstats)
 
 	objstats.m_flNextDelayTime = gameTime + 0.2;
 	BuildingDisplayRepairLeft(objstats.index);
-	
 
 	int health = GetEntProp(objstats.index, Prop_Data, "m_iHealth");
 	int maxhealth = GetEntProp(objstats.index, Prop_Data, "m_iMaxHealth");
@@ -724,11 +752,17 @@ bool Object_Interact(int client, int weapon, int obj)
 				func = func_NPCInteract[entity];
 				if(func && func != INVALID_FUNCTION)
 				{
+					ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
 					Call_StartFunction(null, func);
 					Call_PushCell(client);
 					Call_PushCell(weapon);
 					Call_PushCell(entity);
 					Call_Finish(result);
+					f_TransmitDelayCheck[entity][client] = 0.0;
+					if(IsValidEntity(objstats.m_iWearable1))
+						f_TransmitDelayCheck[objstats.m_iWearable1][client] = 0.0;
+					if(IsValidEntity(objstats.m_iWearable2))
+						f_TransmitDelayCheck[objstats.m_iWearable2][client] = 0.0;
 				}
 				return true;
 			}
@@ -976,15 +1010,18 @@ public void ObjBaseThink(int building)
 {
 	ObjectGeneric objstats = view_as<ObjectGeneric>(building);
 	//Fixes some issues when mounted
-	int wearable = objstats.m_iWearable1;
-	if(wearable != -1)
-	{			
-		SetEntProp(wearable, Prop_Send, "m_fEffects", GetEntProp(wearable, Prop_Send, "m_fEffects") ^ EF_PARENT_ANIMATES);
-	}
-	wearable = objstats.m_iWearable2;
-	if(wearable != -1)
+	if(IsValidEntity(Building_Mounted[building]))
 	{
-		SetEntProp(wearable, Prop_Send, "m_fEffects", GetEntProp(wearable, Prop_Send, "m_fEffects") ^ EF_PARENT_ANIMATES);
+		int wearable = objstats.m_iWearable1;
+		if(wearable != -1)
+		{			
+			SetEntProp(wearable, Prop_Send, "m_fEffects", GetEntProp(wearable, Prop_Send, "m_fEffects") ^ EF_PARENT_ANIMATES);
+		}
+		wearable = objstats.m_iWearable2;
+		if(wearable != -1)
+		{
+			SetEntProp(wearable, Prop_Send, "m_fEffects", GetEntProp(wearable, Prop_Send, "m_fEffects") ^ EF_PARENT_ANIMATES);
+		}
 	}
 
 	//do not think if you are being carried.
@@ -1000,10 +1037,8 @@ void BuildingDisplayRepairLeft(int entity)
 	char HealthText[64];
 	int HealthColour[4];
 	int Repair = GetEntProp(objstats.index, Prop_Data, "m_iRepair");
-//	int MaxRepair = GetEntProp(objstats.index, Prop_Data, "m_iRepairMax");
 
 	int Health = GetEntProp(objstats.index, Prop_Data, "m_iHealth");
-//	int MaxHealth = GetEntProp(objstats.index, Prop_Data, "m_iMaxHealth");
 	HealthColour[0] = 255;
 	HealthColour[1] = 255;
 	HealthColour[3] = 255;

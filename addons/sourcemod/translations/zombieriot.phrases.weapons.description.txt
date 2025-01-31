@@ -3569,7 +3569,7 @@
 	}
 	"Siccerino Pap 2"
 	{
-		"en"	"Your attacks will debuff the enemy so you deal 5% more damage with each hit you do upto a cap.\nM2 ability changes into a rapidly fast attacking melee."
+		"en"	"Your attacks will debuff the enemy so you deal 5%& more damage with each hit you do upto a cap.\nM2 ability changes into a rapidly fast attacking melee."
 		"fr"	"+5%% dégats pour chaque coup, jusqu'a un maximum.\nAbilité devient des attaques corps-à-corps rapides."
 		"chi"	"伤害会使敌人受到+%5伤害，有上限。\nM2更为高攻速近战。"
 	}
@@ -5030,31 +5030,31 @@
 	}
 	"Waldch's Railgun Rounds Desc"
 	{
-		"en"	"How kind of him.\nIncreases ranged damage by +75%% and clipsize by +50%%.\nIncreases accuracy by +20%% and projectile speed by +25%%."
+		"en"	"How kind of him.\nIncreases ranged damage by +75%%, fire rate by +7.5%% and reload speed by +10%%.\nIncreases accuracy by +20%% and projectile speed by +25%%."
 	}
 	"Cheesy Doomsday Pack Desc"
 	{
-		"en"	"The package says ''Includes Molten Cheddar, literally!''\nIncreases ranged damage by +100%% and doubles clipsize.\nIncreases accuracy by +35%% and projectile speed by +50%%."
+		"en"	"The package says ''Includes Molten Cheddar, literally!''\nIncreases ranged damage by +100%%, fire rate by +7.5%% and reload speed by +10%%.\nIncreases accuracy by +35%% and projectile speed by +50%%."
 	}
 	"Magical Fontina Aura Desc"
 	{
-		"en"	"What kind of magic is this?\n+300 HP, Increases mage damage by +75%% and mage projectile speed by +15%%.\nIncreases melee resist with wands out by +6%%, and max mana by 25%%."
+		"en"	"What kind of magic is this?\n+300 HP, Increases mage damage by +80%% and mage projectile speed by +15%%.\nIncreases melee resist with wands out by +6%%, and max mana by 25%%."
 	}
 	"Domain Expansion: Cheese Desc"
 	{
-		"en"	"Through Necropolis and Irln, you alone are the Cheesed one.\n+600 HP, Increases mage damage by +100%% and mage projectile speed by +35%%.\nIncreases melee resist with wands out by +10%%, and max mana by 25%%."
+		"en"	"Through Necropolis and Irln, you alone are the Cheesed one.\n+600 HP, Increases mage damage by +115%% and mage projectile speed by +35%%.\nIncreases melee resist with wands out by +10%%, and max mana by 25%%."
 	}
 	"Bob's Willpower Desc"
 	{
-		"en"	"Bob the Second lending you his divine willpower.\n+1750 HP, +20%% overall resistance, grants a +5HP/s regen."
+		"en"	"Bob the Second lending you his divine willpower.\n+2000 HP, +20%% overall resistance, grants a +5HP/s regen."
 	}
 	"A Wheel of Gouda Desc"
 	{
-		"en"	"Eat up.\n+2000 HP, +22.5%% overall resistance, grants an additional +10HP/s regen."
+		"en"	"Eat up.\n+2500 HP, +25%% overall resistance, grants an additional +10HP/s regen."
 	}
 	"THE BIG CHEESE Desc"
 	{
-		"en"	"A tasty cylinder of 1-year aged medium sharp cheddar, weighing around 4500LBS.\nMay god help you eat it all.\n+2250 HP, +25%% overall resistance, grants an additional +15HP/s regen."
+		"en"	"A tasty cylinder of 1-year aged medium sharp cheddar, weighing around 4500LBS.\nMay god help you eat it all.\n+2750 HP, +30%% overall resistance, grants an additional +15HP/s regen."
 	}
 	"Voided Rejuvenator Pack Desc"
 	{
@@ -5066,23 +5066,23 @@
 	}
 	"Kit Modernizer I Desc"
 	{
-		"en" "A passive upgrade that only works on KITS.\nIncreases kit damage by +20%% and attackspeed by +5%%.\nGrants +25 HP on kill, +15%% overall resistance and +50%% projectile speed.\nReduces building cost by 25%%."
+		"en" "A passive upgrade that only works on KITS.\nIncreases kit damage by +25%% and attackspeed by +10%%.\nGrants +25 HP on kill, +15%% overall resistance and +50%% projectile speed.\nReduces building cost by 25%%."
 	}
 	"Kit Modernizer II Desc"
 	{
-		"en" "Increases kit damage by +30%% and reload speed by +5%%\nGrants +35%% max mana, +50%% healrate and building HP by +10%%.\nReduces building cost by 25%%."
+		"en" "Increases kit damage by +35%% and reload speed by +10%%\nGrants +35%% max mana, increases repair rate by +50%% and building HP by +10%%.\nReduces building cost by 25%%."
 	}
 	"Kit Modernizer III Desc"
 	{
-		"en" "Increases kit damage by +45%% and reload + attackspeed by +5%%\nIncreases repair rate by +100%%, building HP by +35%% and clipsize by +50%%.\nReduces building cost by 25%%."
+		"en" "Increases kit damage by +50%% and reload + attackspeed by +5%%\nIncreases repair rate by +100%%, building HP by +35%% and clipsize by +50%%.\nReduces building cost by 25%%."
 	}
 	"Kit Modernizer IV Desc"
 	{
-		"en" "Increases kit damage by +60%% and reload + attackspeed by +5%%\n+35 HP on kill | +20%% Overall Resistance | +50%% Heal Rate | +25%% Max Mana | +100%% Repair Rate"
+		"en" "Increases kit damage by +65%% and reload + attackspeed by +10%%\n+35 HP on kill | +20%% Overall Resistance | +25%% Max Mana | +100%% Repair Rate | +50%% Projectile Speed"
 	}
 	"Kit Modernizer V Desc"
 	{
-		"en" "Increases kit damage by +80%% and reload + attackspeed by +19%%\n+50 HP on kill | +25%% Overall Resistance | +75%% Heal Rate | +35%% Max Mana | +100%% Repair Rate | +50%% Clip size"
+		"en" "Increases kit damage by +85%% and reload + attackspeed by +10%%\n+50 HP on kill | +25%% Overall Resistance | +25%% Max Mana | +125%% Repair Rate | +50%% Clip size"
 	}
 	"Unit Reformator I Desc"
 	{
