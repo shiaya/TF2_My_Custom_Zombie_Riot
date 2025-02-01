@@ -534,11 +534,8 @@ public void OnPostThink(int client)
 
 		mana_regen[client] *= Mana_Regen_Level[client];
 		max_mana[client] *= Mana_Regen_Level[client];
-		if(b_TwirlHairpins[client])
-		{
-			mana_regen[client] *= 1.05;
-			max_mana[client] *= 1.05;
-		}
+		mana_regen[client] *= 1.05;
+		max_mana[client] *= 1.05;
 		mana_regen[client]*=0.05;
 		
 		if(Current_Mana[client] < RoundToCeil(max_mana[client]) && Mana_Regen_Block_Timer[client] < GameTime)
