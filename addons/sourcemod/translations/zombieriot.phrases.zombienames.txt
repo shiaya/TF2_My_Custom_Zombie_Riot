@@ -3178,9 +3178,8 @@
 	}
 	"Twirl Desc"
 	{
-		"en"	"The ruler of Ruina\nShe isn't fighting you at her actual power...\nShe's only using the power of the creast\nIf you see particles on her hands, it means one of her combo's is ready to fire"
-		"ru" 	"Лидер Руины\nОна не сражается с вами с полную силу...\nОна только использует силу магического гребеня\nЕсли вы увидете эффекты на её руках,Это озночает что одно из её Комбо готово"
-		"ko"	"루이나의 집정관입니다\그녀는 전력으로 싸우지 않습니다...\n그녀는 문장의 힘만을 사용하죠\n그녀의 손에 효과가 보인다면 그녀의 콤보가 준비되었다는 뜻입니다"
+		"en"	"The ruler of Ruina\nIt is advidsable not to group up aggainst her\nIf 4 or more people are near her, she has the ability to teleport\nIn addition, on wave 60, walk in a circle to avoid her Ion spam attack."
+		"ko"	"루이나의 집정관입니다\nIt is advidsable not to group up aggainst her\nIf 4 or more people are near her, she has the ability to teleport\nIn addition, on wave 60, walk in a circle to avoid her Ion spam attack."
 	}
 	"Lelouch Blade"
 	{

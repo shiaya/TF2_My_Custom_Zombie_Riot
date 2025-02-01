@@ -6040,7 +6040,10 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 									}
 									else
 									{
-										Attributes_Set(entity, info.Attrib[a], info.Value[a]);
+										//Giving kits everything makes sure it doesnt add it if you dont even own it.
+										//This makes sure it doesnt break certain weapons, and doesnt break tinker.
+										if(slot != 12)
+											Attributes_Set(entity, info.Attrib[a], info.Value[a]);
 									}
 								}
 								else if(!ignore_rest && TF2Econ_GetAttributeDefinitionString(info.Attrib[a], "description_format", info.Classname, sizeof(info.Classname)) && StrContains(info.Classname, "additive")!=-1)
@@ -6069,7 +6072,10 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 									}
 									else
 									{
-										Attributes_Set(entity, info.Attrib2[a], info.Value2[a]);
+										//Giving kits everything makes sure it doesnt add it if you dont even own it.
+										//This makes sure it doesnt break certain weapons, and doesnt break tinker.
+										if(slot != 12)
+											Attributes_Set(entity, info.Attrib2[a], info.Value2[a]);
 									}
 								}
 								else if(!ignore_rest && TF2Econ_GetAttributeDefinitionString(info.Attrib2[a], "description_format", info.Classname, sizeof(info.Classname)) && StrContains(info.Classname, "additive")!=-1)
