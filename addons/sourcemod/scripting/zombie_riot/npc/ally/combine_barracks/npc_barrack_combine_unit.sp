@@ -138,7 +138,7 @@ public void Barrack_Chaos_Containment_Unit_ClotThink(int iNPC)
 			float vecTarget[3]; WorldSpaceCenter(PrimaryThreatIndex, vecTarget);
 			float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
 			float flDistanceToTarget = GetVectorDistance(vecTarget, VecSelfNpc, true);
-			
+		
 			if(flDistanceToTarget < 250000.0)
 			{
 				int Enemy_I_See = Can_I_See_Enemy(npc.index, PrimaryThreatIndex);
@@ -173,7 +173,7 @@ public void Barrack_Chaos_Containment_Unit_ClotThink(int iNPC)
 							int target = TR_GetEntityIndex(swingTrace);	
 							
 							float vecHit[3];
-							
+								
 							if(CustomBullet >= 95)
 							{	
 								switch(GetRandomInt(1,4))
@@ -213,7 +213,7 @@ public void Barrack_Chaos_Containment_Unit_ClotThink(int iNPC)
 								SDKHooks_TakeDamage(target, npc.index, client, Barracks_UnitExtraDamageCalc(npc.index, GetClientOfUserId(npc.OwnerUserId), damage, 1), DMG_BULLET, -1, _, vecHit);
 								npc.PlayRangedAttackSound();
 							}
-							
+								
 							TR_GetEndPosition(vecHit, swingTrace);
 							float origin[3], angles[3];
 							view_as<CClotBody>(npc.m_iWearable1).GetAttachment("muzzle", origin, angles);

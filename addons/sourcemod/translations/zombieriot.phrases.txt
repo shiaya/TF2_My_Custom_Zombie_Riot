@@ -405,16 +405,7 @@
 	}
 	"Pistol Magazines"
 	{
-		"en"		"Pistol Magazines"
-		"it"		"Caricatori Pistola"
-		"ru"		"Обойма пистолета"
-		"pl"		"Magazynek do Pistoletu"
-		"es"		"Cartuchos de Pistola"
-		"fr"		"Munitions de Pistolet"
-		"de"		"Pistolenmagazine"
-		"pt"		"Cartuchos de Pistola"
-		"nl"		"Pistool Magazijn"
-		"chi"       "手枪弹匣"
+		"en"		"Pistol Mag"
 	}
 	"Rockets"
 	{
@@ -431,16 +422,7 @@
 	}
 	"Flamethrower Tank"
 	{
-		"en"		"Flamethrower Tank"
-		"it"		"Serbatoio Lanciafiamme"
-		"ru"		"Топливо огнемёта"
-		"pl"		"Paliwo do miotacza ognia"
-		"es"		"Tanque de Propano"
-		"fr"		"Réservoir de Lance-flammes"
-		"de"		"Flammenwerfer-Tank"
-		"pt"		"Tanque de Propano"
-		"nl"		"Vlammenwerper Tank"
-		"chi"       "燃料"
+		"en"		"Oil"
 	}
 	"Flares"
 	{
@@ -509,29 +491,11 @@
 	}
 	"Medical Syringes"
 	{
-		"en"		"Medical Syringes"
-		"it"		"Siringhe Medicali"
-		"ru"		"Медицинские шприцы"
-		"pl"		"Strzykawki medyczne"
-		"es"		"Jeringuillas medicas"
-		"fr"		"Seringues Médicales"
-		"de"		"Medizinische Spritzen"
-		"pt"		"Seringas Médicas"
-		"nl"		"Medische Spuiten"
-		"chi"       "注射器"
+		"en"		"Syringes"
 	}
 	"Sniper Rifle Rounds"
 	{
-		"en"		"Sniper Rifle Rounds"
-		"it"		"Munizioni per il Cecchino"
-		"ru"		"Патр. снайп. винт."
-		"pl"		"Amunicja do karabinu snajperskiego"
-		"es"		"Balas de Francotirador"
-		"fr"		"Balles de Fusil de Sniper"
-		"de"		"Scharfschützengewehr-Runden"
-		"pt"		"Balas de Sniper"
-		"nl"		"Scherpshuttergeweer Kogels"
-		"chi"       "狙击枪子弹"
+		"en"		"Sniper Rounds"
 	}
 	"Arrows"
 	{
@@ -548,16 +512,7 @@
 	}
 	"SMG Magazines"
 	{
-		"en"		"SMG Magazines"
-		"it"		"Caricatori per l'SMG"
-		"ru"		"Патроны ПП"
-		"pl"		"Magazynek do pistoletu maszynowego"
-		"es"		"Balas de Subfusil"
-		"fr"		"Balles de Mitraillette"
-		"de"		"SMG Magazin"
-		"pt"		"Cartuchos de Sub-Metralhadora"
-		"nl"		"SMG Wapenmagazijnes"
-		"chi"       "小型弹药"
+		"en"		"SMG Mag"
 	}
 	"Revolver Rounds"
 	{
@@ -3958,6 +3913,10 @@
 	"Enable Visual Clutter Desc"
 	{
 		"en"	"Re-Enables Things like arrows in npc's and other things that are just hindering visual things.\nIf you love it, enable it again."
+	}
+	"Enable Reload Interact Desc"
+	{
+		"en"	"If this is enabled, then some abilities require you to hold crouch to use them to prevent accidental use."
 	}
 	"Enable Numeral Armor"
 	{

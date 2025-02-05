@@ -2402,6 +2402,8 @@ public int Settings_MenuPage(Menu menu, MenuAction action, int client, int choic
 					{
 						b_InteractWithReload[client] = true;
 					}
+					SetGlobalTransTarget(client);
+					PrintToChat(client,"%t", "Enable Reload Interact Desc");
 					ReShowSettingsHud(client);
 				}
 				case -55: //Show Volume Hud
