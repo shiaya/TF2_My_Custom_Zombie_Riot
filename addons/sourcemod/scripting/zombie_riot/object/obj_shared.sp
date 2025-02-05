@@ -972,7 +972,7 @@ void DestroyBuildingDo(int entity)
 	if(b_Interior_ExplosiveBuilding[entity])
 	{
 		int client = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-		float damage = float(b_Interior_ExplosiveBuilding_MaxHP[entity])+300.0;
+		float damage = (float(b_Interior_ExplosiveBuilding_MaxHP[entity])*0.1)+300.0;
 		float AOE_range = 100.0;
 		
 		if(!IsValidClient(client))client=-1;

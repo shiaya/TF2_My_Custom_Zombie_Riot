@@ -141,7 +141,6 @@ static void KitOmega_GUN_Selector_Function(int client, int OverrideGunType=-1)
 		case 1:
 		{
 			weapon_new=Store_GiveSpecificItem(client, "KitArsenals Gauss Pistol Default");
-			i_KitOmega_GunType[client]=1;
 		}
 		case 2:
 		{
@@ -158,6 +157,11 @@ static void KitOmega_GUN_Selector_Function(int client, int OverrideGunType=-1)
 		case 5:
 		{
 			weapon_new=Store_GiveSpecificItem(client, "KitArsenals GrenadeLauncher Default");
+		}
+		case 6:
+		{
+			weapon_new=Store_GiveSpecificItem(client, "KitArsenals Gauss Pistol Default");
+			i_KitOmega_GunType[client]=1;
 		}
 	}
 	int DeleteThisGun = EntRefToEntIndex(i_KitOmega_GunIndex[client]);

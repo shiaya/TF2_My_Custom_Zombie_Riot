@@ -32,7 +32,6 @@ static void ClotPrecache()
 {
 	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
 	PrecacheModel("models/player/spy.mdl");
-	PrecacheModel("models/items/tf_gift.mdl", true);
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3");
 	PrecacheSoundCustom("#zombiesurvival/ruina/wave60.mp3");
 	PrecacheSoundCustom("#zombiesurvival/ruina/wave45.mp3");
@@ -40,7 +39,9 @@ static void ClotPrecache()
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_60_music_1.mp3");
 	PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/raid_sensal_group.mp3");
 	PrecacheSoundCustom("#zombiesurvival/ruina/raid_ruina_trio.mp3");
+	PrecacheSoundCustom("#zombiesurvival/victoria/wave_45.mp3");
 	PrecacheSoundCustom(RAIDBOSS_TWIRL_THEME);
+	PrecacheModel("models/items/tf_gift.mdl", true);
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
@@ -293,6 +294,39 @@ methodmap CyberGrindGM < CClotBody
 			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
+		else if(!StrContains(data, "freeplayfkgoooooo"))
+		{
+			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
+			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
+			func_NPCThink[npc.index] = CyberGrindGM_FreePlayer;
+			
+			npc.m_iBleedType = BLEEDTYPE_NORMAL;
+			npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
+			npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+			
+			//IDLE
+			b_ThisNpcIsImmuneToNuke[npc.index] = true;
+			npc.m_iState = 0;
+			npc.m_flGetClosestTargetTime = 0.0;
+			npc.StartPathing();
+			npc.m_flSpeed = 0.0;
+			npc.m_iOverlordComboAttack = 0;
+			npc.m_flNextMeleeAttack = 0.0;
+			npc.m_flNextRangedAttack = GetGameTime() + 1.0;
+			CyberGrind_Difficulty = 0;
+			TeleToU[npc.index] = true;
+		
+			int skin = 1;
+			SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
+
+			npc.m_iWearable1 = npc.EquipItem("head", "models/workshop/player/items/spy/spr18_assassins_attire/spr18_assassins_attire.mdl");
+
+			npc.m_iWearable2 = npc.EquipItem("head", "models/player/items/spy/spy_hat.mdl");
+
+			SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
+			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
+			return npc;
+		}
 		else if(!StrContains(data, "we_got_soldine"))
 		{
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
@@ -342,6 +376,35 @@ methodmap CyberGrindGM < CClotBody
 			music.Custom = true;
 			strcopy(music.Name, sizeof(music.Name), "Guard Down (remix)");
 			strcopy(music.Artist, sizeof(music.Artist), "Half-Life 2: Episode One/morch kovalski");
+			Music_SetRaidMusic(music);
+			
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
+			return npc;
+		}
+		else if(!StrContains(data, "victoria_wave_45_bgm"))
+		{
+			func_NPCDeath[npc.index] = INVALID_FUNCTION;
+			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			
+			for(int target = 1; target <= MaxClients; target++)
+			{
+				if(IsClientInGame(target) && !b_IsPlayerABot[target])
+					Music_Stop_All(target);
+			}
+			RemoveAllCustomMusic();
+			
+			MusicEnum music;
+			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/victoria/wave_45.mp3");
+			music.Time = 185;
+			music.Volume =2.5;
+			music.Custom = true;
+			strcopy(music.Name, sizeof(music.Name), "Operation Lucent Arrowhead Boss Battle Theme");
+			strcopy(music.Artist, sizeof(music.Artist), "Arknights");
 			Music_SetRaidMusic(music);
 			
 			b_NpcForcepowerupspawn[npc.index] = 0;
@@ -656,6 +719,89 @@ methodmap CyberGrindGM < CClotBody
 		SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
 		SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
 		return npc;
+	}
+}
+
+static void CyberGrindGM_FreePlayer(int iNPC)
+{
+	CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
+	float gameTime = GetGameTime(npc.index);
+	if(npc.m_flNextDelayTime > gameTime)
+	npc.m_flNextDelayTime = gameTime + DEFAULT_UPDATE_DELAY_FLOAT;
+	npc.Update();
+	if(npc.m_flNextThinkTime > gameTime)
+		return;
+	npc.m_flNextThinkTime = gameTime + 0.1;
+	if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
+	{
+		float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
+		ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+		if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
+		{
+			b_DoNotUnStuck[npc.index] = true;
+			b_NoKnockbackFromSources[npc.index] = true;
+			b_NpcIsInvulnerable[npc.index] = true;
+			b_ThisEntityIgnored[npc.index] = true;
+			MakeObjectIntangeable(npc.index);
+			int Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 300.0);
+			switch(Decicion)
+			{
+				case 2:
+				{
+					Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 150.0);
+					if(Decicion == 2)
+					{
+						Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 50.0);
+						if(Decicion == 2)
+						{
+							Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 0.0);
+						}
+					}
+				}
+				case 3:
+				{
+					//todo code on what to do if random teleport is disabled
+				}
+			}
+			TeleToU[npc.index]=false;
+			WorldSpaceCenter(npc.index, WorldSpaceVec);
+			ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+			NPC_SetGoalVector(npc.index, WorldSpaceVec, true);
+			npc.PlayDeathSound();
+		}
+	}
+	
+	if(!TeleToU[npc.index] && npc.m_flNextMeleeAttack < gameTime)
+	{
+		switch(npc.m_iOverlordComboAttack)
+		{
+			case 0:
+			{
+				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: ayo! See you here again");
+				npc.m_flNextMeleeAttack = gameTime + 2.0;
+				npc.m_iOverlordComboAttack=1;
+			}
+			case 1:
+			{
+				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Take this, it will help");
+				CPrintToChatAll("{green}Gained 59300 cash from {unique}[GM] {slateblue}Cyber Grind");
+				CPrintToChatAll("{green}FREEPLAY Items is now buyable!");
+				Store_DiscountNamedItem("Wildingen's Elite Building Components FREEPLAY", 999);
+				Store_DiscountNamedItem("Void's Glimpse FREEPLAY", 999);
+				CurrentCash = 60000;
+				npc.m_flNextMeleeAttack = gameTime + 1.5;
+				npc.m_iOverlordComboAttack=2;
+			}
+			case 2:
+			{
+				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: I'm busy cya!");
+				b_NpcForcepowerupspawn[npc.index] = 0;
+				i_RaidGrantExtra[npc.index] = 0;
+				b_DissapearOnDeath[npc.index] = true;
+				b_DoGibThisNpc[npc.index] = true;
+				SmiteNpcToDeath(npc.index);
+			}
+		}
 	}
 }
 

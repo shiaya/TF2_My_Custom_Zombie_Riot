@@ -41,17 +41,29 @@ static char[] GetSANSHealth()
 	{
 		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.25));
 	}
+	else if(ZR_GetWaveCount()+1 < 60)
+	{
+		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.3));
+	}
 	else
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.3)); //Yes its way higher but i reduced overall hp of him
+		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.2));
 	}
 	
 	health = health * 3 / 8;
 	
-	if(health>80000)
-		health=80000;
-	else if(health<8000)
-		health=8000;
+	if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
+	{
+		if(health<100000)
+			health=100000;
+	}
+	else
+	{
+		if(health>80000)
+			health=80000;
+		else if(health<8000)
+			health=8000;
+	}
 	
 	health = health+RoundToCeil((CountPlayersOnRed()*65.0)*(float(ZR_GetWaveCount()+1)*0.1));
 	
@@ -571,15 +583,22 @@ static void TrumpetSkeleton_NPCDeath(int entity)
 	if(IsValidEntity(npc.m_iWearable8))
 		RemoveEntity(npc.m_iWearable8);
 	
-	if(!TrumpetSkeleton_NotSpawning && GetRandomInt(1, 100)<=25)
+	if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
 	{
-		for (int client = 0; client < MaxClients; client++)
+		//none
+	}
+	else
+	{
+		if(!TrumpetSkeleton_NotSpawning && GetRandomInt(1, 100)<=25)
 		{
-			if(IsValidClient(client) && GetClientTeam(client) == 2
-			&& TeutonType[client] != TEUTON_WAITING && !(Items_HasNamedItem(client, "Bone Power Trumpet")))
+			for (int client = 0; client < MaxClients; client++)
 			{
-				Items_GiveNamedItem(client, "Bone Power Trumpet");
-				CPrintToChat(client, "%t", "Snas Trumpet Give");
+				if(IsValidClient(client) && GetClientTeam(client) == 2
+				&& TeutonType[client] != TEUTON_WAITING && !(Items_HasNamedItem(client, "Bone Power Trumpet")))
+				{
+					Items_GiveNamedItem(client, "Bone Power Trumpet");
+					CPrintToChat(client, "%t", "Snas Trumpet Give");
+				}
 			}
 		}
 	}
@@ -601,10 +620,15 @@ static int TrumpetSkeletonAssaultMode(int iNPC, float gameTime, float distance)
 			Explode_Logic_Custom(0.0, npc.index, npc.index, -1, VecSelfNpc, 350.0, _, _, true, _, false, _, SuperAttack);
 			npc.PlayRAGEMeleeSound();
 			float SuperCD=1.0;
-			if(ZR_GetWaveCount()+1 < 30)
-				SuperCD=5.0;
+			if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
+				SuperCD=2.0;
 			else
-				SuperCD=2.5;
+			{
+				if(ZR_GetWaveCount()+1 < 30)
+					SuperCD=5.0;
+				else
+					SuperCD=2.5;
+			}
 			npc.m_flRangedSpecialDelay = gameTime + SuperCD;
 		}
 		if(npc.m_flNextMeleeAttack < gameTime)
@@ -655,7 +679,11 @@ static void SuperAttack(int entity, int victim, float damage, int weapon)
 		float damageDealt = 25.0;
 		if(ZR_GetWaveCount()+1 > 12)
 			damageDealt *= float(ZR_GetWaveCount()+1)*0.25;
-		if(damageDealt>400.0)damageDealt=400.0;
+		if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
+		{
+			if(damageDealt>1000.0)damageDealt=1000.0;
+		}
+		else if(damageDealt>400.0)damageDealt=400.0;
 		if(ShouldNpcDealBonusDamage(victim))
 			damageDealt *= 2.0;
 		SDKHooks_TakeDamage(victim, npc.index, npc.index, damageDealt, DMG_CLUB, -1, _, vecHit);

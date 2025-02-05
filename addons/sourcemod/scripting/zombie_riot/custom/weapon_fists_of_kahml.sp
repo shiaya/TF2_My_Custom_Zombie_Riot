@@ -198,7 +198,7 @@ public void Fists_of_Kahml_Ablity_2(int client, int weapon, bool crit, int slot)
 		if(spawn_index > 0)
 		{
 		//	if(Items_HasNamedItem(client, "Kahml's Contained Chaos"))
-				fl_RangedSpecialDelay[spawn_index] = GetGameTime() + 12.0;
+			fl_RangedSpecialDelay[spawn_index] = GetGameTime() + 12.0;
 				
 			EmitCustomToAll("zombiesurvival/internius/blinkarrival.wav", client, SNDCHAN_STATIC, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME);	
 			EmitCustomToAll("zombiesurvival/internius/blinkarrival.wav", client, SNDCHAN_STATIC, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME);	

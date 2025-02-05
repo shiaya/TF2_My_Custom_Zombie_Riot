@@ -372,7 +372,7 @@ void Angelic_Shotgun_Meleetrace_Hit_Before(int client, float &damage, int enemy)
 				if(FireCritOntoEnemy[client])
 					HealingPerHit *= 1.25;
 		//		if(b_PossesItemTraining[client])
-					HealingPerHit *= 1.1;
+				HealingPerHit *= 1.1;
 
 				HealEntityGlobal(client, client, HealingPerHit, 1.35,_,HEAL_SELFHEAL);
 
@@ -392,7 +392,7 @@ void Angelic_Shotgun_Meleetrace_Hit_Before(int client, float &damage, int enemy)
 				if(FireCritOntoEnemy[client])
 					HealingPerHit *= 1.25;
 		//		if(b_PossesItemTraining[client])
-					HealingPerHit *= 1.1;
+				HealingPerHit *= 1.1;
 				HealEntityGlobal(client, client, HealingPerHit, 1.25,_,HEAL_SELFHEAL);
 			}
 		}
@@ -410,7 +410,7 @@ void Angelic_Shotgun_Meleetrace_Hit_Before(int client, float &damage, int enemy)
 				if(FireCritOntoEnemy[client])
 					HealingPerHit *= 1.25;
 		//		if(b_PossesItemTraining[client])
-					HealingPerHit *= 1.1;
+				HealingPerHit *= 1.1;
 				HealEntityGlobal(client, client, HealingPerHit, 1.25,_,HEAL_SELFHEAL);
 			}
 		}
@@ -429,7 +429,7 @@ void Angelic_Shotgun_Meleetrace_Hit_Before(int client, float &damage, int enemy)
 				if(FireCritOntoEnemy[client])
 					HealingPerHit *= 1.25;
 		//		if(b_PossesItemTraining[client])
-					HealingPerHit *= 1.1;
+				HealingPerHit *= 1.1;
 
 				HealEntityGlobal(client, client, HealingPerHit, 1.15,_,HEAL_SELFHEAL);
 			}

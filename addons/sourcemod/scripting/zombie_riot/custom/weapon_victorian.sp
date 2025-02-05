@@ -57,7 +57,7 @@ public void Enable_Victorian_Launcher(int client, int weapon) // Enable manageme
 		{
 			HasRocketSteam[client] = false;
 		//	if(Items_HasNamedItem(client, "Major Steam's Rocket"))
-				HasRocketSteam[client] = true;
+			HasRocketSteam[client] = true;
 			delete h_TimerVictorianLauncherManagement[client];
 			h_TimerVictorianLauncherManagement[client] = null;
 			DataPack pack;
@@ -72,7 +72,7 @@ public void Enable_Victorian_Launcher(int client, int weapon) // Enable manageme
 		{
 			HasRocketSteam[client] = false;
 		//	if(Items_HasNamedItem(client, "Major Steam's Rocket"))
-				HasRocketSteam[client] = true;
+			HasRocketSteam[client] = true;
 			DataPack pack;
 			h_TimerVictorianLauncherManagement[client] = CreateDataTimer(0.1, Timer_Management_Victoria, pack, TIMER_REPEAT);
 			pack.WriteCell(client);
