@@ -110,8 +110,8 @@ static const char g_HurtArmorSounds[][] = {
 
 public Action Command_RemoveAll(int client, int args)
 {
-	int entity = -1;
-	while((entity=FindEntityByClassname(entity, "zr_base_npc")) != -1)
+	int a, entity;
+	while((entity = FindEntityByNPC(a)) != -1)
 	{
 		if(IsValidEntity(entity))
 		{
@@ -335,7 +335,8 @@ public Action NPCStats_EndTouch(const char[] output, int entity, int caller, flo
 	}
 	return Plugin_Continue;
 }
-
+#define NORMAL_NPC 0
+#define STATIONARY_NPC 1
 
 methodmap CClotBody < CBaseCombatCharacter
 {
@@ -359,16 +360,16 @@ methodmap CClotBody < CBaseCombatCharacter
 						const float CustomThreeDimensions[3] = {0.0,0.0,0.0},
 						bool Ally_Collideeachother = false,
 						const float CustomThreeDimensionsextra[3] = {0.0,0.0,0.0},
-						int NpcTypeLogic = 0)
+						int NpcTypeLogic = NORMAL_NPC)
 #endif
 	{
 
 		int npc;
 		switch(NpcTypeLogic)
 		{
-			case 0:
+			case NORMAL_NPC:
 				npc = CreateEntityByName("zr_base_npc");
-			case 1:
+			case STATIONARY_NPC:
 				npc = CreateEntityByName("zr_base_stationary");
 		}
 		
@@ -379,14 +380,17 @@ methodmap CClotBody < CBaseCombatCharacter
 		DispatchKeyValue(npc, "model",	 model);
 		view_as<CBaseCombatCharacter>(npc).SetModel(model);
 		DispatchKeyValue(npc,	   "modelscale", modelscale);
-		DispatchKeyValue(npc,	   "health",	 health);
-		/*
-		DispatchKeyValue(npc, "shadowcastdist", "0");
+		if(NpcTypeLogic == NORMAL_NPC) //No need for lagcomp on things that dont even move.
+		{
+			DispatchKeyValue(npc,	   "health",	 health);
+		}
+		
+		DispatchKeyValue(npc, "shadowcastdist", "1");
 		DispatchKeyValue(npc, "disablereceiveshadows", "1");
 		DispatchKeyValue(npc, "disableshadows", "1");
 		DispatchKeyValue(npc, "disableshadowdepth", "1");
 		DispatchKeyValue(npc, "disableselfshadowing", "1");  
-		*/
+		
 		i_IsNpcType[npc] = NpcTypeLogic;
 
 #if defined ZR
@@ -427,20 +431,27 @@ methodmap CClotBody < CBaseCombatCharacter
 		}
 		b_NpcIgnoresbuildings[npc] = IgnoreBuildings;
 #endif
-		if(NpcTypeLogic != 1) //No need for lagcomp on things that dont even move.
+		if(NpcTypeLogic == NORMAL_NPC) //No need for lagcomp on things that dont even move.
+		{
 			AddEntityToLagCompList(npc);
+		}
+		else if(NpcTypeLogic == STATIONARY_NPC)
+		{
+			DispatchKeyValue(npc, "solid", "2");
+		}
 
 		b_NpcHasDied[npc] = false;
 		i_FailedTriesUnstuck[npc][0] = 0;
 		i_FailedTriesUnstuck[npc][1] = 0;
 		flNpcCreationTime[npc] = GetGameTime();
 		DispatchSpawn(npc); //Do this at the end :)
+
 		Hook_DHook_UpdateTransmitState(npc);
 		SDKHook(npc, SDKHook_TraceAttack, NPC_TraceAttack);
 		SDKHook(npc, SDKHook_OnTakeDamage, NPC_OnTakeDamage);
 		SDKHook(npc, SDKHook_OnTakeDamagePost, NPC_OnTakeDamage_Post);	
 
-		if(NpcTypeLogic != 1)
+		if(NpcTypeLogic != STATIONARY_NPC)
 		{
 			SetEntProp(npc, Prop_Send, "m_bGlowEnabled", false);
 			SetEntityMoveType(npc, MOVETYPE_CUSTOM);
@@ -452,6 +463,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		}
 
 		CClotBody npcstats = view_as<CClotBody>(npc);
+		SetEntProp(npc, Prop_Send, "m_fEffects", GetEntProp(npc, Prop_Send, "m_fEffects") | EF_NOSHADOW);
 
 	
 		//FIX: This fixes lookup activity not working.
@@ -460,15 +472,15 @@ methodmap CClotBody < CBaseCombatCharacter
 		SetEntPropFloat(npc, Prop_Send, "m_fadeMinDist", 1600.0);
 		SetEntPropFloat(npc, Prop_Send, "m_fadeMaxDist", 2000.0);
 #endif
-		if(NpcTypeLogic != 1)
+		//FIX: This fixes lookup activity not working.
+		npcstats.StartActivity(0);
+		npcstats.SetSequence(0);
+		npcstats.SetPlaybackRate(1.0);
+		npcstats.SetCycle(0.0);
+		npcstats.ResetSequenceInfo();
+		//FIX: This fixes lookup activity not working.
+		if(NpcTypeLogic != STATIONARY_NPC)
 		{
-			//FIX: This fixes lookup activity not working.
-			npcstats.StartActivity(0);
-			npcstats.SetSequence(0);
-			npcstats.SetPlaybackRate(1.0);
-			npcstats.SetCycle(0.0);
-			npcstats.ResetSequenceInfo();
-			//FIX: This fixes lookup activity not working.
 
 			baseNPC.flStepSize = 17.0;
 			baseNPC.flGravity = 800.0; //SEE Npc Base Think Function to change it.
@@ -503,7 +515,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		AddNpcToAliveList(npc, 0);
 #endif
 			
-		if(NpcTypeLogic != 1)
+		if(NpcTypeLogic != STATIONARY_NPC)
 		{
 			CBaseNPC_Locomotion locomotion = baseNPC.GetLocomotion();
 			locomotion.SetCallback(LocomotionCallback_ShouldCollideWith, ShouldCollide_NpcLoco);
@@ -512,7 +524,7 @@ methodmap CClotBody < CBaseCombatCharacter
 			h_NpcSolidHookType[npc] = DHookRaw(g_hGetSolidMask, true, view_as<Address>(baseNPC.GetBody()));
 			SetEntProp(npc, Prop_Data, "m_bloodColor", -1); //Don't bleed
 		}
-		if(NpcTypeLogic == 1)
+		if(NpcTypeLogic == STATIONARY_NPC)
 		{
 			//These npcs cant be moved or slowed, so this should be indicated!
 			ApplyStatusEffect(npc, npc, "Solid Stance", 999999.0);	
@@ -572,7 +584,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		f3_AvoidOverrideMax[npc] = m_vecMaxs_Body;
 		f3_AvoidOverrideMinNorm[npc] = m_vecMins;
 		f3_AvoidOverrideMaxNorm[npc] = m_vecMaxs;
-		if(NpcTypeLogic != 1)
+		if(NpcTypeLogic != STATIONARY_NPC)
 		{
 			baseNPC.SetBodyMaxs(m_vecMaxs);
 			baseNPC.SetBodyMins(m_vecMins);
@@ -613,10 +625,10 @@ methodmap CClotBody < CBaseCombatCharacter
 		}
 #endif
 		//Think once.
-		if(NpcTypeLogic == 1)
+		if(NpcTypeLogic == STATIONARY_NPC)
 		{
 			CBaseCombatCharacter(npc).SetNextThink(GetGameTime());
-			NpcBaseThink(npc);
+		//	NpcBaseThink(npc);
 		}
 
 		return view_as<CClotBody>(npc);
@@ -2005,6 +2017,10 @@ methodmap CClotBody < CBaseCombatCharacter
 	}
 	public void AddGesture(const char[] anim, bool cancel_animation = true, float duration = 1.0, bool autokill = true, float SetGestureSpeed = 1.0)
 	{
+		if(i_IsNpcType[this.index] == STATIONARY_NPC)
+			return;
+		//Will crash the server via corruption.
+		
 		int activity = this.LookupActivity(anim);
 		if(activity < 0)
 			return;
@@ -2372,7 +2388,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		DispatchKeyValue(item, "disableselfshadowing", "1");  
 		*/
 		DispatchSpawn(item);
-		SetEntProp(item, Prop_Send, "m_fEffects", EF_BONEMERGE|EF_PARENT_ANIMATES);
+		SetEntProp(item, Prop_Send, "m_fEffects", EF_BONEMERGE|EF_PARENT_ANIMATES|EF_NOSHADOW );
 		SetEntityMoveType(item, MOVETYPE_NONE);
 		SetEntProp(item, Prop_Data, "m_nNextThinkTick", -1.0);
 	
@@ -2584,7 +2600,7 @@ methodmap CClotBody < CBaseCombatCharacter
 			SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", this.index);			
 			DispatchSpawn(entity);
 			TeleportEntity(entity, absorigin, eyePitch, NULL_VECTOR, true);
-			SetEntProp(entity, Prop_Send, "m_fEffects", EF_PARENT_ANIMATES);
+			SetEntProp(entity, Prop_Send, "m_fEffects", EF_PARENT_ANIMATES| EF_NOSHADOW);
 			SetEntityMoveType(entity, MOVETYPE_NONE);
 			SetEntProp(entity, Prop_Data, "m_nNextThinkTick", -1.0);
 			
@@ -5225,6 +5241,11 @@ int GetClosestTarget_Internal(int entity, float fldistancelimit, float fldistanc
 	int ClosestTarget = -1; 
 
 #if !defined RTS
+	if(i_IsNpcType[entity] == STATIONARY_NPC)
+	{
+		//Stationary npcs never really need vector distance.
+		UseVectorDistance = true;
+	}
 	if(!b_NpcHasDied[entity] && !UseVectorDistance)
 	{
 		f_DelayComputingOfPath[entity] = 0.0;

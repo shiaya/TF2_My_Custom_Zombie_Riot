@@ -1016,6 +1016,16 @@ void ZR_ClientPutInServer(int client)
 	i_CurrentEquippedPerk[client] = 0;
 	i_HealthBeforeSuit[client] = 0;
 	i_ClientHasCustomGearEquipped[client] = false;
+	if(CountPlayersOnServer() == 1)
+	{
+		Waves_SetReadyStatus(2);
+		//fixes teuton issue hopefully?
+		//happens when you loose and instnatly ragequit or something.
+		for(int client_summon=1; client_summon<=MaxClients; client_summon++)
+		{
+			TeutonType[client_summon] = TEUTON_NONE;
+		}
+	}
 }
 
 void ZR_ClientDisconnect(int client)
@@ -1198,7 +1208,8 @@ public Action Command_RTdFail(int client, int args)
 {
 	if(client)
 	{
-		PrintToChat(client, "There is no RTD, and RTD isnt supported.");
+		CPrintToChat(client, "{crimson}[ZR] Looks like the dice broke.");
+		ClientCommand(client, "playgamesound vo/k_lab/kl_fiddlesticks.wav");
 	}
 	return Plugin_Handled;
 }
@@ -2422,8 +2433,8 @@ void ReviveAll(bool raidspawned = false, bool setmusicfalse = false)
 		}
 	}
 	
-	int entity = MaxClients + 1;
-	while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+	int a, entity;
+	while((entity = FindEntityByNPC(a)) != -1)
 	{
 		if(!b_NpcHasDied[entity])
 		{

@@ -170,7 +170,7 @@ bool b_MarkForReload = false; //When you wanna reload the plugin on map change..
 */
 //#define ZR_TEST_MODEL	"models/zombie_riot/weapons/test_models9.mdl"
 
-#define WINGS_MODELS_1 	"models/zombie_riot/weapons/custom_wings_1_2.mdl"
+#define WINGS_MODELS_1 	"models/zombie_riot/weapons/custom_wings_1_3.mdl"
 enum
 {
 	WINGS_FUSION 	= 1,
@@ -1061,6 +1061,7 @@ public void OnMapStart()
 
 #if defined ZR
 	ZR_MapStart();
+	Waves_SetReadyStatus(2);
 #endif
 
 #if defined RPG
@@ -1091,8 +1092,29 @@ public void OnMapStart()
 	g_iLaserMaterial_Trace = PrecacheModel("materials/sprites/laserbeam.vmt");
 	CreateTimer(0.2, Timer_Temp, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	PrecacheSound("mvm/mvm_tank_horn.wav");
+	DeleteShadowsOffZombieRiot();
 }
 
+void DeleteShadowsOffZombieRiot()
+{
+	//found shadow lod
+	int entityshadow = -1;
+	entityshadow = FindEntityByClassname(entityshadow, "shadow_control");
+
+	if(!IsValidEntity(entityshadow))
+	{
+		entityshadow = CreateEntityByName("shadow_control");
+		DispatchSpawn(entityshadow);
+	}
+	//Create new shadow entity, and make own own rules
+	//This disables shadows form npcs, entirely unneecceary as some models have broken as hell shadows.
+	//DispatchKeyValue(entityshadow,"color", "255 255 255 0");
+	if(IsValidEntity(entityshadow))
+	{
+		SetVariantInt(1); 
+		AcceptEntityInput(entityshadow, "SetShadowsDisabled"); 
+	}
+}
 public void OnMapEnd()
 {
 #if defined ZR
@@ -3467,6 +3489,9 @@ void checkOS()
 	{
 		OperationSystem = OS_Unknown;
 	}
+
+	if(OperationSystem == OS_Linux)
+		PrintToServer("Hi linux!");
 }
 
 

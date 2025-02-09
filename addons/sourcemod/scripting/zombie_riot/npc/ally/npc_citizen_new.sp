@@ -2287,8 +2287,8 @@ void Citizen_WaveStart()
 
 void Citizen_SetupStart()
 {
-	int i = -1;
-	while((i = FindEntityByClassname(i, "zr_base_npc")) != -1)
+	int a, i;
+	while((i = FindEntityByNPC(a)) != -1)
 	{
 		if(i_NpcInternalId[i] == NPCId)
 		{
@@ -2319,8 +2319,8 @@ void Citizen_SetupStart()
 			{
 				npc.m_iCanBuild = 1;
 				
-				int entity = MaxClients + 1;
-				while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+				int b, entity;
+				while((entity = FindEntityByNPC(b)) != -1)
 				{
 					if(i_NpcInternalId[entity] == MedivalBuilding_Id() && GetTeam(entity) == team)
 					{
@@ -2550,8 +2550,8 @@ public void Citizen_ClotThink(int iNPC)
 
 			float distance = FAR_FUTURE;
 
-			int entity = MaxClients + 1;
-			while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+			int a, entity;
+			while((entity = FindEntityByNPC(a)) != -1)
 			{
 				if(entity != npc.index && !i_NpcIsABuilding[entity] && !b_NpcIsInvulnerable[entity] && GetTeam(entity) == team)
 				{
@@ -2659,8 +2659,8 @@ public void Citizen_ClotThink(int iNPC)
 			}
 			else
 			{
-				int entity = MaxClients + 1;
-				while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+				int a, entity;
+				while((entity = FindEntityByNPC(a)) != -1)
 				{
 					if(i_NpcIsABuilding[entity] && GetTeam(entity) == team)
 					{
@@ -3864,8 +3864,8 @@ public void Citizen_ClotThink(int iNPC)
 				// Find an downed rebel to walk to
 				if(ally == 0)
 				{
-					int entity = MaxClients + 1;
-					while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+					int a, entity;
+					while((entity = FindEntityByNPC(a)) != -1)
 					{
 						if(entity != npc.index && Citizen_ThatIsDowned(entity))
 						{
@@ -3906,8 +3906,8 @@ public void Citizen_ClotThink(int iNPC)
 				bool alpha;
 
 				// Follow the alpha rebel
-				int entity = MaxClients + 1;
-				while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+				int a, entity;
+				while((entity = FindEntityByNPC(a)) != -1)
 				{
 					if(i_NpcInternalId[entity] == NPCId && GetTeam(entity) == team)
 					{
@@ -3928,8 +3928,8 @@ public void Citizen_ClotThink(int iNPC)
 				if(alpha)
 				{
 					// Follow bosses
-					entity = MaxClients + 1;
-					while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+					a = 0;
+					while((entity = FindEntityByNPC(a)) != -1)
 					{
 						if(entity != npc.index && i_NpcInternalId[entity] != NPCId && GetTeam(entity) == team && b_thisNpcIsABoss[entity])
 						{
@@ -3966,8 +3966,8 @@ public void Citizen_ClotThink(int iNPC)
 				//if(!combat)
 				{
 					// Don't go into other rebels
-					int entity = MaxClients + 1;
-					while((entity = FindEntityByClassname(entity, "zr_base_npc")) != -1)
+					int a, entity;
+					while((entity = FindEntityByNPC(a)) != -1)
 					{
 						if(entity != npc.index && i_NpcInternalId[entity] == NPCId)
 						{

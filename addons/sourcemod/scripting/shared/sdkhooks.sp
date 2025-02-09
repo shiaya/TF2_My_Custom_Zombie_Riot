@@ -2166,9 +2166,7 @@ void Replicate_Damage_Medications(int victim, float &damage, int damagetype)
 		//Everything else should be counted as ranged reistance probably.
 	}
 			
-	value = Attributes_GetOnPlayer(victim, 412, true, true, 1.0);	// Overall damage resistance
-	if(weapon != -1)
-		value *= Attributes_Get(weapon, 412, 1.0);
+	value = Attributes_GetOnPlayer(victim, 412, true, false, 1.0);	// Overall damage resistance
 
 	damage *= value;
 
@@ -2402,7 +2400,7 @@ public void OnWeaponSwitchPost(int client, int weapon)
 			{
 				if(weapon > 0 && i_WeaponVMTExtraSetting[weapon] != -1)
 				{
-					SetEntityRenderColor(entity, 255, 255, 255, i_WeaponVMTExtraSetting[weapon]);
+					SetEntityRenderColor(entity, 255, 255, 255, i_WeaponVMTExtraSetting[weapon], .ForceColour = true);
 					i_WeaponVMTExtraSetting[entity] = i_WeaponVMTExtraSetting[weapon]; //This makes sure to not reset the alpha.
 				}
 			}

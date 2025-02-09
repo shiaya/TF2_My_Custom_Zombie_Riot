@@ -2507,7 +2507,7 @@ void Store_RandomizeNPCStore(int ResetStore, int addItem = 0, bool subtract_wave
 			if(item.GregOnlySell == 2)	// We always sell this if unbought
 			{
 				float ApplySale = 0.7;
-				if(override > 0.0)
+				if(override >= 0.0)
 					ApplySale = override;
 
 				item.NPCSeller_Discount = ApplySale;
@@ -2601,7 +2601,7 @@ void Store_RandomizeNPCStore(int ResetStore, int addItem = 0, bool subtract_wave
 			if(rogue)
 				ApplySale = 0.5;
 				
-			if(override > 0.0)
+			if(override >= 0.0)
 				ApplySale = override;
 				
 			item.NPCSeller_Discount = ApplySale;
@@ -2665,7 +2665,7 @@ void Store_RandomizeNPCStore(int ResetStore, int addItem = 0, bool subtract_wave
 				item.NPCSeller = true;
 				float ApplySale = 1.0;
 
-				if(override > 0.0)
+				if(override >= 0.0)
 					ApplySale = override;
 					
 				item.NPCSeller_Discount = ApplySale;
