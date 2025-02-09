@@ -76,28 +76,6 @@ static Action Timer_KitOmega(Handle timer, DataPack pack)
 	return Plugin_Continue;
 }
 
-public void KitOmega_NPCTakeDamage(int attacker, int victim, float &damage, int weapon, int damagetype)
-{
-	if(i_KitOmega_WeaponPap[attacker]==1)
-	{
-		if(Items_HasNamedItem(attacker, "Major Steam's Rocket"))
-		{
-			ApplyStatusEffect(attacker, victim, "Cryo", 1.0);
-			Elemental_AddCyroDamage(victim, attacker, RoundFloat(damage*0.65), 1);
-		}
-		else
-		{
-			ApplyStatusEffect(attacker, victim, "Freeze", 1.0);
-			Elemental_AddCyroDamage(victim, attacker, RoundFloat(damage*0.5), 0);
-		}
-		if(NpcStats_IsEnemyTrueFrozen(victim) && f_TimeFrozenStill[victim] > GetGameTime(victim))
-		{
-			damage*=1.25;
-			DisplayCritAboveNpc(victim, attacker, true, _, _, false);
-		}
-	}
-}
-
 static void KitOmega_Function(int client, int weapon, bool holding)
 {
 
@@ -171,6 +149,8 @@ static void KitOmega_GUN_Selector_Function(int client, int OverrideGunType=-1)
 	{
 		if(WeaponSwap)
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon_new);
+		else
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
 		SetEntPropFloat(weapon_new, Prop_Send, "m_flNextPrimaryAttack", Time+1.5);
 		SetEntPropFloat(client, Prop_Send, "m_flNextAttack", Time+1.5);
 		i_KitOmega_GunIndex[client] = EntIndexToEntRef(weapon_new);

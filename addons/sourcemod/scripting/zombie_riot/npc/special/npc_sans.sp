@@ -47,7 +47,7 @@ static char[] GetSANSHealth()
 	}
 	else
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.2));
+		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.35));
 	}
 	
 	health = health * 3 / 8;
@@ -385,6 +385,8 @@ static void TrumpetSkeleton_ClotThink(int iNPC)
 				npc.m_flMeleeArmor = 0.9;
 				npc.m_flRangedArmor = 0.9;
 				int MaxHealth = RoundToCeil(GetEntProp(npc.index, Prop_Data, "m_iMaxHealth")*1.25);
+				if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
+					MaxHealth*=2.0;
 				SetEntProp(npc.index, Prop_Data, "m_iHealth", MaxHealth);
 				SetEntProp(npc.index, Prop_Data, "m_iMaxHealth", MaxHealth);
 				GrantEntityArmor(npc.index, true, 0.2, 0.75, 0);
@@ -657,6 +659,8 @@ static void TrumpetAttack(int entity, int victim, float damage, int weapon)
 		if(ZR_GetWaveCount()+1 > 12)
 			damageDealt *= float(ZR_GetWaveCount()+1)*0.1;
 		//if(damageDealt>85.0)damageDealt=85.0;
+		if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
+			damageDealt *= float(ZR_GetWaveCount()+1)*0.15;
 		if(ShouldNpcDealBonusDamage(victim))
 			damageDealt *= 2.0;
 		SDKHooks_TakeDamage(victim, npc.index, npc.index, damageDealt, DMG_CLUB, -1, _, vecHit);
@@ -680,9 +684,7 @@ static void SuperAttack(int entity, int victim, float damage, int weapon)
 		if(ZR_GetWaveCount()+1 > 12)
 			damageDealt *= float(ZR_GetWaveCount()+1)*0.25;
 		if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
-		{
-			if(damageDealt>1000.0)damageDealt=1000.0;
-		}
+			damageDealt *= float(ZR_GetWaveCount()+1)*0.25;
 		else if(damageDealt>400.0)damageDealt=400.0;
 		if(ShouldNpcDealBonusDamage(victim))
 			damageDealt *= 2.0;

@@ -294,7 +294,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 		{
 			if(AppearedBefore_Suicide)
 			{
-				CPrintToChatAll("{darkblue}The machine wanders off, it isnt interrested in this place anymore.");
+				CPrintToChatAll("{darkblue}The machine wanders off, it isnt interrested in this place anymore, someone else takes its place instead...");
 				b_NpcForcepowerupspawn[npc.index] = 0;
 			}
 			i_RaidGrantExtra[npc.index] = 0;
@@ -302,7 +302,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 			b_DoGibThisNpc[npc.index] = true;
 			SmiteNpcToDeath(npc.index);
 			if(AppearedBefore_Suicide)
-				NPC_SpawnNext(true, true); //This will force spawn a panzer.
+				NPC_SpawnNext(true, true, -1); //This will force spawn a panzer.
 
 			AppearedBefore_Suicide = true;
 			return;

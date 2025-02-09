@@ -781,6 +781,7 @@ public void OnPluginStart()
 //	LoadTranslations("realtime.phrases");
 	LoadTranslations("common.phrases");
 	LoadTranslations("zombieriot.phrases.status_effects");
+	LoadTranslations("zombieriot.phrases.cc");
 	
 	DHook_Setup();
 	SDKCall_Setup();

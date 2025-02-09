@@ -3605,6 +3605,12 @@ static void MenuPage(int client, int section)
 			menu.AddItem("-24", buffer);
 		}
 
+		if(Waves_InCCMode())
+		{
+			FormatEx(buffer, sizeof(buffer), "%t", "Setting Constraints");
+			menu.AddItem("-9000", buffer);
+		}
+
 		if(Level[client] > STARTER_WEAPON_LEVEL)
 		{
 			if(CvarSkillPoints.BoolValue)
@@ -4123,6 +4129,10 @@ public int Store_MenuPage(Menu menu, MenuAction action, int client, int choice)
 						OverridePlayerModel(client, MM_TRUE_BLITZKRIEG, true);
 						JoinClassInternal(client, CurrentClass[client]);
 						MenuPage(client, -1);
+					}
+					case -9000:
+					{
+						CC_ContractMenu(client, 0);
 					}
 					default:
 					{

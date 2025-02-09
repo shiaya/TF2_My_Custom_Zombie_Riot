@@ -103,6 +103,7 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	WaveStart_SubWaveStart(GetGameTime());
 	ResetWaldchLogic();
 	ResetSansLogic();
+	CC_Contract_ResetAll();
 	ResetITMLogic();
 	CurrentGibCount = 0;
 	for(int client=1; client<=MaxClients; client++)

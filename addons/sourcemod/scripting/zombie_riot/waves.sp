@@ -1392,7 +1392,8 @@ public Action Waves_EndVote(Handle timer, float time)
 				{
 					strcopy(LastWaveWas, sizeof(LastWaveWas), vote.Config);
 					PrintToChatAll("%t: %s","Difficulty set to", vote.Name);
-
+					if(!StrContains(vote.Name, "Contingency Contract"))CC_Contract_SetUp();
+					
 					char buffer[PLATFORM_MAX_PATH];
 					if(votes[highest] > 3)
 					{
@@ -3529,6 +3530,7 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 		WaveEndLogicExtra();
 
 		Freeplay_OnEndWave(round.Cash);
+		CC_Contract_OnEndWave(round.Cash);
 		
 		CurrentCash += round.Cash;
 

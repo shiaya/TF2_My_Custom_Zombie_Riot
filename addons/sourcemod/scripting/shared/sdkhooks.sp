@@ -2031,7 +2031,7 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 				ApplyLastmanOrDyingOverlay(victim);
 				SetEntityCollisionGroup(victim, 1);
 				CClotBody player = view_as<CClotBody>(victim);
-				player.m_bThisEntityIgnored = true
+				player.m_bThisEntityIgnored = true;
 				Attributes_SetMulti(victim, 442, 0.85);
 
 				TF2_AddCondition(victim, TFCond_SpeedBuffAlly, 0.00001);

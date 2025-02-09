@@ -452,6 +452,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/elemental.sp"
 #include "zombie_riot/escape.sp"
 #include "zombie_riot/freeplay.sp"
+#include "zombie_riot/contingency_contract.sp"
 #include "zombie_riot/items.sp"
 #include "zombie_riot/music.sp"
 #include "zombie_riot/natives.sp"
@@ -690,6 +691,8 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_raidend", Waves_AdminsRaidTimeEndCmd, ADMFLAG_ROOT, "Raid Force END");
 	RegAdminCmd("sm_raidadd", Waves_AdminsRaidTimeAddCmd, ADMFLAG_ROOT, "Raid Time Add");
 	RegAdminCmd("zr_get_ammotype", CommandGetAmmoTypes, ADMFLAG_ROOT, "Get Ammo Type");
+	RegAdminCmd("zr_ccmode", CommandCC_Contract_Mod, ADMFLAG_ROOT, "Toggle CC");
+	RegAdminCmd("zr_ccblock", CommandCC_Constraints_Block, ADMFLAG_ROOT, "Toggle block");
 	CookieXP = new Cookie("zr_xp", "Your XP", CookieAccess_Protected);
 	CookieScrap = new Cookie("zr_Scrap", "Your Scrap", CookieAccess_Protected);
 	
@@ -821,6 +824,7 @@ void ZR_MapStart()
 	
 	Waves_MapStart();
 	Freeplay_OnMapStart();
+	CC_Contract_OnMapStart();
 	Music_MapStart();
 	Star_Shooter_MapStart();
 	Bison_MapStart();
