@@ -821,8 +821,7 @@ bool Waves_GetMiniBoss(MiniBoss boss, int RND = -1)
 	int length = MiniBosses.Length;
 	if(!length)
 		return false;
-
-	/*
+	
 	int level;
 	for(int client = 1; client <= MaxClients; client++)
 	{
@@ -832,13 +831,13 @@ bool Waves_GetMiniBoss(MiniBoss boss, int RND = -1)
 				level = Level[client];
 		}
 	}
-	level = level / 10 - 10;
-	if(level < 0)
+
+	level /= 10;
+	if(level < 1)
 		return false;
 
 	if(length > level)
 		length = level;
-	*/
 
 	MiniBosses.GetArray((RND != -1 ? RND : GetURandomInt()) % length, boss);
 	return true;
@@ -1156,21 +1155,24 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 	DoGlobalMultiScaling();
 }
 
-void Waves_RoundStart()
+void Waves_RoundStart(bool event = false)
 {
-	if(SkyNameRestore[0])
+	if(event)
 	{
-		CvarSkyName.SetString(SkyNameRestore, true);
-		SkyNameRestore[0] = 0;
-	}
+		if(SkyNameRestore[0])
+		{
+			CvarSkyName.SetString(SkyNameRestore, true);
+			SkyNameRestore[0] = 0;
+		}
 
-	if(FogEntity != INVALID_ENT_REFERENCE)
-	{
-		int entity = EntRefToEntIndex(FogEntity);
-		if(entity != INVALID_ENT_REFERENCE)
-			RemoveEntity(entity);
-		
-		FogEntity = INVALID_ENT_REFERENCE;
+		if(FogEntity != INVALID_ENT_REFERENCE)
+		{
+			int entity = EntRefToEntIndex(FogEntity);
+			if(entity != INVALID_ENT_REFERENCE)
+				RemoveEntity(entity);
+			
+			FogEntity = INVALID_ENT_REFERENCE;
+		}
 	}
 	
 	Waves_ClearWaves();
@@ -1317,180 +1319,174 @@ public Action Waves_EndVote(Handle timer, float time)
 
 			if(CanReVote)
 			{
-				CanReVote = false;
-				for(int i = 0; i < length; i++)
-				{
-					if(votes[i] != 0)
-					{
-						CanReVote = true;
-						break;
-					}
-				}
-				//do not revote if only 1 difficulty is voted.
-			}
-
-			if(CanReVote)
-			{
 				int high1 = 0;	
 				int high2 = -1;
-				for(int i = 0; i < length; i++)
+				for(int i = 1; i < length; i++)
 				{
-					if(votes[i] > votes[high1])
+					if(votes[i])
 					{
-						high2 = high1;
-						high1 = i;
-					}
-					else if(high2 == -1 || votes[i] > votes[high2])
-					{
-						high2 = i;
-					}
-				}
-
-				if(high2 != -1)
-				{
-					high1 = votes[high2];
-					for(int i = length - 1; i >= 0; i--)
-					{
-						if(votes[i] < high1)
+						if(votes[i] > votes[high1])
 						{
-							list.Erase(i);
+							high2 = high1;
+							high1 = i;
+						}
+						else if(high2 == -1 || votes[i] > votes[high2])
+						{
+							high2 = i;
 						}
 					}
 				}
 
-				Zero(VotedFor);
-				CanReVote = false;
-				VoteEndTime = GetGameTime() + 30.0;
-				CreateTimer(30.0, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
-				PrintHintTextToAll("Vote for the top %d options!", list.Length);
-				PrintToChatAll("Vote for the top %d options!", list.Length);
-				Waves_SetReadyStatus(2);
+				if(high2 != -1 && votes[high1])
+				{
+					if(high2 != -1)
+					{
+						high1 = votes[high2];
+						for(int i = length - 1; i >= 0; i--)
+						{
+							if(votes[i] < high1)
+							{
+								list.Erase(i);
+							}
+						}
+					}
+
+					Zero(VotedFor);
+					CanReVote = false;
+					VoteEndTime = GetGameTime() + 30.0;
+					CreateTimer(30.0, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
+					PrintHintTextToAll("Vote for the top %d options!", list.Length);
+					PrintToChatAll("Vote for the top %d options!", list.Length);
+					Waves_SetReadyStatus(2);
+					return Plugin_Continue;
+				}
+				else
+				{
+					CanReVote = false;
+				}
+			}
+			
+			int highest;
+			for(int i=1; i<length; i++)
+			{
+				if(votes[i] > votes[highest])
+					highest = i;
+			}
+
+			bool normal = Voting == list;
+			
+			Vote vote;
+			list.GetArray(highest, vote);
+			
+			if(VotingMods == list)
+			{
+				delete VotingMods;
 			}
 			else
 			{
-				int highest;
-				for(int i=1; i<length; i++)
-				{
-					if(votes[i] > votes[highest])
-						highest = i;
-				}
+				delete Voting;
+			}
+			
+			if(normal)
+			{
+				strcopy(LastWaveWas, sizeof(LastWaveWas), vote.Config);
+				PrintToChatAll("%t: %s","Difficulty set to", vote.Name);
 
-				bool normal = Voting == list;
-				
-				Vote vote;
-				list.GetArray(highest, vote);
-				
-				if(VotingMods == list)
+				char buffer[PLATFORM_MAX_PATH];
+				if(votes[highest] > 3)
 				{
-					delete VotingMods;
-				}
-				else
-				{
-					delete Voting;
-				}
-				
-				if(normal)
-				{
-					strcopy(LastWaveWas, sizeof(LastWaveWas), vote.Config);
-					PrintToChatAll("%t: %s","Difficulty set to", vote.Name);
-					if(!StrContains(vote.Name, "Contingency Contract"))CC_Contract_SetUp();
-					
-					char buffer[PLATFORM_MAX_PATH];
-					if(votes[highest] > 3)
-					{
-						BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, "vote_trackedvotes.cfg");
-						KeyValues kv = new KeyValues("TrackedVotes");
-						kv.ImportFromFile(buffer);
-						kv.SetNum(vote.Name, kv.GetNum(vote.Name) + 1);
-						kv.ExportToFile(buffer);
-						delete kv;
-					}
-					
-					vote.Name[0] = CharToUpper(vote.Name[0]);
-
-					Queue_DifficultyVoteEnded();
-					if(!VotingMods)
-						Native_OnDifficultySet(highest, vote.Name, vote.Level);
-					
-					if(highest > 3)
-						highest = 3;
-					
-					Waves_SetDifficultyName(vote.Name);
-					WaveLevel = vote.Level;
-					
-					Format(vote.Name, sizeof(vote.Name), "FireUser%d", highest + 1);
-					ExcuteRelay("zr_waveselected", vote.Name);
-					
-					BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, vote.Config);
-					KeyValues kv = new KeyValues("Waves");
+					BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, "vote_trackedvotes.cfg");
+					KeyValues kv = new KeyValues("TrackedVotes");
 					kv.ImportFromFile(buffer);
-					Waves_SetupWaves(kv, false);
+					kv.SetNum(vote.Name, kv.GetNum(vote.Name) + 1);
+					kv.ExportToFile(buffer);
 					delete kv;
-					Waves_SetReadyStatus(2);
+				}
+				
+				vote.Name[0] = CharToUpper(vote.Name[0]);
 
-					if(VotingMods)
-					{
-						float duration = CanReVote ? 30.0 : 60.0;
+				Queue_DifficultyVoteEnded();
+				if(!VotingMods)
+					Native_OnDifficultySet(highest, vote.Name, vote.Level);
+				
+				if(highest > 3)
+					highest = 3;
+				
+				Waves_SetDifficultyName(vote.Name);
+				WaveLevel = vote.Level;
+				
+				Format(vote.Name, sizeof(vote.Name), "FireUser%d", highest + 1);
+				ExcuteRelay("zr_waveselected", vote.Name);
+				
+				BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, vote.Config);
+				KeyValues kv = new KeyValues("Waves");
+				kv.ImportFromFile(buffer);
+				Waves_SetupWaves(kv, false);
+				delete kv;
+				Waves_SetReadyStatus(2);
 
-						Zero(VotedFor);
-						VoteEndTime = GetGameTime() + duration;
-						CreateTimer(1.0, Waves_VoteDisplayTimer, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-						CreateTimer(duration, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
+				if(VotingMods)
+				{
+					float duration = CanReVote ? 30.0 : 60.0;
 
-						PrintHintTextToAll("Vote for the wave modifier!");
-						PrintToChatAll("Vote for the wave modifier!");
-					}
-					else
-					{
-						Waves_SetReadyStatus(1);
-					}
+					Zero(VotedFor);
+					VoteEndTime = GetGameTime() + duration;
+					CreateTimer(1.0, Waves_VoteDisplayTimer, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+					CreateTimer(duration, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
 
-					DoGlobalMultiScaling();
-					Waves_UpdateMvMStats();
+					PrintHintTextToAll("Vote for the wave modifier!");
+					PrintToChatAll("Vote for the wave modifier!");
 				}
 				else
 				{
-					PrintToChatAll("%t: %s", "Modifier set to", vote.Name);
-					
-					if(highest > 0)
-					{
-						float multi = float(vote.Level) / 1000.0;
-
-						int level = WaveLevel;
-						if(level < 10)
-							level = 10;
-						
-						WaveLevel += RoundFloat(level * multi);
-
-						Native_OnDifficultySet(-1, WhatDifficultySetting_Internal, WaveLevel);
-						
-						FormatEx(WhatDifficultySetting, sizeof(WhatDifficultySetting), "%s [%s]", WhatDifficultySetting_Internal, vote.Name);
-						Waves_SetDifficultyName(WhatDifficultySetting);
-
-						char funcs[5][64];
-						ExplodeString(vote.Config, ";", funcs, sizeof(funcs), sizeof(funcs[]));
-						
-						Function func = funcs[0][0] ? GetFunctionByName(null, funcs[0]) : INVALID_FUNCTION;
-						ModFuncRemove = funcs[1][0] ? GetFunctionByName(null, funcs[1]) : INVALID_FUNCTION;
-						ModFuncAlly = funcs[2][0] ? GetFunctionByName(null, funcs[2]) : INVALID_FUNCTION;
-						ModFuncEnemy = funcs[3][0] ? GetFunctionByName(null, funcs[3]) : INVALID_FUNCTION;
-						ModFuncWeapon = funcs[4][0] ? GetFunctionByName(null, funcs[4]) : INVALID_FUNCTION;
-
-						if(func != INVALID_FUNCTION)
-						{
-							Call_StartFunction(null, func);
-							Call_Finish();
-						}
-					}
-					else
-					{
-						Native_OnDifficultySet(-1, WhatDifficultySetting_Internal, WaveLevel);
-					}
-
 					Waves_SetReadyStatus(1);
-					DoGlobalMultiScaling();
-					Waves_UpdateMvMStats();
 				}
+
+				DoGlobalMultiScaling();
+				Waves_UpdateMvMStats();
+			}
+			else
+			{
+				PrintToChatAll("%t: %s", "Modifier set to", vote.Name);
+				
+				if(highest > 0)
+				{
+					float multi = float(vote.Level) / 1000.0;
+
+					int level = WaveLevel;
+					if(level < 10)
+						level = 10;
+					
+					WaveLevel += RoundFloat(level * multi);
+
+					Native_OnDifficultySet(-1, WhatDifficultySetting_Internal, WaveLevel);
+					
+					FormatEx(WhatDifficultySetting, sizeof(WhatDifficultySetting), "%s [%s]", WhatDifficultySetting_Internal, vote.Name);
+					Waves_SetDifficultyName(WhatDifficultySetting);
+
+					char funcs[5][64];
+					ExplodeString(vote.Config, ";", funcs, sizeof(funcs), sizeof(funcs[]));
+					
+					Function func = funcs[0][0] ? GetFunctionByName(null, funcs[0]) : INVALID_FUNCTION;
+					ModFuncRemove = funcs[1][0] ? GetFunctionByName(null, funcs[1]) : INVALID_FUNCTION;
+					ModFuncAlly = funcs[2][0] ? GetFunctionByName(null, funcs[2]) : INVALID_FUNCTION;
+					ModFuncEnemy = funcs[3][0] ? GetFunctionByName(null, funcs[3]) : INVALID_FUNCTION;
+					ModFuncWeapon = funcs[4][0] ? GetFunctionByName(null, funcs[4]) : INVALID_FUNCTION;
+
+					if(func != INVALID_FUNCTION)
+					{
+						Call_StartFunction(null, func);
+						Call_Finish();
+					}
+				}
+				else
+				{
+					Native_OnDifficultySet(-1, WhatDifficultySetting_Internal, WaveLevel);
+				}
+
+				Waves_SetReadyStatus(1);
+				DoGlobalMultiScaling();
+				Waves_UpdateMvMStats();
 			}
 		}
 		else
@@ -2354,6 +2350,8 @@ static Action Freeplay_HudInfoTimer(Handle timer)
 					ShowSyncHudText(client, SyncHud_Notifaction, "%t", "freeplay_start_4");
 				}
 			}
+			FreeplayTimeLimit = GetGameTime() + 3600.0; //one hour.
+			DeleteShadowsOffZombieRiot();
 			Freeplay_Info = 0;
 		}
 		default:
@@ -3188,6 +3186,7 @@ static Action ReadyUpHack(Handle timer)
 
 			// Artvin Request: Start instantly at half players ready up
 			ready *= 2;
+			ready--;
 			
 			if(ready >= players)
 			{
@@ -3502,6 +3501,20 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 	}
 	else
 	{
+		if(FreeplayTimeLimit < GetGameTime())
+		{
+			CPrintToChatAll("{gold}Koshi{white}: looks like you survived for an hour, hm.");
+			CPrintToChatAll("{gold}Koshi{white}: You got as far as wave {green}%i!",CurrentRound);
+			CPrintToChatAll("{gold}Koshi{white}: See if you can go higher next time, dont be so lazy and stall so much..!");
+			CPrintToChatAll("{lightcyan}Zeina{white}: Finally done? I'll can go back home, {lightblue}Nemal's {white}waiting on me.");
+
+			int entity = CreateEntityByName("game_round_win"); 
+			DispatchKeyValue(entity, "force_map_reset", "1");
+			SetEntProp(entity, Prop_Data, "m_iTeamNum", TFTeam_Red);
+			DispatchSpawn(entity);
+			AcceptEntityInput(entity, "RoundWin");
+			return true;
+		}
 		WaveEndLogicExtra();
 
 		Freeplay_OnEndWave(round.Cash);
@@ -3510,6 +3523,7 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 
 		if(round.Cash)
 		{
+			CPrintToChatAll("{gold}%t{default}","Simulation Time Left", ((FreeplayTimeLimit - GetGameTime()) / 60.0));
 			CPrintToChatAll("{green}%t{default}","Cash Gained This Wave", round.Cash);
 		}
 		else

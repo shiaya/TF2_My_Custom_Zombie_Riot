@@ -83,6 +83,11 @@ void NPC_ConfigSetup()
 	ObjectTinkerBrew_MapStart();
 	ObjectRevenant_Setup();
 	// Buildings
+
+	// Vehicles
+	VehicleHL2_Setup();
+	VehicleFullJeep_Setup();
+	// Vehicles
 	
 	Combine_Police_Pistol_OnMapStart_NPC();
 	CombinePoliceSmg_OnMapStart_NPC();
@@ -184,6 +189,7 @@ void NPC_ConfigSetup()
 	CuredFatherGrigori_OnMapStart_NPC();
 	FallenWarrior_OnMapStart();
 	ThirtySixFifty_OnMapStart();
+	JohnTheAllmighty_OnMapStart_NPC();
 	
 	SawRunner_OnMapStart_NPC();
 	AltMedicCharger_OnMapStart_NPC();
@@ -1159,7 +1165,6 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 	return Plugin_Changed;
 }
 //BASES FOR ENEMIES
-
 #include "zombie_riot/npc/expidonsa/npc_expidonsa_base.sp" //ALSO IN RPG!
 #include "zombie_riot/npc/seaborn/npc_nethersea_shared.sp"
 
@@ -1181,8 +1186,12 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/object/obj_brewing_stand.sp"
 #include "zombie_riot/object/obj_revenant.sp"
 
-//NORMAL
+// VEHICLES
+#include "shared/vehicles/vehicle_shared.sp"
+#include "shared/vehicles/vehicle_hl2.sp"
+#include "shared/vehicles/vehicle_fulljeep.sp"
 
+//NORMAL
 #include "zombie_riot/npc/normal/npc_headcrabzombie.sp"
 #include "zombie_riot/npc/normal/npc_headcrabzombie_fortified.sp"
 #include "zombie_riot/npc/normal/npc_fastzombie.sp"
@@ -1282,6 +1291,7 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/npc/special/npc_vengefull_spirit.sp"
 #include "zombie_riot/npc/special/npc_fallen_warrior.sp"
 #include "zombie_riot/npc/special/npc_3650.sp"
+#include "zombie_riot/npc/special/npc_john_the_allmighty.sp"
 
 #include "zombie_riot/npc/btd/npc_bloon.sp"
 #include "zombie_riot/npc/btd/npc_moab.sp"

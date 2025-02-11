@@ -1725,7 +1725,10 @@ static void StartStage(const Stage stage)
 	for(int client = 1; client <= MaxClients; client++)
 	{
 		if(IsClientInGame(client) && IsPlayerAlive(client))
+		{
+			Vehicle_Exit(client, false, false);
 			TeleportEntity(client, pos, ang, NULL_VECTOR);
+		}
 	}
 	
 	for(int i; i < i_MaxcountNpcTotal; i++)
@@ -1812,6 +1815,7 @@ static void TeleportToSpawn()
 			if(TeutonType[client] == TEUTON_DEAD)
 				TF2_RespawnPlayer(client);
 			
+			Vehicle_Exit(client, false, false);
 			TeleportEntity(client, pos, ang, NULL_VECTOR);
 		}
 	}
