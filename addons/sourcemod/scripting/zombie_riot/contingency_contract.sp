@@ -298,7 +298,7 @@ void CC_ContractMenu(int client, int page)
 			AnyConstraintsOn=true;
 		}
 		
-		if(AnyConstraintsOn)
+		if(!AnyConstraintsOn)
 		{
 			FormatEx(buffer, sizeof(buffer), "%t", "None");
 			menu.AddItem("", buffer, ITEMDRAW_DISABLED);

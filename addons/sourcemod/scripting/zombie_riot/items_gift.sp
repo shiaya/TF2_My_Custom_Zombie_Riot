@@ -58,6 +58,84 @@ public Action CommandKillTheNPC(int client, int args)
 	
 	return Plugin_Handled;
 }
+public Action CommandAimGotEffectsadd(int client, int args)
+{
+	if(args < 1)
+    {
+        ReplyToCommand(client, "[SM] Usage: sm_add_effect <target> <effect> <duration>");
+        return Plugin_Handled;
+    }
+
+	char arg2[64], arg3[12];
+	static char arg[PLATFORM_MAX_PATH];
+	static char targetName[MAX_TARGET_LENGTH];
+	GetCmdArg(1, arg, sizeof(arg));
+	GetCmdArg(2, arg2, sizeof(arg2));
+	GetCmdArg(3, arg3, sizeof(arg3));
+	float Times = float(StringToInt(arg3));
+	if(Times<=0.0)Times=5.0;
+	int targets[MAXPLAYERS], matches;
+	bool targetNounIsMultiLanguage;
+	if((matches=ProcessTargetString(arg, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
+	{
+		if(!IsValidClient(client) || IsFakeClient(client))
+		{
+			ReplyToTargetError(client, matches);
+			return Plugin_Handled;
+		}
+		float pos[3], ang[3];
+		GetClientEyePosition(client, pos);
+		GetClientEyeAngles(client, ang);
+		
+		int victim;
+		Handle trace = TR_TraceRayFilterEx(pos, ang, MASK_SHOT, RayType_Infinite, KillCommand_TraceNotMe, client);
+		if(TR_GetFraction(trace) < 1.0)
+		{
+			int target = TR_GetEntityIndex(trace);
+			if(target > 0 && IsValidEntity(target))
+				victim = target;
+		}
+		delete trace;
+		
+		if(!IsValidEntity(victim))
+		{
+			PrintToConsole(client, "No NPC/Client detected.");
+			return Plugin_Handled;
+		}
+		
+		if(StrContains(arg2, "Weapon Overclock", false) != -1)
+		{
+			ApplyStatusEffect(client, victim, "Weapon Overclock", Times);
+			ApplyStatusEffect(client, victim, "Weapon Overclock Detect", Times-0.5);
+		}
+		else if(StrContains(arg2, "Charisma Effect", false) != -1)
+		{
+			ApplyStatusEffect(client, victim, "Charisma Effect", Times);
+			ApplyStatusEffect(client, victim, "Charisma Effect Detect", Times-0.5);
+		}
+		else ApplyStatusEffect(client, victim, arg2, Times);
+	}
+	else
+	{
+		for(int target; target<matches; target++)
+		{
+			if(!IsValidClient(client) || IsFakeClient(client))
+				client=target;
+			if(StrContains(arg2, "Weapon Overclock", false) != -1)
+			{
+				ApplyStatusEffect(client, target, "Weapon Overclock", Times);
+				ApplyStatusEffect(client, target, "Weapon Overclock Detect", Times-0.5);
+			}
+			else if(StrContains(arg2, "Charisma Effect", false) != -1)
+			{
+				ApplyStatusEffect(client, target, "Charisma Effect", Times);
+				ApplyStatusEffect(client, target, "Charisma Effect Detect", Times-0.5);
+			}
+			else ApplyStatusEffect(client, target, arg2, Times);
+		}
+	}
+	return Plugin_Handled;
+}
 
 static bool KillCommand_TraceNotMe(int entity, int contentsMask, any data)
 {

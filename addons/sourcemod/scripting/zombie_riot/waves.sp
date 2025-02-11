@@ -2238,6 +2238,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 	}
 	else
 	{
+		CC_Contract_OnEndWave(round.Cash);
 		bool EarlyReturn = false;
 		//We are in freeplay, past normal waves.
 		if(i_WaveHasFreeplay == 2)
@@ -3504,7 +3505,6 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 		WaveEndLogicExtra();
 
 		Freeplay_OnEndWave(round.Cash);
-		CC_Contract_OnEndWave(round.Cash);
 		
 		CurrentCash += round.Cash;
 

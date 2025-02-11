@@ -4684,4 +4684,8 @@
 	{
 		"en" "Spotter"
 	}
+	"Z-Main"
+	{
+		"en" "=Failed name="
+	}
 }

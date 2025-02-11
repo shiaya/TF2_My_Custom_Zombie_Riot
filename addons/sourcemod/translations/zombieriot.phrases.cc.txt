@@ -117,8 +117,8 @@
 	}
 	"Constraints_desc_10"
 	{
-		"en"	""
-		"ko"	""
+		"en"	"-1 reduction in supply gained at the end of a wave"
+		"ko"	"웨이브 종료시 얻는 보급 -1"
 	}
 	"Constraints_11"
 	{
@@ -127,7 +127,7 @@
 	}
 	"Constraints_desc_11"
 	{
-		"en"	""
-		"ko"	""
+		"en"	"-2 reduction in supply gained at the end of a wave"
+		"ko"	"웨이브 종료시 얻는 보급 -2"
 	}
 }

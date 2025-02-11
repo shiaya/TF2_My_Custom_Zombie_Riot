@@ -232,6 +232,10 @@ public void M3_Abilities(int client)
 		{
 			NanomachinePacks(client);
 		}
+		case 1011:
+		{
+			CharismaPotions(client);
+		}
 	}
 }
 
@@ -282,6 +286,7 @@ public void DeployingSupportWeapon(int client, bool NoCD)
 			vel_2[2] *= -1;
 			
 			int team = GetClientTeam(client);
+			if(team==TFTeam_Spectator)team=TFTeam_Red;
 				
 			SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
 			SetEntProp(entity, Prop_Send, "m_iTeamNum", team, 1);
@@ -1018,6 +1023,39 @@ public void NanomachinePacks(int client)
 		CreateTimer(75.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		MakePlayerGiveResponseVoice(client, 4);
 		ApplyStatusEffect(client, client, "Nanomachine", 10.0);
+	}
+}
+
+public void CharismaPotions(int client)
+{
+	if(dieingstate[client] > 0)
+	{
+		ClientCommand(client, "playgamesound items/medshotno1.wav");
+		SetDefaultHudPosition(client);
+		SetGlobalTransTarget(client);
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Use Only Alive");
+		return;
+	}
+	else
+	{
+		if(ability_cooldown[client] > GetGameTime())
+		{
+			float Ability_CD = ability_cooldown[client] - GetGameTime();
+
+			if(Ability_CD <= 0.0)
+				Ability_CD = 0.0;
+
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			SetDefaultHudPosition(client);
+			SetGlobalTransTarget(client);
+			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability has cooldown", Ability_CD);
+			return;
+		}
+		ability_cooldown[client] = GetGameTime() + 75.0;
+		CreateTimer(75.0, M3_Ability_Is_Back, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
+		MakePlayerGiveResponseVoice(client, 4);
+		ApplyStatusEffect(client, client, "Charisma Effect", 10.0);
+		ApplyStatusEffect(client, client, "Charisma Effect Detect", 9.5);
 	}
 }
 

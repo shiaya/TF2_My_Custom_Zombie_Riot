@@ -1028,4 +1028,20 @@
 	{
 		"en"	"Ignore"
 	}
+	"Charisma Effect"
+	{
+		"en"	"Ignore"
+	}
+	"Charisma Effect Desc"
+	{
+		"en"	"Ignore"
+	}
+	"Charisma Effect Detect"
+	{
+		"en"	"Ignore"
+	}
+	"Charisma Effect Detect Desc"
+	{
+		"en"	"Ignore"
+	}
 }

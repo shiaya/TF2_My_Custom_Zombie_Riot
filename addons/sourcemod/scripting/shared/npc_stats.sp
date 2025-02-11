@@ -5024,10 +5024,15 @@ stock int GetClosestTarget(int entity,
 						if(!WasValid)
 							continue;
 					}
-					if(!npc.m_bCamo || camoDetection)
+					if(b_Charisma_Catch_that_Bastard)
+					{
+						if(HasSpecificBuff(i, "Charisma Effect"))
+							GetClosestTarget_AddTarget(i, 1);
+					}
+					else if(!npc.m_bCamo || camoDetection)
 					{
 						GetClosestTarget_AddTarget(i, 1);
-					}			
+					}
 				}
 			}
 		}
@@ -5076,7 +5081,12 @@ stock int GetClosestTarget(int entity,
 							continue;
 					}
 
-					if(!npc.m_bCamo || camoDetection)
+					if(b_Charisma_Catch_that_Bastard)
+					{
+						if(HasSpecificBuff(entity_close, "Charisma Effect"))
+							GetClosestTarget_AddTarget(entity_close, 2);
+					}
+					else if(!npc.m_bCamo || camoDetection)
 					{
 						GetClosestTarget_AddTarget(entity_close, 2);
 					}
@@ -5127,7 +5137,17 @@ stock int GetClosestTarget(int entity,
 						if(!WasValid)
 							continue;
 					}
-					if (!npc.m_bCamo || camoDetection)
+					if(b_Charisma_Catch_that_Bastard)
+					{
+						if(HasSpecificBuff(entity_close, "Charisma Effect"))
+						{
+							if(GetTeam(entity_close) == TFTeam_Red)
+								GetClosestTarget_AddTarget(entity_close, 3);
+							else
+								GetClosestTarget_AddTarget(entity_close, 2);
+						}
+					}
+					else if(!npc.m_bCamo || camoDetection)
 					{
 						if(GetTeam(entity_close) == TFTeam_Red)
 							GetClosestTarget_AddTarget(entity_close, 3);
@@ -5197,7 +5217,12 @@ stock int GetClosestTarget(int entity,
 						if(!WasValid)
 							continue;
 					}
-					if (!npc.m_bCamo || camoDetection)
+					if(b_Charisma_Catch_that_Bastard)
+					{
+						if(HasSpecificBuff(entity_close, "Charisma Effect"))
+							GetClosestTarget_AddTarget(entity_close, 4);
+					}
+					else if(!npc.m_bCamo || camoDetection)
 					{
 						GetClosestTarget_AddTarget(entity_close, 4);
 					}
