@@ -3554,6 +3554,10 @@
 		"ru" 	"Всикс"
 		"ko"	"브힉스"
 	}
+	"Random Boss"
+	{
+		"en"	"Random Boss"
+	}
 	"Vhxis Desc"
 	{
 		"en"	"The void keeper, killing him is not a good idea...\n(Silence makes voidbuff weaker)"
@@ -4699,5 +4703,29 @@
 	"Airboat"
 	{
 		"en"	"Airboat"
+	}
+	"Ambulance"
+	{
+		"en"	"Ambulance"
+	}
+	"Bus"
+	{
+		"en"	"Bus"
+	}
+	"Camper Van"
+	{
+		"en"	"Camper Van"
+	}
+	"Dump Truck"
+	{
+		"en"	"Dump Truck"
+	}
+	"Landrover"
+	{
+		"en"	"Landrover"
+	}
+	"Pickup Truck"
+	{
+		"en"	"Pickup Truck"
 	}
 }

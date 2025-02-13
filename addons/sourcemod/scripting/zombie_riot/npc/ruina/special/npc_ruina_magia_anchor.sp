@@ -94,17 +94,17 @@ static char[] GetBuildingHealth()
 	
 	float temp_float_hp = float(health);
 	
-	if(ZR_GetWaveCount()+1 < 30)
+	if(Waves_GetRound()+1 < 30)
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.20));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.20));
 	}
-	else if(ZR_GetWaveCount()+1 < 45)
+	else if(Waves_GetRound()+1 < 45)
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.25));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.25));
 	}
 	else
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.35)); //Yes its way higher but i reduced overall hp of him
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.35)); //Yes its way higher but i reduced overall hp of him
 	}
 	
 	health /= 2;
@@ -232,7 +232,7 @@ methodmap Magia_Anchor < CClotBody
 		SetEntityRenderMode(npc.index, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.index, 255, 255, 255, 1);
 
-		int wave = ZR_GetWaveCount()+1;
+		int wave = Waves_GetRound()+1;
 
 		if(StrContains(data, "force15") != -1)
 			wave = 15;
@@ -494,13 +494,13 @@ static void ClotThink(int iNPC)
 
 	if(i_special_tower_logic[npc.index] == 1)
 	{
-		float Radius = 300.0;
+		float Radius = 450.0;
 		Master_Apply_Defense_Buff(npc.index, Radius, 5.0, 0.75);	//25% resistances
 		Master_Apply_Attack_Buff(npc.index, Radius, 5.0, 0.25);		//25% dmg bonus
 
 		float Npc_Vec[3]; GetAbsOrigin(npc.index, Npc_Vec); Npc_Vec[2]+=30.0;
 		int color[4]; Ruina_Color(color);
-		TE_SetupBeamRingPoint(Npc_Vec, Radius*2.0, Radius*2.0 + 0.5, g_Ruina_Laser_BEAM, g_Ruina_Laser_BEAM, 0, 1, 0.1, 30.0, 0.1, color, 1, 0);
+		TE_SetupBeamRingPoint(Npc_Vec, Radius*2.0, Radius*2.0 + 0.5, g_Ruina_Laser_BEAM, g_Ruina_Laser_BEAM, 0, 1, 0.1, 12.0, 0.1, color, 1, 0);
 		TE_SendToAll();
 	}
 

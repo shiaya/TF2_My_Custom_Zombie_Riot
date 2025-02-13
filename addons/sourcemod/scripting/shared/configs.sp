@@ -67,11 +67,11 @@ void Configs_ConfigsExecuted()
 	NPC_ConfigSetup();
 #else
 	FileNetwork_ConfigSetup(kv);
+	Building_ConfigSetup();
 	NPC_ConfigSetup();
 #endif
 	
 #if defined ZR
-	Building_ConfigSetup();
 	Items_SetupConfig();
 	InvItems_SetupConfig();
 	SkillTree_ConfigSetup();

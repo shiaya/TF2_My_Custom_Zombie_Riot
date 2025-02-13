@@ -85,6 +85,7 @@ Function func_NPCFuncWin[MAXENTITIES];
 Function func_NPCAnimEvent[MAXENTITIES];
 Function func_NPCActorEmoted[MAXENTITIES];
 Function func_NPCInteract[MAXENTITIES];
+Function FuncShowInteractHud[MAXENTITIES];
 
 #define PARTICLE_ROCKET_MODEL	"models/weapons/w_models/w_drg_ball.mdl" //This will accept particles and also hide itself.
 
@@ -238,13 +239,13 @@ void OnMapStart_NPC_Base()
 	PrecacheModel(ARROW_TRAIL_RED);
 	PrecacheDecal(ARROW_TRAIL_RED, true);
 
-	HookEntityOutput("trigger_multiple", "OnStartTouch", NPCStats_StartTouch);
-	HookEntityOutput("trigger_multiple", "OnEndTouch", NPCStats_EndTouch);
+	//HookEntityOutput("trigger_multiple", "OnStartTouch", NPCStats_StartTouch);
+	//HookEntityOutput("trigger_multiple", "OnEndTouch", NPCStats_EndTouch);
 
 	Zero(f_TimeSinceLastStunHit);
 //	Zero(b_EntityInCrouchSpot);
 //	Zero(b_NpcResizedForCrouch);
-	Zero(b_PlayerIsInAnotherPart);
+//	Zero(b_PlayerIsInAnotherPart);
 	Zero(b_EntityIsStairAbusing);
 	Zero(f_PredictDuration);
 	Zero(flNpcCreationTime);
@@ -283,6 +284,7 @@ Handle DHookCreateEx(Handle gc, const char[] key, HookType hooktype, ReturnType 
 	return DHookCreate(iOffset, hooktype, returntype, thistype, callback);
 }
 
+/*
 public Action NPCStats_StartTouch(const char[] output, int entity, int caller, float delay)
 {
 	if(caller > 0 && caller < MAXENTITIES)
@@ -290,12 +292,10 @@ public Action NPCStats_StartTouch(const char[] output, int entity, int caller, f
 		char name[32];
 		if(GetEntPropString(entity, Prop_Data, "m_iName", name, sizeof(name)))
 		{
-/*
 			if(StrEqual(name, "npc_crouch_simulation"))
 			{
 				b_EntityInCrouchSpot[caller] = true;
 			}
-*/
 			if(StrEqual(name, "zr_spawner_scaler"))
 			{
 				b_PlayerIsInAnotherPart[caller] = true;
@@ -317,12 +317,10 @@ public Action NPCStats_EndTouch(const char[] output, int entity, int caller, flo
 		char name[32];
 		if(GetEntPropString(entity, Prop_Data, "m_iName", name, sizeof(name)))
 		{
-/*
 			if(StrEqual(name, "npc_crouch_simulation"))
 			{
 				b_EntityInCrouchSpot[caller] = false;
 			}
-*/
 			if(StrEqual(name, "zr_spawner_scaler"))
 			{
 				b_PlayerIsInAnotherPart[caller] = false;
@@ -335,6 +333,7 @@ public Action NPCStats_EndTouch(const char[] output, int entity, int caller, flo
 	}
 	return Plugin_Continue;
 }
+*/
 #define NORMAL_NPC 0
 #define STATIONARY_NPC 1
 
@@ -2053,7 +2052,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		
 		int layer = this.FindGestureLayer(view_as<Activity>(activity));
 		if(layer != -1)
-			this.SetLayerPlaybackRate(layer, SetGestureSpeed);
+			this.SetLayerPlaybackRate(layer, (SetGestureSpeed / (f_AttackSpeedNpcIncreace[this.index])));
 	}
 	public void RemoveGesture(const char[] anim)
 	{
@@ -2513,6 +2512,12 @@ methodmap CClotBody < CBaseCombatCharacter
 			}
 		}
 		
+		if(i_IsVehicle[target])
+		{
+			// Vehicle hitboxes
+			return this.DoAimbotTrace(trace, target, vecSwingMaxs, vecSwingMins, vecSwingStartOffset);
+		}
+		
 		float eyePitch[3];
 		GetEntPropVector(this.index, Prop_Data, "m_angRotation", eyePitch);
 		
@@ -2521,7 +2526,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		WorldSpaceCenter(target, vecTarget);
 		if(target <= MaxClients)
 			vecTarget[2] += 10.0; //abit extra as they will most likely always shoot upwards more then downwards
-
+		
 		WorldSpaceCenter(this.index, vecForward);
 		MakeVectorFromPoints(vecForward, vecTarget, vecForward);
 		GetVectorAngles(vecForward, vecForward);
@@ -5786,10 +5791,28 @@ public Action Timer_CheckStuckOutsideMap(Handle cut_timer, int ref)
 
 float f_CheckIfStuckPlayerDelay[MAXENTITIES];
 float f_QuickReviveHealing[MAXENTITIES];
+float f_LastBaseThinkTime[MAXENTITIES];
 public void NpcBaseThinkPost(int iNPC)
 {
+	float lastThink = f_LastBaseThinkTime[iNPC];
+	f_LastBaseThinkTime[iNPC] = GetGameTime();
 	CBaseCombatCharacter(iNPC).SetNextThink(GetGameTime());
 	SetEntPropFloat(iNPC, Prop_Data, "m_flSimulationTime",GetGameTime());
+	if(f_AttackSpeedNpcIncreace[iNPC] == 1.0)
+		return;
+		
+	if(f_TimeFrozenStill[iNPC] > GetGameTime(iNPC))
+		return;
+
+	float time = GetGameTime() - lastThink;	// Time since the last time this NPC thought
+
+	//It like, speed sup their world time?
+	//f_StunExtraGametimeDuration[iNPC] += ((GetTickInterval() * f_AttackSpeedNpcIncreace[iNPC]) - GetTickInterval());
+	//Shitty attackspeed increace.
+	if(f_AttackSpeedNpcIncreace[iNPC] < 1.0)	// Buffs
+		f_StunExtraGametimeDuration[iNPC] += (time - (time / f_AttackSpeedNpcIncreace[iNPC]));
+	else	// Nerfs
+		f_StunExtraGametimeDuration[iNPC] += ((time * f_AttackSpeedNpcIncreace[iNPC]) - time);
 }
 void NpcDrawWorldLogic(int entity)
 {
@@ -5929,6 +5952,10 @@ public void NpcBaseThink(int iNPC)
 
 	if(f_TextEntityDelay[iNPC] < GetGameTime())
 	{
+		char BufferTest1[64];
+		char BufferTest2[64];
+		StatusEffects_HudHurt(iNPC, iNPC, BufferTest1, BufferTest2, 64, 0);
+		//MAkes some buffs work for npcs
 		//this is just as a temp fix, remove whenver.
 		//If it isnt custom, then these npcs ignore triggers
 	//	SetEntityMoveType(iNPC, MOVETYPE_CUSTOM);
@@ -6430,7 +6457,7 @@ stock void Custom_Knockback(int attacker,
 			if(driver != -1)
 			{
 				enemy = driver;
-				Vehicle_Exit(enemy, false);
+				Vehicle_Exit(enemy);
 			}
 		}
 	}
@@ -6442,7 +6469,7 @@ stock void Custom_Knockback(int attacker,
 		{
 			if(forceOut && i_IsVehicle[vehicle] == 2)
 			{
-				Vehicle_Exit(enemy, false);
+				Vehicle_Exit(enemy);
 			}
 			else
 			{
@@ -8404,6 +8431,7 @@ public void NPCStats_SetFuncsToZero(int entity)
 	func_NPCAnimEvent[entity] = INVALID_FUNCTION;
 	func_NPCActorEmoted[entity] = INVALID_FUNCTION;
 	func_NPCInteract[entity] = INVALID_FUNCTION;
+	FuncShowInteractHud[entity] = INVALID_FUNCTION;
 }
 public void SetDefaultValuesToZeroNPC(int entity)
 {
@@ -8436,6 +8464,7 @@ public void SetDefaultValuesToZeroNPC(int entity)
 #endif
 //	i_MasterSequenceNpc[entity] = -1;
 	ResetAllArmorStatues(entity);
+	f_AttackSpeedNpcIncreace[entity] = 1.0;
 	b_AvoidBuildingsAtAllCosts[entity] = false;
 	f_MaxAnimationSpeed[entity] = 2.0;
 	b_OnDeathExtraLogicNpc[entity] = 0;

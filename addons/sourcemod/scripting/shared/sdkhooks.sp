@@ -2003,6 +2003,9 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 				// Trigger lastman
 				CheckAlivePlayers(_, victim);
 
+				if(Construction_Mode())
+					return Plugin_Changed;
+
 				// Die in Rogue, there's no lastman
 				return Rogue_NoLastman() ? Plugin_Changed : Plugin_Handled;
 			}
@@ -2044,7 +2047,7 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 					dieingstate[victim] = 500;
 				}
 				dieingstate[victim] -= RoundToNearest(Attributes_GetOnPlayer(victim, Attrib_ReviveTimeCut, false,_, 0.0));
-				Vehicle_Exit(victim, false);
+				Vehicle_Exit(victim);
 				ForcePlayerCrouch(victim, true);
 				SDKHooks_UpdateMarkForDeath(victim, true);
 				//cooldown for left for dead.

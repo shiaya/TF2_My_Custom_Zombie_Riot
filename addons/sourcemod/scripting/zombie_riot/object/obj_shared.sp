@@ -26,7 +26,7 @@ static Function FuncCanBuild[MAXENTITIES];
  * @param client	Client
  * @noreturn
  */
-static Function FuncShowInteractHud[MAXENTITIES];
+//static Function FuncShowInteractHud[MAXENTITIES];
 
 static int Building_Max_Health[MAXENTITIES]={0, ...};
 static bool CanUseBuilding[MAXENTITIES][MAXTF2PLAYERS];
@@ -915,7 +915,7 @@ Action ObjectGeneric_ClotTakeDamage(int victim, int &attacker, int &inflictor, f
 
 	if(Rogue_Mode()) //buildings are refunded alot, so they shouldnt last long.
 	{
-		int scale = Rogue_GetRoundScale();
+		int scale = Waves_GetRound();
 		if(scale < 2)
 		{
 			//damage *= 1.0;

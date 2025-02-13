@@ -169,7 +169,7 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 		}
 	}
 
-	if(!Spawns_CanSpawnNext(Rogue_Mode()))
+	if(!Spawns_CanSpawnNext())
 		return;
 	
 	float pos[3], ang[3];
@@ -353,6 +353,9 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 					fl_Extra_RangedArmor[entity_Spawner] 	= enemy.ExtraRangedRes;
 					fl_Extra_Speed[entity_Spawner] 			= enemy.ExtraSpeed;
 					fl_Extra_Damage[entity_Spawner] 		= enemy.ExtraDamage;
+					if(enemy.ExtraThinkSpeed != 0.0 && enemy.ExtraThinkSpeed != 1.0)
+						f_AttackSpeedNpcIncreace[entity_Spawner]	= enemy.ExtraThinkSpeed;
+						
 					if(!b_thisNpcIsARaid[entity_Spawner] && XenoExtraLogic(true))
 					{
 						fl_Extra_Damage[entity_Spawner] *= 1.1;

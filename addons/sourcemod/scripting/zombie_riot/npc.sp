@@ -45,6 +45,8 @@ void NPC_ConfigSetup()
 	f_FactionCreditGain = 0.0;
 	Zero(f_FactionCreditGainReduction);
 
+	Building_ConfigSetup();
+
 	delete NPCList;
 	NPCList = new ArrayList(sizeof(NPCData));
 
@@ -82,11 +84,19 @@ void NPC_ConfigSetup()
 	ObjectVillage_MapStart();
 	ObjectTinkerBrew_MapStart();
 	ObjectRevenant_Setup();
+
+	ObjectConstruction_LightHouse_MapStart();
 	// Buildings
 
 	// Vehicles
 	VehicleHL2_Setup();
 	VehicleFullJeep_Setup();
+	VehicleAmbulance_Setup();
+	VehicleBus_Setup();
+	VehicleCamper_Setup();
+	VehicleDumpTruck_Setup();
+	VehicleLandrover_Setup();
+	VehiclePickup_Setup();
 	// Vehicles
 	
 	Combine_Police_Pistol_OnMapStart_NPC();
@@ -436,7 +446,6 @@ void NPC_ConfigSetup()
 	Ignitus_OnMapStart_NPC();
 	Helena_OnMapStart_NPC();
 //wave 45-60 there arent as many enemies as im running out of ideas and i want to resuse top enemies
-	Erasus_OnMapStart_NPC();
 	GiantTankus_OnMapStart_NPC();
 	AnfuhrerEisenhard_OnMapStart_NPC();
 	SpeedusAdivus_OnMapStart_NPC();
@@ -800,6 +809,9 @@ void NPC_ConfigSetup()
 	DuckFollower_Setup();
 	BobTheFirstFollower_Setup();
 	TwirlFollower_Setup();
+	
+	// Construction
+	BaseBuilding_MapStart();
 
 	// Survival
 	Nightmare_OnMapStart_NPC();
@@ -868,6 +880,8 @@ void NPC_ConfigSetup()
 	Invisible_TRIGGER_Man_OnMapStart_NPC();
 	Victoria_Precision_Strike_OnMapStart_NPC();
 
+
+	BossSummonRandom_OnMapStart_NPC();
 	//Combine Mutation
 	OmegaRaid_OnMapStart_NPC();
 	LostKnight_OnMapStart_NPC();
@@ -890,6 +904,7 @@ void NPC_ConfigSetup()
 	ImmutableHeavy_OnMapStart_NPC();
 	VanishingMatter_OnMapStart_NPC();
 	Spotter_OnMapStart_NPC();
+	Erasus_OnMapStart_NPC();
 }
 
 int NPC_Add(NPCData data)
@@ -906,7 +921,7 @@ int NPC_Add(NPCData data)
 	return NPCList.PushArray(data);
 }
 
-int NPC_GetCount()
+stock int NPC_GetCount()
 {
 	return NPCList.Length;
 }
@@ -918,31 +933,36 @@ stock int NPC_GetNameById(int id, char[] buffer, int length)
 	return strcopy(buffer, length, data.Name);
 }
 
-int NPC_GetPluginById(int id, char[] buffer, int length)
+stock int NPC_GetNameByPlugin(const char[] name, char[] buffer, int length)
+{
+	int index = NPCList.FindString(name, NPCData::Plugin);
+	if(index == -1)
+		return 0;
+	
+	static NPCData data;
+	NPCList.GetArray(index, data);
+	return strcopy(buffer, length, data.Name);
+}
+
+stock int NPC_GetPluginById(int id, char[] buffer, int length)
 {
 	static NPCData data;
 	NPC_GetById(id, data);
 	return strcopy(buffer, length, data.Plugin);
 }
 
-void NPC_GetById(int id, NPCData data)
+stock void NPC_GetById(int id, NPCData data)
 {
 	NPCList.GetArray(id, data);
 }
 
-int NPC_GetByPlugin(const char[] plugin, NPCData data = {})
+stock int NPC_GetByPlugin(const char[] name, NPCData data = {})
 {
-	int length = NPCList.Length;
-	for(int i; i < length; i++)
-	{
-		NPCList.GetArray(i, data);
-		if(StrEqual(plugin, data.Plugin))
-		{
-			PrecacheNPC(i, data);
-			return i;
-		}
-	}
-	return -1;
+	int index = NPCList.FindString(name, NPCData::Plugin);
+	if(index != -1)
+		NPCList.GetArray(index, data);
+	
+	return index;
 }
 
 static void PrecacheNPC(int i, NPCData data)
@@ -1185,11 +1205,18 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/object/obj_barracks.sp"
 #include "zombie_riot/object/obj_brewing_stand.sp"
 #include "zombie_riot/object/obj_revenant.sp"
+#include "zombie_riot/object/obj_giant_lighthouse.sp"
 
 // VEHICLES
 #include "shared/vehicles/vehicle_shared.sp"
 #include "shared/vehicles/vehicle_hl2.sp"
-#include "shared/vehicles/vehicle_fulljeep.sp"
+#include "zombie_riot/vehicles/vehicle_fulljeep.sp"
+#include "zombie_riot/vehicles/vehicle_ambulance.sp"
+#include "zombie_riot/vehicles/vehicle_bus.sp"
+#include "zombie_riot/vehicles/vehicle_camper.sp"
+#include "zombie_riot/vehicles/vehicle_dumptruck.sp"
+#include "zombie_riot/vehicles/vehicle_landrover.sp"
+#include "zombie_riot/vehicles/vehicle_pickup.sp"
 
 //NORMAL
 #include "zombie_riot/npc/normal/npc_headcrabzombie.sp"
@@ -1782,6 +1809,7 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/npc/mutations/truesurvival/npc_sphynx.sp"
 #include "zombie_riot/npc/mutations/truesurvival/npc_zombine.sp"
 #include "zombie_riot/npc/mutations/truesurvival/npc_zmain_headcrabzombie.sp"
+#include "zombie_riot/npc/mutations/randomboss/npc_boss_battle_only.sp"
 
 
 
@@ -1976,3 +2004,5 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/npc/mutations/freeplay/npc_immutableheavy.sp"
 #include "zombie_riot/npc/mutations/freeplay/npc_vanishingmatter.sp"
 #include "zombie_riot/npc/mutations/freeplay/npc_spotter.sp"
+
+#include "zombie_riot/npc/construction/npc_base_building.sp"

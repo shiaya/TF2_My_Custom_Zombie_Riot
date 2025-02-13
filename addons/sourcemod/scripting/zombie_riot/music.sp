@@ -548,7 +548,11 @@ void Music_PostThink(int client)
 			{
 				if(RaidMusicSpecial1.Custom)
 				{
-					EmitCustomToClient(client, RaidMusicSpecial1.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, RaidMusicSpecial1.Volume);
+					if(!EmitCustomToClient(client, RaidMusicSpecial1.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, RaidMusicSpecial1.Volume))
+					{
+						SetMusicTimer(client, GetTime() + 3);
+						return;
+					}
 				}
 				else
 				{
@@ -570,7 +574,11 @@ void Music_PostThink(int client)
 					{
 						if(MusicString1.Custom)
 						{
-							EmitCustomToClient(client, MusicString1.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString1.Volume);
+							if(!EmitCustomToClient(client, MusicString1.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString1.Volume))
+							{
+								SetMusicTimer(client, GetTime() + 3);
+								return;
+							}
 						}
 						else
 						{
@@ -587,7 +595,11 @@ void Music_PostThink(int client)
 					{
 						if(MusicString2.Custom)
 						{
-							EmitCustomToClient(client, MusicString2.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString2.Volume);
+							if(!EmitCustomToClient(client, MusicString2.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString2.Volume))
+							{
+								SetMusicTimer(client, GetTime() + 3);
+								return;
+							}
 						}
 						else
 						{
@@ -608,7 +620,11 @@ void Music_PostThink(int client)
 					{
 						if(MusicString2.Custom)
 						{
-							EmitCustomToClient(client, MusicString2.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString2.Volume);
+							if(!EmitCustomToClient(client, MusicString2.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString2.Volume))
+							{
+								SetMusicTimer(client, GetTime() + 3);
+								return;
+							}
 						}
 						else
 						{
@@ -625,7 +641,11 @@ void Music_PostThink(int client)
 					{
 						if(MusicString1.Custom)
 						{
-							EmitCustomToClient(client, MusicString1.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString1.Volume);
+							if(!EmitCustomToClient(client, MusicString1.Path, client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, MusicString1.Volume))
+							{
+								SetMusicTimer(client, GetTime() + 3);
+								return;
+							}
 						}
 						else
 						{

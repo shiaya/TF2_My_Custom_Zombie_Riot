@@ -17,6 +17,15 @@ void ObjectPackAPunch_MapStart()
 	data.Category = Type_Hidden;
 	data.Func = ClotSummon;
 	NPC_Add(data);
+
+	BuildingInfo build;
+	strcopy(build.Plugin, sizeof(build.Plugin), "obj_packapunch");
+	build.Cost = 1000;
+	build.Health = 50;
+	build.Cooldown = 60.0;
+	build.Func = ObjectGeneric_CanBuild;
+	Building_Add(build);
+
 	Zero(b_LastWeaponCheckBias);
 	Zero(f_CheckWeaponDelay);
 }
@@ -49,7 +58,8 @@ static bool ClotCanUse(ObjectPackAPunch npc, int client)
 	if(!Pap_WeaponCheck(client))
 		return false;
 	
-	bool started = Waves_Started();
+	//Just allow.
+	bool started = true;// Waves_Started();
 	if(started || Rogue_Mode() || CvarNoRoundStart.BoolValue)
 	{
 		return true;

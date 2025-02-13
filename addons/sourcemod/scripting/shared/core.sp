@@ -112,7 +112,6 @@ bool Toggle_sv_cheats = false;
 bool b_MarkForReload = false; //When you wanna reload the plugin on map change...
 
 #define FAR_FUTURE	100000000.0
-#define MAXENTITIES	2048
 //double for 100 player support????
 
 #define	HIDEHUD_WEAPONSELECTION		( 1<<0 )	// Hide ammo count & weapon selection
@@ -809,7 +808,6 @@ public void OnPluginStart()
 	SyncHud_WandMana = CreateHudSynchronizer();
 #if defined ZR
 	ZR_PluginStart();
-	Building_PluginStart();
 #endif
 	
 #if defined RPG
@@ -1146,6 +1144,7 @@ public void OnMapEnd()
 	OnRoundEnd(null, NULL_STRING, false);
 	Waves_MapEnd();
 	Spawns_MapEnd();
+	Vehicle_MapEnd();
 #endif
 
 #if defined RPG
@@ -1883,7 +1882,6 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 {
 #if defined ZR
 	SemiAutoWeapon(client, buttons);
-	Pets_PlayerRunCmdPost(client, buttons, angles);
 #endif
 
 #if defined RPG
@@ -2193,11 +2191,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 		StatusEffectReset(entity);
 		f_InBattleDelay[entity] = 0.0;
 		b_AllowCollideWithSelfTeam[entity] = false;
-		func_NPCDeath[entity] = INVALID_FUNCTION;
-		func_NPCOnTakeDamage[entity] = INVALID_FUNCTION;
-		func_NPCThink[entity] = INVALID_FUNCTION;
-		func_NPCDeathForward[entity] = INVALID_FUNCTION;
-		func_NPCFuncWin[entity] = INVALID_FUNCTION;
+		NPCStats_SetFuncsToZero(entity);
 		f3_VecTeleportBackSave_OutOfBounds[entity][0] = 0.0;
 		f3_VecTeleportBackSave_OutOfBounds[entity][1] = 0.0;
 		f3_VecTeleportBackSave_OutOfBounds[entity][2] = 0.0;
@@ -2362,8 +2356,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 		Mlynar_EntityCreated(entity);
 		Board_EntityCreated(entity);
 
-		BannerOnEntityCreated(entity);
-		FallenWarriorEntityCreated(entity);
 		Elemental_ClearDamage(entity);
 #endif
 
@@ -2377,6 +2369,27 @@ public void OnEntityCreated(int entity, const char[] classname)
 			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
 		}
 		else*/
+		if(!StrContains(classname, "tf_logic_arena")
+		 || !StrContains(classname, "team_control_point")
+		  || !StrContains(classname, "trigger_capture_area")
+		  || !StrContains(classname, "item_ammopack_small")
+		  || !StrContains(classname, "item_ammopack_medium")
+		  || !StrContains(classname, "item_ammopack_full")
+		  || !StrContains(classname, "tf_ammo_pack")
+		  || !StrContains(classname, "tf_flame_manager")
+		  || !StrContains(classname, "entity_revive_marker")
+		  || !StrContains(classname, "tf_projectile_energy_ring")
+		  || !StrContains(classname, "entity_medigun_shield")
+		  || !StrContains(classname, "tf_projectile_energy_ball")
+		  || !StrContains(classname, "item_powerup_rune")
+		  || !StrContains(classname, "vgui_screen")
+		  || !StrContains(classname, "vgui_screen")
+		  || !StrContains(classname, "vgui_screen")
+		  || !StrContains(classname, "vgui_screen")
+		  || !StrContains(classname, "vgui_screen"))
+		{
+			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
+		}
 		if(!StrContains(classname, "tf_objective_resource"))
 		{
 			b_ThisEntityIgnored[entity] = true;
@@ -2393,18 +2406,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 			b_ThisEntityIgnored_NoTeam[entity] = true;
 		}
 #if defined ZR || defined RPG
-		else if(!StrContains(classname, "tf_ammo_pack"))
-		{
-			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
-		}
-		else if(!StrContains(classname, "tf_flame_manager"))
-		{
-			SDKHook(entity, SDKHook_SpawnPost, MakeFlamesUseless);
-		}
-		else if(!StrContains(classname, "entity_revive_marker"))
-		{
-			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
-		}
 		else if(!StrContains(classname, "phys_bone_follower"))
 		{
 			//every prop_Dynamic that spawns these  can make upto 16 entities, holy fuck
@@ -2417,22 +2418,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 			b_is_a_brush[entity] = true;
 		}
 #if defined ZR || defined RPG
-		else if(!StrContains(classname, "tf_projectile_energy_ring"))
-		{
-			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
-		}
-		else if(!StrContains(classname, "entity_medigun_shield"))
-		{
-			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
-		}
-		else if(!StrContains(classname, "tf_projectile_energy_ball"))
-		{
-			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
-		}
-		else if(!StrContains(classname, "item_powerup_rune"))
-		{
-			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
-		}
 		else if(!StrContains(classname, "tf_projectile_spellfireball"))
 		{
 			SDKHook(entity, SDKHook_SpawnPost, ApplyExplosionDhook_Fireball);
@@ -2448,10 +2433,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 		//	SDKHook(entity, SDKHook_ShouldCollide, Never_ShouldCollide);
 		//	ApplyExplosionDhook_Rocket(entity);
 			//SDKHook_SpawnPost doesnt work
-		}
-		else if(!StrContains(classname, "vgui_screen")) //Delete dispenser screen cut its really not needed at all, just takes up stuff for no reason
-		{
-			SDKHook(entity, SDKHook_SpawnPost, Delete_instantly);
 		}
 #endif
 		else if(!StrContains(classname, "tf_weapon_compound_bow"))
@@ -3070,7 +3051,7 @@ stock bool InteractKey(int client, int weapon, bool Is_Reload_Button = false)
 #endif
 
 #if defined ZR
-			if(Vehicle_Interact(client, entity))
+			if(Vehicle_Interact(client, weapon, entity))
 				return true;
 			
 			static char buffer[64];
@@ -3133,7 +3114,7 @@ stock bool InteractKey(int client, int weapon, bool Is_Reload_Button = false)
 		{
 
 #if defined ZR
-			if(GetEntityMoveType(client) == MOVETYPE_NONE && Vehicle_Interact(client, entity))
+			if(GetEntityMoveType(client) == MOVETYPE_NONE && Vehicle_Interact(client, weapon, entity))
 				return true;
 #endif
 			
