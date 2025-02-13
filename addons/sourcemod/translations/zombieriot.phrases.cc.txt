@@ -77,8 +77,8 @@
 	}
 	"Constraints_desc_6"
 	{
-		"en"	"Enemies MoveSpeed +15%"
-		"ko"	"모든적 이속 +15％"
+		"en"	"Enemies MoveSpeed +33%"
+		"ko"	"모든적 이속 +33％"
 	}
 	"Constraints_7"
 	{

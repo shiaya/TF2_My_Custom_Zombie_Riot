@@ -3450,8 +3450,8 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 				DispatchKeyValue(Prop, "solid", "0");
 				TeleportEntity(Prop, position, NULL_VECTOR, NULL_VECTOR);
 				DispatchSpawn(Prop);
-				CClotBody npc = view_as<CClotBody>(Prop);
-				npc.m_bThisEntityIgnored = true;
+				/*CClotBody npc = view_as<CClotBody>(Prop);
+				npc.m_bThisEntityIgnored = true;*/
 				
 				f_HealDelay[Prop] = GetGameTime() + 300.0;
 				

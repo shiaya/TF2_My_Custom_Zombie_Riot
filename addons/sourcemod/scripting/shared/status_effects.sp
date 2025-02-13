@@ -394,6 +394,8 @@ void ApplyStatusEffect(int owner, int victim, const char[] name, float Duration)
 		LogError("ApplyStatusEffect A DEV FUCKED UP!!!!!!!!! Name %s",name);
 		return;
 	}
+	if(!StrContains(name, "Charisma Effect"))
+		Charisma_Func();
 	StatusEffect Apply_MasterStatusEffect;
 	E_StatusEffect Apply_StatusEffect;
 	AL_StatusEffects.GetArray(index, Apply_MasterStatusEffect);
@@ -1198,7 +1200,7 @@ void StatusEffects_Baka()
 	data.ShouldScaleWithPlayerCount = false;
 	data.Slot						= 0;
 	data.SlotPriority				= 0;
-	data.OnTakeDamage_TakenFunc 	= Charisma_Func;
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
 	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
 	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
@@ -1283,15 +1285,53 @@ float Cybergrind_EX_Hard_SpeedFunc(int victim, StatusEffect Apply_MasterStatusEf
 	return f_Speed;
 }
 
-void Charisma_Func(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
+static Handle Charisma_Handle = null;
+void Charisma_Func()
 {
-	if(HasSpecificBuff(victim, "Charisma Effect"))
+	if(Charisma_Handle != null)
 	{
-		if(HasSpecificBuff(victim, "Charisma Effect Detect"))
-			b_Charisma_Catch_that_Bastard = true;
-		else
-			b_Charisma_Catch_that_Bastard = false;
+		b_Charisma_Catch_that_Bastard = true;
+		delete Charisma_Handle;
+		Charisma_Handle = null;
+		Charisma_Handle = CreateTimer(0.1, Charisma_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
+	else
+	{
+		b_Charisma_Catch_that_Bastard = true;
+		Charisma_Handle = CreateTimer(0.1, Charisma_Timer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action Charisma_Timer(Handle timer)
+{
+	bool BThisCharisma = false;
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(HasSpecificBuff(i, "Charisma Effect Detect"))
+			BThisCharisma = true;
+	}
+	if(!BThisCharisma)
+	{
+		for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+		{
+			int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+			if(IsValidEntity(entity))
+			{
+				if(HasSpecificBuff(entity, "Charisma Effect Detect"))
+					BThisCharisma = true;
+			}
+		}
+	}
+	
+	if(!BThisCharisma)
+	{
+		b_Charisma_Catch_that_Bastard = false;
+		Charisma_Handle = null;
+		return Plugin_Stop;
+	}
+	b_Charisma_Catch_that_Bastard = true;
+	
+	return Plugin_Continue;
 }
 
 void StatusEffects_Ludo()

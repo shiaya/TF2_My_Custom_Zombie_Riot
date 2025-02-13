@@ -1,6 +1,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+static char g_ExplosionSounds[]= "weapons/explode1.wav";
+
 static bool CCMode;
 static bool CC_ConstraintsBlock;
 static bool CC_EnemyDMGBuff_A;
@@ -25,6 +27,12 @@ void CC_Contract_OnMapStart()
 	PrecacheSound("misc/halloween/spelltick_set.wav", true);
 	PrecacheSound("misc/halloween/hwn_bomb_flash.wav", true);
 	PrecacheSound("music/mvm_class_select.wav", true);*/
+	PrecacheSound(g_ExplosionSounds);
+}
+
+bool Waves_InCCMode()
+{
+	return CCMode;
 }
 
 void CC_Contract_SetUp()
@@ -34,11 +42,6 @@ void CC_Contract_SetUp()
 	CPrintToChatAll("Contract activated.\nTap to check out Setting Constraints!");
 	CPrintToChatAll("Caution! Wave starts, you cannot set constraints!");
 	CreateTimer(1.0, CC_Contract_Timer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-}
-
-bool Waves_InCCMode()
-{
-	return CCMode;
 }
 
 void CC_Contract_ResetAll()
@@ -598,14 +601,61 @@ void CC_Contract_OnNPCDeath(int entity)
 {
 	if(CCMode)
 	{
-	
+		if(CC_EnemyExplodBuff)
+		{
+			float ExplodeNPCDamage = 125.0;
+			if(CC_EnemyDMGBuff_A)
+				ExplodeNPCDamage *= 1.2;
+			if(CC_EnemyDMGBuff_B)
+				ExplodeNPCDamage *= 1.5;
+			if(CC_EnemyDMGBuff_C)
+				ExplodeNPCDamage  *= 2.0;
+			float startPosition[3];
+			GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", startPosition); 
+			KillFeed_SetKillIcon(entity, "ullapool_caber_explosion");
+			Explode_Logic_Custom(ExplodeNPCDamage, entity, entity, -1, startPosition, 150.0, 0.75, _, false);
+			EmitSoundToAll(g_ExplosionSounds, entity, SNDCHAN_VOICE, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME, GetRandomInt(80,125));
+		}
 	}
 }
 
 void CC_Contract_SpawnEnemy(int entity)
 {
-	if(CCMode && GetTeam(entity) != TFTeam_Red)
+	if(CCMode)
 	{
+		float CC_Extra_Speed = 1.0;
+		float CC_Extra_MeleeArmor = 1.0;
+		float CC_Extra_RangedArmor = 1.0;
+		float CC_Extra_Damage = 1.0;
+		if(CC_EnemyDMGBuff_A)
+			CC_Extra_Damage *= 1.2;
+		if(CC_EnemyDMGBuff_B)
+			CC_Extra_Damage *= 1.5;
+		if(CC_EnemyDMGBuff_C)
+			CC_Extra_Damage *= 2.0;
+		if(CC_EnemyMoveBuff_A)
+			CC_Extra_Speed *= 1.15;
+		if(CC_EnemyResistBuff_A)
+		{
+			CC_Extra_MeleeArmor *= 0.8;
+			CC_Extra_RangedArmor *= 0.8;
+		}
+		if(CC_EnemyResistBuff_B)
+		{
+			CC_Extra_MeleeArmor *= 0.65;
+			CC_Extra_RangedArmor *= 0.65;
+		}
+		if(CC_EnemyMoveBuff_B)
+			CC_Extra_Speed *= 1.33;
+		if(CC_EnemyShieldBuff_A)
+			VausMagicaGiveShield(entity, 3);
+		if(CC_EnemyShieldBuff_B)
+			VausMagicaGiveShield(entity, 6);
+	
+		fl_Extra_Speed[entity]*=CC_Extra_Speed;
+		fl_Extra_MeleeArmor[entity] *= CC_Extra_MeleeArmor;
+		fl_Extra_RangedArmor[entity] *= CC_Extra_RangedArmor;
+		fl_Extra_Damage[entity] *= CC_Extra_Damage;
 	}
 }
 
@@ -613,7 +663,16 @@ void CC_Contract_OnEndWave(int &cash)
 {
 	if(CCMode)
 	{
-	
+		if(CC_AlliesSupplyIssuesDebuff_A)Ammo_Count_Ready -= 1;
+		if(CC_AlliesSupplyIssuesDebuff_B)Ammo_Count_Ready -= 2;
+		for(int client = 1; client <= MaxClients; client++)
+		{
+			if(IsValidClient(client))
+			{
+				if(CC_AlliesSupplyIssuesDebuff_A)Ammo_Count_Used[client] += 1;
+				if(CC_AlliesSupplyIssuesDebuff_B)Ammo_Count_Used[client] += 2;
+			}
+		}
 	}
 }
 

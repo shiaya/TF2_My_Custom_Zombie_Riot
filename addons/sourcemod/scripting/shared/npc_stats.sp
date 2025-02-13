@@ -5040,7 +5040,7 @@ stock int GetClosestTarget(int entity,
 					}
 					if(b_Charisma_Catch_that_Bastard)
 					{
-						if(HasSpecificBuff(i, "Charisma Effect"))
+						if(SearcherNpcTeam == TFTeam_Red || HasSpecificBuff(i, "Charisma Effect"))
 							GetClosestTarget_AddTarget(i, 1);
 					}
 					else if(!npc.m_bCamo || camoDetection)
@@ -5097,7 +5097,7 @@ stock int GetClosestTarget(int entity,
 
 					if(b_Charisma_Catch_that_Bastard)
 					{
-						if(HasSpecificBuff(entity_close, "Charisma Effect"))
+						if(SearcherNpcTeam == TFTeam_Red || HasSpecificBuff(entity_close, "Charisma Effect"))
 							GetClosestTarget_AddTarget(entity_close, 2);
 					}
 					else if(!npc.m_bCamo || camoDetection)
@@ -5153,7 +5153,7 @@ stock int GetClosestTarget(int entity,
 					}
 					if(b_Charisma_Catch_that_Bastard)
 					{
-						if(HasSpecificBuff(entity_close, "Charisma Effect"))
+						if(SearcherNpcTeam == TFTeam_Red || HasSpecificBuff(entity_close, "Charisma Effect"))
 						{
 							if(GetTeam(entity_close) == TFTeam_Red)
 								GetClosestTarget_AddTarget(entity_close, 3);
@@ -5233,7 +5233,7 @@ stock int GetClosestTarget(int entity,
 					}
 					if(b_Charisma_Catch_that_Bastard)
 					{
-						if(HasSpecificBuff(entity_close, "Charisma Effect"))
+						if(SearcherNpcTeam == TFTeam_Red || HasSpecificBuff(entity_close, "Charisma Effect"))
 							GetClosestTarget_AddTarget(entity_close, 4);
 					}
 					else if(!npc.m_bCamo || camoDetection)

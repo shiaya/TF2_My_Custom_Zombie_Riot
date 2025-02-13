@@ -387,7 +387,7 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 						
 						CreateTimer(zr_spawnprotectiontime.FloatValue, Remove_Spawn_Protection, EntIndexToEntRef(entity_Spawner), TIMER_FLAG_NO_MAPCHANGE);
 					}
-
+					CC_Contract_SpawnEnemy(entity_Spawner);
 					if(GetTeam(entity_Spawner) == 2)
 					{
 						Rogue_AllySpawned(entity_Spawner);
@@ -507,7 +507,7 @@ public Action Timer_Delay_BossSpawn(Handle timer, DataPack pack)
 		}
 		
 		b_NpcForcepowerupspawn[entity] = forcepowerup;
-
+		CC_Contract_SpawnEnemy(entity);
 		if(GetTeam(entity) == 2)
 		{
 			Rogue_AllySpawned(entity);
@@ -520,8 +520,6 @@ public Action Timer_Delay_BossSpawn(Handle timer, DataPack pack)
 		}
 		if(Waves_InFreeplay())
 			Freeplay_SpawnEnemy(entity);
-		if(Waves_InCCMode())
-			CC_Contract_SpawnEnemy(entity);
 	}
 
 	return Plugin_Stop;
