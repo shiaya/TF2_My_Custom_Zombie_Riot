@@ -220,7 +220,7 @@ methodmap Vader < CClotBody
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
 		RaidModeTime = GetGameTime() + 200.0;
-		RaidModeScaling = float(ZR_GetWaveCount()+1);
+		RaidModeScaling = float(Waves_GetRound()+1);
 		npc.m_bThisNpcIsABoss = true;
 		if(RaidModeScaling < 55)
 		{

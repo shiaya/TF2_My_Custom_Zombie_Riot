@@ -250,12 +250,12 @@ methodmap GodArkantos < CClotBody
 		AcceptEntityInput(npc.m_iTeamGlow, "SetGlowColor");
 		
 		RaidModeTime = GetGameTime(npc.index) + 200.0;
-		if(ZR_GetWaveCount()+1 >= 59)
+		if(Waves_GetRound()+1 >= 59)
 		{
 			RaidModeTime = GetGameTime(npc.index) + 300.0;
 		}
 		
-		RaidModeScaling = float(ZR_GetWaveCount()+1);
+		RaidModeScaling = float(Waves_GetRound()+1);
 
 		npc.m_flArkantosBuffEffect = GetGameTime() + 25.0;
 		npc.m_flRangedSpecialDelay = GetGameTime() + 10.0;
@@ -446,7 +446,7 @@ public void GodArkantos_ClotThink(int iNPC)
 
 	if(f_TargetToWalkToDelay[npc.index] < gameTime)
 	{
-		if(npc.m_flArkantosBuffEffect < GetGameTime(npc.index) && !npc.m_flNextRangedAttackHappening && ZR_GetWaveCount()+1 > 30)
+		if(npc.m_flArkantosBuffEffect < GetGameTime(npc.index) && !npc.m_flNextRangedAttackHappening && Waves_GetRound()+1 > 30)
 		{
 			i_TargetToWalkTo[npc.index] = GetClosestAlly(npc.index);	
 			if(i_TargetToWalkTo[npc.index] == -1) //there was no alive ally, we will return to finding an enemy and killing them.
@@ -493,7 +493,7 @@ public void GodArkantos_ClotThink(int iNPC)
 				ActionToTake = 1;
 				//first we try to jump to them if close enough.
 			}
-			else if(flDistanceToTarget < (250.0 * 250.0) && npc.m_flNextRangedAttack < GetGameTime(npc.index) && ZR_GetWaveCount()+1 > 15)
+			else if(flDistanceToTarget < (250.0 * 250.0) && npc.m_flNextRangedAttack < GetGameTime(npc.index) && Waves_GetRound()+1 > 15)
 			{
 				//We are pretty close, we will do a wirlwind to kick everyone away after a certain amount of delay so they can prepare.
 				ActionToTake = 2;
@@ -501,7 +501,7 @@ public void GodArkantos_ClotThink(int iNPC)
 		}
 		else if(IsValidAlly(npc.index, i_TargetToWalkTo[npc.index]))
 		{
-			if(flDistanceToTarget < (125.0* 125.0) && npc.m_flArkantosBuffEffect < GetGameTime(npc.index) && ZR_GetWaveCount()+1 > 30)
+			if(flDistanceToTarget < (125.0* 125.0) && npc.m_flArkantosBuffEffect < GetGameTime(npc.index) && Waves_GetRound()+1 > 30)
 			{
 				//can only be above wave 15.
 				ActionToTake = -1;
@@ -622,7 +622,7 @@ public Action GodArkantos_OnTakeDamage(int victim, int &attacker, int &inflictor
 		return Plugin_Handled;
 	}
 
-	if(ZR_GetWaveCount()+1 > 55 && !b_angered_twice[npc.index] && !Waves_InFreeplay())
+	if(Waves_GetRound()+1 > 55 && !b_angered_twice[npc.index] && !Waves_InFreeplay())
 	{
 		if(damage >= GetEntProp(npc.index, Prop_Data, "m_iHealth"))
 		{
@@ -654,7 +654,7 @@ public void GodArkantos_OnTakeDamagePost(int victim, int attacker, int inflictor
 	float maxhealth = float(GetEntProp(npc.index, Prop_Data, "m_iMaxHealth"));
 	float health = float(GetEntProp(npc.index, Prop_Data, "m_iHealth"));
 	float Ratio = health / maxhealth;
-	if(ZR_GetWaveCount()+1 <= 15)
+	if(Waves_GetRound()+1 <= 15)
 	{
 		if(Ratio <= 0.85 && npc.g_TimesSummoned < 1)
 		{
@@ -710,7 +710,7 @@ public void GodArkantos_OnTakeDamagePost(int victim, int attacker, int inflictor
 			}
 		}
 	}
-	else if(ZR_GetWaveCount()+1 <= 30)
+	else if(Waves_GetRound()+1 <= 30)
 	{
 		if(Ratio <= 0.85 && npc.g_TimesSummoned < 1)
 		{
@@ -767,7 +767,7 @@ public void GodArkantos_OnTakeDamagePost(int victim, int attacker, int inflictor
 			}
 		}
 	}
-	else if(ZR_GetWaveCount()+1 <= 45)
+	else if(Waves_GetRound()+1 <= 45)
 	{
 		if(Ratio <= 0.85 && npc.g_TimesSummoned < 1)
 		{
@@ -825,7 +825,7 @@ public void GodArkantos_OnTakeDamagePost(int victim, int attacker, int inflictor
 			}
 		}
 	}
-	else if(ZR_GetWaveCount()+1 <= 60)
+	else if(Waves_GetRound()+1 <= 60)
 	{
 		if(Ratio <= 0.85 && npc.g_TimesSummoned < 1)
 		{
@@ -1000,11 +1000,11 @@ void GodArkantosSelfDefense(GodArkantos npc, float gameTime)
 					if(target > 0) 
 					{
 						float damage = 20.0;
-						if(ZR_GetWaveCount()+1 > 40 && ZR_GetWaveCount()+1 < 55)
+						if(Waves_GetRound()+1 > 40 && Waves_GetRound()+1 < 55)
 						{
 							damage = 18.0; //nerf
 						}
-						else if(ZR_GetWaveCount()+1 > 55)
+						else if(Waves_GetRound()+1 > 55)
 						{
 							damage = 16.5; //nerf
 						}
@@ -1166,11 +1166,11 @@ void GodArkantosJumpSpecial(GodArkantos npc, float gameTime)
 			TE_SendToAll(0.0);
 			spawnRing_Vectors(ThrowPos, 0.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 220, 220, 255, 200, 1, /*duration*/ 0.5, 5.0, 0.0, 1,Range * 2.0 * zr_smallmapbalancemulti.FloatValue);	
 			float damage = 300.0;
-			if(ZR_GetWaveCount()+1 > 40 && ZR_GetWaveCount()+1 < 55)
+			if(Waves_GetRound()+1 > 40 && Waves_GetRound()+1 < 55)
 			{
 				damage = 250.0; //nerf
 			}
-			else if(ZR_GetWaveCount()+1 > 55)
+			else if(Waves_GetRound()+1 > 55)
 			{
 				damage = 230.5; //nerf
 			}
@@ -1374,11 +1374,11 @@ void GodArkantosHurricane(GodArkantos npc, float gameTime)
 						else if(IsValidClient(EnemyLoop) && Can_I_See_Enemy_Only(npc.index, EnemyLoop))
 						{
 							float damage = 50.0;
-							if(ZR_GetWaveCount()+1 > 40 && ZR_GetWaveCount()+1 < 55)
+							if(Waves_GetRound()+1 > 40 && Waves_GetRound()+1 < 55)
 							{
 								damage = 45.0; //nerf
 							}
-							else if(ZR_GetWaveCount()+1 > 55)
+							else if(Waves_GetRound()+1 > 55)
 							{
 								damage = 40.5; //nerf
 							}
@@ -1439,11 +1439,11 @@ void GodArkantosHurricane(GodArkantos npc, float gameTime)
 									npcenemy.SetVelocity({0.0,0.0,0.0});
 									PluginBot_Jump(npcenemy.index, flPos_1);
 									float damage = 50.0;
-									if(ZR_GetWaveCount()+1 > 40 && ZR_GetWaveCount()+1 < 55)
+									if(Waves_GetRound()+1 > 40 && Waves_GetRound()+1 < 55)
 									{
 										damage = 45.0; //nerf
 									}
-									else if(ZR_GetWaveCount()+1 > 55)
+									else if(Waves_GetRound()+1 > 55)
 									{
 										damage = 40.5; //nerf
 									}

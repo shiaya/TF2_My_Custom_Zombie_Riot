@@ -290,8 +290,8 @@ void VictoriaSpecialHarbringerSelfDefense(VictoriaSpecialHarbringer npc, float g
 						if(IsValidEnemy(npc.index, target))
 						{
 							float damageDealt = 10.0;
-							if(ZR_GetWaveCount()+1 > 12)
-								damageDealt *= float(ZR_GetWaveCount()+1)*0.1;
+							if(Waves_GetRound()+1 > 12)
+								damageDealt *= float(Waves_GetRound()+1)*0.1;
 							if(ShouldNpcDealBonusDamage(target))
 								damageDealt *= 3.0;
 

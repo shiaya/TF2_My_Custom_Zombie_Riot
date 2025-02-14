@@ -414,12 +414,12 @@ static bool Victoria_Support(Victoria_Precision_Strike npc)
 		position[2] += 700.0;
 		
 		float damageDealt = 100.0;
-		if(ZR_GetWaveCount()+1 > 12)
-			damageDealt *= float(ZR_GetWaveCount()+1)*0.7;
-		if(ZR_GetWaveCount()+1>50)damageDealt *= 1.5;
-		else if(ZR_GetWaveCount()+1>45)damageDealt *= 1.35;
-		else if(ZR_GetWaveCount()+1>30)damageDealt *= 1.25;
-		else if(ZR_GetWaveCount()+1>15)damageDealt *= 1.1;
+		if(Waves_GetRound()+1 > 12)
+			damageDealt *= float(Waves_GetRound()+1)*0.7;
+		if(Waves_GetRound()+1>50)damageDealt *= 1.5;
+		else if(Waves_GetRound()+1>45)damageDealt *= 1.35;
+		else if(Waves_GetRound()+1>30)damageDealt *= 1.25;
+		else if(Waves_GetRound()+1>15)damageDealt *= 1.1;
 		if(damageDealt>9000.0)damageDealt=9000.0;
 		
 		i_ExplosiveProjectileHexArray[npc.index] = EP_DEALS_TRUE_DAMAGE;

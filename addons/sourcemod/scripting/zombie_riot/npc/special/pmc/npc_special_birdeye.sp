@@ -69,17 +69,17 @@ static char[] GetPMCHealth()
 	
 	float temp_float_hp = float(health);
 	
-	if(ZR_GetWaveCount()+1 < 30)
+	if(Waves_GetRound()+1 < 30)
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.25));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.25));
 	}
-	else if(ZR_GetWaveCount()+1 < 45)
+	else if(Waves_GetRound()+1 < 45)
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.35));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.35));
 	}
 	else
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.40));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.40));
 	}
 	
 	health /= 6;
@@ -634,8 +634,8 @@ int VictoriaSpecialBirdeyeSniperMode(VictoriaSpecialBirdeye npc, float gameTime)
 			if(IsValidEnemy(npc.index, target))
 			{
 				float damageDealt = 250.0;
-				if(ZR_GetWaveCount()+1 > 12)
-					damageDealt *= float(ZR_GetWaveCount()+1)*0.1;
+				if(Waves_GetRound()+1 > 12)
+					damageDealt *= float(Waves_GetRound()+1)*0.1;
 				if(ShouldNpcDealBonusDamage(target))
 					damageDealt *= 99.0;
 				
@@ -693,8 +693,8 @@ int VictoriaSpecialBirdeyeAssaultMode(VictoriaSpecialBirdeye npc, float gameTime
 					if(IsValidEnemy(npc.index, target))
 					{
 						float damageDealt = 20.0;
-						if(ZR_GetWaveCount()+1 > 12)
-							damageDealt *= float(ZR_GetWaveCount()+1)*0.1;
+						if(Waves_GetRound()+1 > 12)
+							damageDealt *= float(Waves_GetRound()+1)*0.1;
 						if(ShouldNpcDealBonusDamage(target))
 							damageDealt *= 3.0;
 						SDKHooks_TakeDamage(target, npc.index, npc.index, damageDealt, DMG_BULLET, -1, _, vecHit);

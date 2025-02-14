@@ -358,7 +358,7 @@ public void Perserker_NPCTakeDamage(int victim, int attacker, float &damage, int
 	if(Perserker_WeaponPap[attacker]>=6 && TeutonType[attacker] == TEUTON_NONE)
 	{
 		float DMGNerf;
-		DMGNerf = float(ZR_GetWaveCount()+1);
+		DMGNerf = float(Waves_GetRound()+1);
 		if(DMGNerf > 15)
 			DMGNerf *= 25.0;
 		else if(DMGNerf < 30)
@@ -382,7 +382,7 @@ public void Perserker_NPCTakeDamage(int victim, int attacker, float &damage, int
 				CashSpent[attacker] -= 1;
 			}
 		}
-		if(damage-DMGNerf > 2500.0 && ZR_GetWaveCount()+1 > 15)
+		if(damage-DMGNerf > 2500.0 && Waves_GetRound()+1 > 15)
 			damage-=DMGNerf;
 		return;
 	}
@@ -390,7 +390,7 @@ public void Perserker_NPCTakeDamage(int victim, int attacker, float &damage, int
 	&& ScrapMiner_Backpack[attacker] < ScrapMiner_BackpackMax[attacker] && TeutonType[attacker] == TEUTON_NONE)
 	{
 		float DMGNerf;
-		DMGNerf = float(ZR_GetWaveCount()+1);
+		DMGNerf = float(Waves_GetRound()+1);
 		if(DMGNerf > 15)
 			DMGNerf *= 25.0;
 		else if(DMGNerf < 30)
@@ -405,7 +405,7 @@ public void Perserker_NPCTakeDamage(int victim, int attacker, float &damage, int
 			CashRecievedNonWave[attacker] += 1;
 			CashSpent[attacker] -= 1;
 		}
-		if(damage-DMGNerf > 2500.0 && ZR_GetWaveCount()+1 > 15)
+		if(damage-DMGNerf > 2500.0 && Waves_GetRound()+1 > 15)
 			damage-=DMGNerf;
 		return;
 	}

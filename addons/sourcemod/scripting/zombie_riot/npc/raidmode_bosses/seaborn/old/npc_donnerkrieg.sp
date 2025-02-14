@@ -342,7 +342,7 @@ methodmap Raidboss_Donnerkrieg < CClotBody
 		
 		RaidModeTime = GetGameTime() + 250.0;
 		
-		RaidModeScaling = float(ZR_GetWaveCount()+1);
+		RaidModeScaling = float(Waves_GetRound()+1);
 
 		b_angered_twice[npc.index]=false;
 		
@@ -506,7 +506,7 @@ methodmap Raidboss_Donnerkrieg < CClotBody
 		
 		EmitSoundToAll("mvm/mvm_tele_deliver.wav");
 
-		int wave = ZR_GetWaveCount()+1;
+		int wave = Waves_GetRound()+1;
 		
 		if(wave <=45)
 			CPrintToChatAll("{aqua}Stella{snow}: We have arrived to render judgement");
@@ -735,7 +735,7 @@ static void Internal_ClotThink(int iNPC)
 		npc.m_flGetClosestTargetTime = GetGameTime(npc.index) + GetRandomRetargetTime();
 	}
 
-	int Current_Wave = ZR_GetWaveCount()+1;
+	int Current_Wave = Waves_GetRound()+1;
 	/*
 	if(Current_Wave>=60 && !b_nightmare_logic[npc.index])
 	{
@@ -1225,7 +1225,7 @@ static void Heavens_Full_Charge(Raidboss_Donnerkrieg npc, float GameTime)
 		
 		Donnerkrieg_Proper_To_Groud_Clip({24.0,24.0,24.0}, 300.0, loc);
 
-		int wave = ZR_GetWaveCount()+1;
+		int wave = Waves_GetRound()+1;
 
 		int infection =0;
 
@@ -2187,7 +2187,7 @@ static void Internal_NPCDeath(int entity)
 	}
 
 //	b_allow_schwert_transformation = true;
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 
 	int ally = EntRefToEntIndex(i_ally_index);
 	float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
@@ -2439,7 +2439,7 @@ public Action Donnerkrieg_Laser_Think(int iNPC)	//A short burst of a laser.
 		TR_GetEndPosition(endPoint, trace);
 		delete trace;
 
-		int wave = ZR_GetWaveCount()+1;
+		int wave = Waves_GetRound()+1;
 
 		int infection =0;
 
@@ -2615,7 +2615,7 @@ public Action Donnerkrieg_Main_Nightmare_Tick(int iNPC)
 
 	int infection = 0;
 
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 
 	if(wave<=15)
 	{
@@ -2828,7 +2828,7 @@ static void Crystal_Laser_Move_And_Dmg_Logic(Raidboss_Donnerkrieg npc, int clien
 
 		Ruina_Laser_Logic Laser;
 
-		int wave = ZR_GetWaveCount()+1;
+		int wave = Waves_GetRound()+1;
 
 		if(wave<=15)
 		{
@@ -2864,7 +2864,7 @@ static void On_LaserHit(int client, int Target, int damagetype, float damage)
 {
 	int infection = 0;
 
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 
 	if(wave<=15)
 	{

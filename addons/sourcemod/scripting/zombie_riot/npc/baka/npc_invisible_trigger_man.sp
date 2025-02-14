@@ -237,7 +237,7 @@ static void Cybergrind_EX_Hard_Mode_ClotThink(int iNPC)
 		if(JUST_TOGGLE[npc.index])
 		{
 			bool YESISWAVE=false;
-			/*switch(ZR_GetWaveCount()+1)
+			/*switch(Waves_GetRound()+1)
 			{
 				case 16:CPrintToChatAll("{crimson}Enemies grow restless...{default}");
 				case 31:CPrintToChatAll("{crimson}Enemies power gauge increases...{default}");
@@ -250,7 +250,7 @@ static void Cybergrind_EX_Hard_Mode_ClotThink(int iNPC)
 			}*/
 			if(YESISWAVE)
 			{
-				npc.i_GetWave=ZR_GetWaveCount()+1;
+				npc.i_GetWave=Waves_GetRound()+1;
 				JUST_TOGGLE[npc.index]=true;
 			}
 		}

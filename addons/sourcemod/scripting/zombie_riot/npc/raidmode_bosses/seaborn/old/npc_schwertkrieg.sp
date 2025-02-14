@@ -622,7 +622,7 @@ static void Internal_ClotThink(int iNPC)
 		return;
 	}
 	
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 	
 	float vecTarget[3]; WorldSpaceCenter(PrimaryThreatIndex, vecTarget);
 	float npc_Vec[3]; WorldSpaceCenter(npc.index, npc_Vec);
@@ -1050,7 +1050,7 @@ static void Schwertkrieg_Teleport_Strike(Raidboss_Schwertkrieg npc, float flDist
 			npc.m_flRangedArmor = fl_schwert_armour[npc.index][0]-0.5;
 
 			npc_Loc[2]+=10.0;
-			int wave = ZR_GetWaveCount()+1;
+			int wave = Waves_GetRound()+1;
 			int r, g, b, a;
 			a = 175;
 
@@ -1239,7 +1239,7 @@ static void Schwertkrieg_Teleport_Boom(Raidboss_Schwertkrieg npc, float Location
 	if(npc.Anger)
 		radius *= 1.25;	
 
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 	int color[4];
 	color[3] = 175;
 
@@ -1313,7 +1313,7 @@ static Action Schwert_Ring_Loops(Handle Loop, DataPack pack)
 	EmitAmbientSound(SCHWERT_TELEPORT_STRIKE_LOOPS, spawnLoc, _, 120, _, _, GetRandomInt(80, 110));
 	EmitAmbientSound(SCHWERT_TELEPORT_STRIKE_LOOPS, spawnLoc, _, 120, _, _, GetRandomInt(80, 110));
 
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 	int color[4];
 	color[3] = 175;
 
@@ -1380,7 +1380,7 @@ static Action Schwert_Boom(Handle Smite_Logic, DataPack pack)
 	
 	float damage = 200.0*RaidModeScaling;	//very deadly!
 	float radius = SCHWERTKRIEG_TELEPORT_STRIKE_RADIUS;
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 	int color[4];
 	color[3] = 175;
 	int loop_for = 15;		//15
@@ -1601,7 +1601,7 @@ static Action Internal_OnTakeDamage(int victim, int &attacker, int &inflictor, f
 		return Plugin_Changed;
 	}
 
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 
 	if(!b_angered_twice[npc.index] && Health/MaxHealth<=0.8 && !b_teleport_strike_active[npc.index] && (wave >=30 || b_allow_schwert_transformation))
 	{
@@ -1978,7 +1978,7 @@ static void Internal_NPCDeath(int entity)
 
 	RaidModeTime +=50.0;
 
-	int wave = ZR_GetWaveCount()+1;
+	int wave = Waves_GetRound()+1;
 	if(wave!=60 && !b_donner_said_win_line)
 	{
 		if(b_raidboss_donnerkrieg_alive)

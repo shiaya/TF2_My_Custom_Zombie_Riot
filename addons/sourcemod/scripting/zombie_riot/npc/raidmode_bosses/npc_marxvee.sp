@@ -46,7 +46,7 @@ methodmap Marxvee < CClotBody
 		
 		RaidModeTime = GetGameTime(npc.index) + 300.0;
 
-		RaidModeScaling = float(ZR_GetWaveCount()+1) * 0.1;
+		RaidModeScaling = float(Waves_GetRound()+1) * 0.1;
 		if(RaidModeScaling > 54)
 			RaidModeScaling *= 2.0;
 		
@@ -75,7 +75,7 @@ methodmap Marxvee < CClotBody
 		npc.m_flNextRangedSpecialAttackHappens = 0.0;
 		npc.m_flRangedSpecialDelay = 0.0;
 		npc.m_flNextRangedAttack = 0.0;
-		npc.m_iLevel = (ZR_GetWaveCount() - 10) / 15;
+		npc.m_iLevel = (Waves_GetRound() - 10) / 15;
 
 		Music_SetRaidMusic("#zombiesurvival/silvester_raid/silvester.mp3", 117, true);
 		

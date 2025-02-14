@@ -33,21 +33,21 @@ static char[] GetSANSHealth()
 	
 	float temp_float_hp = float(health);
 	
-	if(ZR_GetWaveCount()+1 < 30)
+	if(Waves_GetRound()+1 < 30)
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.2));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.2));
 	}
-	else if(ZR_GetWaveCount()+1 < 45)
+	else if(Waves_GetRound()+1 < 45)
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.25));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.25));
 	}
-	else if(ZR_GetWaveCount()+1 < 60)
+	else if(Waves_GetRound()+1 < 60)
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.3));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.3));
 	}
 	else
 	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(ZR_GetWaveCount()+1)) * float(ZR_GetWaveCount()+1)),1.35));
+		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.35));
 	}
 	
 	health = health * 3 / 8;
@@ -65,7 +65,7 @@ static char[] GetSANSHealth()
 			health=8000;
 	}
 	
-	health = health+RoundToCeil((CountPlayersOnRed()*65.0)*(float(ZR_GetWaveCount()+1)*0.1));
+	health = health+RoundToCeil((CountPlayersOnRed()*65.0)*(float(Waves_GetRound()+1)*0.1));
 	
 	char buffer[16];
 	IntToString(health, buffer, sizeof(buffer));
@@ -626,7 +626,7 @@ static int TrumpetSkeletonAssaultMode(int iNPC, float gameTime, float distance)
 				SuperCD=2.0;
 			else
 			{
-				if(ZR_GetWaveCount()+1 < 30)
+				if(Waves_GetRound()+1 < 30)
 					SuperCD=5.0;
 				else
 					SuperCD=2.5;
@@ -656,11 +656,11 @@ static void TrumpetAttack(int entity, int victim, float damage, int weapon)
 	if(GetTeam(victim) == TFTeam_Red && SANS[npc.index])
 	{
 		float damageDealt = 25.0;
-		if(ZR_GetWaveCount()+1 > 12)
-			damageDealt *= float(ZR_GetWaveCount()+1)*0.1;
+		if(Waves_GetRound()+1 > 12)
+			damageDealt *= float(Waves_GetRound()+1)*0.1;
 		//if(damageDealt>85.0)damageDealt=85.0;
 		if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
-			damageDealt *= float(ZR_GetWaveCount()+1)*0.15;
+			damageDealt *= float(Waves_GetRound()+1)*0.15;
 		if(ShouldNpcDealBonusDamage(victim))
 			damageDealt *= 2.0;
 		SDKHooks_TakeDamage(victim, npc.index, npc.index, damageDealt, DMG_CLUB, -1, _, vecHit);
@@ -681,10 +681,10 @@ static void SuperAttack(int entity, int victim, float damage, int weapon)
 	if(GetTeam(victim) == TFTeam_Red && SANS[npc.index])
 	{
 		float damageDealt = 25.0;
-		if(ZR_GetWaveCount()+1 > 12)
-			damageDealt *= float(ZR_GetWaveCount()+1)*0.25;
+		if(Waves_GetRound()+1 > 12)
+			damageDealt *= float(Waves_GetRound()+1)*0.25;
 		if(!StrContains(WhatDifficultySetting_Internal, "Umbral Incursion"))
-			damageDealt *= float(ZR_GetWaveCount()+1)*0.25;
+			damageDealt *= float(Waves_GetRound()+1)*0.25;
 		else if(damageDealt>400.0)damageDealt=400.0;
 		if(ShouldNpcDealBonusDamage(victim))
 			damageDealt *= 2.0;

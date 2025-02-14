@@ -237,7 +237,7 @@ methodmap Vader < CClotBody
 		EmitSoundToAll("fish/destroy_vader.mp3", _, _, _, _, 1.0);	
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidModeTime = GetGameTime() + 200.0;
-		RaidModeScaling = float(ZR_GetWaveCount()+1);
+		RaidModeScaling = float(Waves_GetRound()+1);
 		npc.m_bThisNpcIsABoss = true;
 		if(RaidModeScaling < 55)
 		{

@@ -280,7 +280,7 @@ methodmap CorruptedSpyRaid < CClotBody
 		npc.m_flPlayMusicSound = 0.0;
 		
 		RaidModeTime = GetGameTime() + 200.0;
-		RaidModeScaling = float(ZR_GetWaveCount()+1);
+		RaidModeScaling = float(Waves_GetRound()+1);
 		if(RaidModeScaling < 55)
 		{
 			RaidModeScaling *= 0.19; //abit low, inreacing

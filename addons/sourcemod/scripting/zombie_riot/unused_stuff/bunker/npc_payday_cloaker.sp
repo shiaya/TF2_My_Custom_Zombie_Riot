@@ -226,7 +226,7 @@ public void Payday_Cloaker_ClotThink(int iNPC)
 			}
 		}
 	}
-	//float DamageMultiplier = float(ZR_GetWaveCount()+1);
+	//float DamageMultiplier = float(Waves_GetRound()+1);
 	float DamageMultiplier = 2.5;
 	
 	npc.m_flNextDelayTime = GetGameTime(npc.index) + DEFAULT_UPDATE_DELAY_FLOAT;

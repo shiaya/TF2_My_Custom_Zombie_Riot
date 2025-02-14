@@ -382,10 +382,10 @@ int VictoriaSpecialBigPipeSelfDefense(VictoriaSpecialBigPipe npc, float gameTime
 			{
 				npc.m_iTarget = Enemy_I_See;
 				float RocketDamage = 100.0;
-				if(ZR_GetWaveCount()+1 > 12)
-					RocketDamage *= float(ZR_GetWaveCount()+1)*0.2;
+				if(Waves_GetRound()+1 > 12)
+					RocketDamage *= float(Waves_GetRound()+1)*0.2;
 				if(ShouldNpcDealBonusDamage(npc.m_iTarget))
-					RocketDamage *= 1.0+(float(ZR_GetWaveCount()+1)*0.05);
+					RocketDamage *= 1.0+(float(Waves_GetRound()+1)*0.05);
 				float RocketSpeed = 1500.0;
 				float vecTarget[3]; WorldSpaceCenter(npc.m_iTarget, vecTarget );
 				float VecStart[3]; WorldSpaceCenter(npc.index, VecStart );
@@ -443,8 +443,8 @@ int VictoriaSpecialBigPipeSelfDefense(VictoriaSpecialBigPipe npc, float gameTime
 						if(IsValidEnemy(npc.index, target))
 						{
 							float damageDealt = 20.0;
-							if(ZR_GetWaveCount()+1 > 12)
-								damageDealt *= float(ZR_GetWaveCount()+1)*0.1;
+							if(Waves_GetRound()+1 > 12)
+								damageDealt *= float(Waves_GetRound()+1)*0.1;
 							if(ShouldNpcDealBonusDamage(target))
 								damageDealt *= 3.0;
 
