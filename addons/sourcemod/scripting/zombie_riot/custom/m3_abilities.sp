@@ -1419,7 +1419,7 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 					f_PDelay[client] = GetGameTime() + 60.0;
 					f_PDuration[client] = GetGameTime() + 20.0;
 				}
-				ApplyStatusEffect(client, client, "Weapon Overclock Detect", 0.5);
+				ApplyStatusEffect(client, client, "Weapon Clocking", 0.5);
 				ApplyStatusEffect(client, client, "Weapon Overclock", 1.0);
 				Kritzkrieg_Magical(client, 0.2, true);
 			}

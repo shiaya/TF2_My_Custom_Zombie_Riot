@@ -124,12 +124,18 @@ public Action CommandAimGotEffectsadd(int client, int args)
 			if(StrContains(arg2, "Weapon Overclock", false) != -1)
 			{
 				ApplyStatusEffect(client, target, "Weapon Overclock", Times);
-				ApplyStatusEffect(client, target, "Weapon Overclock Detect", Times-0.5);
+				ApplyStatusEffect(client, target, "Weapon Clocking", Times-0.5);
 			}
 			else if(StrContains(arg2, "Charisma Effect", false) != -1)
 			{
 				ApplyStatusEffect(client, target, "Charisma Effect", Times);
 				ApplyStatusEffect(client, target, "Charisma Effect Detect", Times-0.5);
+				Charisma_Func();
+			}
+			else if(StrContains(arg2, "Weapon Clocking", false) != -1)
+			{
+				ApplyStatusEffect(client, target, "Weapon Overclock", Times);
+				ApplyStatusEffect(client, target, "Weapon Clocking", Times-0.5);
 			}
 			else ApplyStatusEffect(client, target, arg2, Times);
 		}

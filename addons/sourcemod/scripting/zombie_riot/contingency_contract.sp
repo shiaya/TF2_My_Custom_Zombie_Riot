@@ -330,6 +330,7 @@ public int CC_ContractMenuH(Menu menu, MenuAction action, int client, int choice
 			SetGlobalTransTarget(client);
 			bool descmode = false;
 			if(GetEntityFlags(client) & FL_DUCKING)descmode = true;
+			if(TeutonType[client] != TEUTON_NONE || !IsPlayerAlive(client))descmode = true;
 			char buffer[24],buffer2[64];
 			menu.GetItem(choice, buffer, sizeof(buffer));
 			int index = StringToInt(buffer);
