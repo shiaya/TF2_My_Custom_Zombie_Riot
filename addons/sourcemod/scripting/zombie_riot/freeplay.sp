@@ -256,7 +256,7 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 			{
 				enemy.Index = NPC_GetByPlugin("npc_god_alaxios");
 				enemy.Health = RoundToFloor(4500000.0 / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
-				enemy.Data = "wave_60";
+				enemy.Data = "wave_60;res3";
 			}
 			case 5:
 			{
@@ -446,7 +446,7 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 		enemy.Is_Boss = 1;
 
 		enemy.Index = NPC_GetByPlugin("npc_freeplay_sigmaller");
-		enemy.Health = RoundToFloor(10000000.0 / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
+		enemy.Health = RoundToFloor(5000000.0 / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
 		enemy.Health = RoundToCeil(float(enemy.Health) * 0.6);
 		enemy.Credits += 1.0;
 
@@ -476,7 +476,7 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 	{
 		enemy.Is_Immune_To_Nuke = true;
 		enemy.Index = NPC_GetByPlugin("npc_darkenedheavy");
-		enemy.Health = RoundToCeil(HealthBonus + (3000000.0 * MultiGlobalHealth * HealthMulti * (((postWaves * 3) + 99) * 0.02)));
+		enemy.Health = RoundToCeil(HealthBonus + (1250000.0 * MultiGlobalHealth * HealthMulti * (((postWaves * 3) + 99) * 0.02)));
 		enemy.Credits += 100.0;
 		enemy.ExtraMeleeRes = 1.25;
 		enemy.ExtraRangedRes = 0.5;
@@ -695,14 +695,37 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 			enemy.Credits += KillBonus;
 	}
 
+	if(enemy.Team != TFTeam_Red)
+	{
+		// stat related stuff
+		enemy.ExtraSize *= ExtraEnemySize;	
+		
+		// count scaling
+		float countscale = float(CountPlayersOnRed());
+		if(countscale <= 8.0)
+		{
+			countscale *= 0.125; // below or equal to 8 players, scaling should be 0.125 per player
+		}
+		else if(countscale > 8.0 && countscale <= 12.0) 
+		{
+			countscale = 1.0; // above 8 players but below or equal to 12, player scaling should not activate
+		}
+		else
+		{
+			countscale *= 0.0782; // above 12 players, scaling should be 0.0782 per player, for a max of +25% enemies at 16 players assuming there can't be more.
+		}
+
+		if(countscale < 0.5)
+			countscale = 0.5; // below or equal to 4 players, there are 50% less enemies
+
+		count = RoundToCeil(float(count) * countscale);
+	}
+
 	if(count < 1)
 		count = 1;
 
 	if(alaxios && count > 30)
 		count = 30;
-
-	if(enemy.Team != TFTeam_Red)
-		enemy.ExtraSize *= ExtraEnemySize;
 
 	if(enemy.Is_Boss == 1)
 		enemy.Health = RoundToCeil(float(enemy.Health) * 0.65);
@@ -1063,7 +1086,7 @@ static Action activatebuffs(Handle timer)
 	if(FreeplayBuffTimer <= 0)
 	{
 		FreeplayBuffTimer = 1;
-		CreateTimer(1.0, Freeplay_BuffTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(3.0, Freeplay_BuffTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	return Plugin_Continue;
@@ -1096,15 +1119,15 @@ static Action Freeplay_BuffTimer(Handle Freeplay_BuffTimer)
 			{
 				case 1:
 				{
-					ApplyStatusEffect(client, client, "Freeplay Eloquence I", 1.25);
+					ApplyStatusEffect(client, client, "Freeplay Eloquence I", 5.0);
 				}
 				case 2:
 				{
-					ApplyStatusEffect(client, client, "Freeplay Eloquence II", 1.25);
+					ApplyStatusEffect(client, client, "Freeplay Eloquence II", 5.0);
 				}
 				case 3:
 				{
-					ApplyStatusEffect(client, client, "Freeplay Eloquence III", 1.25);
+					ApplyStatusEffect(client, client, "Freeplay Eloquence III", 5.0);
 				}
 			}
 
@@ -1112,15 +1135,15 @@ static Action Freeplay_BuffTimer(Handle Freeplay_BuffTimer)
 			{
 				case 1:
 				{
-					ApplyStatusEffect(client, client, "Freeplay Rampart I", 1.25);
+					ApplyStatusEffect(client, client, "Freeplay Rampart I", 5.0);
 				}
 				case 2:
 				{
-					ApplyStatusEffect(client, client, "Freeplay Rampart II", 1.25);
+					ApplyStatusEffect(client, client, "Freeplay Rampart II", 5.0);
 				}
 				case 3:
 				{
-					ApplyStatusEffect(client, client, "Freeplay Rampart III", 1.25);
+					ApplyStatusEffect(client, client, "Freeplay Rampart III", 5.0);
 				}
 			}
 
@@ -1153,15 +1176,15 @@ static Action Freeplay_BuffTimer(Handle Freeplay_BuffTimer)
 			{
 				case 1:
 				{
-					ApplyStatusEffect(ally, ally, "Freeplay Eloquence I", 1.25);
+					ApplyStatusEffect(ally, ally, "Freeplay Eloquence I", 5.0);
 				}
 				case 2:
 				{
-					ApplyStatusEffect(ally, ally, "Freeplay Eloquence II", 1.25);
+					ApplyStatusEffect(ally, ally, "Freeplay Eloquence II", 5.0);
 				}
 				case 3:
 				{
-					ApplyStatusEffect(ally, ally, "Freeplay Eloquence III", 1.25);
+					ApplyStatusEffect(ally, ally, "Freeplay Eloquence III", 5.0);
 				}
 			}
 
@@ -1169,15 +1192,15 @@ static Action Freeplay_BuffTimer(Handle Freeplay_BuffTimer)
 			{
 				case 1:
 				{
-					ApplyStatusEffect(ally, ally, "Freeplay Rampart I", 1.25);
+					ApplyStatusEffect(ally, ally, "Freeplay Rampart I", 5.0);
 				}
 				case 2:
 				{
-					ApplyStatusEffect(ally, ally, "Freeplay Rampart II", 1.25);
+					ApplyStatusEffect(ally, ally, "Freeplay Rampart II", 5.0);
 				}
 				case 3:
 				{
-					ApplyStatusEffect(ally, ally, "Freeplay Rampart III", 1.25);
+					ApplyStatusEffect(ally, ally, "Freeplay Rampart III", 5.0);
 				}
 			}
 

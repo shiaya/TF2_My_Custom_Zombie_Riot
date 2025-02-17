@@ -12,18 +12,12 @@ void BannerOnEntityCreated(int entity)
 {
 	b_ClientHasAncientBanner[entity] = false;
 }
-float BannerDefaultRange()
+float BannerDefaultRange(bool normal = false)
 {
-	//if(b_AlaxiosBuffItem[client])
-	{
+	if(!normal)
 		return 511225.0; //1.1x range
-	}
-	/*
 	else
-	{
-		return 422500.0;
-	}
-	*/
+		return 715.0;
 }
 
 enum
@@ -84,6 +78,7 @@ public Action Timer_Management_Banner(Handle timer, DataPack pack)
 	float BannerPos[3];
 	float targPos[3];
 	GetClientAbsOrigin(client, BannerPos);
+	spawnRing_Vectors(BannerPos, BannerDefaultRange(true) * 2.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 200, 50, 50, 125, 1, 0.11, 5.0, 1.1, 5, _, client);	
 	for(int ally=1; ally<=MaxClients; ally++)
 	{
 		if(IsClientInGame(ally) && IsPlayerAlive(ally))
@@ -161,6 +156,7 @@ public Action Timer_Management_Banner_1(Handle timer, DataPack pack)
 		float BannerPos[3];
 		float targPos[3];
 		GetClientAbsOrigin(client, BannerPos);
+		spawnRing_Vectors(BannerPos, BannerDefaultRange(true) * 2.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 200, 50, 50, 125, 1, 0.11, 5.0, 1.1, 5, _, client);	
 		for(int ally=1; ally<=MaxClients; ally++)
 		{
 			if(IsClientInGame(ally) && IsPlayerAlive(ally))
@@ -241,6 +237,7 @@ public Action Timer_Management_Banner_2(Handle timer, DataPack pack)
 		float BannerPos[3];
 		float targPos[3];
 		GetClientAbsOrigin(client, BannerPos);
+		spawnRing_Vectors(BannerPos, BannerDefaultRange(true) * 2.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 200, 50, 50, 125, 1, 0.11, 5.0, 1.1, 5, _, client);	
 		for(int ally=1; ally<=MaxClients; ally++)
 		{
 			if(IsClientInGame(ally) && IsPlayerAlive(ally))
@@ -279,7 +276,7 @@ public void Enable_Management_Banner_3(int client, int weapon) // Enable managem
 		b_ClientHasAncientBanner[client] = true;
 		if (Timer_AncientBanner == null)
 		{
-			Timer_AncientBanner = CreateTimer(0.4, Timer_AncientBannerGlobal, _, TIMER_REPEAT);
+			Timer_AncientBanner = CreateTimer(0.1, Timer_AncientBannerGlobal, _, TIMER_REPEAT);
 		}
 	}
 }
@@ -304,6 +301,7 @@ public Action Timer_AncientBannerGlobal(Handle timer)
 			float BannerPos[3];
 			float targPos[3];
 			GetClientAbsOrigin(client, BannerPos);
+			spawnRing_Vectors(BannerPos, BannerDefaultRange(true) * 2.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 200, 50, 50, 125, 1, 0.11, 5.0, 1.1, 5, _, client);	
 			for(int ally=1; ally<=MaxClients; ally++)
 			{
 				if(IsClientInGame(ally) && IsPlayerAlive(ally))

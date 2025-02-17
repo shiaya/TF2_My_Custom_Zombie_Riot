@@ -316,6 +316,7 @@ float Resistance_for_building_High[MAXENTITIES];
 MusicEnum MusicString1;
 MusicEnum MusicString2;
 MusicEnum RaidMusicSpecial1;
+MusicEnum BGMusicSpecial1;
 //custom wave music.
 float f_DelaySpawnsForVariousReasons;
 int CurrentRound;
@@ -620,6 +621,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zombie_riot/custom/baka/kit_omega.sp"
 #include "zombie_riot/custom/kit_soldine.sp"
 #include "zombie_riot/custom/weapon_kritzkrieg.sp"
+#include "zombie_riot/custom/wand/weapon_bubble_wand.sp"
 
 void ZR_PluginLoad()
 {
@@ -683,6 +685,7 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_displayhud", CommandDebugHudTest, ADMFLAG_ROOT, "debug stuff");						//DEBUG
 	RegAdminCmd("sm_fake_death_client", Command_FakeDeathCount, ADMFLAG_GENERIC, "Fake Death Count"); 	//DEBUG
 	RegAdminCmd("sm_spawn_vehicle", Command_PropVehicle, ADMFLAG_ROOT, "Spawn Vehicle"); 	//DEBUG
+	RegAdminCmd("sm_loadbgmusic", CommandBGTest, ADMFLAG_RCON, "Load a config containing a music field as passive music");
 	RegAdminCmd("sm_kill_npc", CommandKillTheNPC, ADMFLAG_ROOT, "You can kill an NPC by aiming at it and hitting it.");
 	RegAdminCmd("sm_add_effect", CommandAimGotEffectsadd, ADMFLAG_ROOT, "You can add effects.");
 	RegAdminCmd("sm_dsw", CommandDeployingSupportWeapon, ADMFLAG_ROOT, "Deploying Support Weapon, yep is op");
@@ -739,6 +742,10 @@ void ZR_MapStart()
 	PrecacheSound("ui/hitsound_electro2.wav");
 	PrecacheSound("ui/hitsound_electro3.wav");
 	PrecacheSound("ui/hitsound_space.wav");
+	PrecacheSound("#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3");
+	PrecacheSound("ui/chime_rd_2base_neg.wav");
+	PrecacheSound("ui/chime_rd_2base_pos.wav");
+	
 	TeutonSoundOverrideMapStart();
 	BarneySoundOverrideMapStart();
 	KleinerSoundOverrideMapStart();
@@ -747,6 +754,7 @@ void ZR_MapStart()
 	Rogue_MapStart();
 	Classic_MapStart();
 	Construction_MapStart();
+	f_AllowInstabuildRegardless = 0.0;
 	Zero(i_NormalBarracks_HexBarracksUpgrades);
 	Zero(i_NormalBarracks_HexBarracksUpgrades_2);
 	Ammo_Count_Ready = 0;
@@ -938,6 +946,7 @@ void ZR_MapStart()
 	Wkit_Soldin_OnMapStart();
 	Purnell_MapStart();
 	Kritzkrieg_OnMapStart();
+	BubbleWand_MapStart();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)
@@ -992,19 +1001,21 @@ public void OnMapInit()
 
 public Action GlobalTimer(Handle timer)
 {
+	bool ForceMusicStopAndReset = false;
+	if(f_AllowInstabuildRegardless && f_AllowInstabuildRegardless < GetGameTime())
+	{
+		f_AllowInstabuildRegardless = 0.0;
+		ForceMusicStopAndReset = true;
+	}
 	for(int client=1; client<=MaxClients; client++)
 	{
 		if(IsClientInGame(client))
 		{
-			/*
-			if(IsFakeClient(client))
+			if(ForceMusicStopAndReset)
 			{
-				if(IsClientSourceTV(client) || b_IsPlayerABot[client])
-				{
-					MoveBotToSpectator(client);
-				}
+				Music_Stop_All(client);
+				SetMusicTimer(client, GetTime() + 2);
 			}
-			*/
 			PlayerApplyDefaults(client);
 		}
 	}

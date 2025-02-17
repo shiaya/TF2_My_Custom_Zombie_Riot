@@ -70,8 +70,8 @@ void NPC_ConfigSetup()
 
 	// Buildings
 	ObjectBarricade_MapStart();
-	ObjectAmmobox_MapStart();
 	ObjectDecorative_MapStart();
+	ObjectAmmobox_MapStart();
 	ObjectArmorTable_MapStart();
 	ObjectPerkMachine_MapStart();
 	ObjectPackAPunch_MapStart();
@@ -84,9 +84,13 @@ void NPC_ConfigSetup()
 	ObjectVillage_MapStart();
 	ObjectTinkerBrew_MapStart();
 	ObjectRevenant_Setup();
-
-	ObjectConstruction_LightHouse_MapStart();
 	// Buildings
+
+	// Constructs
+	ObjectConstruction_LightHouse_MapStart();
+	ObjectStove_MapStart();
+	ObjectFactory_MapStart();
+	// Constructs
 
 	// Vehicles
 	VehicleHL2_Setup();
@@ -963,7 +967,10 @@ stock int NPC_GetByPlugin(const char[] name, NPCData data = {})
 {
 	int index = NPCList.FindString(name, NPCData::Plugin);
 	if(index != -1)
+	{
 		NPCList.GetArray(index, data);
+		PrecacheNPC(index, data);
+	}
 	
 	return index;
 }
@@ -1208,7 +1215,10 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "zombie_riot/object/obj_barracks.sp"
 #include "zombie_riot/object/obj_brewing_stand.sp"
 #include "zombie_riot/object/obj_revenant.sp"
-#include "zombie_riot/object/obj_giant_lighthouse.sp"
+#include "zombie_riot/object/construction/obj_giant_lighthouse.sp"
+#include "zombie_riot/object/construction/obj_const_stove.sp"
+#include "zombie_riot/object/construction/obj_const_factory.sp"
+//#include "zombie_riot/object/construction/obj_hospital.sp"
 
 // VEHICLES
 #include "shared/vehicles/vehicle_shared.sp"

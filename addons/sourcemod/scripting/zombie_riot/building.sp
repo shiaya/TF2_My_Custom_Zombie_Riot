@@ -341,7 +341,7 @@ static void BuildingMenu(int client)
 			if(cost > metal)
 				allowed = false;
 			
-			if(Waves_InSetup())
+			if(Waves_InSetup() || f_AllowInstabuildRegardless > GetGameTime())
 			{
 				cooldown = 0.0;
 			}
@@ -703,9 +703,6 @@ void Building_ShowInteractionHud(int client, int entity)
 				else if(Building_Collect_Cooldown[entity][client] > GetGameTime())
 				{
 					float Building_Picking_up_cd = Building_Collect_Cooldown[entity][client] - GetGameTime();
-					
-					if(Building_Picking_up_cd <= 0.0)
-						Building_Picking_up_cd = 0.0;
 					
 					Hide_Hud = false;
 					SetGlobalTransTarget(client);

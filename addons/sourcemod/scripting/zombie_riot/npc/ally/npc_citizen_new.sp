@@ -1820,23 +1820,32 @@ static void CitizenMenu(int client, int page = 0)
 				}
 				case Cit_Builder:
 				{
+					bool DontAllowBuilding = false;
+					if(HealingCooldown[npc.index] > GetGameTime())
+					{
+						DontAllowBuilding = true;
+					}
+					if(Waves_InSetup() || f_AllowInstabuildRegardless > GetGameTime())
+					{
+						DontAllowBuilding = false;
+					}
 					FormatEx(buffer, sizeof(buffer), "%t", "Build Barricade At Me");
-					menu.AddItem("15", buffer, HealingCooldown[npc.index] > GetGameTime() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+					menu.AddItem("15", buffer, DontAllowBuilding ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 
 					FormatEx(buffer, sizeof(buffer), "%t", "Build Sentry At Me");
 					menu.AddItem("16", buffer);
 
 					FormatEx(buffer, sizeof(buffer), "%t", "Build Ammo Box At Me");
-					menu.AddItem("17", buffer, HealingCooldown[npc.index] > GetGameTime() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+					menu.AddItem("17", buffer, DontAllowBuilding ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 
 					FormatEx(buffer, sizeof(buffer), "%t", "Build Armor Table At Me");
-					menu.AddItem("18", buffer, HealingCooldown[npc.index] > GetGameTime() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+					menu.AddItem("18", buffer, DontAllowBuilding ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 
 					FormatEx(buffer, sizeof(buffer), "%t", "Build Perk Machine At Me");
-					menu.AddItem("19", buffer, HealingCooldown[npc.index] > GetGameTime() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+					menu.AddItem("19", buffer, DontAllowBuilding ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 
 					FormatEx(buffer, sizeof(buffer), "%t", "Build Pack-a-Punch At Me");
-					menu.AddItem("20", buffer, HealingCooldown[npc.index] > GetGameTime() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+					menu.AddItem("20", buffer, DontAllowBuilding ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 				}
 			}
 		}
@@ -2916,7 +2925,6 @@ public void Citizen_ClotThink(int iNPC)
 				}
 			}
 		}
-
 		// Look for Perk Machines
 		else if(team == TFTeam_Red && (!combat || (target == -1 && npc.m_iClassRole != Cit_Fighter)) && npc.m_iGunType != Cit_None && npc.m_iHasPerk != npc.m_iGunType)
 		{
@@ -2947,9 +2955,8 @@ public void Citizen_ClotThink(int iNPC)
 				}
 			}
 		}
-
 		// Look for Armor Tables
-		else if(team == TFTeam_Red && Elemental_HasDamage(npc.index) && (!combat || (target == -1 && Elemental_GoingCritical(npc.index))))
+		else if((team == TFTeam_Red && (Elemental_HasDamage(npc.index) || npc.m_flArmorCount <= 0.0)) && (!combat || (target == -1 && Elemental_GoingCritical(npc.index))))
 		{
 			npc.ThinkFriendly("No Free Armor Table...");
 
@@ -3092,7 +3099,9 @@ public void Citizen_ClotThink(int iNPC)
 					case 2:	// Armor Table
 					{
 						HealingCooldown[ally] = gameTime + 45.0;
-
+						
+						GrantEntityArmor(npc.index, false, 0.25, 0.25, 0);
+						//Same as medigun giving armor, exact same logic, same amount.
 						Elemental_ClearDamage(npc.index);
 					}
 					case 3:	// Perk Machine

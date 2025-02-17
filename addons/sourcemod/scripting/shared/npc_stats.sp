@@ -41,6 +41,7 @@ int i_Headshots[MAXTF2PLAYERS];
 #if !defined RTS
 int TeamFreeForAll = 50;
 #endif
+float f_LastBaseThinkTime[MAXENTITIES];
 
 int i_TeamGlow[MAXENTITIES]={-1, ...};
 int Shared_BEAM_Glow;
@@ -391,6 +392,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		DispatchKeyValue(npc, "disableselfshadowing", "1");  
 		
 		i_IsNpcType[npc] = NpcTypeLogic;
+		f_LastBaseThinkTime[npc] = GetGameTime();
 
 #if defined ZR
 		if(Ally == TFTeam_Red)
@@ -3546,7 +3548,7 @@ public void CBaseCombatCharacter_EventKilledLocal(int pThis, int iAttacker, int 
 		}
 		CleanAllAppliedEffects_BombImplanter(pThis, true);
 #endif
-
+	
 #if defined EXPIDONSA_BASE
 		VausMagicaRemoveShield(pThis, true);
 #endif
@@ -5791,7 +5793,6 @@ public Action Timer_CheckStuckOutsideMap(Handle cut_timer, int ref)
 
 float f_CheckIfStuckPlayerDelay[MAXENTITIES];
 float f_QuickReviveHealing[MAXENTITIES];
-float f_LastBaseThinkTime[MAXENTITIES];
 public void NpcBaseThinkPost(int iNPC)
 {
 	float lastThink = f_LastBaseThinkTime[iNPC];
@@ -5803,7 +5804,7 @@ public void NpcBaseThinkPost(int iNPC)
 		
 	if(f_TimeFrozenStill[iNPC] > GetGameTime(iNPC))
 		return;
-
+		
 	float time = GetGameTime() - lastThink;	// Time since the last time this NPC thought
 
 	//It like, speed sup their world time?
@@ -10751,7 +10752,7 @@ void ExtinguishTarget(int target, bool dontkillTimer = false)
 
 void IsEntityInvincible_Shield(int entity)
 {
-	bool NpcInvulShieldDisplay;
+	int NpcInvulShieldDisplay;
 #if defined ZR
 //This is not neccecary in RPG.
 	if(i_npcspawnprotection[entity] == 1)
@@ -10759,6 +10760,10 @@ void IsEntityInvincible_Shield(int entity)
 #endif
 	if(b_NpcIsInvulnerable[entity])
 		NpcInvulShieldDisplay = true;
+
+	if(HasSpecificBuff(entity, "UBERCHARGED"))
+		NpcInvulShieldDisplay = 2;
+
 	
 	CClotBody npc = view_as<CClotBody>(entity);
 	if(!NpcInvulShieldDisplay || b_ThisEntityIgnored[entity])

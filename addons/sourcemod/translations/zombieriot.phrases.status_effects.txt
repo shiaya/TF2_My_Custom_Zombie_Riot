@@ -290,7 +290,7 @@
 	}
 	"Silenced Desc"
 	{
-		"en"	"Disables Some enemeies abiltiies, see their Encylopedia entrances."
+		"en"	"Disables Some enemeies abiltiies, see their Encylopedia entrances.\nSlows attackspeed by 5%%."
 	}
 	"Hardened Aura"
 	{
@@ -388,6 +388,14 @@
 	{
 		"en"	"Reduces damage taken by 50%%\nBoosts damage dealt by 50%%"
 	}
+	"Extreme Anxiety"
+	{
+		"en"	"Extreme Anxiety"
+	}
+	"Extreme Anxiety Desc"
+	{
+		"en"	"Attack 25%% faster."
+	}
 	"Combine Command"
 	{
 		"en"	"Combine Command"
@@ -483,6 +491,14 @@
 	"Battilons Backup Desc"
 	{
 		"en"	"Decreases damage taken by 15%%"
+	}
+	"UBERCHARGED"
+	{
+		"en"	"UBERCHARGED"
+	}
+	"UBERCHARGED Desc"
+	{
+		"en"	"Invulnerable to damage\nDuring raids, have 50%% resistance."
 	}
 	"Healing Resolve"
 	{
@@ -977,6 +993,30 @@
 	"Lighthouse Enlightment Detect Desc"
 	{
 		"en"	"Ignore This."
+	}
+	"Soggy"
+	{
+		"en" "Soggy"
+	}
+	"Soggy Desc"
+	{
+		"en" "Deal 10%% Less damage."
+	}
+	"Soggiest"
+	{
+		"en" "Soggiest"
+	}
+	"Soggiest Desc"
+	{
+		"en" "Deal 15%% Less damage."
+	}
+	"Bubble Frenzy"
+	{
+		"en" "Bubble Frenzy"
+	}
+	"Bubble Frenzy Desc"
+	{
+		"en" "Attack 2x Faster"
 	}
 	"Hectic Therapy"
 	{
