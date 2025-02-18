@@ -97,7 +97,7 @@ void StartLagCompensation_Base_Boss(int client)
 
 	for(int index; index < ZR_MAX_LAG_COMP; index++)
 	{
-		int entity = EntRefToEntIndex(i_Objects_Apply_Lagcompensation[index]);
+		int entity = EntRefToEntIndexFast(i_Objects_Apply_Lagcompensation[index]);
 		if(IsValidEntity(entity))
 		{
 			// Custom checks for if things should lag compensate (based on things like what team the player is on).
@@ -399,7 +399,7 @@ void FinishLagCompensation_Base_boss(int ForceOptionalEntity = -1, bool DoReset 
 	{
 		int entity;
 		
-		entity = EntRefToEntIndex(i_Objects_Apply_Lagcompensation[index]);
+		entity = EntRefToEntIndexFast(i_Objects_Apply_Lagcompensation[index]);
 		//if its a selected entity:
 		if(ForceOptionalEntity != -1)
 		{
@@ -513,7 +513,7 @@ void LagCompensationThink_Forward()
 	// Iterate all active NPCs
 	for(int index; index < ZR_MAX_LAG_COMP; index++)
 	{
-		int entity = EntRefToEntIndex(i_Objects_Apply_Lagcompensation[index]);
+		int entity = EntRefToEntIndexFast(i_Objects_Apply_Lagcompensation[index]);
 		if(IsValidEntity(entity))
 		{
 			if(EntityTrackCount[index] < 0)
@@ -625,7 +625,7 @@ void AddEntityToLagCompList(int entity)
 {
 	for (int i = 0; i < ZR_MAX_LAG_COMP; i++) //Make them lag compensate
 	{
-		if (EntRefToEntIndex(i_Objects_Apply_Lagcompensation[i]) <= 0)
+		if (EntRefToEntIndexFast(i_Objects_Apply_Lagcompensation[i]) <= 0)
 		{
 			EntityTrackCount[i] = -1;
 			i_Objects_Apply_Lagcompensation[i] = EntIndexToEntRef(entity);
@@ -639,7 +639,7 @@ void RemoveEntityToLagCompList(int entity)
 {
 	for (int i = 0; i < ZR_MAX_LAG_COMP; i++) //Make them lag compensate
 	{
-		if (EntRefToEntIndex(i_Objects_Apply_Lagcompensation[i]) == entity)
+		if (EntRefToEntIndexFast(i_Objects_Apply_Lagcompensation[i]) == entity)
 		{
 			i_Objects_Apply_Lagcompensation[i] = -1;
 			WasBackTracked[i] = false;

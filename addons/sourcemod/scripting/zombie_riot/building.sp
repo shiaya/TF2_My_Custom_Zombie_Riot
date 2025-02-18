@@ -1316,7 +1316,7 @@ void BuildingAdjustMe(int building, int DestroyedBuilding)
 	//make npc's that target the previous building target the stacked one now.
 	for(int targ; targ<i_MaxcountNpcTotal; targ++)
 	{
-		int INpc = EntRefToEntIndex(i_ObjectsNpcsTotal[targ]);
+		int INpc = EntRefToEntIndexFast(i_ObjectsNpcsTotal[targ]);
 		if (IsValidEntity(INpc))
 		{
 			CClotBody npc = view_as<CClotBody>(INpc);
@@ -2247,16 +2247,15 @@ void UnequipDispenser(int client, bool destroy = false)
 
 bool BuildingValidPositionFinal(float AbsOrigin[3], int entity)
 {
+	//is inside a trigger hurt zone
+	if(i_InHurtZone[entity])
+	{
+		return false;
+	}
 	float VecMax[3];
 	float VecMin[3];
 	GetEntPropVector(entity, Prop_Data, "m_vecMaxs", VecMax);
 	GetEntPropVector(entity, Prop_Data, "m_vecMins", VecMin);
-
-	//is inside a trigger hurt zone
-	if(IsBoxHazard(AbsOrigin,VecMin,VecMax))
-	{
-		return false;
-	}
 	//is it inside a no build zone
 	if(IsPointNoBuild(AbsOrigin,VecMin,VecMax))
 	{
@@ -2326,7 +2325,7 @@ void Building_Check_ValidSupportcount(int client)
 	int maxcount = Object_MaxSupportBuildings(client);
 	for(int entitycount; entitycount<i_MaxcountBuilding; entitycount++) //BUILDINGS!
 	{
-		int entity = EntRefToEntIndex(i_ObjectsBuilding[entitycount]);
+		int entity = EntRefToEntIndexFast(i_ObjectsBuilding[entitycount]);
 		if(IsValidEntity(entity) && BuildingIsSupport(entity))
 		{
 			int builder_owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
