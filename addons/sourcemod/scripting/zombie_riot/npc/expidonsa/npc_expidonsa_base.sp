@@ -121,7 +121,7 @@ void VausMagicaShieldLogicNpcOnTakeDamage(int attacker, int victim, float &damag
 	}
 }
 
-void VausMagicaGiveShield(int entity, int amount, bool ignorecooldown = false)
+void VausMagicaGiveShield(int entity, int amount, bool ignorecooldown = false, bool ignorecap = false)
 {
 	float CapacityMaxMulti = float(CountPlayersOnRed(_, true)) / 7.0;
 	int MaxShieldCapacity = RoundToNearest(5.0 * CapacityMaxMulti);
@@ -133,6 +133,8 @@ void VausMagicaGiveShield(int entity, int amount, bool ignorecooldown = false)
 	{
 		MaxShieldCapacity = 250;
 	}
+	if(ignorecap)
+		MaxShieldCapacity = 999;
 	if(MaxShieldCapacity < 1)
 		MaxShieldCapacity = 1;
 

@@ -624,6 +624,10 @@ void CC_Contract_SpawnEnemy(int entity)
 {
 	if(CCMode)
 	{
+		//CreateTimer(0.01, Delay_SpawnEffect, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+		if(entity <= 0 || !IsValidEntity(entity))
+			return;
+			
 		float CC_Extra_Speed = 1.0;
 		float CC_Extra_MeleeArmor = 1.0;
 		float CC_Extra_RangedArmor = 1.0;
@@ -634,8 +638,6 @@ void CC_Contract_SpawnEnemy(int entity)
 			CC_Extra_Damage *= 1.5;
 		if(CC_EnemyDMGBuff_C)
 			CC_Extra_Damage *= 2.0;
-		if(CC_EnemyMoveBuff_A)
-			CC_Extra_Speed *= 1.15;
 		if(CC_EnemyResistBuff_A)
 		{
 			CC_Extra_MeleeArmor *= 0.8;
@@ -646,20 +648,63 @@ void CC_Contract_SpawnEnemy(int entity)
 			CC_Extra_MeleeArmor *= 0.65;
 			CC_Extra_RangedArmor *= 0.65;
 		}
+		if(CC_EnemyMoveBuff_A)
+			CC_Extra_Speed *= 1.15;
 		if(CC_EnemyMoveBuff_B)
 			CC_Extra_Speed *= 1.33;
 		if(CC_EnemyShieldBuff_A)
-			VausMagicaGiveShield(entity, 3);
+			VausMagicaGiveShield(entity, 3, _, true);
 		if(CC_EnemyShieldBuff_B)
-			VausMagicaGiveShield(entity, 6);
-	
+			VausMagicaGiveShield(entity, 6, _, true);
+
 		fl_Extra_Speed[entity]*=CC_Extra_Speed;
 		fl_Extra_MeleeArmor[entity] *= CC_Extra_MeleeArmor;
 		fl_Extra_RangedArmor[entity] *= CC_Extra_RangedArmor;
 		fl_Extra_Damage[entity] *= CC_Extra_Damage;
 	}
 }
+/*
+public Action Delay_SpawnEffect(Handle timer, any Ref)
+{
+	int entity = EntRefToEntIndex(Ref);
+	if(entity <= 0 || !IsValidEntity(entity) || !CCMode)
+		return Plugin_Stop;
+		
+	float CC_Extra_Speed = 1.0;
+	float CC_Extra_MeleeArmor = 1.0;
+	float CC_Extra_RangedArmor = 1.0;
+	float CC_Extra_Damage = 1.0;
+	if(CC_EnemyDMGBuff_A)
+		CC_Extra_Damage *= 1.2;
+	if(CC_EnemyDMGBuff_B)
+		CC_Extra_Damage *= 1.5;
+	if(CC_EnemyDMGBuff_C)
+		CC_Extra_Damage *= 2.0;
+	if(CC_EnemyResistBuff_A)
+	{
+		CC_Extra_MeleeArmor *= 0.8;
+		CC_Extra_RangedArmor *= 0.8;
+	}
+	if(CC_EnemyResistBuff_B)
+	{
+		CC_Extra_MeleeArmor *= 0.65;
+		CC_Extra_RangedArmor *= 0.65;
+	}
+	if(CC_EnemyMoveBuff_A)
+		CC_Extra_Speed *= 1.15;
+	if(CC_EnemyMoveBuff_B)
+		CC_Extra_Speed *= 1.33;
+	if(CC_EnemyShieldBuff_A)
+		VausMagicaGiveShield(entity, 3, true);
+	if(CC_EnemyShieldBuff_B)
+		VausMagicaGiveShield(entity, 6, true);
 
+	fl_Extra_Speed[entity]*=CC_Extra_Speed;
+	fl_Extra_MeleeArmor[entity] *= CC_Extra_MeleeArmor;
+	fl_Extra_RangedArmor[entity] *= CC_Extra_RangedArmor;
+	fl_Extra_Damage[entity] *= CC_Extra_Damage;
+	return Plugin_Stop;
+}*/
 void CC_Contract_OnEndWave(int &cash)
 {
 	if(CCMode)
