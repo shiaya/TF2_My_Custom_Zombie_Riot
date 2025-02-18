@@ -3945,10 +3945,12 @@ void StatusEffects_WeaponSpecific_VisualiseOnly()
 	data.MovementspeedModif			= -1.0;
 	data.Positive 					= false;
 	data.ShouldScaleWithPlayerCount = false;
+	data.ElementalLogic				= true; //dont get removed.
 	data.Slot						= 0; //0 means ignored
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	StatusEffect_AddGlobal(data);
 
+	data.ElementalLogic				= false;
 	strcopy(data.BuffName, sizeof(data.BuffName), "Tonic Affliction");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "⌇");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "T"); //dont display above head, so empty
@@ -4056,7 +4058,7 @@ void PotionHudDisplay_Func(int attacker, int victim, StatusEffect Apply_MasterSt
 }
 void OsmosisHud_Func(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int SizeOfChar, char[] HudToDisplay)
 {
-	if(attacker < 0 && attacker > MaxClients)
+	if(attacker < 0 || attacker > MaxClients)
 		return;
 
 #if defined ZR
@@ -4657,7 +4659,7 @@ void StatusEffects_BubbleWand1()
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
 	data.DamageTakenMulti 			= -1.0;
-	data.DamageDealMulti			= 0.9;
+	data.DamageDealMulti			= 0.95;
 	data.MovementspeedModif			= -1.0;
 	data.Positive 					= false;
 	data.ShouldScaleWithPlayerCount = true;
@@ -4670,7 +4672,7 @@ void StatusEffects_BubbleWand1()
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
 	data.DamageTakenMulti 			= -1.0;
-	data.DamageDealMulti			= 0.85;
+	data.DamageDealMulti			= 0.93;
 	data.MovementspeedModif			= -1.0;
 	data.Positive 					= false;
 	data.ShouldScaleWithPlayerCount = true;
@@ -4693,10 +4695,11 @@ void StatusEffects_BubbleWand2()
 	data.ShouldScaleWithPlayerCount = false;
 	data.Slot						= 0;
 	data.SlotPriority				= 0;
+	data.ElementalLogic				= true;
 	//-0.5
-	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
-	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
-	data.AttackspeedBuff			= 0.5;
+//	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
+//	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
+//	data.AttackspeedBuff			= 0.5;
 	StatusEffect_AddGlobal(data);
 }
 

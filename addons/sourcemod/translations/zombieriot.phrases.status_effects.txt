@@ -1000,7 +1000,7 @@
 	}
 	"Soggy Desc"
 	{
-		"en" "Deal 10%% Less damage."
+		"en" "Deal 5%% Less damage."
 	}
 	"Soggiest"
 	{
@@ -1008,7 +1008,7 @@
 	}
 	"Soggiest Desc"
 	{
-		"en" "Deal 15%% Less damage."
+		"en" "Deal 7%% Less damage."
 	}
 	"Bubble Frenzy"
 	{
@@ -1016,7 +1016,7 @@
 	}
 	"Bubble Frenzy Desc"
 	{
-		"en" "Attack 2x Faster"
+		"en" "Attack 2x Faster, only works on bubble wand."
 	}
 	"Hectic Therapy"
 	{

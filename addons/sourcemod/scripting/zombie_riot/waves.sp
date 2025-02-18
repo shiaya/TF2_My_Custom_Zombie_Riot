@@ -1252,14 +1252,6 @@ void Waves_RoundStart(bool event = false)
 			CreateTimer(zr_waitingtime.FloatValue, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
 			Waves_SetReadyStatus(2);
 			//Stop music.
-			for(int client=1; client<=MaxClients; client++)
-			{
-				if(IsClientInGame(client))
-				{
-					SetMusicTimer(client, GetTime() + 2); //This is here beacuse of raid music.
-					Music_Stop_All(client);
-				}
-			}
 		}
 		else
 		{
@@ -3282,8 +3274,10 @@ static Action ReadyUpHack(Handle timer)
 	return Plugin_Stop;
 }
 
+bool AlreadySetWaiting = false;
 void Waves_SetReadyStatus(int status)
 {
+	LogStackTrace("Hello!");
 	switch(status)
 	{
 		case 0:	// Normal
@@ -3301,6 +3295,7 @@ void Waves_SetReadyStatus(int status)
 					Music_Stop_All(client);
 				}
 			}	
+			AlreadySetWaiting = false;
 		}
 		case 1:	// Ready Up
 		{
@@ -3317,9 +3312,34 @@ void Waves_SetReadyStatus(int status)
 
 			if(!ReadyUpTimer)
 				ReadyUpTimer = CreateTimer(0.2, ReadyUpHack, _, TIMER_REPEAT);
+
+			if(!AlreadySetWaiting && !Rogue_Mode())
+			{
+				for(int client=1; client<=MaxClients; client++)
+				{
+					if(IsClientInGame(client))
+					{
+						SetMusicTimer(client, GetTime() + 2); //This is here beacuse of raid music.
+						Music_Stop_All(client);
+					}
+				}	
+			}
+			AlreadySetWaiting = true;
 		}
 		case 2:	// Waiting
 		{
+			if(!AlreadySetWaiting && !Rogue_Mode())
+			{
+				for(int client=1; client<=MaxClients; client++)
+				{
+					if(IsClientInGame(client))
+					{
+						SetMusicTimer(client, GetTime() + 2); //This is here beacuse of raid music.
+						Music_Stop_All(client);
+					}
+				}	
+			}
+			AlreadySetWaiting = true;
 			SDKCall_ResetPlayerAndTeamReadyState();
 			
 			GameRules_SetProp("m_bInWaitingForPlayers", true);
