@@ -318,7 +318,7 @@
 	}
 	"Confirm Loadout"
 	{
-		"en"		"Confirm Loadout"
+		"en"		"Confirm Loadout & Access to Normal Store"
 		"ko"		"로드아웃 확인 <필수>"
 	}
 	"N/A"
@@ -3454,6 +3454,10 @@
 	"Disable Setup Music"
 	{
 		"en" 	"Disable Setup Music"
+	}
+	"Disable Status Effect Hints"
+	{
+		"en" 	"Disable Status Effect Hints"
 	}
 	"Fix First Sound Play Manually"
 	{
