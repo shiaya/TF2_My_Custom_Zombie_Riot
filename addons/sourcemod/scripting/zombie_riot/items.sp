@@ -191,9 +191,9 @@ public Action Items_RemoveCmd(int client, int args)
 			{
 				if(Items_HasIdItem(targets[i], id))
 				{
-					//Items_RemoveIdItem(targets[i], id);
-					/*id = OwnedItems.FindValue(client, OwnedItem::Client);
-					OwnedItems.Erase(id);*/
+					static GiftItem item;
+					OwnedItems.GetArray(id, item);
+					OwnedItems.Erase(id);
 					ReplyToCommand(client, "Remove %N this item", targets[i]);
 				}
 				else
