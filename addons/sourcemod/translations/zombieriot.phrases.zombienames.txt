@@ -2058,6 +2058,10 @@
 		"ru"		"Бог Алаксиос"
 		"ko"		"신 알렉시오스"
 	}
+	"Sea-Infected God Alaxios"
+	{
+		"en"		"Sea-Infected God Alaxios"
+	}
 	"Seaborn Scout"
 	{
 		"en"		"Seaborn Scout"

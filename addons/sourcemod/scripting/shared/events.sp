@@ -158,6 +158,7 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 		}
 	}
 	
+	DeleteStatusEffectsFromAll();
 	Waves_MapEnd();
 	Waves_SetupVote(kv);
 	Waves_SetupMiniBosses(kv);
@@ -251,6 +252,7 @@ public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 			TeutonType[client_check] = 0;
 	}
 	
+	DeleteStatusEffectsFromAll();
 	Store_Reset();
 	Waves_RoundEnd();
 	Escape_RoundEnd();

@@ -403,10 +403,28 @@ public Action AgentDave_OnTakeDamage(int victim, int &attacker, int &inflictor, 
 		if(fl_MatrixReflect[attacker] <= GetGameTime())
 		{
 			fl_MatrixReflect[attacker] = GetGameTime() + 1.0;
-			float parrydamage = GetRandomFloat(10.0, 15.0);
+			float parrydamage = GetRandomFloat(20.0, 25.0);
 			//damage *= 0.1;//how much the npc takes
-				
-			SDKHooks_TakeDamage(attacker, npc.index, npc.index, parrydamage, DMG_CLUB, -1);
+
+			Elemental_AddCorruptionDamage(attacker, npc.index, npc.index ? 9 : 7);
+
+			static float Entity_Position[3];
+			WorldSpaceCenter(attacker, Entity_Position );
+			DataPack pack = new DataPack();
+			pack.WriteCell(EntIndexToEntRef(attacker));
+			pack.WriteCell(EntIndexToEntRef(npc.index));
+			pack.WriteCell(EntIndexToEntRef(npc.index));
+			pack.WriteFloat(parrydamage);
+			pack.WriteCell(DMG_CLUB);
+			pack.WriteCell(-1.0);
+			pack.WriteFloat(0.0);
+			pack.WriteFloat(0.0);
+			pack.WriteFloat(1.0);
+			pack.WriteFloat(Entity_Position[0]);
+			pack.WriteFloat(Entity_Position[1]);
+			pack.WriteFloat(Entity_Position[2]);
+			pack.WriteCell(ZR_DAMAGE_REFLECT_LOGIC);
+			RequestFrame(CauseDamageLaterSDKHooks_Takedamage, pack);
 		}
     }
 		

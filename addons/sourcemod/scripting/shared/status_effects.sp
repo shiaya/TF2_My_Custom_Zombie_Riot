@@ -89,17 +89,20 @@ enum struct E_StatusEffect
 	}
 }
 
-
+void DeleteStatusEffectsFromAll()
+{
+	for(int c = 0; c < MAXENTITIES; c++)
+	{
+		delete E_AL_StatusEffects[c];
+	}
+}
 void InitStatusEffects()
 {
 	//First delete everything
 	delete AL_StatusEffects;
 	AL_StatusEffects = new ArrayList(sizeof(StatusEffect));
 
-	for(int c = 0; c < MAXENTITIES; c++)
-	{
-		delete E_AL_StatusEffects[c];
-	}
+	DeleteStatusEffectsFromAll();
 	//clear all existing ones
 	StatusEffects_TeslarStick();
 	StatusEffects_Baka();
@@ -194,7 +197,7 @@ void Items_StatusEffectListMenu(int client, int page = -1, bool inPage = false)
 		for(int i; i < length; i++)
 		{
 			AL_StatusEffects.GetArray(i, data);
-			if(data.Positive != view_as<bool>(CategoryPage[client]))
+			if(data.BuffName[0] && data.Positive != view_as<bool>(CategoryPage[client]))
 			{
 				IntToString(i, buffer2, sizeof(buffer2));
 				Format(data.BuffName, sizeof(data.BuffName), "%s\n%s", data.HudDisplay, data.BuffName);
@@ -1014,6 +1017,7 @@ void Status_Effects_AttackspeedBuffChange(int victim, StatusEffect Apply_MasterS
 		else
 		{
 			bool ScaleWithCount = false;
+#if defined ZR
 			BarrackBody npc = view_as<BarrackBody>(victim);
 			if(victim <= MaxClients || Citizen_IsIt(victim) || npc.OwnerUserId)
 			{
@@ -1025,6 +1029,7 @@ void Status_Effects_AttackspeedBuffChange(int victim, StatusEffect Apply_MasterS
 				BuffAmount = MaxNumBuffValue(Apply_MasterStatusEffect.AttackspeedBuff, 1.0, PlayerCountBuffAttackspeedScaling);
 			}
 			else
+#endif
 				BuffAmount = Apply_MasterStatusEffect.AttackspeedBuff;
 		}
 	}
@@ -1157,6 +1162,7 @@ static void Status_effects_DoAttackspeedLogic(int entity, int type, bool GrantBu
 				ApplyStatusEffect(entity, entity, "", 9999999.9, BuffCheckerIDNPC);
 				StatusEffects_SetCustomValue(entity, BuffOriginal, BuffCheckerIDNPC);
 				
+#if defined ZR
 				//They have never recieved a buff yet.
 				if(Citizen_IsIt(entity) || view_as<BarrackBody>(entity).OwnerUserId)
 				{
@@ -1165,6 +1171,7 @@ static void Status_effects_DoAttackspeedLogic(int entity, int type, bool GrantBu
 					view_as<BarrackBody>(entity).BonusFireRate *= BuffOriginal;
 				}
 				else
+#endif
 				{
 					f_AttackSpeedNpcIncreace[entity] *= BuffOriginal;
 				}
@@ -1179,7 +1186,8 @@ static void Status_effects_DoAttackspeedLogic(int entity, int type, bool GrantBu
 			//if it changed, we need to update it.
 			if((BuffRevert != BuffOriginal || !GrantBuff) && BuffRevert != 0.0)
 			{
-				
+
+#if defined ZR				
 				//They have never recieved a buff yet.
 				if(Citizen_IsIt(entity) || view_as<BarrackBody>(entity).OwnerUserId)
 				{
@@ -1188,6 +1196,7 @@ static void Status_effects_DoAttackspeedLogic(int entity, int type, bool GrantBu
 					view_as<BarrackBody>(entity).BonusFireRate *= 1.0 / (BuffRevert);
 				}
 				else
+#endif
 				{
 					f_AttackSpeedNpcIncreace[entity] *= 1.0 / (BuffRevert);
 				}
@@ -1199,6 +1208,7 @@ static void Status_effects_DoAttackspeedLogic(int entity, int type, bool GrantBu
 				ApplyStatusEffect(entity, entity, "", 9999999.9, BuffCheckerIDNPC);
 				StatusEffects_SetCustomValue(entity, BuffOriginal, BuffCheckerIDNPC);
 				
+#if defined ZR
 				//They have never recieved a buff yet.
 				if(Citizen_IsIt(entity) || view_as<BarrackBody>(entity).OwnerUserId)
 				{
@@ -1207,6 +1217,7 @@ static void Status_effects_DoAttackspeedLogic(int entity, int type, bool GrantBu
 					view_as<BarrackBody>(entity).BonusFireRate *= BuffOriginal;
 				}
 				else
+#endif
 				{
 					f_AttackSpeedNpcIncreace[entity] *= BuffOriginal;
 				}
@@ -2670,7 +2681,7 @@ void StatusEffects_DebuffMarked()
 	StatusEffect data;
 	strcopy(data.BuffName, sizeof(data.BuffName), "Marked");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "M");
-	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "X"); //dont display above head, so empty
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
 	data.DamageTakenMulti 			= -1.0;
 	data.DamageDealMulti			= -1.0;

@@ -437,7 +437,7 @@ public void Passanger_Cooldown_Logic(int client, int weapon)
 	{
 		if(f_PassangerAbilityCooldownRegen[client] < GetGameTime())
 		{
-			f_PassangerAbilityCooldownRegen[client] = GetGameTime() + PASSANGER_ABILITY_REGARGE_TIME;
+			f_PassangerAbilityCooldownRegen[client] = GetGameTime() +(PASSANGER_ABILITY_REGARGE_TIME * CooldownReductionAmount(client));
 			i_PassangerAbilityCount[client]++;
 			if(i_PassangerAbilityCount[client] >= 2)
 			{
@@ -480,7 +480,7 @@ public void Passanger_Cooldown_Logic(int client, int weapon)
 				}				
 			}
 
-			StopSound(client, SNDCHAN_STATIC, "UI/hint.wav");
+			
 			f_PassangerHudDelay[client] = GetGameTime() + 0.5;
 		}
 	}
@@ -512,7 +512,7 @@ public void Weapon_Passanger_LightningArea(int client, int weapon, bool crit, in
 			delay_hud[client] = 0.0;
 			if(i_PassangerAbilityCount[client] == 2)
 			{
-				f_PassangerAbilityCooldownRegen[client] = GetGameTime() + PASSANGER_ABILITY_REGARGE_TIME;
+				f_PassangerAbilityCooldownRegen[client] = GetGameTime() + (PASSANGER_ABILITY_REGARGE_TIME * CooldownReductionAmount(client));
 			}
 			i_PassangerAbilityCount[client] -= 1;
 

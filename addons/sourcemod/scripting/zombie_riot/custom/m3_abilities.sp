@@ -1879,9 +1879,9 @@ public Action Timer_Detect_Player_Near_Armor_Grenade(Handle timer, DataPack pack
 				color[0] = 255;
 				color[1] = 255;
 				color[2] = 0;
-				color[3] = 255;
+				color[3] = 75;
 		
-				TE_SetupBeamRingPoint(powerup_pos, 10.0, 500.0 * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 1.0, color, 0, 0);
+				TE_SetupBeamRingPoint(powerup_pos, 10.0, 500.0 * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 3.0, color, 0, 0);
 	   			TE_SendToAll();
 	   			for (int target = 1; target <= MaxClients; target++)
 				{
@@ -1890,9 +1890,9 @@ public Action Timer_Detect_Player_Near_Armor_Grenade(Handle timer, DataPack pack
 						GetClientAbsOrigin(target, client_pos);
 						if (GetVectorDistance(powerup_pos, client_pos, true) <= (500.0 * 500.0))
 						{
-							EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 1.0);
-							EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 1.0);
-							EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 1.0);
+							EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 0.7);
+							EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 0.7);
+						//	EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 1.0);
 							//This gives 35% armor
 							if(f_TimeUntillNormalHeal[target] > GetGameTime())
 							{
@@ -2033,9 +2033,9 @@ public Action Timer_Detect_Player_Near_Healing_Grenade(Handle timer, DataPack pa
 				color[0] = 0;
 				color[1] = 255;
 				color[2] = 0;
-				color[3] = 255;
+				color[3] = 75;
 		
-				TE_SetupBeamRingPoint(powerup_pos, 10.0, 500.0 * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 1.0, color, 0, 0);
+				TE_SetupBeamRingPoint(powerup_pos, 10.0, 500.0 * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 3.0, color, 0, 0);
 	   			TE_SendToAll();
 	   			for (int target = 1; target <= MaxClients; target++)
 				{
@@ -2046,7 +2046,7 @@ public Action Timer_Detect_Player_Near_Healing_Grenade(Handle timer, DataPack pa
 						{
 							if(dieingstate[target] > 0)
 							{
-								EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 1.0);
+								EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 0.7);
 								if(i_CurrentEquippedPerk[client] == 1)
 								{
 									SetEntityHealth(target,  GetClientHealth(target) + 12);
@@ -2072,7 +2072,7 @@ public Action Timer_Detect_Player_Near_Healing_Grenade(Handle timer, DataPack pa
 								{
 									Healing_Amount = 10.0;
 								}
-								EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 1.0);
+								EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 0.7);
 								HealEntityGlobal(client, target, Healing_Amount, _, 1.0);	
 							}
 						}
@@ -3059,9 +3059,9 @@ public Action Timer_Detect_Player_Near_Repair_Grenade(Handle timer, DataPack pac
 				color[0] = 255;
 				color[1] = 255;
 				color[2] = 255;
-				color[3] = 255;
+				color[3] = 75;
 		
-				TE_SetupBeamRingPoint(powerup_pos, 10.0, 500.0 * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 1.0, color, 0, 0);
+				TE_SetupBeamRingPoint(powerup_pos, 10.0, 500.0 * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 3.0, color, 0, 0);
 	   			TE_SendToAll();
 				bool Repaired_Building = false;
 
@@ -3102,8 +3102,8 @@ public Action Timer_Detect_Player_Near_Repair_Grenade(Handle timer, DataPack pac
 				CurrentAmmo[client][3] = GetAmmo(client, 3);
 				if(Repaired_Building)
 				{
-					EmitSoundToAll(SOUND_REPAIR_BEAM, entity, SNDCHAN_STATIC, 90, _, 1.0);
-					EmitSoundToAll(SOUND_REPAIR_BEAM, entity, SNDCHAN_STATIC, 90, _, 1.0);
+					EmitSoundToAll(SOUND_REPAIR_BEAM, entity, SNDCHAN_STATIC, 90, _, 0.7);
+					EmitSoundToAll(SOUND_REPAIR_BEAM, entity, SNDCHAN_STATIC, 90, _, 0.7);
 				}
    			}
    			if(f_Duration[entity] < GetGameTime())

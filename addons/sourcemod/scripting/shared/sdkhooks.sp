@@ -3250,6 +3250,7 @@ void AllowWeaponFireAfterEmpty(int client, int weapon)
 
 
 
+#if defined ZR
 void ManaCalculationsBefore(int client)
 {
 	has_mage_weapon[client] = false;
@@ -3307,3 +3308,4 @@ void ManaCalculationsBefore(int client)
 		mana_regen[client] *= MultiplyRegen;
 	}
 }
+#endif

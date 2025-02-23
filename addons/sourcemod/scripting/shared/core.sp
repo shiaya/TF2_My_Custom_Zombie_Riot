@@ -96,9 +96,9 @@ public float OFF_THE_MAP_NONCONST[3] = { 16383.0, 16383.0, -16383.0 };
 ConVar zr_downloadconfig;
 ConVar CvarSkillPoints;
 ConVar CvarRogueSpecialLogic;
-ConVar CvarFileNetworkDisable;
 ConVar CvarLeveling;
 #endif
+ConVar CvarFileNetworkDisable;
 
 ConVar CvarDisableThink;
 //ConVar CvarMaxBotsForKillfeed;
@@ -857,14 +857,18 @@ public void OnPluginStart()
 
 public void OnLibraryAdded(const char[] name)
 {
+#if defined ZR
 	FileNetwork_LibraryAdded(name);
 	SteamWorks_LibraryAdded(name);
+#endif
 }
 
 public void OnLibraryRemoved(const char[] name)
 {
+#if defined ZR
 	FileNetwork_LibraryRemoved(name);
 	SteamWorks_LibraryRemoved(name);
+#endif
 }
 
 /*
@@ -2011,7 +2015,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] classname,
 		}
 
 		PrintHintText(client, buffer);
-		StopSound(client, SNDCHAN_STATIC, "UI/hint.wav");
+		
 	}
 	DataPack pack_WeaponAmmo = new DataPack();
 	pack_WeaponAmmo.WriteCell(EntIndexToEntRef(client));

@@ -9307,8 +9307,6 @@ void NPCStats_RemoveAllDebuffs(int enemy, float Duration = 0.0)
 	ApplyStatusEffect(enemy, enemy, "Hardened Aura", Duration);
 }
 
-#endif
-
 bool Npc_Teleport_Safe(int client, float endPos[3], float hullcheckmins_Player[3], float hullcheckmaxs_Player[3], bool check_for_Ground_Clerance = false, bool teleport_entity = true)
 {
 	bool FoundSafeSpot = false;
