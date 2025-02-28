@@ -318,7 +318,7 @@
 	}
 	"Confirm Loadout"
 	{
-		"en"		"Confirm Loadout"
+		"en"		"Confirm & Access Store"
 		"ko"		"로드아웃 확인 <필수>"
 	}
 	"N/A"

@@ -22,7 +22,6 @@
 //#include <handledebugger>
 #undef REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
-#include <filenetwork>
 #include <loadsoundscript>
 
 #pragma dynamic	131072
@@ -98,6 +97,7 @@ ConVar CvarSkillPoints;
 ConVar CvarRogueSpecialLogic;
 ConVar CvarLeveling;
 #endif
+ConVar CvarCustomModels;
 ConVar CvarFileNetworkDisable;
 
 ConVar CvarDisableThink;
@@ -899,7 +899,7 @@ public Action Timer_Temp(Handle timer)
 		{
 			if(IsClientInGame(client))
 			{
-				Calculate_And_Display_hp(client, EntRefToEntIndex(RaidBossActive), 0.0, true);
+				Calculate_And_Display_hp(client, EntRefToEntIndex(RaidBossActive), 0.0, true, .RaidHudForce = true);
 			}
 		}
 	}
@@ -994,6 +994,7 @@ public void OnMapStart()
 
 #if defined ZR || defined RPG
 	Core_PrecacheGlobalCustom();
+	FileNetwork_MapStart();
 #endif
 
 	PrecacheSound("weapons/explode1.wav");
@@ -1565,7 +1566,8 @@ public void OnClientDisconnect(int client)
 	//Needed to reset attackspeed stuff
 #endif
 
-	b_DisplayDamageHud[client] = false;
+	b_DisplayDamageHud[client][0] = false;
+	b_DisplayDamageHud[client][1] = false;
 
 #if defined ZR
 	WeaponClass[client] = TFClass_Scout;

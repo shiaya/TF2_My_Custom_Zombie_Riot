@@ -355,9 +355,10 @@ public void OnPreThinkPost(int client)
 #if defined NOG
 public void OnPostThink_OnlyHurtHud(int client)
 {
-	if(b_DisplayDamageHud[client])
+	if(b_DisplayDamageHud[client][0])
 	{
-		b_DisplayDamageHud[client] = false;
+		b_DisplayDamageHud[client][0] = false;
+		b_DisplayDamageHud[client][1] = false;
 		if(zr_showdamagehud.BoolValue)
 			Calculate_And_Display_HP_Hud(client);
 	}
@@ -431,12 +432,15 @@ public void OnPostThink(int client)
 		SaveLastValidPositionEntity(client);
 	
 	}
-	if(b_DisplayDamageHud[client])
+	if(b_DisplayDamageHud[client][0] || b_DisplayDamageHud[client][1])
 	{
 		//damage hud
-		if(Calculate_And_Display_HP_Hud(client))
+		if(Calculate_And_Display_HP_Hud(client, b_DisplayDamageHud[client][1]))
 		{
-			b_DisplayDamageHud[client] = false;
+			if(b_DisplayDamageHud[client][1])
+				b_DisplayDamageHud[client][1] = false;
+			else
+				b_DisplayDamageHud[client][0] = false;
 		}
 	}
 	/*
@@ -600,10 +604,10 @@ public void OnPostThink(int client)
 		//if they are using a magic weapon, don't take away the overmana. can be both a good and bad thing, good in non ruina situations, possibly bad in ruina situations
 		//the +10 is for rounding errors.
 		//CPrintToChatAll("Overmana decay triggered");
-		if(Current_Mana[client] > RoundToCeil(max_mana[client] * 2.0))
+		if(Current_Mana[client] > RoundToCeil(max_mana[client] * 2.1))
 		{
 			//cant be above max.
-			Current_Mana[client] = RoundToCeil(max_mana[client] * 2.0);
+			Current_Mana[client] = RoundToCeil(max_mana[client] * 2.1);
 		}
 		if(Mana_Loss_Delay[client] < GameTime && Mana_Regen_Tick)
 		{

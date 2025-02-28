@@ -7,7 +7,7 @@ enum struct InterMusicEnum
 {
 	char Path[PLATFORM_MAX_PATH];
 	Function Func;
-
+	
 	void AddKv(KeyValues kv, int download)
 	{
 		kv.GetSectionName(this.Path, sizeof(this.Path));
@@ -754,6 +754,10 @@ void Music_Update(int client)
 		if(PrepareMusicVolume[client] != 1.0 && PrepareMusicVolume[client])
 		{
 			PrepareMusicVolume[client] = 0.0;
+			if(MusicSetup1.Valid())
+			{
+				MusicSetup1.StopMusic(client);
+			}
 			StopSound(client, SNDCHAN_STATIC, "#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3");
 			SetMusicTimer(client, GetTime() + 1);	
 		}		
@@ -766,11 +770,23 @@ void Music_Update(int client)
 		PrepareMusicVolume[client] -= 0.1;
 		if(PrepareMusicVolume[client] <= 0.0)
 		{
+			if(MusicSetup1.Valid())
+			{
+				MusicSetup1.StopMusic(client);
+			}
  			StopSound(client, SNDCHAN_STATIC, "#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3");
 		}
 		else
 		{
-			EmitSoundToClient(client, "#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3", client, SNDCHAN_STATIC, SNDLEVEL_NONE, SND_CHANGEVOL, PrepareMusicVolume[client]);
+			if(MusicSetup1.Valid())
+			{
+				MusicSetup1.StopMusic(client);
+ 				StopSound(client, SNDCHAN_STATIC, "#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3");
+			}
+			else
+			{
+				EmitSoundToClient(client, "#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3", client, SNDCHAN_STATIC, SNDLEVEL_NONE, SND_CHANGEVOL, PrepareMusicVolume[client]);
+			}
 		}
 	}
 	//if in menu, dont play new music.
@@ -1155,7 +1171,6 @@ void RemoveAllCustomMusic(bool background = false)
 	MusicString1.Clear();
 	MusicString2.Clear();
 	RaidMusicSpecial1.Clear();
-
 	if(background)
 		BGMusicSpecial1.Clear();
 }
@@ -1164,9 +1179,19 @@ void PlaySetupMusicCustom(int client)
 {
 	if(Music_Timer[client] < GetTime() && Music_Timer_Update[client] < GetTime())
 	{
-		EmitSoundToClient(client, "#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3", client, SNDCHAN_STATIC, _, _, 0.4);
+		bool PlayedMusic = false;
+		if(MusicSetup1.Valid())
+		{
+			PlayedMusic = MusicSetup1.PlayMusic(client);
+			if(!PlayedMusic)
+				SetMusicTimer(client, GetTime() + 1);
+		}
+		else
+		{
+			EmitSoundToClient(client, "#zombiesurvival/setup_music_extreme_z_battle_dokkan.mp3", client, SNDCHAN_STATIC, _, _, 0.4);
+			SetMusicTimer(client, GetTime() + 173);
+		}
 		PrepareMusicVolume[client] = 1.0;
-		SetMusicTimer(client, GetTime() + 173);
 	}
 }
 

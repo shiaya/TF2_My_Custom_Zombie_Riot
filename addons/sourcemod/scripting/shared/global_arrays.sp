@@ -115,6 +115,7 @@ bool ForceNiko;
 Handle g_hImpulse;
 
 Handle g_hSetLocalOrigin;
+Handle g_hSetLocalAngles;
 Handle g_hSnapEyeAngles;
 Handle g_hSetAbsVelocity;
 
@@ -172,6 +173,7 @@ int g_particleImpactRubber;
 float f_damageAddedTogether[MAXTF2PLAYERS];
 float f_damageAddedTogetherGametime[MAXTF2PLAYERS];
 int i_HudVictimToDisplay[MAXTF2PLAYERS];
+int i_HudVictimToDisplay2[MAXTF2PLAYERS];
 #endif
 
 bool b_NetworkedCrouch[MAXTF2PLAYERS];	
@@ -300,7 +302,7 @@ int i_StickyToNpcCount[MAXENTITIES][MAXSTICKYCOUNTTONPC]; //12 should be the max
 
 float Resistance_for_building_Low[MAXENTITIES];
 
-bool b_DisplayDamageHud[MAXTF2PLAYERS];
+bool b_DisplayDamageHud[MAXTF2PLAYERS][2];
 bool b_HudHitMarker[MAXTF2PLAYERS] = {true, ...};
 
 bool b_HudScreenShake[MAXTF2PLAYERS] = {true, ...};
