@@ -409,11 +409,7 @@ public void OnPostThink(int client)
 			//they are a teuton, or dying, teleport them out of bad places.
 			if(f_EntityHazardCheckDelay[client] < GetGameTime())
 			{
-				//We have to use this logic instead of the trigger touch method
-				//as these dying players or teutons dont interact with these objects.
-				float flPos[3];
-				GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", flPos);
-				if(IsPointHazard(flPos))
+				if(i_InHurtZone[client])
 				{
 					TeleportBackToLastSavePosition(client);
 				}

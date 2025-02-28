@@ -208,6 +208,7 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 			}
 		}
 	}
+	
 	if(IsValidEntity(RaidBossActive) && RaidBossActive == EntIndexToEntRef(npc.index))
 	{
 		if(npc.m_flNextMeleeAttack<gameTime)

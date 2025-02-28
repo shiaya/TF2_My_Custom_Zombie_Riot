@@ -1,10 +1,3 @@
-
-#define GIFT_MODEL "models/items/tf_gift.mdl"
-
-#define GIFT_CHANCE 0.35 //Extra rare cus alot of zobies
-
-#define SOUND_BEEP			"buttons/button17.wav"
-
 public Action CommandKillTheNPC(int client, int args)
 {
 	if(!IsValidClient(client) || IsFakeClient(client))

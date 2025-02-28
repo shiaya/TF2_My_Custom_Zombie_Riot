@@ -35,9 +35,9 @@ void WanderingSpirit_OnMapStart_NPC()
 	NPC_Add(data);
 }
 
-static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, const char[] data)
+static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team)
 {
-	return WanderingSpirit(vecPos, vecAng, team, data);
+	return WanderingSpirit(vecPos, vecAng, team);
 }
 
 methodmap WanderingSpirit < CClotBody
@@ -51,7 +51,7 @@ methodmap WanderingSpirit < CClotBody
 		EmitSoundToAll(g_SpookSound[GetRandomInt(0, sizeof(g_SpookSound) - 1)], entity, SNDCHAN_AUTO, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME);
 	}
 	
-	public WanderingSpirit(float vecPos[3], float vecAng[3], int ally, const char[] data)
+	public WanderingSpirit(float vecPos[3], float vecAng[3], int ally)
 	{
 		WanderingSpirit npc = view_as<WanderingSpirit>(CClotBody(vecPos, vecAng, "models/stalker.mdl", "1.15", GetSpiritHealth(), ally));
 		
@@ -96,8 +96,7 @@ methodmap WanderingSpirit < CClotBody
 		TeleportDiversioToRandLocation(npc.index);
 
 		//counts as a static npc, means it wont count towards NPC limit.
-		if(StrContains(data, "ghostbusters") == -1)
-			AddNpcToAliveList(npc.index, 1);
+		AddNpcToAliveList(npc.index, 1);
 		b_NoHealthbar[npc.index] = true; //Makes it so they never have an outline
 		GiveNpcOutLineLastOrBoss(npc.index, false);
 		b_thisNpcHasAnOutline[npc.index] = true; 

@@ -136,7 +136,7 @@ bool Neuron_ActivationSoundOverride(int &numClients, char sample[PLATFORM_MAX_PA
 	}
 	return false;
 }
-void Neuron_ActivationSoundOverrideMapStart()
+/*void Neuron_ActivationSoundOverrideMapStart()
 {
 	PrecacheSoundArray(g_Yes);
 	PrecacheSoundArray(g_Help);
@@ -152,4 +152,4 @@ void Neuron_ActivationSoundOverrideMapStart()
 	PrecacheSoundArray(g_Medic);
 	PrecacheSoundArray(g_DeathSound);
 	PrecacheSoundArray(g_HurtSound);
-}
+}*/

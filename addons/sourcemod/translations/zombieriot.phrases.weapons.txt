@@ -99,7 +99,7 @@
 		"chi"		"射程"
 		"ko"		"사거리"
 	}
-	"Weapons"
+	"weapons"
 	{
 		"en" 		"Weapons"
 		"fr" 		"Armes"
@@ -109,6 +109,36 @@
 		"nl"		"Wapens"
 		"chi"       	"武器"
 		"ko"		"무기들"
+	}
+	"Koshi's Goods"
+	{
+		"en" 		"Koshi's Goods"
+		"ko"		"Koshi's Goods"
+	}
+	"Personal Items"
+	{
+		"en" 		"Personal Items"
+		"ko"		"인벤토리"
+	}
+	"Loadouts"
+	{
+		"en" 		"Loadouts"
+		"ko"		"로드아웃"
+	}
+	"Settings"
+	{
+		"en" 		"Settings"
+		"ko"		"설정"
+	}
+	"Status EffectList"
+	{
+		"en" 		"Status EffectList"
+		"ko"		"효과 목록"
+	}
+	"Search Store Using Tags"
+	{
+		"en" 		"Search Store Using Tags"
+		"ko"		"상점 태그 검색"
 	}
 	"Primary Weapons"//Primary path here
 	{
@@ -964,6 +994,11 @@
 		"fr"		"Barrière"
 		"chi"		"路障"
 		"ko"		"장벽"
+	}
+	"Giant Lighthouse"
+	{
+		"en"		"Giant Lighthouse"
+		"ko"		"거대한 등대"
 	}
 	"Armor Table"
 	{

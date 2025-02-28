@@ -752,7 +752,6 @@ void ZR_MapStart()
 	Rogue_MapStart();
 	Classic_MapStart();
 	Construction_MapStart();
-	Zero(TeutonType); //Reset teutons on mapchange
 	f_AllowInstabuildRegardless = 0.0;
 	Zero(i_NormalBarracks_HexBarracksUpgrades);
 	Zero(i_NormalBarracks_HexBarracksUpgrades_2);
@@ -770,7 +769,6 @@ void ZR_MapStart()
 	Zero(f_RingDelayGift);
 	Zero(f_HealthBeforeSuittime);
 	Music_ClearAll();
-	BuildingVoteEndResetCD();
 	Medigun_ClearAll();
 	WindStaff_ClearAll();
 	Lighting_Wand_Spell_ClearAll();
@@ -1255,13 +1253,46 @@ public Action OnReloadCommand(int args)
 
 public Action Command_RTdFail(int client, int args)
 {
-	if(client)
+	if(client && StrContains(WhatDifficultySetting_Internal, "Boss Battle Roulette"))
 	{
 		CPrintToChat(client, "{crimson}[ZR] Looks like the dice broke.");
 		ClientCommand(client, "playgamesound vo/k_lab/kl_fiddlesticks.wav");
 	}
 	return Plugin_Handled;
 }
+
+public Action RTD_CanRollDice(int client)
+{
+	if(StrContains(WhatDifficultySetting_Internal, "Boss Battle Roulette"))
+		return Plugin_Handled;
+
+	return Plugin_Continue;
+}
+
+public Action RTD2_CanRollDice(int client)
+{
+	if(StrContains(WhatDifficultySetting_Internal, "Boss Battle Roulette"))
+		return Plugin_Handled;
+
+	return Plugin_Continue;
+}
+
+public Action RTD2_Rolled(int client, RTDPerk perk, int iDuration)
+{
+	if(RTDToken.Valid)
+	{
+		char buffer[64];
+		RTDToken.GetToken(buffer, sizeof(buffer));
+		if(StrEqual(buffer, "striptomelee", false))
+		{
+			GetClientName(client, buffer, sizeof(buffer));
+			//RTD2_Remove(client, RTDRemove_Custom, "Force Weapon Reload!");
+			ServerCommand("sm_removertd \"#%s\" \"Force Weapon Reload!\"", buffer);
+			Store_GiveAll(client, GetClientHealth(client));
+		}
+	}
+}
+
 public Action Command_AFK(int client, int args)
 {
 	if(client)
