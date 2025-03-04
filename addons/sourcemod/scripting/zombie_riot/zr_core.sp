@@ -1279,12 +1279,12 @@ public Action RTD2_CanRollDice(int client)
 	return Plugin_Continue;
 }
 
-public Action RTD2_Rolled(int client, RTDPerk perk, int iDuration)
+public void RTD2_Rolled(int client, RTDPerk perk, int iDuration)
 {
-	if(RTDToken.Valid)
+	if(perk.Valid)
 	{
 		char buffer[64];
-		RTDToken.GetToken(buffer, sizeof(buffer));
+		perk.GetToken(buffer, sizeof(buffer));
 		if(StrEqual(buffer, "striptomelee", false))
 		{
 			GetClientName(client, buffer, sizeof(buffer));

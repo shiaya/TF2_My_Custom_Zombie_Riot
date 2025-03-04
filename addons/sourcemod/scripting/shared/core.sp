@@ -19,6 +19,7 @@
 #include <tf2utils>
 #include <profiler>
 #include <sourcescramble>
+#include <rtd2>
 //#include <handledebugger>
 #undef REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
