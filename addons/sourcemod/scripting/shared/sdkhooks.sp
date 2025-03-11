@@ -659,6 +659,13 @@ public void OnPostThink(int client)
 						MaxHealth = 3000.0;
 						
 					HealEntityGlobal(client, client, MaxHealth / 100.0, 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
+					
+					float attrib = Attributes_Get(client, Attrib_BlessingBuff, 1.0);
+					if(attrib >= 1.0 && f_TimeUntillNormalHeal[client] < GetGameTime())
+					{
+						attrib -= 1.0; //1.0 is default
+						HealEntityGlobal(client, client, (MaxHealth * attrib), 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
+					}
 				}
 			}
 		}
@@ -1045,6 +1052,18 @@ public void OnPostThink(int client)
 				else
 				{
 					FormatEx(buffer, sizeof(buffer), "%s [▼ %0.f%%]",buffer, ReinforcePoint(client) * 100.0);
+				}
+			}
+			if(GetAbilitySlotCount(client) == 8)
+			{
+				had_An_ability = true;
+				if(MorphineMaxed(client))
+				{
+					FormatEx(buffer, sizeof(buffer), "%s [Ḿ MAX]",buffer);
+				}
+				else
+				{
+					FormatEx(buffer, sizeof(buffer), "%s [Ḿ %0.f%%]",buffer, MorphineChargeFunc(client) * 100.0);
 				}
 			}
 #endif

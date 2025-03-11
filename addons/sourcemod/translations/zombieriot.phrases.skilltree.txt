@@ -393,7 +393,7 @@
 	}
 	"Extra Cash Building Up Desc"
 	{
-		"en"	"Increace your max cap of building extra cash from 5000 by 100"
+		"en"	"Increase your max cap of building extra cash from 5000 by 100"
 		"ko" 	"구조물의 최대 자금 회수량을 100증가 시킵니다."
 	}
 	"Extra Cash Building Up High"
@@ -403,7 +403,7 @@
 	}
 	"Extra Cash Building Up High Desc"
 	{
-		"en"	"Increace your max cap of building extra cash from 5000 by 500"
+		"en"	"Increase your max cap of building extra cash from 5000 by 500"
 		"ko" 	"구조물의 최대 자금 회수량을 500증가 시킵니다."
 	}
 	"Ingot Up 1"
