@@ -75,10 +75,14 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 		limit = 8; //Minimum should be 8! Do not scale with waves, makes it boring early on.
 		limit = RoundToNearest(float(limit) * MaxEnemyMulti());
 		
-		float ScalingEnemies = ZRStocks_PlayerScalingDynamic();
+		float ScalingEnemies = ZRStocks_PlayerScalingDynamic(_,true);
+		//above 14, dont spawn more, it just is not worth the extra lag it gives.
+		
+		//max is 14 players.
 		if(ScalingEnemies >= 14.0)
 			ScalingEnemies = 14.0;
-			//above 14, dont spawn more, it just is not worth the extra lag it gives.
+
+		ScalingEnemies *= zr_multi_multiplier.FloatValue;
 
 		float f_limit = Pow(1.115, ScalingEnemies);
 
@@ -1199,13 +1203,17 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 		if(inflictor > 0 && inflictor <= MaxClients)
 		{
 			GiveRageOnDamage(inflictor, Damageaftercalc);
+#if defined ZR
 			GiveMorphineOnDamage(inflictor, victim, Damageaftercalc, damagetype);
+#endif
 			Calculate_And_Display_hp(inflictor, victim, Damageaftercalc, false);
 		}
 		else if(attacker > 0 && attacker <= MaxClients)
 		{
 			GiveRageOnDamage(attacker, Damageaftercalc);
+#if defined ZR
 			GiveMorphineOnDamage(attacker, victim, Damageaftercalc, damagetype);
+#endif
 			Calculate_And_Display_hp(attacker, victim, Damageaftercalc, false);	
 		}
 		else

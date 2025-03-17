@@ -952,7 +952,6 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 	if(round.music_setup.Valid())
 	{
 		round.music_setup.CopyTo(MusicSetup1);
-		PrecacheSoundCustom(round.music_setup.Path);
 		for(int client=1; client<=MaxClients; client++)
 		{
 			if(IsClientInGame(client))
@@ -976,7 +975,7 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 		round.Cash = kv.GetNum("cash");
 		round.AmmoBoxExtra = kv.GetNum("ammobox_extra");
 		round.Custom_Refresh_Npc_Store = view_as<bool>(kv.GetNum("grigori_refresh_store"));
-		round.medival_difficulty = kv.GetNum("medival_research_level");
+		round.medival_difficulty = kv.GetNum("Medieval_research_level");
 		round.MapSetupRelay = view_as<bool>(kv.GetNum("map_setup_fake"));
 		round.Xp = kv.GetNum("xp");
 		round.Setup = kv.GetFloat("setup");
@@ -2453,7 +2452,7 @@ static Action Freeplay_HudInfoTimer(Handle timer)
 
 public void Medival_Wave_Difficulty_Riser(int difficulty)
 {
-	CPrintToChatAll("{darkred}%t", "Medival_Difficulty", difficulty);
+	CPrintToChatAll("{darkred}%t", "Medieval_Difficulty", difficulty);
 	
 	float difficulty_math = Pow(0.9, float(difficulty));
 	
@@ -2658,7 +2657,6 @@ void WaveEndLogicExtra()
 		if(IsValidClient(client))
 		{
 			if(!b_Hero_Of_Concord[client])i_Hero_Of_Concord[client]=0;
-			b_BobsCuringHand_Revived[client] += GetRandomInt(1,3);
 			if(!StrContains(WhatDifficultySetting_Internal, "Interitus Group"))
 			{
 				bool Chaostic = view_as<bool>(Store_HasNamedItem(client, "Glass Coil"));
@@ -2674,6 +2672,7 @@ void WaveEndLogicExtra()
 				else
 					i_Chaos_Coil[client]=0;
 			}
+			b_BobsCuringHand_Revived[client] += GetRandomInt(1,2);
 
 			/*
 			if(Items_HasNamedItem(client, "Bob's Curing Hand"))

@@ -107,7 +107,7 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	}
 	
 	CreateMVMPopulator();
-	
+	Zero(b_BobsCuringHand_Revived);
 	
 	Escape_RoundStart();
 	Waves_RoundStart(true);
@@ -116,6 +116,7 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	Flametail_RoundStart();
 	BlacksmithBrew_RoundStart();
 	Zealot_RoundStart();
+	Drops_ResetChances();
 
 	if(RoundStartTime > GetGameTime())
 		return;

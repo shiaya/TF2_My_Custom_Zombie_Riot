@@ -1502,14 +1502,14 @@
 		"pt"		"Balão de Ouro"
 		"ru"		"Золотой шар"
 	}
-	"Medival Scout"
+	"Medieval Scout"
 	{
 		"en"		"Ridden Scout"
 		"pt"		"Scout Montado"
 		"ru"		"Ездовой разведчик"
 		"ko"		"중세 스카웃"
 	}
-	"Medival Villager"
+	"Medieval Villager"
 	{
 		"en"		"Villager"
 		"pt"		"Aldeão"
@@ -1523,7 +1523,7 @@
 		"ru"		"Постройка"
 		"ko"		"건물"
 	}
-	"Medival Construct"
+	"Medieval Construct"
 	{
 		"en"		"Construct"
 		"pt"		"Construção"
@@ -1635,35 +1635,35 @@
 		"ru"		"Ахилл"
 		"ko"		"아킬레우스"
 	}
-	"Medival Arbalest"
+	"Medieval Arbalest"
 	{
 		"en"		"Medieval Arbalest"
 		"pt"		"Arbalest Medieval"
 		"ru"		"Арбалетчик средневековья"
 		"ko"		"중세 석궁병"
 	}
-	"Medival Brawler"
+	"Medieval Brawler"
 	{
 		"en"		"Medieval Brawler"
 		"pt"		"Lutador Medieval"
 		"ru"		"Боец средневековья"
 		"ko"		"중세 싸움꾼"
 	}
-	"Medival Longbowmen"
+	"Medieval Longbowmen"
 	{
 		"en"		"Medieval Longbowmen"
 		"pt"		"Arqueiro Medieval"
 		"ru"		"Лучник средневековья"
 		"ko"		"중세 장궁병"
 	}
-	"Medival Halberdier"
+	"Medieval Halberdier"
 	{
 		"en"		"Medieval Halberdier"
 		"pt"		"Alabardeiro Medieval"
 		"ru"		"Алебардист средневековья"
 		"ko"		"중세 할버드병"
 	}
-	"Medival Elite Longbowmen"
+	"Medieval Elite Longbowmen"
 	{
 		"en"		"Medieval Elite Longbowmen"
 		"pt"		"Arqueiro Elite Medieval"
@@ -2977,9 +2977,9 @@
 		"en"	"Wandering Spirit"
 		"ko"	"떠도는 영혼"
 	}
-	"Vengefull Spirit"
+	"Vengeful Spirit"
 	{
-		"en"	"Vengefull Spirit"
+		"en"	"Vengeful Spirit"
 		"ko"	"복수심에 불타는 영혼"
 	}
 	"Fallen Warrior"
@@ -3675,6 +3675,22 @@
 		"en" 		"Zombine"
 		"ru" 		"Зомбайн"
 		"ko"		"좀바인"
+	}
+	"Headcrab"
+	{
+		"en"		"Headcrab"
+	}
+	"Poison Headcrab"
+	{
+		"en"		"Poison Headcrab"
+	}
+	"Z-Main Headcrab"
+	{
+		"en"		"Z-Main Headcrab"
+	}
+	"Z-Main Poison Zombie"
+	{
+		"en"		"Z-Main Poison Zombie"
 	}
 	"3650"
 	{
@@ -4598,6 +4614,10 @@
 	{
 		"en"		"Smith"
 		"ko"		"스미스"
+	}
+	"Hijacked Red Pill"
+	{
+		"en"		"Hijacked Red Pill"
 	}
 	"Seaborn Metro Cop"
 	{

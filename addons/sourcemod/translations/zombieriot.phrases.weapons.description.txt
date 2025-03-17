@@ -1005,8 +1005,7 @@
 	}
 	"Hammer Pap 4"
 	{
-		"en"	"Slightly faster swinging speed and increased damage. Your damage, swing speed, and melee resistance will go up the more you hit the enemies"
-		"fr"	"Dégats et cadence des attaques améliorés. Dégats, cadence des attaques améliorés et résistance corps-à-corps s'améliorent avec chaque coup."
+		"en"	"Slightly faster swinging speed and increased damage. Wwing speed will go up the more you hit the enemies"
 	}
 	
 	"Fire Axe Desc"
@@ -1671,18 +1670,12 @@
 	
 	"Alien Repair Handling book Desc"
 	{
-		"en"	"2.0x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
-		"fr"	"+2x vitesse de réparation"
-		"ru"	"2,0-кратная скорость починки."
-		"chi"   "修复建筑生命值提高2.0倍"
+		"en"	"2.0x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 20%% (Cant go below 1)"
 		"ko"	"수리 속도 +100％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	"Engineering Repair Handling book Desc"
 	{
 		"en"	"2.0x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
-		"fr"	"+2x vitesse de réparation"
-		"ru"	"2,0-кратная скорость починки."
-		"chi"   "修复建筑生命值提高2.0倍"
 		"ko"	"수리 속도 +100％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 25％ 감소 (1 이하로 내려가지않음)"
 	}
 	"Construction Worker Desc"
@@ -1695,11 +1688,8 @@
 	
 	"Cosmic Repair Handling book Desc"
 	{
-		"en"	"3x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
-		"fr"	"+3x vitesse de réparation"
-		"ru"	"Трёхкратная скорость починки."
-		"chi"   "修复建筑生命值提高2倍"
-		"ko"	"수리 속도 +200％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 25％ 감소 (1 이하로 내려가지않음)"
+		"en"	"3x Repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 20%% (Cant go below 1)"
+		"ko"	"수리 속도 +200％\n센트리 피해량 +15％ (배럭스 적용 불가)\n금속 소모량 20％ 감소 (1 이하로 내려가지않음)"
 	}
 	
 	"Construction Expert Desc"
@@ -2379,7 +2369,7 @@
 		"ru"	"Модернизированный боец. Секретный совет: если ваш отряд погибнет, пока другой тренируется с полным запасом, он мгновенно появится. :)"
 		"chi"   "升级版的武装人员。秘密提示 - 如果你的单位死亡，而另一个单位正在全力训练，它会立即产卵。 :)"
 	}
-	"Medival Arbalest Desc"
+	"Medieval Arbalest Desc"
 	{
 		"en"	"Upgraded Crossbow Man. You can press R on them to hold position behind barricades so they shoot out of harm's way. But you didn't hear it from me!"
 		"fr"	"Arbalétrier amélioré. Vous pouvez appuyer sur R sur eux pour rester derrière les barricades afin qu'ils tirent hors de danger. Mais je ne vous l'ai pas entendu !"
@@ -2400,7 +2390,7 @@
 		"ru"	"Обновите до Арбалетов. Атакует намного медленнее, но бьет намного сильнее."
 		"chi"   "升级至强弩。攻击速度慢得多，但攻击力却大得多。"
 	}
-	"Medival Longbowmen Desc"
+	"Medieval Longbowmen Desc"
 	{
 		"en"	"Final basic Ranged unit. They can run and fight effectively in the open."
 		"fr"	"Dernière unité de base à distance. Ils peuvent courir et se battre efficacement à découvert."
@@ -2549,9 +2539,9 @@
 	}
 	"Throwable Repair Grenade Desc"
 	{
-		"en"	"Throw a grenade that repairs buildings near it over time.\nBuilder upgrades affect it.\nMay require wrench to be equipped to fully work.\nGives buildings 25% damage resistance while in range."
+		"en"	"Throw a grenade that repairs buildings near it over time.\nBuilder upgrades affect it.\nMay require wrench to be equipped to fully work.\nGives buildings 25%% damage resistance while in range."
 		"fr"	"Lance un kit de réparation qui répare les construction proches.\n+25%% résistance pour les constructions proches\nAmélioré avec les améliorations pour Constructeur.\nBesoin d'une clé pour fonctionner correctement."
-		"ru"	"Бросает гранату, которая со временем ремонт. постройки рядом с ней.\nУлучш. построек влияют на неё.\nМожет потреб. гаечный ключ в руках для полноценной работы.\nДаёт постройкам 25% сопр. урону, пока они находятся в радиусе действия."
+		"ru"	"Бросает гранату, которая со временем ремонт. постройки рядом с ней.\nУлучш. построек влияют на неё.\nМожет потреб. гаечный ключ в руках для полноценной работы.\nДаёт постройкам 25%% сопр. урону, пока они находятся в радиусе действия."
 		"chi"   "投掷一枚手榴弹，随着时间的推移可以修复附近的建筑物。\n建筑升级会影响它。可能需要配备扳手才能完全工作。在有效射程内给予建筑物25%的伤害抗性。"
 	}
 	"Beam Wand pap Alt 1"

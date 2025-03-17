@@ -913,6 +913,51 @@ float StatusEffect_OnTakeDamage_DealPositive(int victim, int attacker, float &ba
 
 //strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 
+void ExplainBuffToClient(int client, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, bool AppliedOntoOthers = false)
+{
+	//Debuff has no icon, so we dont care.
+	if(!Apply_MasterStatusEffect.HudDisplay[0])
+		return;
+
+	if(DisplayBuffHintToClient[client][Apply_StatusEffect.BuffIndex])
+		return;
+	
+	if(!Apply_MasterStatusEffect.BuffName[0])
+		return;
+
+	if(b_DisableStatusEffectHints[client])
+		return;
+		
+	if(DisplayChatBuffCD[client] > GetGameTime())
+		return;
+
+	DisplayChatBuffCD[client] = GetGameTime() + 5.0;
+	
+	SetGlobalTransTarget(client);
+ 	char buffer[400];
+	DisplayBuffHintToClient[client][Apply_StatusEffect.BuffIndex] = true;
+	FormatEx(buffer, sizeof(buffer), "%s Desc", Apply_MasterStatusEffect.BuffName);
+	if(!TranslationPhraseExists(buffer))
+		return;
+	char DisplayToChat[255];
+
+	Format(DisplayToChat, sizeof(DisplayToChat), "%s%s - ", DisplayToChat, Apply_MasterStatusEffect.HudDisplay);
+	Format(DisplayToChat, sizeof(DisplayToChat), "%s%t\n", DisplayToChat, Apply_MasterStatusEffect.BuffName);
+	if(AppliedOntoOthers)
+		Format(DisplayToChat, sizeof(DisplayToChat), "%s%t\n", DisplayToChat, "Applied Onto Others");
+	if(!Apply_MasterStatusEffect.Positive)
+		Format(DisplayToChat, sizeof(DisplayToChat), "%s%s", DisplayToChat, "{crimson}");
+	else
+		Format(DisplayToChat, sizeof(DisplayToChat), "%s%s", DisplayToChat, "{green}");
+		
+	Format(DisplayToChat, sizeof(DisplayToChat), "%s%t", DisplayToChat, buffer);
+	CPrintToChat(client,"%s",DisplayToChat);
+	if(Apply_MasterStatusEffect.ShouldScaleWithPlayerCount)
+	{
+		CPrintToChat(client,"%t","Scale With Player");
+	}
+	DisplayBuffHintToClient[client][Apply_StatusEffect.BuffIndex] = true;
+}
 void StatusEffects_HudHurt(int victim, int attacker, char[] Debuff_Adder_left, char[] Debuff_Adder_right, int SizeOfChar, int DisplayWeapon = -1)
 {
 	if(DisplayWeapon > 0)
