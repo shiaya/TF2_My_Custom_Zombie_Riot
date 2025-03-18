@@ -588,6 +588,14 @@
 	{
 		"en"	"Decreased attack/reload speed & healrate by a 50%%."
 	}
+	"Altered Functions"
+	{
+		"en"	"Altered Functions"
+	}
+	"Altered Functions Desc"
+	{
+		"en"	"Increases attack/reload speed & healrate by 50%%.\n{crimson}Spreads onto enemies you hit."
+	}
 	"Gambler's Ruin Total"
 	{
 		"en"	"Gambler's Ruin Total"
@@ -884,7 +892,7 @@
 	}
 	"Burn Desc"
 	{
-		"en"	"Deals True damage overtime, upto a maximum of 20 seconds if not extended.\nEach hit extends its time.\nThe damage and owner depends on the weapon that delt the most fire damage.\nExtending does not weaken the buff.\nEnemies on fire, if killed give 10%% more hp on kill, and gibs give 10%% more hp."
+		"en"	"Deals True damage.\nThe damage and owner depends on the weapon that delt the most fire damage.\nHeal 25%% less while on fire, when applying fire again, tick again for 50%% damage.\n{green}Enemies on fire, give 10%% more hp on kill and gibs."
 	}
 	"Zealot's Random Drinks"
 	{

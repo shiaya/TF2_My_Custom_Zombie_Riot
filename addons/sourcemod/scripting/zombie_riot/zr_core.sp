@@ -215,6 +215,8 @@ enum
 	WEAPON_PURNELL_MELEE = 138,
 	WEAPON_PURNELL_PRIMARY = 139,
 	WEAPON_KRITZKRIEG = 140,
+	WEAPON_X10KNIFE = 141,
+	WEAPON_RUINA_DRONE_KNIFE = 142,
 	WEAPON_MARKET_GARDENER = 1000,
 	WEAPON_FARMER = 1001,
 	WEAPON_MINECRAFT_SWORD = 1002,
@@ -2689,6 +2691,7 @@ void PlayerApplyDefaults(int client)
 
 		QueryClientConVar(client, "snd_musicvolume", ConVarCallback); //cl_showpluginmessages
 		QueryClientConVar(client, "cl_first_person_uses_world_model", ConVarCallback_FirstPersonViewModel);
+		QueryClientConVar(client, "g_ragdoll_fadespeed", ConVarCallback_g_ragdoll_fadespeed);
 		int point_difference = PlayerPoints[client] - i_PreviousPointAmount[client];
 		
 		if(point_difference > 0)
@@ -2905,9 +2908,11 @@ stock bool isPlayerMad(int client) {
 
 		return true;
 	}
+	/*
 	else if (i_CustomWeaponEquipLogic[weapon_holding] == WEAPON_HELL_HOE_2) {
 		return g_isPlayerInDeathMarch_HellHoe[client];
 	}
+	*/
 	return false;
 }
 

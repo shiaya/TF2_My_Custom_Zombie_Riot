@@ -1067,6 +1067,10 @@
 		"fr"	"Dégats et cadence des attaques améliorés. Le poignardage donne plus de santé, et ne retarde plus l'attaque prochaine.\nVouz devenez un professionel en poignardage, qui deviennent plus faciles à effectuer."
 		"chi"   "增加伤害和攻击速度，更多回血，背刺无冷却并且会让给你贱笑。\n你已是trickstab高手，所以你现在可以轻易背刺。"
 	}
+	"Kunai Pap 4"
+	{
+		"en" 	"You backstab slower, but gain immensive damage! Heal much more after backstabbing.\nEvery 15 seconds you can launch a ruina nuke by backstabbing an enemy, which explodes."
+	}
 	
 	"Fractured Ark Desc"
 	{
@@ -1214,10 +1218,7 @@
 	
 	"Medusa Teslar Stick Desc"
 	{
-		"en"	"Causes bleed, 5%% extra melee resistance. Causes debuff on enemy which slows them down and makes them take more damage, 25%% more dmg takes for affected enemies."
-		"fr"	"+5%% résistance contre les dégats corps-à-corps. Fait saigner les ennemis, les ralentis, et les font prendre 25%% plus de dégats."
-		"ru"	"Вызывает кровотечение, 5%% доп. сопр. в ближнем бою. Накладыв. на врага эфф., который замедл. его и заставл. получ. больше урона, на 25%% больше урона получ. поражённые враги."
-		"chi"   "对敌人造成流血，额外获得5%%近战抗性。对敌人造成负面效果，使敌人减速并受到更多伤害"
+		"en"	"Causes bleed, 5%% extra melee resistance. Causes debuff on enemy which slows them down and makes them take more damage, 25%% more dmg takes for affected enemies.\nburn retriggering is 50%% weaker."
 	}
 	"Medusa Teslar Stick Pap 1"
 	{
@@ -2989,9 +2990,9 @@
 	}
 	"Casino Desc"
 	{
-		"en"	"Killing and hitting enemies rewards you with dollars.\nPress M2 to spend 20 dollars and roll the slots!\nRolling the slots: Chance to gain a special effect/buff.\nDamage scales with wealth.\n''Money = Power''."
-		"fr"	"Tuer et frapper les ennemis vous donne des dollars.\nAppuyez M2 pour échanger 20 dollars et rouler la machine à sous.\nLa machine à sous a une chance de vous donner un effet spécial.\nDégats changent avec votre opulence.\n«La fortune est la puissance.»"
-		"chi"	"击中，击杀敌人获得$$$。\nM2花费20$开赌。有几率获得各种buff。\n伤害根据金钱增加。\n''金钱=力量''"
+		"en"	"Killing and hitting enemies rewards you with dollars.\nPress M2 to spend 20 dollars and roll the slots!\nRolling the slots: Chance to gain a special effect/buff.\nDamage scales with wealth."
+		"fr"	"Tuer et frapper les ennemis vous donne des dollars.\nAppuyez M2 pour échanger 20 dollars et rouler la machine à sous.\nLa machine à sous a une chance de vous donner un effet spécial.\nDégats changent avec votre opulence."
+		"chi"	"击中，击杀敌人获得$$$。\nM2花费20$开赌。有几率获得各种buff。\n伤害根据金钱增加。"
 	}
 	"Flush Desc"
 	{
@@ -3004,6 +3005,10 @@
 		"en"	"Stats are increased.\nRoll the slots: buffs have been improved.\n''ALL IN BABY!''"
 		"fr"	"Arme est amélioré.\nLa machine à sous vous donne des effets meilleurs.\n«ALL IN BABY!»"
 		"chi"	"属性升级。\n加强buff。\n''ALL IN''\n''ALL IN''\n''ALL IN''"
+	}
+	"Sideways Flush Desc"
+	{
+		"en"	"Jackpot has upgraded the base abilities of the weapon, granting it most qualities of the next Pack-A-Punch upgrade.\nUnfortunately, you'll still need to spend money to unlock it's full potential."
 	}
 	"Royal Desc"
 	{

@@ -1767,6 +1767,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 			if(!Classic_Mode())
 			{
 				int CashGive = round.Cash;
+				Native_OnGivenCash(0, CashGive);
 				CurrentCash += CashGive;
 
 				if(CashGive)
