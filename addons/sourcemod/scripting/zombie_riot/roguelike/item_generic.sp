@@ -6,6 +6,18 @@ public void Rogue_None_Remove()
 	// Nothing happens when removed
 }
 
+public void FlagShip_Rogue_Refresh_Remove()
+{
+	// Refresh players when removed
+	for(int entity = 1; entity <= MAXENTITIES; entity++)
+	{
+		if(!IsValidEntity(entity))
+			continue;
+			
+		RemoveSpecificBuff(entity, "Ziberian Flagship Weaponry");
+	}
+	Rogue_Refresh_Remove();
+}
 public void Rogue_Refresh_Remove()
 {
 	// Refresh players when removed
@@ -201,7 +213,7 @@ void OnTakeDamage_RogueItemGeneric(int attacker, float &damage, int damagetype, 
 		{
 			if(GetTeam(attacker) == TFTeam_Red || GetTeam(inflictor) == TFTeam_Red)
 			{
-				//15%% more melee dmg for all allies
+				//15％ more melee dmg for all allies
 				if(damagetype & (DMG_CLUB|DMG_TRUEDAMAGE))
 				{
 					damage *= 1.15;
@@ -215,7 +227,7 @@ void OnTakeDamage_RogueItemGeneric(int attacker, float &damage, int damagetype, 
 		{
 			if(GetTeam(attacker) == TFTeam_Red || GetTeam(inflictor) == TFTeam_Red)
 			{
-				//15%% more Ranged dmg for all allies
+				//15％ more Ranged dmg for all allies
 				if(damagetype & (DMG_CLUB|DMG_TRUEDAMAGE))
 				{
 

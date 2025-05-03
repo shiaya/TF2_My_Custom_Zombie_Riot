@@ -7,7 +7,7 @@
 static const char SectionName[][] =
 {
 	"Support Buildings",
-	"Singular Buildings",
+	"Unique Buildings",
 	"Construct Buildings"
 };
 
@@ -277,9 +277,29 @@ static void BuildingMenu(int client)
 	Menu menu = new Menu(BuildingMenuH);
 	SetGlobalTransTarget(client);
 
-	menu.SetTitle("%t\n ", "Building Menu");
+	char buffer1[196], buffer2[64], buffer3[196];
+	if(MenuSection[client] == -1)
+		FormatEx(buffer3, sizeof(buffer3), "%T\n ", "Building Menu", client);
+	else
+		FormatEx(buffer3, sizeof(buffer3), "%T", "Building Menu", client);
+		
+	switch(MenuSection[client])
+	{
+		case 0:
+		{
+			Format(buffer3, sizeof(buffer3), "%s\n%T\n ", buffer3,"Support Buildings Explain", client);
+		}
+		case 1:
+		{
+			Format(buffer3, sizeof(buffer3), "%s\n%T\n ", buffer3,"Unique Buildings Explain", client);
+		}
+		case 2:
+		{
+			Format(buffer1, sizeof(buffer1), "%s\n%T\n ", buffer3,"Construct Buildings Explain", client);
+		}
+	}
+	menu.SetTitle("%s", buffer3);
 
-	char buffer1[196], buffer2[64];
 
 	if(MenuSection[client] == -1 || !ducking)
 	{
@@ -304,13 +324,18 @@ static void BuildingMenu(int client)
 		{
 			if(i == 2 && !Construction_Mode() && !CvarInfiniteCash.BoolValue)
 				continue;
+
 			
 			FormatEx(buffer1, sizeof(buffer1), "%t", SectionName[i]);
-			menu.AddItem(buffer1, buffer1);
+			if(i == 2 && !Waves_Started())
+				menu.AddItem(buffer1, buffer1, ITEMDRAW_DISABLED);
+			else
+				menu.AddItem(buffer1, buffer1);
 		}
 	}
 	else
 	{
+		bool corrupt = Rogue_HasNamedArtifact("System Malfunction");
 		int items;
 
 		BuildingInfo info;
@@ -346,10 +371,29 @@ static void BuildingMenu(int client)
 
 			items++;
 
+			if(corrupt)
+			{
+				// Visual glitching
+				while(maxcount > 0 && (GetURandomInt() % 5) == 0)
+				{
+					maxcount--;
+				}
+
+				if((GetURandomInt() % 5) == 0)
+				{
+					cost *= 3;
+				}
+
+				if((GetURandomInt() % 5) == 0)
+				{
+					count = 0;
+				}
+			}
+
 			if(cost > metal)
 				allowed = false;
 			
-			if(Waves_InSetup() || f_AllowInstabuildRegardless > GetGameTime())
+			if((Waves_InSetup() && !Construction_Mode()) || f_AllowInstabuildRegardless > GetGameTime())
 			{
 				cooldown = 0.0;
 			}
@@ -563,6 +607,12 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 										}
 										b_Interior_ExplosiveBuilding[entity]=b_Explosive_Structures[client];
 										b_Interior_ExplosiveBuilding_MaxHP[entity]=GetEntProp(entity, Prop_Data, "m_iMaxHealth");
+											
+										if(Construction_Mode())
+											CooldownGive *= 3.0;
+											
+										UpdateDoublebuilding(entity);
+										
 										info.Cooldowns[client] = GetGameTime() + CooldownGive;
 										BuildingList.SetArray(id, info);
 									}
@@ -602,6 +652,12 @@ static int BuildByInfo(BuildingInfo info, int client, float vecPos[3], float vec
 		int health = GetEntProp(obj.index, Prop_Data, "m_iHealth");
 		int maxhealth = GetEntProp(obj.index, Prop_Data, "m_iMaxHealth");
 		int expected = RoundFloat(obj.BaseHealth * Object_GetMaxHealthMulti(client));
+
+		if(obj.m_bConstructBuilding && !info.HealthScaleCost)
+		{
+			expected = RoundFloat(obj.BaseHealth * Construction_GetMaxHealthMulti());
+		}
+
 		if(maxhealth && expected && maxhealth != expected)
 		{
 			float change = float(expected) / float(maxhealth);
@@ -616,6 +672,7 @@ static int BuildByInfo(BuildingInfo info, int client, float vecPos[3], float vec
 			SetEntProp(obj.index, Prop_Data, "m_iRepairMax", maxrepair);
 			SetEntProp(obj.index, Prop_Data, "m_iRepair", repair);
 		}
+		SetTeam(obj.index, GetTeam(client));
 
 		GiveBuildingMetalCostOnBuy(entity, 0);
 	}
@@ -795,23 +852,28 @@ public void Pickup_Building_M2(int client, int weapon, bool crit)
 	if (!i_IsABuilding[entity])
 		return;
 
+	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
 	if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") != client && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") <= MaxClients)
-		return;
-
+	{
+		if(!objstats.m_bConstructBuilding)
+			return; //anyone can pick up construct buildings!
+	}
+	if(IsValidEntity(objstats.m_iMasterBuilding))
+	{
+		entity = objstats.m_iMasterBuilding;
+	}
 	Building_PlayerWieldsBuilding(client, entity);
 }
 
-bool Building_AttemptPlace(int buildingindx, int client)
+bool Building_AttemptPlace(int buildingindx, int client, bool TestClient = false)
 {
 	float VecPos[3];
 	GetEntPropVector(buildingindx, Prop_Data, "m_vecAbsOrigin", VecPos);
+
 	float VecMin[3];
 	float VecMax[3];
-	VecMin = f3_CustomMinMaxBoundingBox[buildingindx];
-	VecMin[0] *= -1.0;
-	VecMin[1] *= -1.0;
-	VecMin[2] = 0.0;
 	VecMax = f3_CustomMinMaxBoundingBox[buildingindx];
+	VecMin = f3_CustomMinMaxBoundingBoxMinExtra[buildingindx];
 
 	b_ThisEntityIgnoredBeingCarried[buildingindx] = false;
 	bool Success = BuildingSafeSpot(buildingindx, VecPos, VecMin, VecMax);
@@ -821,7 +883,8 @@ bool Building_AttemptPlace(int buildingindx, int client)
 		if(client <= MaxClients)
 		{
 			CanBuild_VisualiseAndWarn(client, buildingindx, true, VecPos);
-			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			if(!TestClient)
+				ClientCommand(client, "playgamesound items/medshotno1.wav");
 		}
 		return false;
 	}
@@ -835,45 +898,65 @@ bool Building_AttemptPlace(int buildingindx, int client)
 		GetEntPropVector(buildingHit, Prop_Data, "m_vecAbsOrigin", endPos2);
 		//We use custom offets for buildings, so we do our own magic here
 		float Delta = f3_CustomMinMaxBoundingBox[buildingHit][2];
+
+	//	if(f3_CustomMinMaxBoundingBoxMinExtra[buildingHit][2])
+	//		endPos2[2] -= f3_CustomMinMaxBoundingBoxMinExtra[buildingHit][2];
+
 		//Be sure to now set all the things we need.
 		//Set the dependency
 		endPos2[0] = VecPos[0];
 		endPos2[1] = VecPos[1];
 		endPos2[2] += Delta;
-		i_IDependOnThisBuilding[buildingindx] = EntIndexToEntRef(buildingHit);
+		if(!TestClient)
+			i_IDependOnThisBuilding[buildingindx] = EntIndexToEntRef(buildingHit);
 		if(client <= MaxClients)
 			CanBuild_VisualiseAndWarn(client, buildingindx, false, endPos2);
 		
-		SDKCall_SetLocalOrigin(buildingindx, endPos2);	
-		SDKUnhook(buildingindx, SDKHook_Think, BuildingPickUp);
-		if(client <= MaxClients)
-			Player_BuildingBeingCarried[client] = 0;
-		
-		Building_BuildingBeingCarried[buildingindx] = 0;
-		b_ThisEntityIgnored[buildingindx] = false;
-		b_ThisEntityIsAProjectileForUpdateContraints[buildingindx] = false;
+		if(!TestClient)
+		{
+		//	if(f3_CustomMinMaxBoundingBoxMinExtra[buildingHit][2])	//wierd offset.
+		//		endPos2[2] -= f3_CustomMinMaxBoundingBoxMinExtra[buildingHit][2];
 
-		if(client <= MaxClients)
-			EmitSoundToClient(client, SOUND_TOSS_TF);
+			if(f3_CustomMinMaxBoundingBoxMinExtra[buildingindx][2])	//wierd offset.
+				endPos2[2] -= f3_CustomMinMaxBoundingBoxMinExtra[buildingindx][2];
+
+			SDKCall_SetLocalOrigin(buildingindx, endPos2);	
+			SDKUnhook(buildingindx, SDKHook_Think, BuildingPickUp);
+			if(client <= MaxClients)
+				Player_BuildingBeingCarried[client] = 0;
 		
+			Building_BuildingBeingCarried[buildingindx] = 0;
+			b_ThisEntityIgnored[buildingindx] = false;
+			b_ThisEntityIsAProjectileForUpdateContraints[buildingindx] = false;
+
+			if(client <= MaxClients)
+				EmitSoundToClient(client, SOUND_TOSS_TF);
+		}
 		return true;
 	}
 	Success = Building_IsValidGroundFloor(client, buildingindx, VecPos);
 	if(!Success)
 	{
-		b_ThisEntityIgnoredBeingCarried[buildingindx] = true;
+		if(!TestClient)
+			b_ThisEntityIgnoredBeingCarried[buildingindx] = true;
 		return false;
 	}
-	SDKCall_SetLocalOrigin(buildingindx, VecPos);	
-	SDKUnhook(buildingindx, SDKHook_Think, BuildingPickUp);
-	Building_BuildingBeingCarried[buildingindx] = 0;
-	b_ThisEntityIgnored[buildingindx] = false;
-	b_ThisEntityIsAProjectileForUpdateContraints[buildingindx] = false;
-
-	if(client <= MaxClients)
+	if(!TestClient)
 	{
-		Player_BuildingBeingCarried[client] = 0;
-		EmitSoundToClient(client, SOUND_TOSS_TF);
+		if(f3_CustomMinMaxBoundingBoxMinExtra[buildingindx][2])	//wierd offset.
+			VecPos[2] -= f3_CustomMinMaxBoundingBoxMinExtra[buildingindx][2];
+
+		SDKCall_SetLocalOrigin(buildingindx, VecPos);	
+		SDKUnhook(buildingindx, SDKHook_Think, BuildingPickUp);
+		Building_BuildingBeingCarried[buildingindx] = 0;
+		b_ThisEntityIgnored[buildingindx] = false;
+		b_ThisEntityIsAProjectileForUpdateContraints[buildingindx] = false;
+
+		if(client <= MaxClients)
+		{
+			Player_BuildingBeingCarried[client] = 0;
+			EmitSoundToClient(client, SOUND_TOSS_TF);
+		}
 	}
 	return true;
 }
@@ -961,7 +1044,13 @@ void BuildingPickUp(int BuildingNPC)
 	TR_GetEndPosition(VecCheckBottom, hTrace);
 	delete hTrace;
 	
+	if(f3_CustomMinMaxBoundingBoxMinExtra[BuildingNPC][2])
+	{
+		//wierd offset.
+		VecCheckBottom[2] -= f3_CustomMinMaxBoundingBoxMinExtra[BuildingNPC][2];
+	}
 	TeleportEntity(BuildingNPC, VecCheckBottom, vecView2, NULL_VECTOR);
+	Building_AttemptPlace(BuildingNPC, client, true);
 }
 
 
@@ -1145,25 +1234,24 @@ void CanBuild_VisualiseAndWarn(int client, int entity, bool Fail = false, float 
 {
 	float VecMin[3];
 	float VecMax[3];
-	VecMin = f3_CustomMinMaxBoundingBox[entity];
-	VecMin[0] *= -1.0;
-	VecMin[1] *= -1.0;
-	VecMin[2] = 0.0;
 	VecMax = f3_CustomMinMaxBoundingBox[entity];
+	VecMin = f3_CustomMinMaxBoundingBoxMinExtra[entity];
 	float VecLaser[3];
 	VecLaser = VecBottom;
 	if(Fail)
 	{
-		TE_DrawBox(client, VecLaser, VecMin, VecMax, 0.5, view_as<int>({255, 0, 0, 255}));
-		ClientCommand(client, "playgamesound items/medshotno1.wav");
-		SetDefaultHudPosition(client, 255, 0, 0);
+		TE_DrawBox(client, VecLaser, VecMin, VecMax, 0.1, view_as<int>({255, 0, 0, 255}));
+		SetDefaultHudPosition(client, 255, 0, 0, 0.3);
 		SetGlobalTransTarget(client);
 		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Cannot Build Here");	
 	}
 	else
 	{
-		TE_DrawBox(client, VecLaser, VecMin, VecMax, 0.5, view_as<int>({0, 255, 0, 255}));
-		SetDefaultHudPosition(client);
+		if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
+			VecLaser[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
+
+		TE_DrawBox(client, VecLaser, VecMin, VecMax, 0.1, view_as<int>({0, 255, 0, 255}));
+		SetDefaultHudPosition(client,_,_,_, 0.3);
 		SetGlobalTransTarget(client);
 		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Can Build Here");	
 	}
@@ -1235,6 +1323,15 @@ public bool TraceRayFilterBuildOnBuildings(int entity, int contentsMask, any iEx
 	if(b_ThisEntityIgnored[entity])
 		return false;
 
+	if(i_IsABuilding[iExclude])
+	{
+		ObjectGeneric objstats = view_as<ObjectGeneric>(iExclude);
+		if(objstats.m_iExtrabuilding1 == entity)
+			return false;
+		else if(objstats.m_iExtrabuilding2 == entity)
+			return false;
+	}
+
 	if(i_IsABuilding[entity]) // Only buildings should be allowed
 	{
 		return true;
@@ -1284,6 +1381,11 @@ void IsBuildingNotFloating(int building)
 				DestroyBuildingDo(building);
 				return;
 			}
+			if(f3_CustomMinMaxBoundingBoxMinExtra[building][2])
+			{
+				//wierd offset.
+				endPos2[2] -= f3_CustomMinMaxBoundingBoxMinExtra[building][2];
+			}
 			TeleportEntity(building, endPos2, NULL_VECTOR, NULL_VECTOR);
 			//we hit something
 		}
@@ -1328,6 +1430,11 @@ void BuildingAdjustMe(int building, int DestroyedBuilding)
 //	posMain = posStacked;
 	posMain[2] = posStacked[2];	
 	
+	if(f3_CustomMinMaxBoundingBoxMinExtra[building][2])
+	{
+		//wierd offset.
+		posMain[2] -= f3_CustomMinMaxBoundingBoxMinExtra[building][2];
+	}
 	TeleportEntity(building, posMain, NULL_VECTOR, NULL_VECTOR);
 	//make npc's that target the previous building target the stacked one now.
 	for(int targ; targ<i_MaxcountNpcTotal; targ++)
@@ -1353,6 +1460,9 @@ public void Wrench_Hit_Repair_Replacement(int client, int weapon, bool &result, 
 	pack.WriteCell(GetClientUserId(client));
 	pack.WriteCell(EntIndexToEntRef(weapon));
 	RequestFrames(Wrench_Hit_Repair_ReplacementInternal, 12, pack);
+	
+	if(IsPlayerCarringObject(client))
+		Pickup_Building_M2(client, weapon, false);
 }
 public void Wrench_Hit_Repair_ReplacementInternal(DataPack pack)
 {
@@ -1380,18 +1490,16 @@ public void Wrench_Hit_Repair_ReplacementInternal(DataPack pack)
 	if(target < 0)
 		return;
 	
-	if(!i_IsABuilding[target])
+	if(i_IsVehicle[target] != 2)
 	{
-		return;
+		if(!i_IsABuilding[target])
+		{
+			return;
+		}
+		if(!i_NpcIsABuilding[target])
+			return;
 	}
-	int max_health = ReturnEntityMaxHealth(target);
-	int flHealth = GetEntProp(target, Prop_Data, "m_iHealth");
-	
-	if(flHealth >= max_health)
-	{
-		EmitSoundToAll("weapons/wrench_hit_build_fail.wav", client, SNDCHAN_AUTO, 70);
-		return;
-	}
+
 	Building_RepairObject(client, target, weapon,vecHit, 1, 1.0);
 }		
 
@@ -1493,26 +1601,50 @@ public void Expidonsan_RemoteRepairAttackM1(int client, int weapon)
 	if(target < 0)
 		return;
 	
-	if(!i_IsABuilding[target])
+	if(i_IsVehicle[target] != 2)
 	{
-		return;
+		if(!i_IsABuilding[target])
+		{
+			return;
+		}
+		if(!i_NpcIsABuilding[target])
+			return;
 	}
-	int max_health = ReturnEntityMaxHealth(target);
-	int flHealth = GetEntProp(target, Prop_Data, "m_iHealth");
-	
-	if(flHealth >= max_health)
-	{
-		EmitSoundToAll("player/taunt_sorcery_fail.wav", client, SNDCHAN_AUTO, 70,_,0.5);
-		return;
-	}
+
 	Building_RepairObject(client, target, weapon,vecHit, 2, 0.2);
 }		
 
 void Building_RepairObject(int client, int target, int weapon,float vectorhit[3], int soundDef = 1, float repairspeedModif = 1.0)
 {
+	int iHealth, max_health;
+	if(i_IsVehicle[target])
+	{
+		max_health = 10000;
+		iHealth = Armor_Charge[target];
+	}
+	else
+	{
+		//Cant repair non buildings......
+		max_health = ReturnEntityMaxHealth(target);
+		iHealth = GetEntProp(target, Prop_Data, "m_iHealth");
+	}
+
+	if(iHealth >= max_health)
+	{
+		switch(soundDef)
+		{
+			case 1:
+				EmitSoundToAll("weapons/wrench_hit_build_fail.wav", client, SNDCHAN_AUTO, 70,_,1.0);
+			case 2:
+			{
+				EmitSoundToAll("player/taunt_sorcery_fail.wav", target, SNDCHAN_AUTO, 70,_,0.5);
+				EmitSoundToClient(client, "player/taunt_sorcery_fail.wav", client, SNDCHAN_AUTO, 70,_,0.5);
+			}
+		}
+		return;
+	}
+	
 	int new_ammo = GetAmmo(client, 3);
-	int max_health = ReturnEntityMaxHealth(target);
-	int flHealth = GetEntProp(target, Prop_Data, "m_iHealth");
 
 	float RepairRate = Attributes_Get(weapon, 95, 1.0);
 	RepairRate *= Attributes_GetOnPlayer(client, 95, true, true);
@@ -1520,15 +1652,18 @@ void Building_RepairObject(int client, int target, int weapon,float vectorhit[3]
 	RepairRate *= 10.0;
 	RepairRate *= repairspeedModif;
 
+	if(i_IsVehicle[target])
+		RepairRate *= 5;
+
 	int i_HealingAmount = RoundToCeil(RepairRate);
-	int newHealth = flHealth + i_HealingAmount;
+	int newHealth = iHealth + i_HealingAmount;
 
 	if(newHealth >= max_health)
 	{
 		i_HealingAmount -= newHealth - max_health;
 		newHealth = max_health;
 	}
-	if(GetEntProp(target, Prop_Data, "m_iRepair") < i_HealingAmount)
+	if(!i_IsVehicle[target] && GetEntProp(target, Prop_Data, "m_iRepair") < i_HealingAmount)
 	{
 		i_HealingAmount = GetEntProp(target, Prop_Data, "m_iRepair");
 	}
@@ -1548,7 +1683,7 @@ void Building_RepairObject(int client, int target, int weapon,float vectorhit[3]
 	}
 	int Healing_Value = i_HealingAmount;
 	
-	int Remove_Ammo = i_HealingAmount / 3;
+	int Remove_Ammo = i_HealingAmount / (i_IsVehicle[target] ? 15 : 3);
 	
 	if(Remove_Ammo < 0)
 	{
@@ -1558,7 +1693,7 @@ void Building_RepairObject(int client, int target, int weapon,float vectorhit[3]
 	int HealGiven;
 	if(newHealth >= 1 && Healing_Value >= 1) //for some reason its able to set it to 1
 	{
-		HealGiven = HealEntityGlobal(client, target, float(Healing_Value), _, _, _, new_ammo / 3);
+		HealGiven = HealEntityGlobal(client, target, float(Healing_Value), _, _, _, new_ammo / (i_IsVehicle[target] ? 15 : 3));
 		if(HealGiven <= 0)
 		{
 			switch(soundDef)
@@ -1574,10 +1709,13 @@ void Building_RepairObject(int client, int target, int weapon,float vectorhit[3]
 			}
 			return;
 		}
-		SetEntProp(target, Prop_Data, "m_iRepair", GetEntProp(target, Prop_Data, "m_iRepair") - HealGiven);
-		if(GetEntProp(target, Prop_Data, "m_iRepair") < 0)
+		if(!i_IsVehicle[target])
 		{
-			SetEntProp(target, Prop_Data, "m_iRepair", 0);
+			SetEntProp(target, Prop_Data, "m_iRepair", GetEntProp(target, Prop_Data, "m_iRepair") - HealGiven);
+			if(GetEntProp(target, Prop_Data, "m_iRepair") < 0)
+			{
+				SetEntProp(target, Prop_Data, "m_iRepair", 0);
+			}
 		}
 		switch(soundDef)
 		{
@@ -1622,6 +1760,7 @@ void Building_RepairObject(int client, int target, int weapon,float vectorhit[3]
 		}
 		
 	}
+	UpdateDoublebuilding(target);
 	int HealDo;
 	HealDo = HealGiven / 3;
 	if(HealDo <= 1)
@@ -1632,6 +1771,53 @@ void Building_RepairObject(int client, int target, int weapon,float vectorhit[3]
 	CurrentAmmo[client][3] = GetAmmo(client, 3);
 }
 
+
+void UpdateDoublebuilding(int entity)
+{
+	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
+	if(IsValidEntity(objstats.m_iMasterBuilding))
+	{
+		SetEntProp(objstats.m_iMasterBuilding, Prop_Data, "m_iRepair", GetEntProp(entity, Prop_Data, "m_iRepair"));
+		SetEntProp(objstats.m_iMasterBuilding, Prop_Data, "m_iRepairMax", GetEntProp(entity, Prop_Data, "m_iRepairMax"));
+		SetEntProp(objstats.m_iMasterBuilding, Prop_Data, "m_iHealth", GetEntProp(entity, Prop_Data, "m_iHealth"));
+		SetEntProp(objstats.m_iMasterBuilding, Prop_Data, "m_iMaxHealth", GetEntProp(entity, Prop_Data, "m_iMaxHealth"));
+		ObjectGeneric objstats2 = view_as<ObjectGeneric>(objstats.m_iMasterBuilding);
+
+		if(IsValidEntity(objstats2.m_iExtrabuilding1))
+		{
+			SetEntProp(objstats2.m_iExtrabuilding1, Prop_Data, "m_iRepair", GetEntProp(entity, Prop_Data, "m_iRepair"));
+			SetEntProp(objstats2.m_iExtrabuilding1, Prop_Data, "m_iRepairMax", GetEntProp(entity, Prop_Data, "m_iRepairMax"));
+			SetEntProp(objstats2.m_iExtrabuilding1, Prop_Data, "m_iHealth", GetEntProp(entity, Prop_Data, "m_iHealth"));
+			SetEntProp(objstats2.m_iExtrabuilding1, Prop_Data, "m_iMaxHealth", GetEntProp(entity, Prop_Data, "m_iMaxHealth"));
+		}
+
+		if(IsValidEntity(objstats2.m_iExtrabuilding2))
+		{
+			SetEntProp(objstats2.m_iExtrabuilding2, Prop_Data, "m_iRepair", GetEntProp(entity, Prop_Data, "m_iRepair"));
+			SetEntProp(objstats2.m_iExtrabuilding2, Prop_Data, "m_iRepairMax", GetEntProp(entity, Prop_Data, "m_iRepairMax"));
+			SetEntProp(objstats2.m_iExtrabuilding2, Prop_Data, "m_iHealth", GetEntProp(entity, Prop_Data, "m_iHealth"));
+			SetEntProp(objstats2.m_iExtrabuilding2, Prop_Data, "m_iMaxHealth", GetEntProp(entity, Prop_Data, "m_iMaxHealth"));
+		}
+	}
+	else
+	{
+		if(IsValidEntity(objstats.m_iExtrabuilding1))
+		{
+			SetEntProp(objstats.m_iExtrabuilding1, Prop_Data, "m_iRepair", GetEntProp(entity, Prop_Data, "m_iRepair"));
+			SetEntProp(objstats.m_iExtrabuilding1, Prop_Data, "m_iRepairMax", GetEntProp(entity, Prop_Data, "m_iRepairMax"));
+			SetEntProp(objstats.m_iExtrabuilding1, Prop_Data, "m_iHealth", GetEntProp(entity, Prop_Data, "m_iHealth"));
+			SetEntProp(objstats.m_iExtrabuilding2, Prop_Data, "m_iMaxHealth", GetEntProp(entity, Prop_Data, "m_iMaxHealth"));
+		}
+
+		if(IsValidEntity(objstats.m_iExtrabuilding2))
+		{
+			SetEntProp(objstats.m_iExtrabuilding2, Prop_Data, "m_iRepair", GetEntProp(entity, Prop_Data, "m_iRepair"));
+			SetEntProp(objstats.m_iExtrabuilding2, Prop_Data, "m_iRepairMax", GetEntProp(entity, Prop_Data, "m_iRepairMax"));
+			SetEntProp(objstats.m_iExtrabuilding2, Prop_Data, "m_iHealth", GetEntProp(entity, Prop_Data, "m_iHealth"));
+			SetEntProp(objstats.m_iExtrabuilding2, Prop_Data, "m_iMaxHealth", GetEntProp(entity, Prop_Data, "m_iMaxHealth"));
+		}
+	}
+}
 
 void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = false, bool BarracksUpgrade = false)
 {
@@ -1973,6 +2159,11 @@ bool MountBuildingToBackInternal(int client, bool AllowAnyBuilding)
 	{
 		return false;
 	}
+	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
+	if(IsValidEntity(objstats.m_iMasterBuilding))
+	{
+		entity = objstats.m_iMasterBuilding;
+	}
 	if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") != client)
 	{
 		if(!AllowAnyBuilding)
@@ -1993,8 +2184,11 @@ bool MountBuildingToBackInternal(int client, bool AllowAnyBuilding)
 		}
 	}
 
+	ObjectGeneric objstats1 = view_as<ObjectGeneric>(entity);
+	if(objstats1.m_bConstructBuilding)
+		return false;	// Too fat
+
 	Building_RotateAllDepencencies(entity);
-	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
 	float ModelScale = GetEntPropFloat(entity, Prop_Send, "m_flModelScale");
 	ModelScale *= 0.33;
 
@@ -2006,14 +2200,8 @@ bool MountBuildingToBackInternal(int client, bool AllowAnyBuilding)
 	{
 		SetEntPropFloat(objstats.m_iWearable1, Prop_Send, "m_flModelScale", ModelScale);
 		b_IsEntityAlwaysTranmitted[objstats.m_iWearable1] = true;		
-		SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
-	}
-
-	if(IsValidEntity(objstats.m_iWearable2))
-	{
-		SetEntPropFloat(objstats.m_iWearable2, Prop_Send, "m_flModelScale", ModelScale);
-		b_IsEntityAlwaysTranmitted[objstats.m_iWearable2] = true;		
-		SDKUnhook(objstats.m_iWearable2, SDKHook_SetTransmit, SetTransmit_BuildingReady);
+		SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingReady);
+	//	SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
 	}
 
 	
@@ -2021,6 +2209,8 @@ bool MountBuildingToBackInternal(int client, bool AllowAnyBuilding)
 	objstats.m_flNextDelayTime = 0.0;
 	float flPos[3];
 	GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", flPos);
+	if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
+		flPos[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
 	SDKCall_SetLocalOrigin(entity, flPos);	
 	RandomIntSameRequestFrame[client] = GetRandomInt(-999999,9999999);
 	DataPack pack = new DataPack();
@@ -2077,6 +2267,8 @@ void ParentDelayFrameForReasons(DataPack pack)
 
 	int InfoTarget = InfoTargetParentAt(flPos,"", 0.0);
 	SetParent(Wearable, InfoTarget, WhichAttachmentDo,_);
+	if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
+		flPos[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
 	SDKCall_SetLocalOrigin(entity, flPos);	
 	SetEntPropVector(entity, Prop_Data, "m_angRotation", flAng);
 	SetParent(InfoTarget, entity, _, _, _);
@@ -2113,6 +2305,8 @@ void TransferDispenserBackToOtherEntity(int client, bool DontEquip = false)
 			float posStacked[3]; 
 			GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", posStacked);
 			AcceptEntityInput(entity, "ClearParent");
+			if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
+				posStacked[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
 			SDKCall_SetLocalOrigin(entity, posStacked);	
 		}
 		return;
@@ -2145,6 +2339,8 @@ void TransferDispenserBackToOtherEntity(int client, bool DontEquip = false)
 
 	float flPos[3];
 	GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", flPos);
+	if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
+		flPos[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
 	SDKCall_SetLocalOrigin(entity, flPos);	
 	RandomIntSameRequestFrame[client] = GetRandomInt(-999999,9999999);
 	DataPack pack = new DataPack();
@@ -2189,6 +2385,9 @@ void UnequipDispenser(int client, bool destroy = false)
 		float posStacked[3]; 
 		GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", posStacked);
 		AcceptEntityInput(i2_MountedInfoAndBuilding[1][client], "ClearParent");
+		if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
+			posStacked[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
+
 		SDKCall_SetLocalOrigin(entity, posStacked);	
 		i2_MountedInfoAndBuilding[1][client] = INVALID_ENT_REFERENCE;
 	}
@@ -2214,17 +2413,10 @@ void UnequipDispenser(int client, bool destroy = false)
 		SetEntPropFloat(objstats.m_iWearable1, Prop_Send, "m_flModelScale", ModelScale);
 		b_IsEntityAlwaysTranmitted[objstats.m_iWearable1] = false;
 	//	SetEntPropFloat(objstats.m_iWearable1, Prop_Send, "m_fadeMaxDist", 0.0);		
-		SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
-		SDKHook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
-	}
-
-	if(IsValidEntity(objstats.m_iWearable2))
-	{
-		SetEntPropFloat(objstats.m_iWearable2, Prop_Send, "m_flModelScale", ModelScale);
-		b_IsEntityAlwaysTranmitted[objstats.m_iWearable2] = false;
-	//	SetEntPropFloat(objstats.m_iWearable2, Prop_Send, "m_fadeMaxDist", 0.0);		
-		SDKUnhook(objstats.m_iWearable2, SDKHook_SetTransmit, SetTransmit_BuildingReady);
-		SDKHook(objstats.m_iWearable2, SDKHook_SetTransmit, SetTransmit_BuildingReady);	
+		SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingReady);
+		SDKHook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingReady);
+	//	SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
+	//	SDKHook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
 	}
 
 	//update text

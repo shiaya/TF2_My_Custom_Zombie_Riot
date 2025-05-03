@@ -19,7 +19,8 @@ enum
 	Attrib_BarracksHealth = 4037,
 	Attrib_BarracksDamage = 4038,
 	Attrib_BlessingBuff = 4039,
-	Attrib_PenaltyBurnInitAttack = 4040
+	Attrib_ArmorOnHit = 4040,
+	Attrib_ArmorOnHitMax = 4041
 }
 
 StringMap WeaponAttributes[MAXENTITIES + 1];
@@ -293,6 +294,7 @@ int Attributes_Airdashes(int client)
 }
 #endif
 
+float PreventSameFrameGivearmor[MAXTF2PLAYERS];
 void Attributes_OnHit(int client, int victim, int weapon, float &damage, int& damagetype)
 {
 	{
@@ -312,6 +314,21 @@ void Attributes_OnHit(int client, int victim, int weapon, float &damage, int& da
 				HealEntityGlobal(client, client, value, 1.0, 0.0, HEAL_SELFHEAL);
 			}
 			
+#if defined ZR
+			value = Attributes_Get(weapon, Attrib_ArmorOnHit, 0.0);
+			if(PreventSameFrameGivearmor[client] == GetGameTime())
+				value = 0.0;
+				
+			if(value)
+			{
+				PreventSameFrameGivearmor[client] = GetGameTime();
+				if(b_thisNpcIsARaid[victim])
+					value *= 2.0;
+
+				float ArmorMax = Attributes_Get(weapon, Attrib_ArmorOnHitMax, 1.0);
+				GiveArmorViaPercentage(client, value / ArmorMax, ArmorMax);
+			}
+#endif
 	
 			value = Attributes_Get(weapon, 149, 0.0);	// bleeding duration
 			if(value)
@@ -330,12 +347,12 @@ void Attributes_OnHit(int client, int victim, int weapon, float &damage, int& da
 					
 				NPC_Ignite(victim, client, value, weapon);
 			}	
-			
-			if(Attributes_Get(weapon, 638, 0.0))	// Extinquisher
+			value = Attributes_Get(weapon, 638, 0.0);
+			if(value)	// Extinquisher
 			{
 				if(IgniteFor[victim] > 0)
 				{
-					damage *= 1.5;
+					damage *= (1.5 * value);
 					DisplayCritAboveNpc(victim, client, true);
 				}
 				//dont actually extinquish, just give them more damage.

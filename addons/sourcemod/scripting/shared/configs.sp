@@ -75,10 +75,14 @@ void Configs_ConfigsExecuted()
 {
 	HasExecuted = true;
 
+	ConVar_Enable();
+
 	char mapname[64];
-	GetCurrentMap(mapname, sizeof(mapname));
+	GetMapName(mapname, sizeof(mapname));
 
 	KeyValues kv = Configs_GetMapKv(mapname);
+
+	ExecuteMapOverrides(kv);
 	
 #if defined RPG
 	RPG_SetupMapSpecific(mapname);
@@ -100,6 +104,7 @@ void Configs_ConfigsExecuted()
 	Store_ConfigSetup();
 	Waves_SetupVote(kv);
 	Waves_SetupMiniBosses(kv);
+	CheckAprilFools();
 #endif
 #if defined RPG
 	RPG_ConfigSetup();
@@ -140,13 +145,34 @@ void Configs_ConfigsExecuted()
 	} while(kv.GotoNextKey());
 	delete kv;
 #endif
-
-	ConVar_Enable();
 	
 	for(int client=1; client<=MaxClients; client++)
 	{
 		if(IsClientInGame(client))
 			OnClientPutInServer(client);
+	}
+#if defined ZR
+	ZR_FastDownloadForce();
+#endif
+}
+
+static void ExecuteMapOverrides(KeyValues kv)
+{
+	if(kv)
+	{
+		kv.Rewind();
+		if(kv.JumpToKey("Overrides") && kv.GotoFirstSubKey(false))
+		{
+			char name[64], value[128];
+
+			do
+			{
+				kv.GetSectionName(name, sizeof(name));
+				kv.GetString(NULL_STRING, value, sizeof(value));
+				ConVar_AddTemp(name, value);
+			}
+			while(kv.GotoNextKey(false));
+		}
 	}
 }
 
@@ -237,8 +263,10 @@ void Config_CreateDescription(const char[] Archetype, const char[] classname, co
 			break;
 	}
 	
+#if defined RPG
 	if(i == val)
 		return;
+#endif
 	
 	// Damage and Pellets
 #if defined RPG
@@ -276,15 +304,15 @@ void Config_CreateDescription(const char[] Archetype, const char[] classname, co
 #if defined RPG
 			if(magic)
 			{
-				Format(buffer, length, "%s\nDamage: Magic %.0f%%", buffer, data.Damage * 100.0);
+				Format(buffer, length, "%s\nDamage: Magic %.0f％", buffer, data.Damage * 100.0);
 			}
 			else if(data.Range)
 			{
-				Format(buffer, length, "%s\nDamage: Melee %.0f%%", buffer, data.Damage * 100.0);
+				Format(buffer, length, "%s\nDamage: Melee %.0f％", buffer, data.Damage * 100.0);
 			}
 			else
 			{
-				Format(buffer, length, "%s\nDamage: Ranged %.0f%%", buffer, data.Damage * 100.0);
+				Format(buffer, length, "%s\nDamage: Ranged %.0f％", buffer, data.Damage * 100.0);
 			}
 #else
 			if(data.Damage < 100.0)
@@ -391,6 +419,7 @@ void Config_CreateDescription(const char[] Archetype, const char[] classname, co
 		}
 	}
 	
+		/*
 	bool medigun;
 	
 	// Healing and Overheal
@@ -409,7 +438,6 @@ void Config_CreateDescription(const char[] Archetype, const char[] classname, co
 		}
 		
 		Format(buffer, length, "%s\nHealing: %d", buffer, RoundFloat(data.Healing));
-		
 		medigun = StrEqual(classname, "tf_weapon_medigun");
 		if(medigun)
 		{
@@ -430,6 +458,7 @@ void Config_CreateDescription(const char[] Archetype, const char[] classname, co
 				Format(buffer, length, "%s\nOverheal: x%.2f", buffer, overheal);
 		}
 	}
+	*/
 	
 	// Charge Speed
 	for(i=0; i<attribs; i++)
@@ -467,8 +496,10 @@ void Config_CreateDescription(const char[] Archetype, const char[] classname, co
 			}
 		}
 		
+		/*
 		if(data.Charge > 0)
 		{
+			
 			if(medigun)
 			{
 				val = 0;
@@ -501,7 +532,9 @@ void Config_CreateDescription(const char[] Archetype, const char[] classname, co
 			{
 				Format(buffer, length, "%s\nCharge: %.2fs", buffer, data.Charge);
 			}
+			
 		}
+		*/
 	}
 	
 	// Melee Range

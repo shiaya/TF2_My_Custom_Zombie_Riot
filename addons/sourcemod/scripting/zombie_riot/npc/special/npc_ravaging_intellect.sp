@@ -98,32 +98,6 @@ static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, co
 	return RavagingIntellect(vecPos, vecAng, team, data);
 }
 
-static char[] GetPanzerHealth()
-{
-	int health = 60;
-	health = RoundToNearest(float(health) * ZRStocks_PlayerScalingDynamic()); //yep its high! will need tos cale with waves expoentially.
-	
-	float temp_float_hp = float(health);
-	
-	if(Waves_GetRound()+1 < 30)
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.20));
-	}
-	else if(Waves_GetRound()+1 < 45)
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.25));
-	}
-	else
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.35)); //Yes its way higher but i reduced overall hp of him
-	}
-	
-	health /= 2;
-	
-	char buffer[16];
-	IntToString(health, buffer, sizeof(buffer));
-	return buffer;
-}
 methodmap RavagingIntellect < CClotBody
 {
 	public void PlayHurtSound()
@@ -214,9 +188,15 @@ methodmap RavagingIntellect < CClotBody
 		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][4] = TempValueForProperty; }
 	}
 	
+	property float m_flSpawnCloneUntillSelfDelete
+	{
+		public get()							{ return fl_AbilityOrAttack[this.index][8]; }
+		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][8] = TempValueForProperty; }
+	}
+	
 	public RavagingIntellect(float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
-		RavagingIntellect npc = view_as<RavagingIntellect>(CClotBody(vecPos, vecAng, "models/player/scout.mdl", "1.0", GetPanzerHealth(), ally));
+		RavagingIntellect npc = view_as<RavagingIntellect>(CClotBody(vecPos, vecAng, "models/player/scout.mdl", "1.0", MinibossHealthScaling(40), ally));
 		i_NpcWeight[npc.index] = 3;
 		
 
@@ -250,9 +230,10 @@ methodmap RavagingIntellect < CClotBody
 		SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
 		SetEntProp(npc.m_iWearable3, Prop_Send, "m_nSkin", skin);
 		SetEntProp(npc.m_iWearable4, Prop_Send, "m_nSkin", skin);
-		float wave = float(Waves_GetRound()+1);
+		float wave = float(ZR_Waves_GetRound()+1);
 		wave *= 0.1;
 		npc.m_flWaveScale = wave;
+		npc.m_flWaveScale *= MinibossScalingReturn();
 
 		npc.StartPathing();
 		SetEntityRenderMode(npc.m_iWearable1, RENDER_TRANSCOLOR);
@@ -351,6 +332,7 @@ methodmap RavagingIntellect < CClotBody
 				npc.SetPlaybackRate(1.0);
 				npc.SetCycle(0.05);
 				npc.m_flSpawnClonePrepare = GetGameTime() + 0.7;
+				npc.m_flSpawnCloneUntillSelfDelete = GetGameTime() + 12.0;
 			}
 		}
 		npc.m_flSpawnClone = GetGameTime() + 5.0;
@@ -393,6 +375,15 @@ public void RavagingIntellect_ClotThink(int iNPC)
 	if(npc.m_flNextThinkTime > GetGameTime(npc.index))
 	{
 		return;
+	}
+	if(npc.m_flSpawnCloneUntillSelfDelete)
+	{
+		if(npc.m_flSpawnCloneUntillSelfDelete < GetGameTime())
+		{
+			npc.m_bDissapearOnDeath = true;
+			RequestFrame(KillNpc, EntIndexToEntRef(npc.index));
+			return;
+		}
 	}
 	npc.m_flNextThinkTime = GetGameTime(npc.index) + 0.1;
 
@@ -480,14 +471,14 @@ public void RavagingIntellect_ClotThink(int iNPC)
 		npc.SetCycle(0.7);
 		npc.SetPlaybackRate(1.0);
 		npc.m_flSummonAllyEnd = GetGameTime() + 1.0; //nos cale attackspeed
-		fl_TotalArmor[npc.index] = 0.1;
+		fl_TotalArmor[npc.index] = 0.5;
 		npc.PlaySoundPrepareSpawnAlly();
 		return;
 	}
 	fl_TotalArmor[npc.index] = 1.0;
 	if(HasSpecificBuff(npc.index, "Altered Functions"))
 	{
-		fl_TotalArmor[npc.index] = 0.5;
+		fl_TotalArmor[npc.index] = 0.75;
 	}
 	if(npc.m_flGetClosestTargetTime < GetGameTime(npc.index))
 	{
@@ -750,10 +741,10 @@ void RavagingIntellectSelfDefense(RavagingIntellect npc, float gameTime, int tar
 				
 				if(IsValidEnemy(npc.index, target))
 				{
-					float damageDealt = 120.0;
+					float damageDealt = 80.0;
 					damageDealt *= npc.m_flWaveScale;
 					if(ShouldNpcDealBonusDamage(target))
-						damageDealt *= 4.0;
+						damageDealt *= 3.0;
 
 					ApplyStatusEffect(npc.index, target, "Altered Functions", 2.5);
 

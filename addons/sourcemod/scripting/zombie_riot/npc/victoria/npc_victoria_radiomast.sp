@@ -75,13 +75,13 @@ methodmap VictoriaRadiomast < CClotBody
 		i_NpcWeight[npc.index] = 999;
 		SetEntityRenderMode(npc.index, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.index, 0, 0, 0, 0);
-		npc.m_iWearable1 = npc.EquipItemSeperate("partyhat", VictoriaRadiomast_MODEL_1,_,1);
+		npc.m_iWearable1 = npc.EquipItemSeperate(VictoriaRadiomast_MODEL_1,_,1);
 		SetVariantString("0.5");
 		AcceptEntityInput(npc.m_iWearable1, "SetModelScale");
-		npc.m_iWearable2 = npc.EquipItemSeperate("partyhat", VictoriaRadiomast_MODEL_2,_,_,_,70.0);
+		npc.m_iWearable2 = npc.EquipItemSeperate(VictoriaRadiomast_MODEL_2,_,_,_,70.0);
 		SetVariantString("1.0");
 		AcceptEntityInput(npc.m_iWearable2, "SetModelScale");
-		npc.m_iWearable3 = npc.EquipItemSeperate("partyhat", VictoriaRadiomast_MODEL_3,_,1);
+		npc.m_iWearable3 = npc.EquipItemSeperate(VictoriaRadiomast_MODEL_3,_,1);
 		SetVariantString("0.95");
 		AcceptEntityInput(npc.m_iWearable2, "SetModelScale");
 
@@ -436,6 +436,8 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 				fl_Extra_Damage[other] = fl_Extra_Damage[npc.index];
 				b_thisNpcIsABoss[other] = b_thisNpcIsABoss[npc.index];
 				b_StaticNPC[other] = b_StaticNPC[npc.index];
+				if(b_StaticNPC[other])
+					AddNpcToAliveList(other, 1);
 			}
 			int other1 = NPC_CreateByName("npc_radio_repair", -1, pos, ang, team, "EX");
 			if(other1 > MaxClients)
@@ -452,6 +454,8 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 				fl_Extra_Damage[other1] = fl_Extra_Damage[npc.index];
 				b_thisNpcIsABoss[other1] = b_thisNpcIsABoss[npc.index];
 				b_StaticNPC[other1] = b_StaticNPC[npc.index];
+				if(b_StaticNPC[other])
+					AddNpcToAliveList(other, 1);
 			}
 		 }
 		npc.Anger = true;

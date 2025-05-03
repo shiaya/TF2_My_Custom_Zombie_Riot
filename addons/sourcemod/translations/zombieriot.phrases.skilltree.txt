@@ -12,6 +12,10 @@
 		"en"	"Skill Points: {1}"
 		"ko"	"스킬 포인트: {1}"
 	}
+	"Browse Skill Tree Explain"
+	{
+		"en"	"\n---This menu overrides your movement! Close to move again!---\n"
+	}
 	"Browse Skill Tree"
 	{
 		"en"	"Browse Skill Tree"
@@ -54,7 +58,7 @@
 	}
 	"Luck Up 1 Desc"
 	{
-		"en" 		"Gain an additional +0.005%% chance to crit an enemy for 2x damage on any damage instance."
+		"en" 		"Gain an additional +0.005％ chance to crit an enemy for 2x damage on any damage instance."
 		"ko"		"적에게 2배의 피해를 주는 확률을 +0.005％ 만큼 증가 시킵니다."
 	}
 	"Weapon Damage All 1"
@@ -64,7 +68,7 @@
 	}
 	"Weapon Damage All 1 Desc"
 	{
-		"en" 		"Gain a multiplicative +0.05%% damage buff to all weapons."
+		"en" 		"Gain a multiplicative +0.05％ damage buff to all weapons."
 		"ko"		"모든 무기의 피해량을 +0.05％ 만큼 증가 시킵니다."
 	}
 	"Weapon Damage All 1 High"
@@ -74,7 +78,7 @@
 	}
 	"Weapon Damage All 1 High Desc"
 	{
-		"en" 		"Gain a multiplicative +0.2%% damage buff to all weapons."
+		"en" 		"Gain a multiplicative +0.2％ damage buff to all weapons."
 		"ko"		"모든 무기의 피해량을 +0.2％ 만큼 증가 시킵니다."
 	}
 	"Attackspeed & Reload All 1"
@@ -84,7 +88,7 @@
 	}
 	"Attackspeed & Reload All 1 Desc"
 	{
-		"en" 		"Gain a multiplicative +0.05%% attackspeed & reload buff to all weapons."
+		"en" 		"Gain a multiplicative +0.05％ attackspeed & reload buff to all weapons."
 		"ko"		"모든 무기의 공/장속을 +0.05％ 만큼 증가 시킵니다."
 	}
 	"Attackspeed & Reload All 1 High"
@@ -94,7 +98,7 @@
 	}
 	"Attackspeed & Reload All 1 High Desc"
 	{
-		"en" 		"Gain a multiplicative +0.2%% attackspeed & reload buff to all weapons."
+		"en" 		"Gain a multiplicative +0.2％ attackspeed & reload buff to all weapons."
 		"ko"		"모든 무기의 공/장속을 +0.2％ 만큼 증가 시킵니다."
 	}
 	"Health Up 1"
@@ -134,7 +138,7 @@
 	}
 	"Resist 1 Desc"
 	{
-		"en" 		"Gain a multiplicative +0.05%% Resistance to all sources"
+		"en" 		"Gain a multiplicative +0.05％ Resistance to all sources"
 		"ko"		"모든 피해 저항이 +0.05％ 만큼 증가 합니다."
 	}
 	"Cash Up 1"
@@ -173,7 +177,7 @@
 	}
 	"Reload All 1 Desc"
 	{
-		"en" 		"Gain a multiplicative +0.025%% reload buff to all weapons."
+		"en" 		"Gain a multiplicative +0.025％ reload buff to all weapons."
 		"ko"		"모든 무기의 장전 속도를 +0.025％ 만큼 증가 시킵니다."
 	}
 	"Attackspeed All 1"
@@ -183,7 +187,7 @@
 	}
 	"Attackspeed All 1 Desc"
 	{
-		"en" 		"Gain a multiplicative +0.02%% Attackspeed buff to all weapons."
+		"en" 		"Gain a multiplicative +0.02％ Attackspeed buff to all weapons."
 		"ko"		"모든 무기의 공격 속도를 +0.02％ 만큼 증가 시킵니다."
 	}
 	"FusionBuffDo"
@@ -193,7 +197,7 @@
 	}
 	"FusionBuffDo Desc"
 	{
-		"en" 		"Gain a multiplicative +0.25%% Extra Damage and multiplicative +0.5%% Resistance."
+		"en" 		"Gain a multiplicative +0.25％ Extra Damage and multiplicative +0.5％ Resistance."
 		"ko"		"피해량 +0.25％ 및 피해 저항 +0.5％ 증가"
 	}
 	"Kahmlstein Buff"
@@ -203,7 +207,7 @@
 	}
 	"Kahmlstein Buff Desc"
 	{
-		"en" 		"Gain a multiplicative +1%% Extra Damage."
+		"en" 		"Gain a multiplicative +1％ Extra Damage."
 		"ko"		"피해량 +1％  증가"
 	}
 	"Cash Up Barney 1"
@@ -223,7 +227,7 @@
 	}
 	"Sensal Buff Do Desc"
 	{
-		"en" 		"Gain a multiplicative +0.35%% Extra Damage and multiplicative +1.0%% Resistance."
+		"en" 		"Gain a multiplicative +0.35％ Extra Damage and multiplicative +1.0％ Resistance."
 		"ko"		"피해량 +0.35％ 및 피해 저항 +1.0％ 증가"
 	}
 	"Alaxios Godly Powerup"
@@ -233,7 +237,7 @@
 	}
 	"Alaxios Godly Powerup Desc"
 	{
-		"en" 		"Gain a multiplicative +1.0%% Resistance and 15 HP."
+		"en" 		"Gain a multiplicative +1.0％ Resistance and 15 HP."
 		"ko"		"최대체력 +15 및 피해 저항 +1％ 증가"
 	}
 	"Bob's Healing Hand"
@@ -243,7 +247,7 @@
 	}
 	"Bob's Healing Hand Desc"
 	{
-		"en" 		"Gain a 25 HP.\nAn additional +0.05%% luck and 1%% building HP and reduces revive time by 5 out of 250"
+		"en" 		"Gain a 25 HP.\nAn additional +0.05％ luck and 1％ building HP and reduces revive time by 5 out of 250"
 		"ko"		"최대체력 +25 및 치명타 확률 +0.05％ 증가 구조물 최대 체력 +1％, 소생 시간을 250/5만큼 단축시킵니다."
 	}
 	"Blitzkrieg Buff"
@@ -253,7 +257,7 @@
 	}
 	"Blitzkrieg Buff Desc"
 	{
-		"en" 		"Gain a multiplicative +0.5%% Attackspeed and reload speed bonus."
+		"en" 		"Gain a multiplicative +0.5％ Attackspeed and reload speed bonus."
 		"ko"		"모든 무기의 공/장속을 +0.5％ 만큼 증가 시킵니다."
 	}
 	"Waldch's Blue Goggles"
@@ -263,7 +267,7 @@
 	}
 	"Waldch's Blue Goggles Desc"
 	{
-		"en" 		"Gain a multiplicative +1.5%% Reload speed bonus."
+		"en" 		"Gain a multiplicative +1.5％ Reload speed bonus."
 		"ko"		"모든 무기의 장전 속도을 +1.5％ 만큼 증가 시킵니다."
 	}
 	"Iberia's Last Hope Up"
@@ -273,7 +277,7 @@
 	}
 	"Iberia's Last Hope Up Desc"
 	{
-		"en" 		"Gain a multiplicative +1.0%% Attackspeed speed bonus."
+		"en" 		"Gain a multiplicative +1.0％ Attackspeed speed bonus."
 		"ko"		"모든 무기의 공격 속도을 +1％ 만큼 증가 시킵니다."
 	}
 	"Calmaticus Heart Up"
@@ -303,7 +307,7 @@
 	}
 	"Building Hp Up 1 Desc"
 	{
-		"en" 		"Your buildings gain a multiplicative +0.1%% HP"
+		"en" 		"Your buildings gain a multiplicative +0.1％ HP"
 		"ko"		"구조물의 최대 체력을 +0.1％ 만큼 증가 시킵니다."
 	}
 	"Building Repair Up 1"
@@ -313,7 +317,7 @@
 	}
 	"Building Repair Up 1 Desc"
 	{
-		"en" 		"Your Repairspeed gains a multiplicative +0.1%% speed"
+		"en" 		"Your Repairspeed gains a multiplicative +0.1％ speed"
 		"ko"		"수리 속도를 +0.1％ 만큼 증가 시킵니다."
 	}
 	"Building Extra Damage Up 1"
@@ -323,7 +327,7 @@
 	}
 	"Building Extra Damage Up 1 Desc"
 	{
-		"en" 		"Your buildings gain a multiplicative +0.1%% Damage"
+		"en" 		"Your buildings gain a multiplicative +0.1％ Damage"
 		"ko"		"센트리 피해량을 +0.1％ 만큼 증가 시킵니다."
 	}
 	"Twirl Hairpin 1"
@@ -333,7 +337,7 @@
 	}
 	"Twirl Hairpin 1 Desc"
 	{
-		"en" 		"Gain 0.5%% Extra mana Regen"
+		"en" 		"Gain 0.5％ Extra mana Regen"
 		"ko"		"마나 리젠 속도를 +0.5％ 만큼 증가 시킵니다."
 	}
 	"Iberia Training"
@@ -343,7 +347,7 @@
 	}
 	"Iberia Training Desc"
 	{
-		"en" 		"Gain a multiplicative +1%% Attackspeed and reload speed bonus."
+		"en" 		"Gain a multiplicative +1％ Attackspeed and reload speed bonus."
 		"ko"		"공/장속을 +1％ 만큼 증가 시킵니다."
 	}
 	"Extra Healing Up"
@@ -353,7 +357,7 @@
 	}
 	"Extra Healing Up Desc"
 	{
-		"en" 		"Gain a multiplicative +0.1%% Extra Healing from all sources."
+		"en" 		"Gain a multiplicative +0.1％ Extra Healing from all sources."
 		"ko"		"모든 치료량을 +0.1％ 만큼 증가 시킵니다."
 	}
 	"Extra Healing Up High"
@@ -363,7 +367,7 @@
 	}
 	"Extra Healing Up High Desc"
 	{
-		"en" 		"Gain a multiplicative +0.5%% Extra Healing from all sources."
+		"en" 		"Gain a multiplicative +0.5％ Extra Healing from all sources."
 		"ko"		"모든 치료량을 +0.5％ 만큼 증가 시킵니다."
 	}
 	"ReviveTime Reduce"

@@ -1,22 +1,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static const char g_DeathSounds[][] = {
-	"vo/medic_paincrticialdeath01.mp3",
-	"vo/medic_paincrticialdeath02.mp3",
-	"vo/medic_paincrticialdeath03.mp3",
-};
 
-static const char g_HurtSounds[][] = {
-	")vo/medic_painsharp01.mp3",
-	")vo/medic_painsharp02.mp3",
-	")vo/medic_painsharp03.mp3",
-	")vo/medic_painsharp04.mp3",
-	")vo/medic_painsharp05.mp3",
-	")vo/medic_painsharp06.mp3",
-	")vo/medic_painsharp07.mp3",
-	")vo/medic_painsharp08.mp3",
-};
+
 
 
 static const char g_IdleAlertedSounds[][] = {
@@ -44,8 +30,8 @@ static const char g_RangedAttackPrepareSounds[][] = {
 
 void JohnTheAllmighty_OnMapStart_NPC()
 {
-	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
-	for (int i = 0; i < (sizeof(g_HurtSounds));		i++) { PrecacheSound(g_HurtSounds[i]);		}
+	for (int i = 0; i < (sizeof(g_DefaultMedic_DeathSounds));	   i++) { PrecacheSound(g_DefaultMedic_DeathSounds[i]);	   }
+	for (int i = 0; i < (sizeof(g_DefaultMedic_HurtSounds));		i++) { PrecacheSound(g_DefaultMedic_HurtSounds[i]);		}
 	for (int i = 0; i < (sizeof(g_IdleAlertedSounds)); i++) { PrecacheSound(g_IdleAlertedSounds[i]); }
 	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
 	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
@@ -62,6 +48,7 @@ void JohnTheAllmighty_OnMapStart_NPC()
 	NPC_Add(data);
 	PrecacheSoundCustom("#zombiesurvival/john_the_allmighty.mp3");
 }
+#define JOHN_SLOWDOWN_RANGE 350.0
 
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team)
@@ -97,13 +84,13 @@ methodmap JohnTheAllmighty < CClotBody
 			
 		this.m_flNextHurtSound = GetGameTime(this.index) + 0.4;
 		
-		EmitSoundToAll(g_HurtSounds[GetRandomInt(0, sizeof(g_HurtSounds) - 1)], this.index, SNDCHAN_VOICE, BOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
+		EmitSoundToAll(g_DefaultMedic_HurtSounds[GetRandomInt(0, sizeof(g_DefaultMedic_HurtSounds) - 1)], this.index, SNDCHAN_VOICE, BOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 		
 	}
 	
 	public void PlayDeathSound() 
 	{
-		EmitSoundToAll(g_DeathSounds[GetRandomInt(0, sizeof(g_DeathSounds) - 1)], this.index, SNDCHAN_VOICE, BOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
+		EmitSoundToAll(g_DefaultMedic_DeathSounds[GetRandomInt(0, sizeof(g_DefaultMedic_DeathSounds) - 1)], this.index, SNDCHAN_VOICE, BOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 	}
 	
 	public void PlayMeleeSound()
@@ -127,9 +114,15 @@ methodmap JohnTheAllmighty < CClotBody
 		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][0] = TempValueForProperty; }
 	}
 	
+	property float m_flBackupDespawnEmergency
+	{
+		public get()							{ return fl_AbilityOrAttack[this.index][1]; }
+		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][1] = TempValueForProperty; }
+	}
+	
 	public JohnTheAllmighty(float vecPos[3], float vecAng[3], int ally)
 	{
-		JohnTheAllmighty npc = view_as<JohnTheAllmighty>(CClotBody(vecPos, vecAng, "models/player/medic.mdl", "1.5", "2000000000", ally, false, true, true));
+		JohnTheAllmighty npc = view_as<JohnTheAllmighty>(CClotBody(vecPos, vecAng, "models/player/medic.mdl", "1.5", "500000000", ally, false, true, true));
 		
 		i_NpcWeight[npc.index] = 5;
 		FormatEx(c_HeadPlaceAttachmentGibName[npc.index], sizeof(c_HeadPlaceAttachmentGibName[]), "head");
@@ -141,7 +134,7 @@ methodmap JohnTheAllmighty < CClotBody
 		AcceptEntityInput(npc.index, "SetBodyGroup");
 		
 		
-		npc.m_iActualHealth = StringToInt(JohnTheAllmightyHealth());
+		npc.m_iActualHealth = StringToInt(MinibossHealthScaling(160));
 
 		npc.m_flNextMeleeAttack = 0.0;
 		for(int client1 = 1; client1 <= MaxClients; client1++)
@@ -170,7 +163,8 @@ methodmap JohnTheAllmighty < CClotBody
 			RaidModeScaling = 0.0;
 			RaidAllowsBuildings = true;
 		}
-		
+		npc.m_flBackupDespawnEmergency = GetGameTime() + 43.0;
+
 		if(FogEntity != INVALID_ENT_REFERENCE)
 		{
 			int entity = EntRefToEntIndex(FogEntity);
@@ -185,8 +179,8 @@ methodmap JohnTheAllmighty < CClotBody
 			DispatchKeyValue(entity, "fogblend", "2");
 			DispatchKeyValue(entity, "fogcolor", "15 15 15 240");
 			DispatchKeyValue(entity, "fogcolor2", "15 15 15 240");
-			DispatchKeyValueFloat(entity, "fogstart", 125.0);
-			DispatchKeyValueFloat(entity, "fogend", 300.0);
+			DispatchKeyValueFloat(entity, "fogstart", 205.0);
+			DispatchKeyValueFloat(entity, "fogend", 400.0);
 			DispatchKeyValueFloat(entity, "fogmaxdensity", 0.992);
 
 			DispatchKeyValue(entity, "targetname", "rpg_fortress_envfog");
@@ -230,16 +224,17 @@ methodmap JohnTheAllmighty < CClotBody
 		npc.m_iStepNoiseType = STEPSOUND_GIANT;	
 		npc.m_iNpcStepVariation = STEPTYPE_TANK;
 		npc.m_bDissapearOnDeath = true;
-		npc.m_iHealthBar = 10;
+		npc.m_iHealthBar = 40;
 
 		func_NPCDeath[npc.index] = view_as<Function>(JohnTheAllmighty_NPCDeath);
 		func_NPCOnTakeDamage[npc.index] = view_as<Function>(JohnTheAllmighty_OnTakeDamage);
 		func_NPCThink[npc.index] = view_as<Function>(JohnTheAllmighty_ClotThink);
 		SDKHook(npc.index, SDKHook_OnTakeDamagePost, JohnTheAllmighty_OnTakeDamagePost);	
 		
-		float wave = float(Waves_GetRound()+1);
+		float wave = float(ZR_Waves_GetRound()+1);
 		wave *= 0.1;
 		npc.m_flWaveScale = wave;
+		npc.m_flWaveScale *= MinibossScalingReturn();
 		
 		
 		npc.StartPathing();
@@ -291,7 +286,7 @@ public void JohnTheAllmighty_ClotThink(int iNPC)
 		}
 	}
 
-	if(RaidModeTime < GetGameTime() && i_NpcWeight[npc.index] != 999)
+	if((RaidModeTime < GetGameTime() || npc.m_flBackupDespawnEmergency < GetGameTime()))
 	{
 		CPrintToChatAll("{crimson}John The Almighty Ran out of patience and leaves the battle field.");
 		SDKUnhook(npc.index, SDKHook_OnTakeDamagePost, JohnTheAllmighty_OnTakeDamagePost);	
@@ -305,6 +300,12 @@ public void JohnTheAllmighty_ClotThink(int iNPC)
 		return;
 	}
 	npc.m_flNextThinkTime = GetGameTime(npc.index) + 0.1;
+
+	float VecSelfNpcabs[3]; GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", VecSelfNpcabs);
+	JohnTheAllmighty_ApplyBuffInLocation(VecSelfNpcabs, GetTeam(npc.index), npc.index);
+	float Range = JOHN_SLOWDOWN_RANGE;
+	spawnRing_Vectors(VecSelfNpcabs, Range * 2.0, 0.0, 0.0, 10.0, "materials/sprites/laserbeam.vmt", 255, 50, 50, 200, 1, /*duration*/ 0.11, 3.0, 5.0, 1);	
+	spawnRing_Vectors(VecSelfNpcabs, Range * 2.0, 0.0, 0.0, 25.0, "materials/sprites/laserbeam.vmt", 255, 50, 50, 200, 1, /*duration*/ 0.11, 3.0, 5.0, 1);	
 
 	if(npc.m_flGetClosestTargetTime < GetGameTime(npc.index))
 	{
@@ -393,7 +394,7 @@ void JohnTheAllmightySelfDefense(JohnTheAllmighty npc, float gameTime, float dis
 {
 	if(npc.m_flNextRangedAttack < gameTime)
 	{
-		npc.m_flNextRangedAttack = GetGameTime() + 7.5;
+		npc.m_flNextRangedAttack = gameTime + 7.5;
 		npc.m_flNextRangedAttackHappening = gameTime + 1.0;
 		npc.m_iOverlordComboAttack = 10;
 		npc.PlayRangedPrepareSound();
@@ -499,40 +500,11 @@ void JohnTheAllmightySelfDefense(JohnTheAllmighty npc, float gameTime, float dis
 				npc.m_flAttackHappens = gameTime + 0.25;
 				npc.m_flDoingAnimation = gameTime + 0.25;
 				npc.m_flNextMeleeAttack = gameTime + 0.75;
-				if(i_NpcWeight[npc.index] == 999)
-					npc.m_flNextMeleeAttack = gameTime + 0.35;
 			}
 		}
 	}
 }
 
-static char[] JohnTheAllmightyHealth()
-{
-	int health = 160;
-	
-	health = RoundToNearest(float(health) * ZRStocks_PlayerScalingDynamic()); //yep its high! will need tos cale with waves expoentially.
-	
-	float temp_float_hp = float(health);
-	
-	if(Waves_GetRound()+1 < 30)
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.20));
-	}
-	else if(Waves_GetRound()+1 < 45)
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.25));
-	}
-	else
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + float(Waves_GetRound()+1)) * float(Waves_GetRound()+1)),1.35)); //Yes its way higher but i reduced overall hp of him
-	}
-	
-	health /= 2;
-	
-	char buffer[16];
-	IntToString(health, buffer, sizeof(buffer));
-	return buffer;
-}
 
 
 public void JohnTheAllmighty_OnTakeDamagePost(int victim, int attacker, int inflictor, float damage, int damagetype) 
@@ -556,5 +528,34 @@ public void JohnTheAllmighty_OnTakeDamagePost(int victim, int attacker, int infl
 		RequestFrame(KillNpc, EntIndexToEntRef(npc.index));
 		SpawnMoney(npc.index);
 		RaidMusicSpecial1.Clear();
+	}
+}
+
+
+void JohnTheAllmighty_ApplyBuffInLocation(float BannerPos[3], int Team, int iMe = 0)
+{
+	float targPos[3];
+	for(int ally=1; ally<=MaxClients; ally++)
+	{
+		if(IsClientInGame(ally) && IsPlayerAlive(ally) && GetTeam(ally) == Team)
+		{
+			GetClientAbsOrigin(ally, targPos);
+			if (GetVectorDistance(BannerPos, targPos, true) <= (JOHN_SLOWDOWN_RANGE * JOHN_SLOWDOWN_RANGE))
+			{
+				ApplyStatusEffect(ally, ally, "John's Presence", 1.0);
+			}
+		}
+	}
+	for(int entitycount_again; entitycount_again<i_MaxcountNpcTotal; entitycount_again++)
+	{
+		int ally = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount_again]);
+		if (IsValidEntity(ally) && !b_NpcHasDied[ally] && GetTeam(ally) == Team && iMe != ally)
+		{
+			GetEntPropVector(ally, Prop_Data, "m_vecAbsOrigin", targPos);
+			if (GetVectorDistance(BannerPos, targPos, true) <= (JOHN_SLOWDOWN_RANGE * JOHN_SLOWDOWN_RANGE))
+			{
+				ApplyStatusEffect(ally, ally, "John's Presence", 1.0);
+			}
+		}
 	}
 }

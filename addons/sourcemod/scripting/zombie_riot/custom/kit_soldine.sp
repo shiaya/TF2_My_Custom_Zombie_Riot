@@ -87,7 +87,7 @@ bool Wkit_Soldin_BvB(int client)
 
 bool CanSelfHurtAndJump(int client)
 {
-	if(i_SoldineRocketjumpCharge[client] >= SOLDINE_MAX_ROCKETJUMP_CHARGE && !b_DisableSuperJump[client])
+	if(i_SoldineRocketjumpCharge[client] >= SOLDINE_MAX_ROCKETJUMP_CHARGE && !b_DisableSuperJump[client] && i_PaPLevel[client] >= 2)
 	{
 		return true;
 	}
@@ -146,16 +146,18 @@ public void Wkit_Soldin_Enable(int client, int weapon) // Enable management, han
 		pack.WriteCell(EntIndexToEntRef(weapon));
 
 		Soldine_EyeHandler(client);
-
-		if(!Precached && CvarFileNetworkDisable.IntValue <= 0)
-		{
-			// MASS REPLACE THIS IN ALL FILES
-			PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3",_,1);
-			Precached = true;
-		}
+		SoldineKitDownload();
 	}
 }
-
+void SoldineKitDownload()
+{
+	if(!Precached)
+	{
+		// MASS REPLACE THIS IN ALL FILES
+		PrecacheSoundCustom("#zombiesurvival/expidonsa_waves/wave_30_soldine.mp3",_,1);
+		Precached = true;
+	}
+}
 static void Delete_Halo(int client)
 {
 	int halo_particle = EntRefToEntIndex(ParticleRef[client]);
@@ -262,13 +264,13 @@ public Action Timer_Soldine_Kit(Handle timer, DataPack pack)
 	}
 	Soldine_EyeHandler(client);
 	Soldine_Hud_Logic(client, weapon, false);
-	Wkit_Soldin_Effect(client);
+	//Wkit_Soldin_Effect(client);
 		
 	return Plugin_Continue;
 }
 
 #define SOLDINE_JUMPDURATIONUFF 2.0
-static void Wkit_Soldin_Effect(int client)
+void Wkit_Soldin_Effect(int client)
 {
 	if(!TF2_IsPlayerInCondition(client, TFCond_BlastJumping))
 	{
@@ -291,10 +293,10 @@ static void Wkit_Soldin_Effect(int client)
 	TF2_AddCondition(client, TFCond_HalloweenCritCandy, SOLDINE_JUMPDURATIONUFF);
 	TF2_AddCondition(client, TFCond_RunePrecision, SOLDINE_JUMPDURATIONUFF);
 	f_SoldineRocketJumpDuration[client] = GetGameTime() + (SOLDINE_JUMPDURATIONUFF + 1.0);
-	float velocity[3];
-	GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
-	velocity[2] += 650.0;
-	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
+//	float velocity[3];
+//	GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
+//	velocity[2] += 650.0;
+//	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 	int getweapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	if(IsValidEntity(getweapon))
 	{
@@ -305,11 +307,10 @@ static void Wkit_Soldin_Effect(int client)
 
 	if(IsValidEntity(getweapon))
 	{
-		int RocketLoad = GetEntData(getweapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"));
 		int RockeyAmmo=	GetAmmo(client, 8);
 		int RocketAmmoMAX=RoundToCeil(8.0* Attributes_Get(getweapon, 4, 1.0));
 		SetAmmo(client, 8, RockeyAmmo-RocketAmmoMAX);
-		SetEntData(getweapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"), RocketLoad+RocketAmmoMAX);
+		SetEntData(getweapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"), RocketAmmoMAX);
 	}
 	int entity;
 	entity = EntRefToEntIndex(i_Viewmodel_PlayerModel[client]);

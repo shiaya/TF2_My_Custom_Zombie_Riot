@@ -54,7 +54,7 @@ void Rogue_ParadoxDLC_StunTime(int entity, float &time)
 
 void Rogue_ParadoxDLC_AbilityUsed(int client)
 {
-	if(TulipTimer)
+	if(TulipTimer != null)
 		RequestFrame(BlackTulipDecay, GetClientUserId(client));
 }
 
@@ -156,9 +156,15 @@ public void Rogue_MachinaWaldch_StageStart()
 {
 	if(MachinaWaldch > 0)
 	{
-		int entity = NPC_CreateByName("npc_stalker_goggles", 0, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, TFTeam_Red);
+		float pos[3], ang[3];
+		Spawns_GetNextPos(pos, ang);
+
+		int entity = NPC_CreateByName("npc_stalker_goggles", 0, pos, ang, TFTeam_Red, _, true);
 		if(entity != -1)
 		{
+			Rogue_AllySpawned(entity);
+			Waves_AllySpawned(entity);
+
 			SetEntProp(entity, Prop_Data, "m_iHealth", MachinaWaldch);
 			fl_Extra_Damage[entity] *= 2.0;
 		}
@@ -276,8 +282,11 @@ static Action StunPuppet1_Timer(Handle timer, int ref)
 	if(entity == -1 || b_NpcHasDied[entity])
 		return Plugin_Stop;
 	
-	float DamageDeal = 8.0;
+	float DamageDeal = 16.0;
 	float ExtraDamageDealt;
+	int AttackerWho = LastHitRef[entity];
+	if(!IsValidEntity(AttackerWho))
+		AttackerWho = 0;
 
 	ExtraDamageDealt = ExtraDamageWaveScaling(); //at wave 60, this will equal to 60* dmg
 	if(ExtraDamageDealt <= 0.35)
@@ -286,7 +295,7 @@ static Action StunPuppet1_Timer(Handle timer, int ref)
 	}
 	DamageDeal *= ExtraDamageDealt;
 	if(fl_NextDelayTime[entity] > (GetGameTime() + DEFAULT_UPDATE_DELAY_FLOAT))
-		SDKHooks_TakeDamage(entity, LastHitRef[entity], LastHitRef[entity], DamageDeal, DMG_PLASMA, LastHitWeaponRef[entity], .Zr_damage_custom = ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED|ZR_DAMAGE_NOAPPLYBUFFS_OR_DEBUFFS);
+		SDKHooks_TakeDamage(entity, AttackerWho, AttackerWho, DamageDeal, DMG_PLASMA|DMG_SHOCK, LastHitWeaponRef[entity], .Zr_damage_custom = ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED|ZR_DAMAGE_NOAPPLYBUFFS_OR_DEBUFFS);
 	
 	return Plugin_Continue;
 }
@@ -302,7 +311,11 @@ static Action StunPuppet2_Timer(Handle timer, int ref)
 	if(entity == -1 || b_NpcHasDied[entity])
 		return Plugin_Stop;
 	
-	float DamageDeal = 12.0;
+	int AttackerWho = LastHitRef[entity];
+	if(!IsValidEntity(AttackerWho))
+		AttackerWho = 0;
+
+	float DamageDeal = 24.0;
 	float ExtraDamageDealt;
 
 	ExtraDamageDealt = ExtraDamageWaveScaling(); //at wave 60, this will equal to 60* dmg
@@ -312,7 +325,7 @@ static Action StunPuppet2_Timer(Handle timer, int ref)
 	}
 	DamageDeal *= ExtraDamageDealt;
 	if(fl_NextDelayTime[entity] > (GetGameTime() + DEFAULT_UPDATE_DELAY_FLOAT))
-		SDKHooks_TakeDamage(entity, LastHitRef[entity], LastHitRef[entity], DamageDeal, DMG_PLASMA, LastHitWeaponRef[entity], .Zr_damage_custom = ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED|ZR_DAMAGE_NOAPPLYBUFFS_OR_DEBUFFS);
+		SDKHooks_TakeDamage(entity, AttackerWho, AttackerWho, DamageDeal, DMG_PLASMA|DMG_SHOCK, LastHitWeaponRef[entity], .Zr_damage_custom = ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED|ZR_DAMAGE_NOAPPLYBUFFS_OR_DEBUFFS);
 	
 	return Plugin_Continue;
 }

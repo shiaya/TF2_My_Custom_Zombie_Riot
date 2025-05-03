@@ -1,9 +1,16 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+static char g_RandomModelGive[][] = {
+	"models/items/ammocrate_ar2.mdl",
+	"models/items/ammocrate_smg1.mdl",
+	"models/items/ammocrate_grenade.mdl",
+	"models/items/ammocrate_rockets.mdl",
+};
+
 void ObjectAmmobox_MapStart()
 {
-	PrecacheModel("models/items/ammocrate_smg1.mdl");
+	for (int i = 0; i < (sizeof(g_RandomModelGive));	   i++) { PrecacheModel(g_RandomModelGive[i]);	   }
 
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Ammo Box");
@@ -34,7 +41,7 @@ methodmap ObjectAmmobox < ObjectGeneric
 {
 	public ObjectAmmobox(int client, const float vecPos[3], const float vecAng[3])
 	{
-		ObjectAmmobox npc = view_as<ObjectAmmobox>(ObjectGeneric(client, vecPos, vecAng, "models/items/ammocrate_smg1.mdl", _,"50", {20.0, 20.0, 33.0}, 15.0));
+		ObjectAmmobox npc = view_as<ObjectAmmobox>(ObjectGeneric(client, vecPos, vecAng, g_RandomModelGive[GetRandomInt(0, sizeof(g_RandomModelGive) - 1)], _,"50", {20.0, 20.0, 32.0}, 14.0));
 		
 		npc.SetActivity("Idle", true);
 
@@ -42,6 +49,7 @@ methodmap ObjectAmmobox < ObjectGeneric
 		npc.FuncShowInteractHud = ClotShowInteractHud;
 		func_NPCThink[npc.index] = ClotThink;
 		func_NPCInteract[npc.index] = ClotInteract;
+		npc.SetPlaybackRate(0.5);	
 
 		return npc;
 	}
@@ -91,6 +99,13 @@ static bool ClotInteract(int client, int weapon, ObjectAmmobox npc)
 {
 	if(ClotCanUse(npc, client))
 	{
+		if((GetURandomInt() % 4) == 0 && Rogue_HasNamedArtifact("System Malfunction"))
+		{
+			Building_Collect_Cooldown[npc.index][client] = GetGameTime() + 5.0;
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			return true;
+		}
+
 	//	ClientCommand(client, "playgamesound items/ammo_pickup.wav");
 	//	ClientCommand(client, "playgamesound items/ammo_pickup.wav");
 	//	ApplyBuildingCollectCooldown(npc.index, client, 5.0, true);

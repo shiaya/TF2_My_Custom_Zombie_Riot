@@ -89,6 +89,7 @@ void Object_PluginStart()
 	.DefineIntField("m_iRepairMax")
 	.DefineIntField("m_iMaxHealth")
 	.DefineBoolField("m_bSentryBuilding")
+	.DefineBoolField("m_bConstructBuilding")
 	.EndDataMapDesc();
 	factory.Install();
 }
@@ -107,8 +108,6 @@ static void OnDestroy(int entity)
 		RemoveEntity(npc.m_iWearable1);
 	if(IsValidEntity(npc.m_iWearable2))
 		RemoveEntity(npc.m_iWearable2);
-	if(IsValidEntity(npc.m_iWearable3))
-		RemoveEntity(npc.m_iWearable3);
 
 	Building_RotateAllDepencencies(entity);
 }
@@ -166,18 +165,30 @@ methodmap ObjectGeneric < CClotBody
 		f3_CustomMinMaxBoundingBox[obj][0] = CustomThreeDimensions[0];
 		f3_CustomMinMaxBoundingBox[obj][1] = CustomThreeDimensions[1];
 		f3_CustomMinMaxBoundingBox[obj][2] = CustomThreeDimensions[2];
+		
+		if(FakemodelOffset)
+		{
+			f3_CustomMinMaxBoundingBox[obj][2] -=FakemodelOffset;
+		}
+		
 
-		float VecMin[3];
-		float VecMax[3];
-		VecMin = CustomThreeDimensions;
-		VecMin[0] *= -1.0;
-		VecMin[1] *= -1.0;
-		VecMin[2] = 0.0;
-		VecMax = CustomThreeDimensions;
+		if(FakemodelOffset)
+		{
+			f3_CustomMinMaxBoundingBoxMinExtra[obj][0] = -CustomThreeDimensions[0];
+			f3_CustomMinMaxBoundingBoxMinExtra[obj][1] = -CustomThreeDimensions[1];
+			f3_CustomMinMaxBoundingBoxMinExtra[obj][2] -= FakemodelOffset;
+		}
+		else
+		{
+			f3_CustomMinMaxBoundingBoxMinExtra[obj][0] = -CustomThreeDimensions[0];
+			f3_CustomMinMaxBoundingBoxMinExtra[obj][1] = -CustomThreeDimensions[1];
+			f3_CustomMinMaxBoundingBoxMinExtra[obj][2] = 0.0;
+		}
+
 		SetEntProp(obj, Prop_Data, "m_nSolidType", 2); 
 
-		SetEntPropVector(obj, Prop_Data, "m_vecMaxs", VecMax);
-		SetEntPropVector(obj, Prop_Data, "m_vecMins", VecMin);
+		SetEntPropVector(obj, Prop_Data, "m_vecMaxs", f3_CustomMinMaxBoundingBox[obj]);
+		SetEntPropVector(obj, Prop_Data, "m_vecMins", f3_CustomMinMaxBoundingBoxMinExtra[obj]);
 		//Running UpdateCollisionBox On this entity just makes it calculate its own one, bad.
 	//	objstats.UpdateCollisionBox();
 
@@ -193,25 +204,33 @@ methodmap ObjectGeneric < CClotBody
 		
 		SDKHook(obj, SDKHook_OnTakeDamage, ObjectGeneric_ClotTakeDamage);
 		SetEntityRenderMode(obj, RENDER_TRANSCOLOR);
-		SetEntityRenderColor(obj, 0, 0, 0, 0);
+		//Main prop is always half visible.
+		/*
+			how it works:
+			if a building is on cooldown/can have one, we spawn a 2nd prop, see below under fake model.
+			We made it entirely solid visibly, i.e. not half invisible and make the main prop invisible
+			to save on resources unlike before we just re-use the base model
+			We dont do set transmit on it, beacuse if its always half invisible, then that means we can just hide the fake model, i.e. fully visible to indicate the building
+			can be used
+			Zfighting cant happen beacuse its in the exact same position
+
+			im such a genuis...
+			-Artvin
+
+		*/
 		int entity;
 		if(DoFakeModel)
 		{
-			entity = objstats.EquipItemSeperate("partyhat", model,_,_,_,FakemodelOffset);
+			entity = objstats.EquipItemSeperate(model);
 			SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
-			SDKHook(entity, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
+			SDKHook(entity, SDKHook_SetTransmit, SetTransmit_BuildingReady);
 			SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", objstats.index);
 			objstats.m_iWearable1 = entity;
 		}
-		
-		entity = objstats.EquipItemSeperate("partyhat", model,_,_,_,FakemodelOffset);
-		SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
-		SDKHook(entity, SDKHook_SetTransmit, SetTransmit_BuildingReady);
-		SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", objstats.index);
-		objstats.m_iWearable2 = entity;
 
 		//think once
 		ObjBaseThink(objstats.index);
+		UpdateDoublebuilding(objstats.index);
 
 		return objstats;
 	}
@@ -221,7 +240,6 @@ methodmap ObjectGeneric < CClotBody
 		public get() { return view_as<int>(this); } 
 	}
 	public int EquipItemSeperate(
-	const char[] attachment,
 	const char[] model,
 	const char[] anim = "",
 	int skin = 0,
@@ -253,11 +271,12 @@ methodmap ObjectGeneric < CClotBody
 		VecOrigin[2] += offset;
 
 		TeleportEntity(item, VecOrigin, eyePitch, NULL_VECTOR);
+		SetEntProp(item, Prop_Send, "m_nSkin", skin);
 		if(DontParent)
 		{
 			return item;
 		}
-		
+		b_ThisEntityIgnored[item] = true;
 
 		if(!StrEqual(anim, ""))
 		{
@@ -275,27 +294,21 @@ methodmap ObjectGeneric < CClotBody
 	} 
 	public void SetActivity(const char[] animation, bool Is_sequence = false)
 	{
+		CClotBody npcself = view_as<CClotBody>(this.index);
+		npcself.SetActivity(animation, Is_sequence);
 		if(IsValidEntity(this.m_iWearable1))
 		{
 			CClotBody npcstats = view_as<CClotBody>(this.m_iWearable1);
-			npcstats.SetActivity(animation, Is_sequence);
-		}
-		if(IsValidEntity(this.m_iWearable2))
-		{
-			CClotBody npcstats = view_as<CClotBody>(this.m_iWearable2);
 			npcstats.SetActivity(animation, Is_sequence);
 		}
 	}
 	public void SetPlaybackRate(float flSpeedAnim)
 	{
+		CClotBody npcself = view_as<CClotBody>(this.index);
+		npcself.SetPlaybackRate(flSpeedAnim);
 		if(IsValidEntity(this.m_iWearable1))
 		{
 			CClotBody npcstats = view_as<CClotBody>(this.m_iWearable1);
-			npcstats.SetPlaybackRate(flSpeedAnim);
-		}
-		if(IsValidEntity(this.m_iWearable2))
-		{
-			CClotBody npcstats = view_as<CClotBody>(this.m_iWearable2);
 			npcstats.SetPlaybackRate(flSpeedAnim);
 		}
 	}
@@ -332,6 +345,60 @@ methodmap ObjectGeneric < CClotBody
 			else
 			{
 				i_Wearable[this.index][1] = EntIndexToEntRef(iInt);
+			}
+		}
+	}
+	property int m_iMasterBuilding
+	{
+		public get()		 
+		{ 
+			return EntRefToEntIndex(i_Wearable[this.index][6]); 
+		}
+		public set(int iInt) 
+		{
+			if(iInt == -1)
+			{
+				i_Wearable[this.index][6] = INVALID_ENT_REFERENCE;
+			}
+			else
+			{
+				i_Wearable[this.index][6] = EntIndexToEntRef(iInt);
+			}
+		}
+	}
+	property int m_iExtrabuilding1
+	{
+		public get()		 
+		{ 
+			return EntRefToEntIndex(i_Wearable[this.index][7]); 
+		}
+		public set(int iInt) 
+		{
+			if(iInt == -1)
+			{
+				i_Wearable[this.index][7] = INVALID_ENT_REFERENCE;
+			}
+			else
+			{
+				i_Wearable[this.index][7] = EntIndexToEntRef(iInt);
+			}
+		}
+	}
+	property int m_iExtrabuilding2
+	{
+		public get()		 
+		{ 
+			return EntRefToEntIndex(i_Wearable[this.index][8]); 
+		}
+		public set(int iInt) 
+		{
+			if(iInt == -1)
+			{
+				i_Wearable[this.index][8] = INVALID_ENT_REFERENCE;
+			}
+			else
+			{
+				i_Wearable[this.index][8] = EntIndexToEntRef(iInt);
 			}
 		}
 	}
@@ -380,6 +447,17 @@ methodmap ObjectGeneric < CClotBody
 		public get()
 		{
 			return view_as<bool>(GetEntProp(this.index, Prop_Data, "m_bSentryBuilding"));
+		}
+	}
+	property bool m_bConstructBuilding
+	{
+		public set(bool value)
+		{
+			SetEntProp(this.index, Prop_Data, "m_bConstructBuilding", value);
+		}
+		public get()
+		{
+			return view_as<bool>(GetEntProp(this.index, Prop_Data, "m_bConstructBuilding"));
 		}
 	}
 	property bool m_bBurning
@@ -530,6 +608,7 @@ static bool ObjectGeneric_ClotThink(ObjectGeneric objstats)
 	if(objstats.m_flNextDelayTime > gameTime)
 		return false;
 
+	objstats.m_flNextDelayTime = gameTime + 0.2;
 
 	Function func = func_NPCThink[objstats.index];
 	if(func && func != INVALID_FUNCTION)
@@ -539,7 +618,6 @@ static bool ObjectGeneric_ClotThink(ObjectGeneric objstats)
 		Call_Finish();
 	}
 
-	objstats.m_flNextDelayTime = gameTime + 0.2;
 	BuildingUpdateTextHud(objstats.index);
 
 	int health = GetEntProp(objstats.index, Prop_Data, "m_iHealth");
@@ -584,7 +662,8 @@ static bool ObjectGeneric_ClotThink(ObjectGeneric objstats)
 				b_ThisEntityIgnored[objstats.index] = true;
 			}
 		}
-
+		SetEntityRenderColor(objstats.index, 55, 55, 55, 100);
+		
 		int wearable = objstats.m_iWearable1;
 		if(wearable != -1)
 			SetEntityRenderColor(wearable, 55, 55, 55, 100);
@@ -635,19 +714,25 @@ static bool ObjectGeneric_ClotThink(ObjectGeneric objstats)
 		int wearable = objstats.m_iWearable1;
 		if(wearable != -1)
 		{
-			SetEntityRenderColor(wearable, r, g, 0, 100);
-			/*
-			if(b_Anger[wearable])
-			{
-				this.SetSequence(0);	
-			}
-			else
-			{
-				this.SetSequence(0);
-			}
-			*/
+			SetEntityRenderColor(objstats.index, r, g, 0, 100);
+			SetEntityRenderColor(wearable, r, g, 0, 255);
+
 		}
-		
+		else
+		{
+			SetEntityRenderColor(objstats.index, r, g, 0, 255);
+		}
+		/*
+		if(b_Anger[wearable])
+		{
+			this.SetSequence(0);	
+		}
+		else
+		{
+			this.SetSequence(0);
+		}
+		*/
+		/*
 		wearable = objstats.m_iWearable2;
 		if(wearable != -1)
 		{
@@ -657,6 +742,7 @@ static bool ObjectGeneric_ClotThink(ObjectGeneric objstats)
 		{
 			SetEntityRenderColor(objstats.index, r, g, 0, 255);
 		}
+		*/
 		
 	}
 	return true;
@@ -796,7 +882,7 @@ int Object_SupportBuildings(int owner, int &all = 0)
 				continue;
 			
 			ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
-			if(objstats.SentryBuilding)
+			if(objstats.SentryBuilding || objstats.m_bConstructBuilding)
 				continue;
 			
 			all++;
@@ -821,18 +907,15 @@ int Object_GetSentryBuilding(int owner)
 			entity = -1;
 		}
 	}
-	/*
-	while((entity=FindEntityByClassname(entity, "obj_building")) != -1)
+	
+	if(entity == -1)
 	{
-		if(view_as<ObjectGeneric>(entity).SentryBuilding && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") == owner)
+		while((entity=FindEntityByClassname(entity, "obj_building")) != -1)
 		{
-			static char plugin[64];
-			NPC_GetPluginById(i_NpcInternalId[entity], plugin, sizeof(plugin));
-			if(StrContains(plugin, "obj_", false) != -1)
+			if(view_as<ObjectGeneric>(entity).SentryBuilding && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") == owner)
 				break;
 		}
 	}
-	*/
 
 	return entity;
 }
@@ -902,7 +985,7 @@ Action ObjectGeneric_ClotTakeDamage(int victim, int &attacker, int &inflictor, f
 
 	if(Rogue_Mode()) //buildings are refunded alot, so they shouldnt last long.
 	{
-		int scale = Waves_GetRound();
+		int scale = ZR_Waves_GetRound();
 		if(scale < 2)
 		{
 			//damage *= 1.0;
@@ -944,14 +1027,41 @@ Action ObjectGeneric_ClotTakeDamage(int victim, int &attacker, int &inflictor, f
 		TE_ParticleInt(g_particleImpactMetal, damagePosition);
 		TE_SendToAll();
 	}
-
+	
 	SetEntProp(victim, Prop_Data, "m_iHealth", health);
+	UpdateDoublebuilding(victim);
 	return Plugin_Handled;
 }
 
-void DestroyBuildingDo(int entity)
+void DestroyBuildingDo(int entity, bool DontCheckAgain = false)
 {
 	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
+	if(IsValidEntity(objstats.m_iMasterBuilding) && !DontCheckAgain)
+	{
+		DestroyBuildingDo(objstats.m_iMasterBuilding, true);
+
+		ObjectGeneric objstats2 = view_as<ObjectGeneric>(objstats.m_iMasterBuilding);
+		if(IsValidEntity(objstats2.m_iExtrabuilding1))
+			DestroyBuildingDo(objstats2.m_iExtrabuilding1, true);
+
+		if(IsValidEntity(objstats2.m_iExtrabuilding2))
+			DestroyBuildingDo(objstats2.m_iExtrabuilding2, true);
+	}
+	else if(!DontCheckAgain)
+	{
+		if(IsValidEntity(objstats.m_iExtrabuilding1))
+			DestroyBuildingDo(objstats.m_iExtrabuilding1, true);
+
+		if(IsValidEntity(objstats.m_iExtrabuilding2))
+			DestroyBuildingDo(objstats.m_iExtrabuilding2, true);
+	}
+	Function func = func_NPCDeath[entity];
+	if(func && func != INVALID_FUNCTION)
+	{
+		Call_StartFunction(null, func);
+		Call_PushCell(entity);
+		Call_Finish();
+	}
 	objstats.PlayDeathSound();
 	float VecOrigin[3];
 	GetAbsOrigin(entity, VecOrigin);
@@ -1026,9 +1136,17 @@ void BuildingUpdateTextHud(int building)
 	int entity = EntRefToEntIndex(Building_Mounted[building]);
 	if(entity != -1)
 	{
-		if(IsValidEntity(objstats.m_iWearable3))
-			RemoveEntity(objstats.m_iWearable3);
+		if(IsValidEntity(objstats.m_iWearable2))
+			RemoveEntity(objstats.m_iWearable2);
 
+		return;
+	}
+
+	//nope.
+	if(IsValidEntity(objstats.m_iMasterBuilding))
+	{
+		if(IsValidEntity(objstats.m_iWearable2))
+			RemoveEntity(objstats.m_iWearable2);
 		return;
 	}
 	char HealthText[128];
@@ -1059,6 +1177,9 @@ void BuildingUpdateTextHud(int building)
 	}
 	if(Repair <= 0)
 	{
+		if(Resistance_for_building_High[objstats.index] < GetGameTime())
+			Format(sColor, sizeof(sColor), " %d %d %d %d ", 255, 0, 0, 255);
+			
 		HealthColour[0] = 255;
 		HealthColour[1] = 0;
 		HealthColour[3] = 255;
@@ -1095,19 +1216,22 @@ void BuildingUpdateTextHud(int building)
 	}
 
 
-	if(IsValidEntity(objstats.m_iWearable3))
+	if(IsValidEntity(objstats.m_iWearable2))
 	{
-		DispatchKeyValue(objstats.m_iWearable3,     "color", sColor);
-		DispatchKeyValue(objstats.m_iWearable3, "message", HealthText);
+		DispatchKeyValue(objstats.m_iWearable2,     "color", sColor);
+		DispatchKeyValue(objstats.m_iWearable2, "message", HealthText);
 	}
 	else
 	{
 		float Offset[3];
 		Offset[2] = f3_CustomMinMaxBoundingBox[building][2];
 		Offset[2] += 12.0;
+	//	if(f3_CustomMinMaxBoundingBoxMinExtra[building][2])
+	//		Offset[2] += f3_CustomMinMaxBoundingBoxMinExtra[building][2];
+
 		int TextEntity = SpawnFormattedWorldText(HealthText,Offset, 6, HealthColour, objstats.index);
 		DispatchKeyValue(TextEntity, "font", "4");
-		objstats.m_iWearable3 = TextEntity;	
+		objstats.m_iWearable2 = TextEntity;	
 	}
 }
 /*

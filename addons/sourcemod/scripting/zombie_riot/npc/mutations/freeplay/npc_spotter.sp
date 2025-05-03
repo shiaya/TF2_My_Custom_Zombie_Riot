@@ -338,7 +338,6 @@ methodmap Spotter < CClotBody
 		SetEntityRenderMode(npc.m_iWearable5, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.m_iWearable5, 255, 135, 0);
 
-		Freeplay_SpotterStatus(true);
 		switch(GetRandomInt(1, 7))
 		{
 			case 1:
@@ -579,7 +578,6 @@ public void Spotter_NPCDeath(int entity)
 	}
 	
 	CPrintToChatAll("{crimson}The Spotter bails away.");
-	Freeplay_SpotterStatus(false);
 	
 	if(IsValidEntity(npc.m_iWearable1))
 		RemoveEntity(npc.m_iWearable1);

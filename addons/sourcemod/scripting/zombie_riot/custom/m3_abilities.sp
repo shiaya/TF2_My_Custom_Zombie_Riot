@@ -1972,26 +1972,51 @@ public Action Timer_Detect_Player_Near_Armor_Grenade(Handle timer, DataPack pack
 		
 				TE_SetupBeamRingPoint(powerup_pos, 10.0, ARMOR_GRENADE_RANGE * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 3.0, color, 0, 0);
 	   			TE_SendToAll();
-	   			for (int target = 1; target <= MaxClients; target++)
+				for (int target = 0; target < MAXENTITIES; target++)
 				{
-					if (IsValidClient(target) && IsPlayerAlive(target) && GetClientTeam(target) == view_as<int>(TFTeam_Red) && TeutonType[target] == 0)
+					if(!IsValidEntity(target))
+						continue;
+
+					if(GetTeam(target) != GetTeam(client))
+						continue;
+
+					GetEntPropVector(target, Prop_Data, "m_vecAbsOrigin", client_pos);
+					if (GetVectorDistance(powerup_pos, client_pos, true) > (ARMOR_GRENADE_RANGE * ARMOR_GRENADE_RANGE))
+						continue;
+
+					if(target <= MaxClients && IsValidClient(target) && IsPlayerAlive(target) && TeutonType[target] == 0)
 					{
-						GetClientAbsOrigin(target, client_pos);
-						if (GetVectorDistance(powerup_pos, client_pos, true) <= (ARMOR_GRENADE_RANGE * ARMOR_GRENADE_RANGE))
+						//Is valid Player
+						EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 0.7);
+						EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 0.7);
+						if(f_TimeUntillNormalHeal[target] > GetGameTime())
 						{
-							EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 0.7);
-							EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 0.7);
-						//	EmitSoundToClient(target, SOUND_ARMOR_BEAM, target, _, 90, _, 1.0);
-							//This gives 35% armor
-							if(f_TimeUntillNormalHeal[target] > GetGameTime())
-							{
-								GiveArmorViaPercentage(target, 0.075 * 0.5, 1.0);
-							}
-							else
-							{
-								GiveArmorViaPercentage(target, 0.075, 1.0);
-							}
+							GiveArmorViaPercentage(target, 0.075 * 0.5, 1.0);
 						}
+						else
+						{
+							GiveArmorViaPercentage(target, 0.075, 1.0);
+						}
+						continue;
+					}
+					
+					if(b_ThisWasAnNpc[target] && IsEntityAlive(target, true))
+					{
+						//IsValidnpc
+						float Healing_GiveArmor = 3.0;
+						if(f_TimeUntillNormalHeal[target] > GetGameTime())
+						{
+							//recently hurt, half armor.
+							Healing_GiveArmor *= 0.5;
+							GrantEntityArmor(target, false, 0.25, 0.25, 0,
+								ReturnEntityMaxHealth(target) * Healing_GiveArmor);
+						}
+						else
+						{
+							GrantEntityArmor(target, false, 0.25, 0.25, 0,
+								ReturnEntityMaxHealth(target) * Healing_GiveArmor);
+						}	
+						continue;
 					}
 				}
    			}
@@ -2127,68 +2152,82 @@ public Action Timer_Detect_Player_Near_Healing_Grenade(Handle timer, DataPack pa
 		
 				TE_SetupBeamRingPoint(powerup_pos, 10.0, 500.0 * 2.0, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 3.0, color, 0, 0);
 	   			TE_SendToAll();
-	   			for (int target = 1; target <= MaxClients; target++)
+				
+				for (int target = 0; target < MAXENTITIES; target++)
 				{
-					if (IsValidClient(target) && IsPlayerAlive(target) && GetClientTeam(target) == view_as<int>(TFTeam_Red) && TeutonType[target] == 0)
+					if(!IsValidEntity(target))
+						continue;
+
+					if(GetTeam(target) != GetTeam(client))
+						continue;
+
+					GetEntPropVector(target, Prop_Data, "m_vecAbsOrigin", client_pos);
+
+					if (GetVectorDistance(powerup_pos, client_pos, true) > (500.0 * 500.0))
+						continue;
+
+					if(target <= MaxClients && IsValidClient(target) && IsPlayerAlive(target) && TeutonType[target] == 0)
 					{
-						GetClientAbsOrigin(target, client_pos);
-						if (GetVectorDistance(powerup_pos, client_pos, true) <= (500.0 * 500.0))
+						//Is valid Player
+						if(dieingstate[target] > 0)
 						{
-							if(dieingstate[target] > 0)
+							EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 0.7);
+							if(i_CurrentEquippedPerk[client] == 1)
 							{
-								EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 0.7);
-								if(i_CurrentEquippedPerk[client] == 1)
-								{
-									SetEntityHealth(target,  GetClientHealth(target) + 12);
-									dieingstate[target] -= 20;
-								}
-								else
-								{
-									SetEntityHealth(target,  GetClientHealth(target) + 6);
-									dieingstate[target] -= 10;
-								}
-								if(dieingstate[target] < 1)
-								{
-									dieingstate[target] = 1;
-								}
+								SetEntityHealth(target,  GetClientHealth(target) + 12);
+								dieingstate[target] -= 20;
 							}
 							else
 							{
-								if(f_TimeUntillNormalHeal[target] > GetGameTime())
-								{
-									Healing_Amount *= 0.5;
-								}
-								if(Healing_Amount < 10.0)
-								{
-									Healing_Amount = 10.0;
-								}
-								EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 0.7);
-								HealEntityGlobal(client, target, Healing_Amount, _, 1.0);	
+								SetEntityHealth(target,  GetClientHealth(target) + 6);
+								dieingstate[target] -= 10;
 							}
-						}
-					}
-				}
-				for(int entitycount_again; entitycount_again<i_MaxcountNpcTotal; entitycount_again++)
-				{
-					int baseboss_index_allied = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount_again]);
-					if (IsValidEntity(baseboss_index_allied) && GetTeam(baseboss_index_allied) == TFTeam_Red)
-					{
-						if(!b_ThisEntityIgnored[baseboss_index_allied])
-						{
-							GetEntPropVector(baseboss_index_allied, Prop_Data, "m_vecAbsOrigin", client_pos);
-							if (GetVectorDistance(powerup_pos, client_pos, true) <= 90000)
+							if(dieingstate[target] < 1)
 							{
-								if(f_TimeUntillNormalHeal[baseboss_index_allied] < GetGameTime())
-								{
-									Healing_Amount *= 0.25;
-								}
-								if(Healing_Amount < 10.0)
-								{
-									Healing_Amount = 10.0;
-								}
-								HealEntityGlobal(client, baseboss_index_allied, Healing_Amount, _, 1.0);
+								dieingstate[target] = 1;
 							}
 						}
+						else
+						{
+							if(f_TimeUntillNormalHeal[target] > GetGameTime())
+							{
+								Healing_Amount *= 0.5;
+							}
+							if(Healing_Amount < 10.0)
+							{
+								Healing_Amount = 10.0;
+							}
+							EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 0.7);
+							HealEntityGlobal(client, target, Healing_Amount, _, 1.0);	
+						}
+						continue;
+					}
+					
+					if(b_ThisWasAnNpc[target] && IsEntityAlive(target, true))
+					{
+						if(Citizen_IsIt(target) && Citizen_ThatIsDowned(target))
+						{
+							if(i_CurrentEquippedPerk[client] == 1)
+							{
+								Citizen_ReviveTicks(target, 20, client, true);
+							}
+							else
+							{
+								Citizen_ReviveTicks(target, 10, client, true);
+							}
+							continue;
+						}
+						//IsValidnpc
+						if(f_TimeUntillNormalHeal[target] > GetGameTime())
+						{
+							Healing_Amount *= 0.5;
+						}
+						if(Healing_Amount < 10.0)
+						{
+							Healing_Amount = 10.0;
+						}
+						HealEntityGlobal(client, target, Healing_Amount, _, 1.0);	
+						continue;
 					}
 				}
    			}
@@ -2229,7 +2268,7 @@ public void ReconstructiveTeleporter(int client)
 					WorldSpaceCenter(ally, WorldSpaceVec);
 					ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
 					SetEntProp(ally, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(ally)) * 1.5));
-					IncreaceEntityDamageTakenBy(ally, 0.05, 2.0);
+					IncreaseEntityDamageTakenBy(ally, 0.05, 2.0);
 					WorldSpaceCenter(client, WorldSpaceVec);
 					TeleportEntity(ally, WorldSpaceVec, NULL_VECTOR, NULL_VECTOR);
 				}
@@ -2278,6 +2317,10 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 
 	//This is fine to use 
 	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+	if(Purnell_Existant(client))
+	{
+		weapon = Purnell_Existant(client);
+	}
 	if(IsValidEntity(weapon))
 	{
 		switch(i_CustomWeaponEquipLogic[weapon])
@@ -2290,7 +2333,7 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 				if(Healing_Amount<1.0)
 					Healing_Amount=1.0;
 				
-				Base_HealingMaxPoints=RoundToCeil(9000.0 * Healing_Amount);
+				Base_HealingMaxPoints=RoundToCeil(3500.0 * Healing_Amount);
 			}
 			case WEAPON_SEABORN_MISC:
 			{
@@ -2298,7 +2341,18 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 				if(Healing_Amount<1.0)
 					Healing_Amount=1.0;
 
-				Base_HealingMaxPoints=RoundToCeil(5900.0 * Healing_Amount);
+				Base_HealingMaxPoints=RoundToCeil(3000.0 * Healing_Amount);
+			}
+			case WEAPON_PURNELL_PRIMARY:
+			{
+				Healing_Amount=Attributes_Get(weapon, 122, 0.0);
+				//it starts at -1.0, so it should go upto 1.0.
+				if(Healing_Amount<1.0)
+					Healing_Amount=1.0;
+
+				Healing_Amount *= 0.5;
+				
+				Base_HealingMaxPoints=RoundToCeil(800.0 * Healing_Amount);
 			}
 			default:
 				Base_HealingMaxPoints=RoundToCeil(1900.0 * Healing_Amount);
@@ -2389,6 +2443,10 @@ public void Reinforce(int client, bool NoCD)
 			f_ReinforceTillMax[client] = 1.0;
 		}
 
+		int MaxCashScale = CurrentCash;
+		if(MaxCashScale > 60000)
+			MaxCashScale = 60000;
+			
 		bool DeadPlayer;
 		for(int client_check=1; client_check<=MaxClients; client_check++)
 		{
@@ -2399,6 +2457,16 @@ public void Reinforce(int client, bool NoCD)
 			if(client==client_check || GetTeam(client_check) != TFTeam_Red)
 				continue;
 			if(!b_HasBeenHereSinceStartOfWave[client_check])
+				continue;
+			if(f_PlayerLastKeyDetected[client_check] < GetGameTime())
+				continue;
+
+			int CashSpendScale = CashSpentTotal[client_check];
+
+			if(CashSpendScale <= 500)
+				CashSpendScale = 500;
+
+			if((CashSpendScale * 3) < (MaxCashScale))
 				continue;
 
 			DeadPlayer=true;
@@ -2414,7 +2482,7 @@ public void Reinforce(int client, bool NoCD)
 
 		
 		i_MaxRevivesAWave++;
-		CPrintToChatAll("{green}%N Is calling for additonal Mercs for tempomary assistance...",client);
+		CPrintToChatAll("{green}%N Is calling for additonal Mercs for temporary assistance...",client);
 		float position[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
@@ -2745,6 +2813,11 @@ public void DeleteBuildingLookedAt(int client)
 				{
 					if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") == client || GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") > MaxClients)
 					{
+						ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
+						if(IsValidEntity(objstats.m_iMasterBuilding))
+							entity = objstats.m_iMasterBuilding;
+							
+							//change to master entity.
 						i_BuildingSelectedToBeDeleted[client] = EntIndexToEntRef(entity);
 						DataPack pack;
 						CreateDataTimer(0.1, DeleteBuildingTimer, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -2887,7 +2960,7 @@ public void GearTesting(int client)
 				b_ActivatedDuringLastMann[client] = true;
 			}
 
-			IncreaceEntityDamageTakenBy(client, 0.5, 3.0);
+			IncreaseEntityDamageTakenBy(client, 0.5, 3.0);
 			
 			CreateTimer(3.0, QuantumActivate, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		//	ClientCommand(client, "playgamesound mvm/mvm_tank_start.wav");
@@ -2971,7 +3044,7 @@ public Action QuantumActivate(Handle cut_timer, int ref)
 			ResetReplications();
 		
 			startPosition[2] += 25.0;
-			makeexplosion(client, client, startPosition, "", 0, 0);
+			makeexplosion(client, startPosition, 0, 0);
 
 			CreateTimer(30.0, QuantumDeactivate, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
@@ -3572,6 +3645,10 @@ stock int GetRandomDeathPlayer(int client)
 	int victims;
 	int[] victim = new int[MaxClients];
 
+	int MaxCashScale = CurrentCash;
+	if(MaxCashScale > 60000)
+		MaxCashScale = 60000;
+
 	for(int client_check = 1; client_check <= MaxClients; client_check++)
 	{
 		if(!IsValidClient(client_check))
@@ -3584,6 +3661,17 @@ stock int GetRandomDeathPlayer(int client)
 			continue;
 
 		if(!b_HasBeenHereSinceStartOfWave[client_check])
+			continue;
+
+		if(f_PlayerLastKeyDetected[client_check] < GetGameTime())
+			continue;
+
+		int CashSpendScale = CashSpentTotal[client_check];
+
+		if(CashSpendScale <= 500)
+			CashSpendScale = 500;
+
+		if((CashSpendScale * 3) < (MaxCashScale))
 			continue;
 
 		victim[victims++] = client_check;

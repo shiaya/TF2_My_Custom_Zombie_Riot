@@ -711,7 +711,7 @@ static void TreeMenu(int client)
 	Format(buffers[0], sizeof(buffers[]), "%s Desc", skill.Name);
 	
 	Menu menu = new Menu(TreeMenuH);
-	menu.SetTitle("%s\n \n%t", buffer, buffers[0]);
+	menu.SetTitle("%s\n \n%t\n%t", buffer, buffers[0], "Browse Skill Tree Explain");
 
 	bool upgrade;
 	
@@ -809,5 +809,5 @@ static int TreeMenuH(Menu menu, MenuAction action, int client, int choice)
 	return 0;
 }
 
-#include "zombie_riot/skilltree/player.sp"
-#include "zombie_riot/skilltree/weapon.sp"
+#include "skilltree/player.sp"
+#include "skilltree/weapon.sp"

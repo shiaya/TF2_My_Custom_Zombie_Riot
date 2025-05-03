@@ -1570,14 +1570,14 @@
 		"chi"       	"重型防弹衣"
 		"ko"		"중장갑"
 	}
-	"Jesus's Blessing"
+	"Grigori's Blessing"
 	{
-		"en"		"Jesus's Blessing"
+		"en"		"Grigori's Blessing"
 		"fr"		"Bénédiction de Jésus"
 		"ru"		"Благословение Иисуса"
 		"de"		"Jesu Segen"
-		"pt"		"Bênção de Jesus"
-		"nl" 		"Jesus's Zegen"
+		"pt"		"Bênção de Grigori"
+		"nl" 		"Grigori's Zegen"
 		"chi"       	"耶稣的祝福"
 		"ko"		"예수의 축복"
 	}
@@ -3103,6 +3103,10 @@
 		"chi"	"引力法术"
 		"ko"	"중력 마법"
 	}
+	"Reiuji Wand"
+	{
+		"en"	"Reiuji Wand"
+	}
 	"Heavy Particle Rifle"
 	{
 		"en"	"Heavy Particle Rifle"
@@ -3172,6 +3176,10 @@
 		"en"	"Merchant Brewing Stand"
 		"ru"	"Подставка для заваривания Торговца"
 		"ko"	"상인의 포션 진열대"
+	}
+	"Merchant Grill"
+	{
+		"en"	"Merchant Grill"
 	}
 	"Tinker Research"
 	{
@@ -4268,5 +4276,17 @@
 	"Bubble Wand"
 	{
 		"en" "Bubble Wand"
+	}
+	"Plasmic Surprise"
+	{
+		"en" "Plasmic Surprise"
+	}
+	"Plasmic Dosage"
+	{
+		"en" "Plasmic Dosage"
+	}
+	"Koshi's Plasm-inator"
+	{
+		"en" "Koshi's Plasm-inator"
 	}
 }

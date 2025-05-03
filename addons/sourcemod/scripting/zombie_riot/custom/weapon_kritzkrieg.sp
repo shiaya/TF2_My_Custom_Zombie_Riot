@@ -44,6 +44,8 @@ static Action Timer_Kritzkrieg(Handle timer, any medigunid)
 	if(!IsValidEntity(medigun))
 		return Plugin_Stop;
 	int client = GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
+	if(!IsValidEntity(client))
+		return Plugin_Stop;
 	int target = GetHealingTarget(client);
 	float charge = GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
 
@@ -53,7 +55,7 @@ static Action Timer_Kritzkrieg(Handle timer, any medigunid)
 	if(IsValidClient(target) && IsPlayerAlive(target))
 	{
 		ApplyStatusEffect(client, target, "Weapon Overclock", 1.0);
-		Kritzkrieg_Magical(target, 0.2, true);
+		Kritzkrieg_Magical(target, 0.05, true);
 	}
 	else if(target != INVALID_ENT_REFERENCE && IsEntityAlive(target) && GetTeam(client) == GetTeam(target))
 	{
@@ -63,7 +65,7 @@ static Action Timer_Kritzkrieg(Handle timer, any medigunid)
 	if(IsValidClient(client) && IsPlayerAlive(client))
 	{
 		ApplyStatusEffect(client, client, "Weapon Overclock", 1.0);
-		Kritzkrieg_Magical(client, 0.2, true);
+		Kritzkrieg_Magical(client, 0.05, true);
 	}
 	return Plugin_Continue;
 }
