@@ -1,7 +1,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static float i_WasInUber[MAXTF2PLAYERS] = {0.0,0.0,0.0};
+//static float i_WasInUber[MAXTF2PLAYERS] = {0.0,0.0,0.0};
 static float i_WasInMarkedForDeathSilent[MAXTF2PLAYERS] = {0.0,0.0,0.0};
 static float i_WasInMarkedForDeath[MAXTF2PLAYERS] = {0.0,0.0,0.0};
 static float i_WasInDefenseBuff[MAXTF2PLAYERS] = {0.0,0.0,0.0};
@@ -40,7 +40,7 @@ void SDKHooks_ClearAll()
 	Zero(f_EntityHazardCheckDelay);
 	Zero(f_EntityOutOfNav);
 	
-	Zero(i_WasInUber);
+//	Zero(i_WasInUber);
 	Zero(i_WasInMarkedForDeathSilent);
 	Zero(i_WasInMarkedForDeath);
 	Zero(i_WasInDefenseBuff);
@@ -220,6 +220,7 @@ stock void SDKHook_HookClient(int client)
 	SDKUnhook(client, SDKHook_OnTakeDamageAlive, Player_OnTakeDamageAlive_DeathCheck);
 	SDKHook(client, SDKHook_OnTakeDamageAlive, Player_OnTakeDamageAlive_DeathCheck);
 #endif
+
 }
 
 public void CheckWeaponAmmoLogicExternal(DataPack pack)
@@ -358,7 +359,6 @@ public void OnPreThinkPost(int client)
 	{
 		SetEntProp(client, Prop_Send, "m_bAllowAutoMovement", 1);
 	}
-//	CvarAirAcclerate.FloatValue = b_AntiSlopeCamp[client] ? 2.0 : 10.0;
 	Cvar_clamp_back_speed.FloatValue = f_Client_BackwardsWalkPenalty[client];
 	Cvar_LoostFooting.FloatValue = f_Client_LostFriction[client];
 }
@@ -418,7 +418,12 @@ public void OnPostThink(int client)
 			f_Chaos_Coil[client] = GameTime + 3.0;
 		}
 	}
-
+#if defined ZR
+	if(SkillTree_InMenu(client))
+	{
+		TreeMenu(client,_, false);
+	}
+#endif
 	if(GetTeam(client) == 2)
 	{
 #if defined ZR
@@ -453,7 +458,11 @@ public void OnPostThink(int client)
 	if(b_DisplayDamageHud[client][0] || b_DisplayDamageHud[client][1])
 	{
 		//damage hud
+#if defined ZR
+		if(!SkillTree_InMenu(client) && Calculate_And_Display_HP_Hud(client, b_DisplayDamageHud[client][1]))
+#else
 		if(Calculate_And_Display_HP_Hud(client, b_DisplayDamageHud[client][1]))
+#endif
 		{
 			if(b_DisplayDamageHud[client][1])
 				b_DisplayDamageHud[client][1] = false;
@@ -461,25 +470,6 @@ public void OnPostThink(int client)
 				b_DisplayDamageHud[client][0] = false;
 		}
 	}
-	/*
-	if(b_AntiSlopeCamp[client])
-	{	
-		//make them slide off stuff.
-		if(ReplicateClient_Svairaccelerate[client] != 2.0)
-		{
-			ReplicateClient_Svairaccelerate[client] = 2.0;
-			CvarAirAcclerate.ReplicateToClient(client, "2.0"); //set down
-		}
-	}
-	else
-	{
-		if(ReplicateClient_Svairaccelerate[client] != 10.0)
-		{
-			ReplicateClient_Svairaccelerate[client] = 10.0;
-			CvarAirAcclerate.ReplicateToClient(client, "10.0"); //set replicate back to normal.
-		}
-	}
-	*/
 	if(ReplicateClient_BackwardsWalk[client] != f_Client_BackwardsWalkPenalty[client])
 	{
 		char IntToStringDo[4];
@@ -613,6 +603,12 @@ public void OnPostThink(int client)
 		else
 		{
 			mana_regen[client] = 0.0;
+		}
+		if(HasSpecificBuff(client, "Dimensional Turbulence"))
+		{
+			Current_Mana[client] = 9999999;
+			mana_regen[client] = 9999999.9;
+			max_mana[client] = 9999999.9;
 		}
 					
 		Mana_Hud_Delay[client] = 0.0;
@@ -785,7 +781,7 @@ public void OnPostThink(int client)
 					Format(buffer, sizeof(buffer), "| %s", buffer);
 				}
 				had_An_ability = true;
-				if(cooldown_time < 0.0)
+				if(cooldown_time < 0.0 || cooldown_time > 99999.9)
 				{
 					IsReady = true;
 					cooldown_time = 0.0;
@@ -809,7 +805,7 @@ public void OnPostThink(int client)
 				{
 					Format(buffer, sizeof(buffer), "| %s", buffer);
 				}
-				if(cooldown_time < 0.0)
+				if(cooldown_time < 0.0 || cooldown_time > 99999.9)
 				{
 					IsReady = true;
 					cooldown_time = 0.0;
@@ -835,7 +831,7 @@ public void OnPostThink(int client)
 				{
 					Format(buffer, sizeof(buffer), "| %s", buffer);
 				}	
-				if(cooldown_time < 0.0)
+				if(cooldown_time < 0.0 || cooldown_time > 99999.9)
 				{
 					IsReady = true;
 					cooldown_time = 0.0;
@@ -862,7 +858,7 @@ public void OnPostThink(int client)
 					Format(buffer, sizeof(buffer), "| %s", buffer);
 				}	
 				
-				if(cooldown_time < 0.0)
+				if(cooldown_time < 0.0 || cooldown_time > 99999.9)
 				{	
 					IsReady = true;
 					cooldown_time = 0.0;
@@ -890,7 +886,7 @@ public void OnPostThink(int client)
 				{
 					Format(buffer, sizeof(buffer), "| %s", buffer);
 				}	
-				if(cooldown_time < 0.0)
+				if(cooldown_time < 0.0 || cooldown_time > 99999.9)
 				{
 					IsReady = true;
 					cooldown_time = 0.0;
@@ -1185,30 +1181,39 @@ public void OnPostThink(int client)
 			}
 #endif
 
-			for(int i=1; i<21; i++)
+			bool InfMana = false;
+			if(HasSpecificBuff(client, "Dimensional Turbulence"))
+				InfMana = true;
+
+			if(!InfMana)
 			{
-				if(Current_Mana[client] >= max_mana[client]*(i*0.05))
+				for(int i=1; i<21; i++)
 				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_FULL);
-				}
-				else if(Current_Mana[client] > max_mana[client]*(i*0.05 - 1.0/60.0))
-				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTFULL);
-				}
-				else if(Current_Mana[client] > max_mana[client]*(i*0.05 - 1.0/30.0))
-				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTEMPTY);
-				}
-				else
-				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_EMPTY);
+					if(Current_Mana[client] >= max_mana[client]*(i*0.05))
+					{
+						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_FULL);
+					}
+					else if(Current_Mana[client] > max_mana[client]*(i*0.05 - 1.0/60.0))
+					{
+						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTFULL);
+					}
+					else if(Current_Mana[client] > max_mana[client]*(i*0.05 - 1.0/30.0))
+					{
+						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTEMPTY);
+					}
+					else
+					{
+						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_EMPTY);
+					}
 				}
 			}
 				
 			SetGlobalTransTarget(client);
-			
 #if defined ZR
-			Format(buffer, sizeof(buffer), "%t\n%s", "Current Mana", Current_Mana[client], max_mana[client], mana_regen[client], buffer);
+			if(!InfMana)
+				Format(buffer, sizeof(buffer), "%t\n%s", "Current Mana", Current_Mana[client], max_mana[client], mana_regen[client], buffer);
+			else
+				Format(buffer, sizeof(buffer), "%t\n%s", "Current Mana Inf", buffer);
 #elseif defined RPG
 			static Form form;
 			Races_GetClientInfo(client, _, form);
@@ -1276,7 +1281,11 @@ public void OnPostThink(int client)
 			Format(buffer, sizeof(buffer), "%s\n%s", Debuff_Adder, buffer);
 			HudY += -0.0345; //correct offset
 		}
+#if defined ZR
+		if(buffer[0] && !SkillTree_InMenu(client))
+#else
 		if(buffer[0])
+#endif
 		{
 			SetHudTextParams(HudX, HudY, 0.81, red, green, blue, Alpha);
 			ShowSyncHudText(client,  SyncHud_WandMana, "%s", buffer);
@@ -1385,10 +1394,78 @@ public void OnPostThink(int client)
 
 		ArmorDisplayClient(client);
 
-		static char buffer[64];
+		static char buffer[20]; //armor
+		static char buffer2[20];	//perks and stuff
+		bool Armor_Regenerating = false;
+		static int ArmorRegenCounter[MAXTF2PLAYERS];
+		if(armorEnt == client && f_ClientArmorRegen[client] > GetGameTime())
+		{
+			Armor_Regenerating = true;
+		}
+		if(Armor_Regenerating)
+		{
+			ArmorRegenCounter[client]++;
+			if(ArmorRegenCounter[client] > 3)
+			{
+				ArmorRegenCounter[client] = 0;
+			}
+		}
+		int armor = abs(Armor_Charge[armorEnt]);
+		if(Armor_Charge[armorEnt] >= 0)
+		{	
+			if(armor > 0)
+			{
+				if(armor > Armor_Max)
+					Format(buffer, sizeof(buffer), "⛨ ", buffer);
+				else
+					Format(buffer, sizeof(buffer), "⛉ ", buffer);
+			}
+			else
+			{
+				Format(buffer, sizeof(buffer), "⛉ ", buffer);
+			}
+			static char c_ArmorCurrent[64];
+			if(vehicle != -1)
+			{
+				if(Armor_Charge[armorEnt] < 1)
+				{
+					Format(buffer, sizeof(buffer), "%s------\nREPAIR\n------\n", buffer);
+				}
+			}
+			if(Armor_Charge[armorEnt] >= 0)
+			{
+				IntToString(armor,c_ArmorCurrent, sizeof(c_ArmorCurrent));
+				int offset = armor < 0 ? 1 : 0;
+				ThousandString(c_ArmorCurrent[offset], sizeof(c_ArmorCurrent) - offset);
+				Format(buffer, sizeof(buffer), "%s%s", buffer, c_ArmorCurrent);
+			}
+		}
+		else
+		{
+			Format(buffer, sizeof(buffer), "⛛ ", buffer);
+			for(int i=1; i<5; i++)
+			{
+				if(armor >= Armor_Max*(float(i)*0.22))
+				{
+					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_FULL);
+				}
+				else if(armor > Armor_Max*((float(i)*0.22) - (1.0/60.0)) || (Armor_Regenerating && ArmorRegenCounter[client] == i))
+				{
+					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTFULL);
+				}
+				else if(armor > Armor_Max*((float(i)*0.22) - (1.0/30.0)))
+				{
+					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTEMPTY);
+				}
+				else
+				{
+					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_EMPTY);
+				}
+			}
+		}
 		if(vehicle != -1)
 		{
-			Format(buffer, sizeof(buffer), "%s\n", Vehicle_Driver(vehicle) == client ? "DRI" : "PAS");
+			Format(buffer2, sizeof(buffer2), "%s",Vehicle_Driver(vehicle) == client ? "DRI" : "PAS");
 		}
 		else if(IsValidEntity(Building_Mounted[client]))
 		{
@@ -1405,140 +1482,55 @@ public void OnPostThink(int client)
 			NPC_GetPluginById(i_NpcInternalId[converted_ref], npc_classname, sizeof(npc_classname));
 			npc_classname[4] = CharToUpper(npc_classname[4]);
 			npc_classname[5] = CharToUpper(npc_classname[5]);
+			if(Cooldowntocheck > 99.9)
+				Cooldowntocheck = 99.9;
 			if(Cooldowntocheck > 0.0)
 			{
-				Format(buffer, sizeof(buffer), "%.1f\n%s\n", Cooldowntocheck, npc_classname[4]);
+				Format(buffer2, sizeof(buffer2), "%s:%0.f",npc_classname[4], Cooldowntocheck);
 			}
 			else
 			{
-				Format(buffer, sizeof(buffer), "%s\n", npc_classname[4]);
+				Format(buffer2, sizeof(buffer2), "%s",npc_classname[4]);
 			}
 		}
 		else
 		{
-			strcopy(buffer, sizeof(buffer), "\n\n");	 //so the spacing stays!
+			//no mount or anything
+			Format(buffer2, sizeof(buffer2), "---");
 		}
-
-		bool Armor_Regenerating = false;
-		static int ArmorRegenCounter[MAXTF2PLAYERS];
-		if(armorEnt == client && f_ClientArmorRegen[client] > GetGameTime())
+		if(i_CurrentEquippedPerk[client] >= 1)
 		{
-			Armor_Regenerating = true;
-		}
-		if(Armor_Regenerating)
-		{
-			ArmorRegenCounter[client]++;
-			if(ArmorRegenCounter[client] > 3)
+			Format(buffer2, sizeof(buffer2), "%s|", buffer2);
+			if(i_CurrentEquippedPerk[client] == 6)
 			{
-				ArmorRegenCounter[client] = 0;
-			}
-		}
-		int armor = abs(Armor_Charge[armorEnt]);
-		if(b_EnableNumeralArmor[client])
-		{
-			static char c_ArmorCurrent[64];
-			if(Armor_Charge[armorEnt] >= 0)
-			{
-				IntToString(armor,c_ArmorCurrent, sizeof(c_ArmorCurrent));
-				int offset = armor < 0 ? 1 : 0;
-				ThousandString(c_ArmorCurrent[offset], sizeof(c_ArmorCurrent) - offset);
-				Format(buffer, sizeof(buffer), "%s|%s|\n", buffer, c_ArmorCurrent);
-			}
-			else
-			{
+				float slowdown_amount = f_WidowsWineDebuffPlayerCooldown[client] - GameTime;
 				
-				Armor_Max -= armor;
-				IntToString(Armor_Max,c_ArmorCurrent, sizeof(c_ArmorCurrent));
-				int offset = Armor_Max < 0 ? 1 : 0;
-				ThousandString(c_ArmorCurrent[offset], sizeof(c_ArmorCurrent) - offset);
-				Format(buffer, sizeof(buffer), "%s|%s|\n", buffer, c_ArmorCurrent);
-			}
-		}
-		else if(vehicle != -1)
-		{
-			if(Armor_Charge[armorEnt] < 1)
-			{
-				Format(buffer, sizeof(buffer), "%s------\nREPAIR\n------\n", buffer);
-			}
-			else
-			{
-				for(int i=9; i>0; i--)
+				if(slowdown_amount < 0.0)
 				{
-					if(armor >= Armor_Max*(i*0.1111))
-					{
-						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_FULL);
-					}
-					else if(armor > Armor_Max*(i*0.1111 - 0.037))
-					{
-						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTFULL);
-					}
-					else if(armor > Armor_Max*(i*0.1111 - 0.07407))
-					{
-						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTEMPTY);
-					}
-					else
-					{
-						Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_EMPTY);
-					}
-					
-					if((i % 3) == 1)
-					{
-						Format(buffer, sizeof(buffer), "%s\n", buffer);
-					}
-				}
-			}
-		}
-		else
-		{
-			for(int i=6; i>0; i--)
-			{
-				if(Armor_Charge[armorEnt] == 0)
-				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, "--");
-				}
-				else if(armor >= Armor_Max*(i*0.1666) || (Armor_Regenerating && ArmorRegenCounter[client] == i))
-				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_FULL);
-				}
-				else if(armor > Armor_Max*(i*0.1666 - 0.0555))
-				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTFULL);
-				}
-				else if(armor > Armor_Max*(i*0.1666 - 0.111))
-				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTEMPTY);
+					Format(buffer2, sizeof(buffer2), "%sWI", buffer2, slowdown_amount);
 				}
 				else
 				{
-					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_EMPTY);
+					Format(buffer2, sizeof(buffer2), "%s%.1f", buffer2, slowdown_amount);
 				}
-				
-				if((i % 2) == 1)
-				{
-					Format(buffer, sizeof(buffer), "%s\n", buffer);
-				}
-			}
-		}
-		
-		if(i_CurrentEquippedPerk[client] == 6)
-		{
-			float slowdown_amount = f_WidowsWineDebuffPlayerCooldown[client] - GameTime;
-			
-			if(slowdown_amount < 0.0)
-			{
-				Format(buffer, sizeof(buffer), "%sWI", buffer, slowdown_amount);
 			}
 			else
 			{
-				Format(buffer, sizeof(buffer), "%s%.1f", buffer, slowdown_amount);
+				Format(buffer2, sizeof(buffer2), "%s%c%c", buffer2, PerkNames[i_CurrentEquippedPerk[client]][0], PerkNames[i_CurrentEquippedPerk[client]][1]);
 			}
 		}
-		else if(i_CurrentEquippedPerk[client] >= 1)
+		else
 		{
-			Format(buffer, sizeof(buffer), "%s%c%c", buffer, PerkNames[i_CurrentEquippedPerk[client]][0], PerkNames[i_CurrentEquippedPerk[client]][1]);
+			Format(buffer2, sizeof(buffer2), "%s|---",buffer2);
 		}
-		SetHudTextParams(0.175 + f_ArmorHudOffsetY[client], 0.925 + f_ArmorHudOffsetX[client], 0.81, red, green, blue, 255);
-		ShowSyncHudText(client, SyncHud_ArmorCounter, "%s", buffer);
+		
+#if defined ZR
+		if(!SkillTree_InMenu(client))
+#endif
+		{
+			SetHudTextParams(0.175 + f_ArmorHudOffsetY[client], 0.9 + f_ArmorHudOffsetX[client], 0.81, red, green, blue, 255);
+			ShowSyncHudText(client, SyncHud_ArmorCounter, "%s\n%s", buffer, buffer2);
+		}
 			
 				
 		static char HudBuffer[256];
@@ -1670,10 +1662,10 @@ public void Player_OnTakeDamageAlivePost(int victim, int attacker, int inflictor
 #if defined ZR
 void RegainTf2Buffs(int victim)
 {
-	if(i_WasInUber[victim])
-	{
-		TF2_AddCondition(victim, TFCond_Ubercharged, i_WasInUber[victim]);
-	}
+//	if(i_WasInUber[victim])
+//	{
+//		TF2_AddCondition(victim, TFCond_Ubercharged, i_WasInUber[victim]);
+//	}
 	if(i_WasInMarkedForDeath[victim])
 	{
 		TF2_AddCondition(victim, TFCond_MarkedForDeath, i_WasInMarkedForDeath[victim]);
@@ -1694,7 +1686,7 @@ void RegainTf2Buffs(int victim)
 	{
 		TF2_AddCondition(victim, TFCond_RuneResist, i_WasInResPowerup[victim]);
 	}
-	i_WasInUber[victim] = 0.0;
+//	i_WasInUber[victim] = 0.0;
 	i_WasInMarkedForDeathSilent[victim] = 0.0;
 	i_WasInDefenseBuff[victim] = 0.0;
 	i_WasInJarate[victim] = 0.0;
@@ -1733,8 +1725,7 @@ int CheckInHud()
 public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 #if defined ZR
-
-	if(IsValidEntity(victim) && CanSelfHurtAndJump(victim) && TeutonType[victim] == TEUTON_NONE && dieingstate[victim] <= 0 && victim == attacker)
+	/*if(IsValidEntity(victim) && CanSelfHurtAndJump(victim) && TeutonType[victim] == TEUTON_NONE && dieingstate[victim] <= 0 && victim == attacker)
 	{
 		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TROLLDIER && OldProtokit_CanSelfHurtAndJump(victim) && !(GetEntityFlags(victim)&FL_ONGROUND))
 		{
@@ -1751,13 +1742,13 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 		}
 		return Plugin_Continue;
 		}
-	}
+	}*/
 #endif
 	if(!CheckInHud())
 	{
 		ClientPassAliveCheck[victim] = false;
 #if defined ZR
-		i_WasInUber[victim] = 0.0;
+	//	i_WasInUber[victim] = 0.0;
 		i_WasInMarkedForDeathSilent[victim] = 0.0;
 		i_WasInMarkedForDeath[victim] = 0.0;
 		i_WasInDefenseBuff[victim] = 0.0;
@@ -1819,50 +1810,20 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 		damage = 0.0;
 		return Plugin_Handled;
 	}
-	if(damagetype & DMG_TRUEDAMAGE)
+	if(IsInvuln(victim, true))
 	{
-		if(!(i_HexCustomDamageTypes[victim] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
-		{
-			if(f_RecievedTruedamageHit[victim] < GetGameTime())
-			{
-				f_RecievedTruedamageHit[victim] = GetGameTime() + 0.5;
-				ClientCommand(victim, "playgamesound player/crit_received%d.wav", (GetURandomInt() % 3) + 1);
-			}
-		}
-	}
-
-	//Bleed shouldnt ignore uber.
-	if(RaidbossIgnoreBuildingsLogic(1) || ((damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[victim] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED)))
-	{
-		if(TF2_IsPlayerInCondition(victim, TFCond_Ubercharged))
+		if(!(damagetype & DMG_OUTOFBOUNDS))
 		{
 			if(!CheckInHud())
 			{
-				i_WasInUber[victim] = TF2Util_GetPlayerConditionDuration(victim, TFCond_Ubercharged);
-				TF2_RemoveCondition(victim, TFCond_Ubercharged);
+				f_TimeUntillNormalHeal[victim] = GameTime + 4.0;
+				ClientPassAliveCheck[victim] = true;
 			}
-			if(!(damagetype & DMG_TRUEDAMAGE))
-				damage *= 0.5;
+			damage = 0.0;
+			return Plugin_Handled;	
 		}
 	}
-	else
-	{
-		//if its not during raids, do...
-		if(!(damagetype & DMG_OUTOFBOUNDS))
-		{
-			if(IsInvuln(victim))
-			{
-				if(!CheckInHud())
-				{
-					f_TimeUntillNormalHeal[victim] = GameTime + 4.0;
-					ClientPassAliveCheck[victim] = true;
-				}
-				damage = 0.0;
-				return Plugin_Handled;	
-			}
-		}
-	}
-	
+
 	if(damagetype & DMG_CRIT)
 	{
 		damagetype &= ~DMG_CRIT; //Remove Crit Damage at all times, it breaks calculations for no good reason.
@@ -1926,7 +1887,10 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 
 		}
 		else
-			return Plugin_Handled;	
+		{
+			if(attacker == victim)
+				return Plugin_Handled;	
+		}
 
 #if defined RPG		
 		if(!CheckInHud())
@@ -1988,6 +1952,18 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 	if(Damage_Modifiy(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom))
 	{
 		return Plugin_Handled;
+	}
+	
+	if(damagetype & DMG_TRUEDAMAGE)
+	{
+		if(!(i_HexCustomDamageTypes[victim] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
+		{
+			if(f_RecievedTruedamageHit[victim] < GetGameTime())
+			{
+				f_RecievedTruedamageHit[victim] = GetGameTime() + 0.5;
+				ClientCommand(victim, "playgamesound player/crit_received%d.wav", (GetURandomInt() % 3) + 1);
+			}
+		}
 	}
 	f_LatestDamageRes[victim] = damage / GetCurrentDamage;
 
@@ -2125,7 +2101,7 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 			bool Any_Left = false;
 			for(int client=1; client<=MaxClients; client++)
 			{
-				if(IsClientInGame(client) && GetClientTeam(client)==2 && !IsFakeClient(client) && TeutonType[client] != TEUTON_WAITING)
+				if(IsClientInGame(client) && GetTeam(client)==2 && !IsFakeClient(client) && TeutonType[client] != TEUTON_WAITING)
 				{
 					if(victim != client && IsPlayerAlive(client) && TeutonType[client] == TEUTON_NONE && dieingstate[client] == 0)
 					{
@@ -3155,6 +3131,7 @@ void ArmorDisplayClient(int client, bool deleteOverride = false)
 	if(ShieldLogicDo == 2)
 	{
 		TF2_AddCondition(client, TFCond_Milked, 1.0);
+		Force_ExplainBuffToClient(client, "Elemental Damage");
 		Client_Had_ArmorDebuff[client] = true;
 		return;
 	}

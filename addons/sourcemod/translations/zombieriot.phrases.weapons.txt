@@ -102,6 +102,7 @@
 	"weapons"
 	{
 		"en" 		"Weapons"
+		"es"		"Armas"
 		"fr" 		"Armes"
 		"ru" 		"Оружие"
 		"de"		"Waffen"
@@ -731,6 +732,7 @@
 	"Melee Weapons"//Melee Here
 	{
 		"en"		"Melee Weapons"
+		"es"		"Armas Cuerpo a Cuerpo"
 		"fr"		"Armes Corps-à-Corps"
 		"ru"		"Ближний бой"
 		"de"		"Nahkampfwaffen"
@@ -753,6 +755,7 @@
 	"Wrench"
 	{
 		"en"		"Wrench"
+		"es"		"Llave Inglesa"
 		"fr"		"Clé"
 		"ru"		"Гаечный ключ"
 		"de"		"Schlüsselwerkzeug"
@@ -884,6 +887,7 @@
 	"Mage Weapons"//Mage here
 	{
 		"en"		"Mage Weapons"
+		"es"		"Armas de Mago"
 		"fr"		"Armes Magiques"
 		"ru"		"Оружие магов"
 		"de"		"Magie Waffen"
@@ -1098,6 +1102,7 @@
 	"Melee Upgrades"//Melee Upgrades HERE!!!
 	{
 		"en"		"Melee Upgrades"
+		"es"		"Mejoras Cuerpo a Cuerpo"
 		"fr"		"Améliorations Corps-à-Corps"
 		"ru"		"Улучш. ближн. боя"
 		"de"		"Nahkampf Upgrades"
@@ -1339,6 +1344,7 @@
 	"Ranged Upgrades"//Ranged Upgrades HERE!!!
 	{
 		"en"		"Ranged Upgrades"
+		"es"		"Mejoras a Distancia"
 		"fr"		"Améliorations Armes à Portée"
 		"ru"		"Улучшения дальнего боя"
 		"de"		"Fernkampf-Upgrades"
@@ -2418,6 +2424,7 @@
 	{
 		"en"       "Builder Gear"
 		"fr"       "Équipement de Constructeur"
+		"es"	   "Equip. de Construccion"
 		"ru"       "Снаряж. строителя"
 		"chi"       "工程师物品"
 		"ko"		"건설자 장비"
@@ -2615,6 +2622,7 @@
 	"Extra Gear"
 	{
 		"en"       "Extra Gear"
+		"es"	   "Equipamiento Extra"
 		"fr"       "Équipement Éxtra"
 		"ru"       "Доп. снаряжение"
 		"chi"       "额外装置"

@@ -5,61 +5,78 @@
 	{
 		"en"	"Skill Tree"
 		"ko"	"스킬 트리"
+		"es"	"Arbol de Habilidades"
 	}
 	"Skill Points"
 	{
 		"#format"	"{1:d}"
 		"en"	"Skill Points: {1}"
 		"ko"	"스킬 포인트: {1}"
+		"es"	"Puntos de Habilidad: {1}"
 	}
 	"Browse Skill Tree Explain"
 	{
 		"en"	"\n---This menu overrides your movement! Close to move again!---\n"
+		"es"	"\n---Este menu te impide moverte! Cierralo para moverte!---\n"
+	}
+	"Browse Skill Tree Explain Full"
+	{
+		"en"	"You move in the skilltree with your movement keys.\nUpgrade skills by jumping.\nYou need to invest into enough skillpoints to unlock new paths.\nYou cannot move during this!"
+		"es"	"Te mueves en el arbol con tus teclas de movimiento.\nMejora tus habilidades saltando.\nNecesitas invertir suficientes puntos para desbloquear nuevos caminos.\nNo puedes moverte durante esto!"
 	}
 	"Browse Skill Tree"
 	{
 		"en"	"Browse Skill Tree"
 		"ko"	"스킬 트리 열기"
+		"es"	"Revisar el Arbol"
 	}
 	"Reset Skill Tree"
 	{
 		"en"	"Reset Skill Tree"
 		"ko"	"스킬 트리 초기화"
+		"es"	"Reiniciar el Arbol"
 	}
 	"Reset Skill Tree Confirm"
 	{
 		"en"	"Are you sure you wish to reset your skill tree?\nThis can not be undone."
 		"ko"	"스킬 트리를 재설정하시겠습니까?\n이 작업은 취소할 수 없습니다."
+		"es"	"Seguro que quieres reiniciar tu Arbol de Habilidades?\nEsto no se puede deshacer."
 	}
 	"Unlock Skill"
 	{
 		"en"	"Unlock Skill"
 		"ko"	"해금된 스킬"
+		"es"	"Desbloquear Habilidad"
 	}
 	"Fully Upgraded"
 	{
 		"en"	"Fully Upgraded"
 		"ko"	"최대 강화"
+		"es"	"Al Maximo"
 	}
 	"Upgrade Skill"
 	{
 		"en"	"Upgrade Skill"
 		"ko"	"스킬 강화"
+		"es"	"Mejorar Habilidad"
 	}
 	"Unlocked"
 	{
 		"en"	"Unlocked"
 		"ko"	"해금됨"
+		"es"	"Desbloqueado"
 	}
 	"Luck Up 1"
 	{
 		"en" 		"Luck Up"
 		"ko"		"운빨 상승"
+		"es"		"Suerte+"
 	}
 	"Luck Up 1 Desc"
 	{
 		"en" 		"Gain an additional +0.005％ chance to crit an enemy for 2x damage on any damage instance."
 		"ko"		"적에게 2배의 피해를 주는 확률을 +0.005％ 만큼 증가 시킵니다."
+		"es"		"Ganas una chance adicional de +0.005%% para hacer el doble de daño en un enemigo."
 	}
 	"Weapon Damage All 1"
 	{
@@ -247,8 +264,8 @@
 	}
 	"Bob's Healing Hand Desc"
 	{
-		"en" 		"Gain a 25 HP.\nAn additional +0.05％ luck and 1％ building HP and reduces revive time by 5 out of 250"
-		"ko"		"최대체력 +25 및 치명타 확률 +0.05％ 증가 구조물 최대 체력 +1％, 소생 시간을 250/5만큼 단축시킵니다."
+		"en" 		"Gain 25 HP.\nAn additional +0.05％ luck and 1％ building HP and reduces revive time by 5 out of 250"
+		"ko"		"최대체력 +25 및 치명타 확률 +0.05％, 증가 구조물 최대 체력 +1％, 소생 시간을 250/5만큼 단축시킵니다."
 	}
 	"Blitzkrieg Buff"
 	{

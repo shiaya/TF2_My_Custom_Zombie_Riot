@@ -210,6 +210,10 @@ public Action Command_PetMenu(int client, int args)
 	return Plugin_Handled;
 }
 
+float ReturnEntityAttackspeed(int iNpc)
+{
+	return f_AttackSpeedNpcIncrease[iNpc];
+}
 
 void OnMapStart_NPC_Base()
 {
@@ -384,11 +388,11 @@ methodmap CClotBody < CBaseCombatCharacter
 		DispatchKeyValueVector(npc, "angles",	 vecAng);
 #if defined ZR
 		if(!ModelReplaceDo(npc, Ally))
+#endif
 		{
 			DispatchKeyValue(npc, "model",	 model);
 			view_as<CBaseCombatCharacter>(npc).SetModel(model);
 		}
-#endif
 		DispatchKeyValue(npc,	   "modelscale", modelscale);
 		if(NpcTypeLogic == NORMAL_NPC) //No need for lagcomp on things that dont even move.
 		{
@@ -490,7 +494,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		//FIX: This fixes lookup activity not working.
 		npcstats.StartActivity(0);
 		npcstats.SetSequence(0);
-		npcstats.SetPlaybackRate(1.0);
+		npcstats.SetPlaybackRate(1.0, true);
 		npcstats.SetCycle(0.0);
 		npcstats.ResetSequenceInfo();
 		//FIX: This fixes lookup activity not working.
@@ -2103,7 +2107,7 @@ methodmap CClotBody < CBaseCombatCharacter
 		
 		int layer = this.FindGestureLayer(view_as<Activity>(activity));
 		if(layer != -1)
-			this.SetLayerPlaybackRate(layer, (SetGestureSpeed / (f_AttackSpeedNpcIncrease[this.index])));
+			this.SetLayerPlaybackRate(layer, (SetGestureSpeed / (ReturnEntityAttackspeed(this.index))));
 	}
 
 	public void RemoveGesture(const char[] anim)
@@ -2125,20 +2129,9 @@ methodmap CClotBody < CBaseCombatCharacter
 		
 		this.ResetSequence(iSequence);
 		this.ResetSequenceInfo();
-	//	this.SetSequence(iSequence);
 		this.SetPlaybackRate(1.0);
 		this.SetCycle(0.0);
-		//Its like setcycle, but itdoes it for us so it worsk clientside	
-	//	SetEntProp(this.index, Prop_Send, "m_bClientSideFrameReset", !GetEntProp(this.index, Prop_Send, "m_bClientSideFrameReset"));	
-		this.ResetSequenceInfo();
 		this.m_iAnimationState = iSequence;
-	//	int layer = this.FindGestureLayerBySequence(iSequence);
-	//	if(layer != -1)
-	//	{
-	//		CAnimationLayer alayer = this.GetAnimOverlay(layer);
-	//		alayer.m_flPlaybackRate = 1.0;
-	//		alayer.m_flCycle = 0.0;
-	//	}
 	
 	}
 	public void AddGestureViaSequence(const char[] anim)
@@ -2212,11 +2205,9 @@ methodmap CClotBody < CBaseCombatCharacter
 				this.m_iActivity = 0;
 				
 				this.SetSequence(sequence);
-				this.SetPlaybackRate(1.0);
-				this.SetCycle(0.0);
-			//Its like setcycle, but itdoes it for us so it worsk clientside	
-			//	SetEntProp(this.index, Prop_Send, "m_bClientSideFrameReset", !GetEntProp(this.index, Prop_Send, "m_bClientSideFrameReset"));	
 				this.ResetSequenceInfo();
+				this.SetCycle(0.0);
+				this.SetPlaybackRate(1.0);
 			}
 		}
 		else
@@ -2478,63 +2469,20 @@ methodmap CClotBody < CBaseCombatCharacter
 	
 	public void SetSequence(int iSequence)	{ SetEntProp(this.index, Prop_Send, "m_nSequence", iSequence); }
 	public float GetPlaybackRate() { return GetEntPropFloat(this.index, Prop_Send, "m_flPlaybackRate"); }
-	public void SetPlaybackRate(float flRate) { SetEntPropFloat(this.index, Prop_Send, "m_flPlaybackRate", flRate); }
+	public void SetPlaybackRate(float flRate, bool DontAlter = false) 
+	{
+		if(DontAlter || flRate == 0.0)
+		{
+			SetEntPropFloat(this.index, Prop_Send, "m_flPlaybackRate", flRate);
+			return;
+		}
+	//	PrintToChatAll(" Speed playback %f",flRate / ReturnEntityAttackspeed(this.index));
+		SetEntPropFloat(this.index, Prop_Send, "m_flPlaybackRate", (flRate / ReturnEntityAttackspeed(this.index)));
+	}
 	public void SetCycle(float flCycle)	   
 	{
-		//We are chacning cycles, we must disable this.
-	//	SetEntProp(this.index, Prop_Send, "m_bClientSideAnimation", 0);
 		SetEntPropFloat(this.index, Prop_Send, "m_flCycle", flCycle); 
 	}
-	/*
-	public void SetSequence(int iSequence)
-	{
-		if(iSequence == -1)
-			return;
-
-		
-		int layer = this.AddLayeredSequence(iSequence, 1);
-		if (!this.IsValidLayer(layer))
-		{
-			i_MasterSequenceNpc[this.index] = -1;
-			return;
-		}
-
-		this.SetLayerCycle(layer, 0.0);
-		this.SetLayerPlaybackRate(layer, 1.0);
-		f_MasterSequenceNpcPlayBackRate[this.index] = 1.0;
-
-		i_MasterSequenceNpc[this.index] = layer;
-		// SetEntProp(this.index, Prop_Send, "m_nSequence", iSequence); 
-	}
-	public float GetPlaybackRate() 
-	{
-		//return GetEntPropFloat(this.index, Prop_Send, "m_flPlaybackRate"); 
-		if(i_MasterSequenceNpc[this.index] == -1)
-		{
-			return -1.0;
-		}
-		return f_MasterSequenceNpcPlayBackRate[this.index];
-	}
-	public void SetPlaybackRate(float flRate) 
-	{
-		//we cant just 
-		if(i_MasterSequenceNpc[this.index] == -1)
-		{
-			return;
-		}
-		f_MasterSequenceNpcPlayBackRate[this.index] = flRate;
-		this.SetLayerPlaybackRate(i_MasterSequenceNpc[this.index], flRate);
-	}
-	public void SetCycle(float flCycle)
-	{
-		if(i_MasterSequenceNpc[this.index] == -1)
-		{
-			return;
-		}
-		this.SetLayerCycle(i_MasterSequenceNpc[this.index], flCycle);
-	//	 SetEntPropFloat(this.index, Prop_Send, "m_flCycle", flCycle); 
-	}
-	*/
 	
 	public void GetVectors(float pForward[3], float pRight[3], float pUp[3]) { view_as<CBaseEntity>(this).GetVectors(pForward, pRight, pUp); }
 	
@@ -3137,11 +3085,10 @@ methodmap CClotBody < CBaseCombatCharacter
 		this.m_iActivity = iActivity;
 		
 		this.SetSequence(nSequence);
+		this.ResetSequenceInfo();
 		this.SetPlaybackRate(1.0);
 		this.SetCycle(0.0);
-	//	SetEntProp(this.index, Prop_Send, "m_bClientSideFrameReset", !GetEntProp(this.index, Prop_Send, "m_bClientSideFrameReset"));	
-	
-		this.ResetSequenceInfo();
+
 		
 		return true;
 	}
@@ -3203,7 +3150,7 @@ methodmap CClotBody < CBaseCombatCharacter
 			{
 				view_as<CClotBody>(this.index).SetLayerPlaybackRate(i, 1.0);
 			}
-			view_as<CClotBody>(this.index).SetPlaybackRate(f_LayerSpeedFrozeRestore[this.index]);
+			view_as<CClotBody>(this.index).SetPlaybackRate(f_LayerSpeedFrozeRestore[this.index], true);
 
 			if(IsValidEntity(view_as<CClotBody>(this.index).m_iFreezeWearable))
 				RemoveEntity(view_as<CClotBody>(this.index).m_iFreezeWearable);
@@ -3223,12 +3170,12 @@ methodmap CClotBody < CBaseCombatCharacter
 				if(PlaybackSpeed <= 0.01)
 					PlaybackSpeed = 0.01;
 					
-				this.SetPlaybackRate(PlaybackSpeed);
+				this.SetPlaybackRate(PlaybackSpeed, true);
 			}
 			else
 			{
 				//if its lower then this value, then itll mess up and particles wont animate.
-				this.SetPlaybackRate(0.01);
+				this.SetPlaybackRate(0.01, true);
 			}
 		}
 		
@@ -3795,396 +3742,6 @@ public void CBaseCombatCharacter_EventKilledLocal(int pThis, int iAttacker, int 
 #endif
 	}
 }
-
-
-void Npc_DoGibLogic(int pThis, float GibAmount = 1.0)
-{
-	CClotBody npc = view_as<CClotBody>(pThis);
-	float startPosition[3]; //This is what we use if we cannot find the correct name of said bone for this npc.
-				
-	float accurateposition[3]; //What we use if it has one.
-	float accurateAngle[3]; //What we use if it has one.
-	
-	float damageForce[3];
-	npc.m_vecpunchforce(damageForce, false);
-
-	bool Limit_Gibs = false;
-	if(CurrentGibCount > ZR_MAX_GIBCOUNT)
-	{
-		Limit_Gibs = true;
-	}
-
-	static int Main_Gib;
-	int GibAny;
-	
-	switch(npc.m_iBleedType)
-	{
-		case BLEEDTYPE_NORMAL:
-		{
-			npc.PlayGibSound();
-			if(npc.m_bIsGiant)
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 64;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_1.mdl", startPosition, _, damageForce, true, true);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 15;
-					GibAny = Place_Gib("models/Gibs/HGIBS_spine.mdl", startPosition, _, damageForce, false, true);
-					startPosition[2] += 44;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", accurateposition, accurateAngle, damageForce, false, true);	
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", startPosition, _, damageForce, false, true);	
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}
-			else
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 42;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_1.mdl", startPosition, _, damageForce, true);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 10;
-					GibAny = Place_Gib("models/Gibs/HGIBS_spine.mdl", startPosition, _, damageForce);
-					startPosition[2] += 34;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", accurateposition, accurateAngle, damageForce);	
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", startPosition, _, damageForce);	
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}	
-		}	
-		case BLEEDTYPE_METAL:
-		{
-			npc.PlayGibSoundMetal();
-			if(npc.m_bIsGiant)
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 64;
-				Main_Gib = Place_Gib("models/gibs/helicopter_brokenpiece_03.mdl", startPosition, _, damageForce, true, false, true, true); //dont gigantify this one.
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 15;
-					GibAny = Place_Gib("models/gibs/scanner_gib01.mdl", startPosition, _, damageForce, false, true, true);
-					startPosition[2] += 44;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/gibs/metal_gib2.mdl", accurateposition, accurateAngle, damageForce, false, true, true);	
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/gibs/metal_gib2.mdl", startPosition, _, damageForce, false, true, true);	
-						f_GibHealingAmount[GibAny] *= GibAmount;	
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}
-			else
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 42;
-				Main_Gib = Place_Gib("models/gibs/helicopter_brokenpiece_03.mdl", startPosition, _, damageForce, true, false, true, true, true);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 10;
-					GibAny = Place_Gib("models/gibs/scanner_gib01.mdl", startPosition, _, damageForce, false, false, true);
-					startPosition[2] += 34;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/gibs/metal_gib2.mdl", accurateposition, accurateAngle, damageForce, false, false, true);
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/gibs/metal_gib2.mdl", startPosition, _, damageForce, false, false, true);	
-						f_GibHealingAmount[GibAny] *= GibAmount;	
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}		
-		}
-		case BLEEDTYPE_XENO:
-		{
-			npc.PlayGibSound();
-			if(npc.m_bIsGiant)
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 64;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_1.mdl", startPosition, _, damageForce, true, true, _, _, _, 1);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 15;
-					GibAny = Place_Gib("models/Gibs/HGIBS_spine.mdl", startPosition, _, damageForce, false, true, _, _, _, 1);
-					startPosition[2] += 44;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", accurateposition, accurateAngle, damageForce, false, true, _, _, _, 1);	
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", startPosition, _, damageForce, false, true, _, _, _, 1);		
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}
-			else
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 42;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_1.mdl", startPosition, _, damageForce, true, _, _, _, _, 1);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 10;
-					GibAny = Place_Gib("models/Gibs/HGIBS_spine.mdl", startPosition, _, damageForce, _, _, _, _, _, 1);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-					startPosition[2] += 34;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", accurateposition, accurateAngle, damageForce, _, _, _, _, _, 1);
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", startPosition, _, damageForce, _, _, _, _, _, 1);
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}	
-		}
-		case BLEEDTYPE_SKELETON:
-		{
-			npc.PlayGibSound();
-			if(npc.m_bIsGiant)
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 64;
-				GibAny = Place_Gib("models/bots/skeleton_sniper/skeleton_sniper_gib_head.mdl", startPosition, _, damageForce, false, true, _, _, _, false, true);
-				f_GibHealingAmount[GibAny] *= GibAmount;
-				startPosition[2] -= 15;
-				GibAny = Place_Gib("models/bots/skeleton_sniper/skeleton_sniper_gib_torso.mdl", startPosition, _, damageForce, false, true, _, _, _, false, true);
-				f_GibHealingAmount[GibAny] *= GibAmount;
-				startPosition[2] += 44;
-				if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-				{
-					npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-					GibAny = Place_Gib("models/bots/skeleton_sniper/skeleton_sniper_gib_head.mdl", accurateposition, accurateAngle, damageForce, false, true, _, _, _, false, true);	
-					f_GibHealingAmount[GibAny] *= GibAmount;
-				}
-				else
-				{
-					GibAny = Place_Gib("models/bots/skeleton_sniper/skeleton_sniper_gib_head.mdl", startPosition, _, damageForce, false, true, _, _, _, false, true);
-					f_GibHealingAmount[GibAny] *= GibAmount;		
-				}
-			}
-			else
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 42;
-				GibAny = Place_Gib("models/bots/skeleton_sniper/skeleton_sniper_gib_head.mdl", startPosition, _, damageForce, true, _, _, _, _, false, true);
-				f_GibHealingAmount[GibAny] *= GibAmount;
-				startPosition[2] -= 10;
-				GibAny = Place_Gib("models/bots/skeleton_sniper/skeleton_sniper_gib_torso.mdl", startPosition, _, damageForce, _, _, _, _, _, false, true);
-				f_GibHealingAmount[GibAny] *= GibAmount;
-				startPosition[2] += 34;
-				if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-				{
-					npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-					GibAny = Place_Gib("models/Gibs/HGIBS.mdl", accurateposition, accurateAngle, damageForce, _, _, _, _, _, false, true);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-				}
-				else
-				{
-					GibAny = Place_Gib("models/Gibs/HGIBS.mdl", startPosition, _, damageForce, _, _, _, _, _, false, true);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-				}
-			}	
-		}
-		case BLEEDTYPE_SEABORN:
-		{
-			npc.PlayGibSound();
-			if(npc.m_bIsGiant)
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 64;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_3.mdl", startPosition, _, damageForce, true, true, _, _, _, 2);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 15;
-					GibAny = Place_Gib("models/gibs/antlion_gib_medium_2.mdl", startPosition, _, damageForce, false, true, _, _, _, 2);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-					startPosition[2] += 44;
-					GibAny = Place_Gib("models/gibs/antlion_gib_medium_1.mdl", startPosition, _, damageForce, false, true, _, _, _, 2);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}
-			else
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 42;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_3.mdl", startPosition, _, damageForce, true, _, _, _, _, 2);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 10;
-					GibAny = Place_Gib("models/gibs/antlion_gib_medium_2.mdl", startPosition, _, damageForce, _, _, _, _, _, 2);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-					startPosition[2] += 34;
-					GibAny = Place_Gib("models/gibs/antlion_gib_medium_1.mdl", startPosition, _, damageForce, _, _, _, _, _, 2);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}	
-		}
-		case BLEEDTYPE_VOID:
-		{
-			npc.PlayGibSound();
-			if(npc.m_bIsGiant)
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 64;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_1.mdl", startPosition, _, damageForce, true, true, _, _, _, 3);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 15;
-					GibAny = Place_Gib("models/Gibs/HGIBS_spine.mdl", startPosition, _, damageForce, false, true, _, _, _, 3);
-					startPosition[2] += 44;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", accurateposition, accurateAngle, damageForce, false, true, _, _, _, 3);	
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", startPosition, _, damageForce, false, true, _, _, _, 3);		
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}
-			else
-			{
-				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
-				startPosition[2] += 42;
-				Main_Gib = Place_Gib("models/gibs/antlion_gib_large_1.mdl", startPosition, _, damageForce, true, _, _, _, _, 3);
-				f_GibHealingAmount[Main_Gib] *= GibAmount;
-				if(!Limit_Gibs)
-				{
-					startPosition[2] -= 10;
-					GibAny = Place_Gib("models/Gibs/HGIBS_spine.mdl", startPosition, _, damageForce, _, _, _, _, _, 3);
-					f_GibHealingAmount[GibAny] *= GibAmount;
-					startPosition[2] += 34;
-					if(c_HeadPlaceAttachmentGibName[npc.index][0] != 0)
-					{
-						npc.GetAttachment(c_HeadPlaceAttachmentGibName[npc.index], accurateposition, accurateAngle);
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", accurateposition, accurateAngle, damageForce, _, _, _, _, _, 3);
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-					else
-					{
-						GibAny = Place_Gib("models/Gibs/HGIBS.mdl", startPosition, _, damageForce, _, _, _, _, _, 3);
-						f_GibHealingAmount[GibAny] *= GibAmount;
-					}
-				}
-				else
-				{
-					if(IsValidEntity(Main_Gib))
-					{
-						f_GibHealingAmount[Main_Gib] *= 3.0;
-					}
-				}
-			}	
-		}
-	}
-}
 public void SetNpcToDeadViaGib(int pThis)
 {
 #if defined ZR
@@ -4717,6 +4274,7 @@ public bool BulletAndMeleeTraceAlly(int entity, int contentsMask, any iExclude)
 
 	if(GetTeam(iExclude) != GetTeam(entity))
 		return false;
+		
 	else if(!b_NpcHasDied[entity])
 	{
 		if(GetTeam(iExclude) == GetTeam(entity))
@@ -6068,7 +5626,7 @@ public void NpcBaseThinkPost(int iNPC)
 		//calc once
 	}
 	SetEntPropFloat(iNPC, Prop_Data, "m_flSimulationTime",GetGameTime() + SimulationTimeDelay);
-	if(f_AttackSpeedNpcIncrease[iNPC] == 1.0)
+	if(ReturnEntityAttackspeed(iNPC) == 1.0)
 		return;
 		
 	if(f_TimeFrozenStill[iNPC] > GetGameTime(iNPC))
@@ -6076,13 +5634,10 @@ public void NpcBaseThinkPost(int iNPC)
 		
 	float time = GetGameTime() - lastThink;	// Time since the last time this NPC thought
 
-	//It like, speed sup their world time?
-	//f_StunExtraGametimeDuration[iNPC] += ((GetTickInterval() * f_AttackSpeedNpcIncrease[iNPC]) - GetTickInterval());
-	//Shitty attackspeed increase.
-	if(f_AttackSpeedNpcIncrease[iNPC] < 1.0)	// Buffs
-		f_StunExtraGametimeDuration[iNPC] += (time - (time / f_AttackSpeedNpcIncrease[iNPC]));
+	if(ReturnEntityAttackspeed(iNPC) < 1.0)	// Buffs
+		f_StunExtraGametimeDuration[iNPC] += (time - (time / ReturnEntityAttackspeed(iNPC)));
 	else	// Nerfs
-		f_StunExtraGametimeDuration[iNPC] += ((time * f_AttackSpeedNpcIncrease[iNPC]) - time);
+		f_StunExtraGametimeDuration[iNPC] += ((time * ReturnEntityAttackspeed(iNPC)) - time);
 }
 void NpcDrawWorldLogic(int entity)
 {
@@ -7042,148 +6597,211 @@ public int Can_I_See_Ally(int attacker, int ally)
 	return Traced_Target;
 }
 
-int Place_Gib(const char[] model, float pos[3],float ang[3] = {0.0,0.0,0.0}, float vel[3], bool Reduce_masively_Weight = false, bool big_gibs = false, bool metal_colour = false, bool Rotate = false, bool smaller_gibs = false, int BleedType = 0, bool nobleed = false)
+static char m_cGibModelDefault[][] =
 {
-	int prop = CreateEntityByName("prop_physics_multiplayer");
-	if(!IsValidEntity(prop))
-		return -1;
-	DispatchKeyValue(prop, "model", model);
-	DispatchKeyValue(prop, "physicsmode", "2");
-	DispatchKeyValue(prop, "massScale", "1.0");
-	DispatchKeyValue(prop, "spawnflags", "2");
+	"models/gibs/antlion_gib_large_1.mdl",
+	"models/Gibs/HGIBS_spine.mdl",
+	"models/Gibs/HGIBS.mdl"
+};
+static char m_cGibModelMetal[][] =
+{
+	"models/gibs/helicopter_brokenpiece_03.mdl",
+	"models/gibs/scanner_gib01.mdl",
+	"models/gibs/metal_gib2.mdl"
+};
+void Npc_DoGibLogic(int pThis, float GibAmount = 1.0)
+{
+	CClotBody npc = view_as<CClotBody>(pThis);
+	if(npc.m_iBleedType == 0)
+		return;
 
-/*
-	TF2_CreateGlow(prop, model, client, color);
+	float startPosition[3];
+				
+	float damageForce[3];
+	npc.m_vecpunchforce(damageForce, false);
+	ScaleVector(damageForce, 0.025); //Reduce overall
 
-	char buffer[16];
-	FormatEx(buffer, sizeof(buffer), "rpg_item_%d", index);
-	DispatchKeyValue(prop, "targetname", buffer);
+	bool Limit_Gibs = false;
+	if(CurrentGibCount > ZR_MAX_GIBCOUNT)
+	{
+		Limit_Gibs = true;
+	}
+	if(EnableSilentMode)
+		Limit_Gibs = true;
 
-	static float vel[3];
-	vel[0] = GetRandomFloat(-160.0, 160.0);
-	vel[1] = GetRandomFloat(-160.0, 160.0);
-	vel[2] = GetRandomFloat(0.0, 160.0);
-	pos[2] += 20.0;
-	*/
-	/*
-	Pow(vel[0], 0.5);
-	Pow(vel[1], 0.5);
-	Pow(vel[2], 0.5);
-	*/
-	f_GibHealingAmount[prop] = 1.0; //Set it to false by default first.
-	CurrentGibCount += 1;
-	if(big_gibs)
-	{
-		DispatchKeyValue(prop, "modelscale", "1.6");
-	}
-	if(smaller_gibs)
-	{
-		DispatchKeyValue(prop, "modelscale", "0.8");
-	}
-	
-	if(Reduce_masively_Weight)
-		ScaleVector(vel, 0.02);
-		
-	if(ang[0] != 0.0)
-	{
-		if(!Rotate)
-		{
-			ang[0] = 0.0;
-			ang[1] = 0.0;
-			ang[2] = 0.0;
-		//	TeleportEntity(prop, pos, NULL_VECTOR, NULL_VECTOR);
-		}
-		else
-		{
-			ang[0] = 90.0;
-			ang[1] = 0.0;
-			ang[2] = 0.0;
-	//		TeleportEntity(prop, pos, {90.0,0.0,0.0}, NULL_VECTOR);
-		}
-	}
-	else
-	{
-		if(!Rotate)
-		{
-		//	TeleportEntity(prop, pos, ang, NULL_VECTOR);
-		}
-		else
-		{
-			ang[0] += 90.0;
-		//	TeleportEntity(prop, pos, ang, NULL_VECTOR);
-		}		
-		
-	}
-	DispatchKeyValueVector(prop, "origin",	 pos);
-	DispatchKeyValueVector(prop, "angles",	 ang);
-	DispatchSpawn(prop);
-	TeleportEntity(prop, NULL_VECTOR, NULL_VECTOR, vel);
+	if(npc.m_iBleedType == BLEEDTYPE_METAL)
+		npc.PlayGibSoundMetal();
+	else if(npc.m_iBleedType != BLEEDTYPE_RUBBER)
+		npc.PlayGibSound();
 
-	float Random_time = GetRandomFloat(6.0, 7.0);
-	if(CurrentGibCount > ZR_MAX_GIBCOUNT_ABSOLUTE)
+
+	GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", startPosition);
+				
+	for(int GibLoop; GibLoop < 3; GibLoop++)
 	{
-		Random_time *= 0.5; //half the duration if there are too many gibs
-	}
-#if defined RPG
-	Random_time *= 0.25; //in RPG, gibs are really not needed as they are purpely cosmetic, for this reason they wont stay long at all.
-#endif
-	SetEntityCollisionGroup(prop, 2); //COLLISION_GROUP_DEBRIS_TRIGGER
-	
-	b_IsAGib[prop] = true;
-	
-	if (!nobleed)
-	{
-		if(!metal_colour)
+		int prop = CreateEntityByName("prop_physics_multiplayer");
+		if(!IsValidEntity(prop))
+			return; //Emergency backup
+		float TempPosition[3];
+		float TempForce[3];
+
+		TempPosition = startPosition;
+
+		switch(GibLoop)
 		{
-			if(BleedType == 0)
+			case 0:
 			{
-				if(!EnableSilentMode)
-				{
-					int particle = ParticleEffectAt(pos, "blood_trail_red_01_goop", Random_time); //This is a permanent particle, gotta delete it manually...
-					SetParent(prop, particle);
-				}
-				SetEntityRenderColor(prop, 255, 0, 0, 255);
+				//main torso
+				if(!npc.m_bIsGiant)
+					TempPosition[2] += 42;
+				else
+					TempPosition[2] += 64;
+
 			}
-			else if(BleedType == 2)
+			case 1:
 			{
-				if(!EnableSilentMode)
-				{
-					int particle = ParticleEffectAt(pos, "flamethrower_rainbow_bubbles02", Random_time); //This is a permanent particle, gotta delete it manually...
-					SetParent(prop, particle);
-				}
-				SetEntityRenderColor(prop, 65, 65, 255, 255);				
+				//Spine, or something
+				if(!npc.m_bIsGiant)
+					TempPosition[2] += 30;
+				else
+					TempPosition[2] += 49;
 			}
-			else if(BleedType == 3)
+			case 2:
 			{
-				if(!EnableSilentMode)
-				{
-					int particle = ParticleEffectAt(pos, "doublejump_trail_alt", Random_time); //This is a permanent particle, gotta delete it manually...
-					SetParent(prop, particle);
-				}
-				SetEntityRenderColor(prop, 200, 0, 200, 255);
+				//Head
+				if(!npc.m_bIsGiant)
+					TempPosition[2] += 75;
+				else
+					TempPosition[2] += 110;
+			}
+		}
+		TempForce = damageForce;
+		if(GibLoop == 0 && npc.m_iBleedType == BLEEDTYPE_NORMAL)
+			ScaleVector(TempForce, 0.4);
+		//This gib in specific has too much knockback.
+
+		if(npc.m_iBleedType == BLEEDTYPE_METAL)
+			DispatchKeyValue(prop, "model", m_cGibModelMetal[GibLoop]);
+		else
+			DispatchKeyValue(prop, "model", m_cGibModelDefault[GibLoop]);
+
+		DispatchKeyValue(prop, "physicsmode", "2");
+		DispatchKeyValue(prop, "massScale", "1.0");
+		DispatchKeyValue(prop, "spawnflags", "2");
+		if(npc.m_bIsGiant)
+		{
+			if(npc.m_iBleedType == BLEEDTYPE_METAL && GibLoop == 1)
+			{
+				DispatchKeyValue(prop, "modelscale", "1.2");
 			}
 			else
-			{
-				if(!EnableSilentMode)
-				{
-					int particle = ParticleEffectAt(pos, "blood_impact_green_01", Random_time); //This is a permanent particle, gotta delete it manually...
-					SetParent(prop, particle);
-				}
-				SetEntityRenderColor(prop, 0, 255, 0, 255);
-			}
+				DispatchKeyValue(prop, "modelscale", "1.6");
 		}
 		else
 		{
-	//		pos[2] -= 40.0;
-			int particle = ParticleEffectAt(pos, "tpdamage_4", Random_time); //This is a permanent particle, gotta delete it manually...
-			SetParent(prop, particle);
+			if(npc.m_iBleedType == BLEEDTYPE_METAL && GibLoop == 1)
+			{
+				DispatchKeyValue(prop, "modelscale", "0.8");
+			}
 		}
+
+		float Random_time = GetRandomFloat(6.0, 7.0);
+		if(EnableSilentMode || CurrentGibCount > ZR_MAX_GIBCOUNT_ABSOLUTE)
+		{
+			Random_time *= 0.5; //half the duration if there are too many gibs
+		}
+#if defined RPG
+		Random_time *= 0.25; //in RPG, gibs are really not needed as they are purpely cosmetic, for this reason they wont stay long at all.
+#endif
+		f_GibHealingAmount[prop] = 1.0 * GibAmount; //Set it to false by default first.
+		if(Limit_Gibs)	
+			f_GibHealingAmount[prop] *= 3.0;
+
+		if(b_thisNpcIsABoss[pThis] || b_thisNpcIsARaid[pThis])
+		{
+			f_GibHealingAmount[prop] *= 4.0;
+		}
+		else if(b_IsGiant[pThis])
+		{
+			f_GibHealingAmount[prop] *= 2.0;
+		}
+
+		float ang[3];
+		switch(GibLoop)
+		{
+			case 0:
+			{
+				if(npc.m_iBleedType == BLEEDTYPE_METAL)
+					ang[0] = 90.0;
+			}
+		}
+		CurrentGibCount += 1;
+		DispatchKeyValueVector(prop, "origin",	 TempPosition);
+		DispatchKeyValueVector(prop, "angles",	 ang);
+		DispatchSpawn(prop);
+		TeleportEntity(prop, NULL_VECTOR, NULL_VECTOR, TempForce);
+		SetEntityCollisionGroup(prop, 2); //COLLISION_GROUP_DEBRIS_TRIGGER
+		CreateTimer(Random_time - 1.5, Prop_Gib_FadeSet, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(Random_time, Timer_RemoveEntity_Prop_Gib, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
+
+		Random_time -= 1.0;
+		int ParticleSet = -1;
+		switch(npc.m_iBleedType)
+		{
+			case BLEEDTYPE_NORMAL:
+			{
+				if(!EnableSilentMode)
+					ParticleSet = ParticleEffectAt(TempPosition, "blood_trail_red_01_goop", Random_time); 
+				SetEntityRenderMode(prop, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(prop, 255, 0, 0, 255);
+			}
+			case BLEEDTYPE_METAL:
+			{
+				if(!EnableSilentMode)
+					ParticleSet = ParticleEffectAt(TempPosition, "tpdamage_4", Random_time); 
+			}
+			case BLEEDTYPE_RUBBER:
+			{
+				if(!EnableSilentMode)
+					ParticleSet = ParticleEffectAt(TempPosition, "doublejump_trail_alt", Random_time); //This is a permanent particle, gotta delete it manually...
+			}
+			case BLEEDTYPE_XENO:
+			{
+				if(!EnableSilentMode)
+					ParticleSet = ParticleEffectAt(TempPosition, "blood_impact_green_01", Random_time); 
+				SetEntityRenderMode(prop, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(prop, 0, 255, 0, 255);
+			}
+			case BLEEDTYPE_SKELETON:
+			{
+				//insert.
+			}
+			case BLEEDTYPE_SEABORN:
+			{
+				if(!EnableSilentMode)
+					ParticleSet = ParticleEffectAt(TempPosition, "flamethrower_rainbow_bubbles02", Random_time); 
+				SetEntityRenderMode(prop, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(prop, 65, 65, 255, 255);
+			}
+			case BLEEDTYPE_VOID:
+			{
+				if(!EnableSilentMode)
+				{
+					TE_BloodSprite(TempPosition, { 0.0, 0.0, 0.0 }, 200, 0, 200, 255, 32);
+					TE_SendToAllInRange(TempPosition, RangeType_Visibility);
+				}
+				SetEntityRenderMode(prop, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(prop, 200, 0, 200, 255);
+			}
+		}	
+		if(ParticleSet != -1)
+		{
+			SetParent(prop, ParticleSet);
+		}
+		b_IsAGib[prop] = true;
+		if(Limit_Gibs)
+			return; //only spawn 1 gib.
 	}
-	
-	CreateTimer(Random_time - 1.5, Prop_Gib_FadeSet, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(Random_time, Timer_RemoveEntity_Prop_Gib, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
-//	CreateTimer(1.5, Timer_DisableMotion, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
-	return prop;
 }
 
 #if defined ZR
@@ -8951,7 +8569,6 @@ public void SetDefaultValuesToZeroNPC(int entity)
 	b_ScalesWithWaves[entity] = false;
 	f_StuckOutOfBoundsCheck[entity] = GetGameTime() + 2.0;
 	f_StunExtraGametimeDuration[entity] = 0.0;
-	f_RaidStunResistance[entity] = 0.0;
 	i_TextEntity[entity][0] = -1;
 	i_TextEntity[entity][1] = -1;
 	i_TextEntity[entity][2] = -1;
@@ -9490,6 +9107,8 @@ stock void FreezeNpcInTime(int npc, float Duration_Stun, bool IgnoreAllLogic = f
 		{
 			return;
 		}
+		if(HasSpecificBuff(npc, "Dimensional Turbulence"))
+			Duration_Stun *= 0.25;
 		TF2_AddCondition(npc, TFCond_FreezeInput, Duration_Stun);
 		ApplyStatusEffect(npc, npc, "Stunned", Duration_Stun);	
 		return;
@@ -9516,16 +9135,22 @@ stock void FreezeNpcInTime(int npc, float Duration_Stun, bool IgnoreAllLogic = f
 	float Duration_Stun_Post = Duration_Stun;
 	if(!IgnoreAllLogic)
 	{
-		if(f_RaidStunResistance[npc] > GameTime)
-		{
-			if(HasSpecificBuff(npc, "Shook Head"))
-				Duration_Stun_Post *= 0.5;
-		}
+		if(HasSpecificBuff(npc, "Shook Head"))
+			Duration_Stun_Post *= 0.5;
 
 #if defined ZR
 		Rogue_ParadoxDLC_StunTime(npc, Duration_Stun_Post);
 #endif
+		if(HasSpecificBuff(npc, "Dimensional Turbulence"))
+			Duration_Stun_Post *= 0.5;
 	}
+
+	if(Duration_Stun_Post <= 0.05)
+	{
+		//this is too little, do not bother
+		return;
+	}
+
 	f_StunExtraGametimeDuration[npc] += (Duration_Stun_Post - TimeSinceLastStunSubtract);
 	fl_NextDelayTime[npc] = GameTime + Duration_Stun_Post - f_StunExtraGametimeDuration[npc];
 	f_TimeFrozenStill[npc] = GameTime + Duration_Stun_Post - f_StunExtraGametimeDuration[npc];
@@ -9541,7 +9166,7 @@ stock void FreezeNpcInTime(int npc, float Duration_Stun, bool IgnoreAllLogic = f
 	Npc_DebuffWorldTextUpdate(view_as<CClotBody>(npc));
 
 	f_LayerSpeedFrozeRestore[npc] = view_as<CClotBody>(npc).GetPlaybackRate();
-	view_as<CClotBody>(npc).SetPlaybackRate(0.0);
+	view_as<CClotBody>(npc).SetPlaybackRate(0.0, true);
 	int layerCount = CBaseAnimatingOverlay(npc).GetNumAnimOverlays();
 	for(int i; i < layerCount; i++)
 	{

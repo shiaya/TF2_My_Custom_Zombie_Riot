@@ -22,38 +22,27 @@ static DynamicHook g_DHookScoutSecondaryFire;
 #if defined ZR
 static bool IsRespawning;
 #endif
-
 static DynamicHook g_DHookGrenadeExplode; //from mikusch but edited
 static DynamicHook g_DHookGrenade_Detonate; //from mikusch but edited
 static DynamicHook g_DHookFireballExplode; //from mikusch but edited
 static DynamicHook g_DhookCrossbowHolster;
 DynamicHook g_DhookUpdateTransmitState; 
-//static DynamicHook g_DHookShouldCollide; //from mikusch but edited
 
 static DynamicDetour g_CalcPlayerScore;
-
 static Handle g_detour_CTFGrenadePipebombProjectile_PipebombTouch;
-
 static bool Dont_Move_Building;											//dont move buildings
 static bool Dont_Move_Allied_Npc;											//dont move buildings	
-
 static bool b_LagCompNPC;
 
-//static DynamicHook HookCreateFakeClientStuff;
 static DynamicHook HookItemIterateAttribute;
 static ArrayList RawEntityHooks;
 static int m_bOnlyIterateItemViewAttributes;
 static int m_Item;
-//Handle dHookCheckUpgradeOnHit;
-/*
-// Offsets from mikusch but edited
-static int g_OffsetWeaponMode;
-static int g_OffsetWeaponInfo;
-static int g_OffsetWeaponPunchAngle;
-*/
 static bool GrenadeExplodedAlready[MAXENTITIES];
+Handle g_hSDKLoadEvents;
+Handle g_hSDKReloadEvents;
+Address g_aGameEventManager;
 
-//#include <dhooks_gameconf_shim>
 
 stock Handle CheckedDHookCreateFromConf(Handle game_config, const char[] name) {
     Handle res = DHookCreateFromConf(game_config, name);
@@ -163,6 +152,37 @@ void DHook_Setup()
 	//Fixes mediguns giving extra speed where it was not intended.
 	//gamedata first try!!
 	DHook_CreateDetour(gamedata, "CTFPlayer::TeamFortress_SetSpeed()", DHookCallback_TeamFortress_SetSpeed_Pre, DHookCallback_TeamFortress_SetSpeed_Post);
+
+
+	//https://github.com/CookieCat45/Risk-Fortress-2/blob/a98baf90d1074da6f82b53d30747aae354589b9a/scripting/rf2.sp#L281
+	DynamicDetour g_hDetourCreateEvent = DynamicDetour.FromConf(gamedata, "CGameEventManager::CreateEvent");
+	if (!g_hDetourCreateEvent || !g_hDetourCreateEvent.Enable(Hook_Pre, Detour_CreateEvent))
+	{
+		LogError("[DHooks] Failed to create detour for CGameEventManager::CreateEvent");
+	}
+
+	StartPrepSDKCall(SDKCall_Raw);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "CGameEventManager::LoadEventsFromFile");
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+	g_hSDKLoadEvents = EndPrepSDKCall();
+	if (!g_hSDKLoadEvents)
+	{
+		LogError("[SDK] Failed to create call to CGameEventManager::LoadEventsFromFile");
+	}
+	
+	if (g_hDetourCreateEvent)
+	{
+		CreateEvent("give_me_my_cgameeventmanager_pointer", true);
+	}
+	StartPrepSDKCall(SDKCall_Static);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "SV_CreateBaseline");
+	g_hSDKReloadEvents = EndPrepSDKCall();
+	if (!g_hSDKReloadEvents)
+	{
+		LogError("[SDK] Failed to create call to SV_CreateBaseline");
+	}
+
 	delete gamedata;
 	
 	GameData gamedata_lag_comp = LoadGameConfigFile("lagcompensation");
@@ -171,6 +191,7 @@ void DHook_Setup()
 	DHook_CreateDetour(gamedata_lag_comp, "CLagCompensationManager::FinishLagCompensation", FinishLagCompensation, _);
 	DHook_CreateDetour(gamedata_lag_comp, "CLagCompensationManager::FrameUpdatePostEntityThink_SIGNATURE", _, LagCompensationThink);
 		
+
 	g_DhookWantsLagCompensationOnEntity = DHookCreateFromConf(gamedata_lag_comp,
 			"CTFPlayer::WantsLagCompensationOnEntity");
 
@@ -1229,12 +1250,13 @@ public void StartLagCompResetValues()
 	b_LagCompNPC_OnlyAllies = false;
 }
 
+int TeamBeforeChange;
 //if you find a way thats better to ignore fellow dispensers then tell me..!
 public MRESReturn StartLagCompensationPre(Address manager, DHookParam param)
 {
 	int Compensator = param.Get(1);
 	StartLagCompResetValues();
-	
+//	PrintToChatAll("StartLagCompensationPre");
 	bool already_moved = false;
 	if(b_LagCompAlliedPlayers) //This will ONLY compensate allies, so it wont do anything else! Very handy for optimisation.
 	{
@@ -1243,7 +1265,8 @@ public MRESReturn StartLagCompensationPre(Address manager, DHookParam param)
 		b_LagCompNPC_No_Layers = false;
 		b_LagCompNPC_OnlyAllies = true;
 		StartLagCompensation_Base_Boss(Compensator); //Compensate, but mostly allies.
-	//	TeamBeforeChange = view_as<int>(GetEntProp(Compensator, Prop_Send, "m_iTeamNum")); //Hardcode to red as there will be no blue players.
+		TeamBeforeChange = view_as<int>(GetEntProp(Compensator, Prop_Send, "m_iTeamNum")); //Hardcode to red as there will be no blue players.
+		SetEntProp(Compensator, Prop_Send, "m_iTeamNum",TFTeam_Blue);
 		return MRES_Ignored;
 	}
 	
@@ -1425,8 +1448,12 @@ public void FinishLagCompMoveBack()
 
 public MRESReturn FinishLagCompensation(Address manager, DHookParam param) //This code does not need to be touched. mostly.
 {
-//	PrintToChatAll("finish lag comp");
+//	PrintToChatAll("FinishLagCompensation");
 	//Set this to false to be sure.
+	int Compensator = param.Get(1);
+	if(TeamBeforeChange)
+		SetEntProp(Compensator, Prop_Send, "m_iTeamNum",TeamBeforeChange);
+	TeamBeforeChange = 0;
 	FinishLagCompMoveBack();
 	b_LagCompAlliedPlayers = false;
 	
@@ -1446,21 +1473,6 @@ public MRESReturn FinishLagCompensation(Address manager, DHookParam param) //Thi
 //	return MRES_Supercede;
 }
 
-/*
-void Dhook_BotFastNow(int bot)
-{
-	if(HookCreateFakeClientStuff)
-	{
-		int RawHookGive = DHookRaw(HookCreateFakeClientStuff, true, view_as<Address>(baseNPC.GetBody()));
-	}
-}
-public MRESReturn Create_FakeClientExPre(Address pThis, Handle hReturn, Handle hParams)			  
-{ 
-	//this sets the fakebot to true.
-	DHookSetParam(hParams, 2, true);
-	return MRES_Supercede; 
-}
-*/
 void DHook_HookClient(int client)
 {
 
@@ -1484,17 +1496,6 @@ void DHook_UnhookClient(int client)
 		DynamicHook.RemoveHook(ForceRespawnHook[client]);
 	
 }
-/*
-void DHook_ClientDisconnect()
-{
-	Disconnecting = true;
-}
-
-void DHook_ClientDisconnectPost()
-{
-	Disconnecting = false;
-}
-*/
 
 #if defined ZR
 void DHook_RespawnPlayer(int client)
@@ -1541,7 +1542,7 @@ public MRESReturn DHook_ForceRespawn(int client)
 #if !defined RTS
 		int team = KillFeed_GetBotTeam(client);
 		if(GetClientTeam(client) != team)
-			ChangeClientTeam(client, team);
+			SetTeam(client, team);
 #endif
 		TF2Util_SetPlayerRespawnTimeOverride(client, FAR_FUTURE);
 		return MRES_Supercede;
@@ -1549,14 +1550,14 @@ public MRESReturn DHook_ForceRespawn(int client)
 	
 	if(GetClientTeam(client) != 2)
 	{
-		ChangeClientTeam(client, 2);
+		SetTeam(client, 2);
 		return MRES_Supercede;
 	}
 
 #if defined RPG
 	if(!Saves_HasCharacter(client))
 	{
-		ChangeClientTeam(client, TFTeam_Spectator);
+		SetTeam(client, TFTeam_Spectator);
 		return MRES_Supercede;
 	}
 	
@@ -1795,22 +1796,7 @@ public MRESReturn DHook_TauntPost(int client, DHookParam param)
 	return MRES_Ignored;
 }*/
 #endif
-/*
-// g_bWarnedAboutMaxplayersInMVM
-public MRESReturn PreClientUpdatePre(Handle hParams)
-{
-//	CvarTfMMMode.IntValue = 1;
-	GameRules_SetProp("m_bPlayingMannVsMachine", true);
-	return MRES_Ignored;
-}
 
-public MRESReturn PreClientUpdatePost(Handle hParams)
-{
-//	CvarTfMMMode.IntValue = 0;
-	GameRules_SetProp("m_bPlayingMannVsMachine", false);
-	return MRES_Ignored;
-}
-*/
 #if defined ZR
 public MRESReturn OnHealingBoltImpactTeamPlayer(int healingBolt, Handle hParams) {
 	int originalLauncher = GetEntPropEnt(healingBolt, Prop_Send, "m_hOriginalLauncher");
@@ -1975,6 +1961,54 @@ void DHook_ScoutSecondaryFireAbilityDelay(int ref)
 
 //We want to disable them auto switching weapons during this, the reason being is that it messes with out custom equip logic, bad!
 
+
+#if defined ZR
+int BannerWearable[MAXTF2PLAYERS];
+int BannerWearableModelIndex[3];
+#endif
+bool DidEventHandleChange = false;
+void DHooks_MapStart()
+{
+#if defined ZR
+	BannerWearableModelIndex[0]= PrecacheModel("models/weapons/c_models/c_buffbanner/c_buffbanner.mdl", true);
+	BannerWearableModelIndex[1]= PrecacheModel("models/weapons/c_models/c_battalion_buffbanner/c_batt_buffbanner.mdl", true);
+	BannerWearableModelIndex[2]= PrecacheModel("models/weapons/c_models/c_shogun_warbanner/c_shogun_warbanner.mdl", true);
+#endif
+	DidEventHandleChange = false;
+	RequestFrame(OverrideNpcHurtShortToLong);
+	//g_bCustomEventsAvailable = false;
+
+	//if(g_DHookShouldCollide)
+	//	g_DHookShouldCollide.HookGamerules(Hook_Post, DHook_ShouldCollide);
+}
+
+void OverrideNpcHurtShortToLong()
+{
+	if(!DidEventHandleChange)
+	{
+		if (g_aGameEventManager && g_hSDKLoadEvents)
+		{
+			DidEventHandleChange = true;
+			char eventsFile[PLATFORM_MAX_PATH];
+			BuildPath(Path_SM, eventsFile, sizeof(eventsFile), "data/zombie_riot/zrevents.res");
+			LogMessage("Loading custom events file '%s'", eventsFile);
+			if (SDKCall(g_hSDKLoadEvents, g_aGameEventManager, eventsFile))
+			{
+				//g_bCustomEventsAvailable = true;
+				LogMessage("Success!");
+				SDKCall(g_hSDKReloadEvents);
+			}
+			else
+			{
+				LogError("FAILED to load custom events file '%s'", eventsFile);
+			}
+		}
+		else
+		{
+			LogError("FAILED to load custom events file (Missing Gamedata!)");
+		}
+	}
+}
 #if defined ZR
 bool PersonInitiatedHornBlow[MAXTF2PLAYERS];
 public MRESReturn Dhook_BlowHorn_Post(int entity)
@@ -2092,18 +2126,6 @@ stock void DelayEffectOnHorn(int ref)
 	
 
 	//"Expidonsan Battery Device"
-}
-
-int BannerWearable[MAXTF2PLAYERS];
-int BannerWearableModelIndex[3];
-void DHooks_MapStart()
-{
-	BannerWearableModelIndex[0]= PrecacheModel("models/weapons/c_models/c_buffbanner/c_buffbanner.mdl", true);
-	BannerWearableModelIndex[1]= PrecacheModel("models/weapons/c_models/c_battalion_buffbanner/c_batt_buffbanner.mdl", true);
-	BannerWearableModelIndex[2]= PrecacheModel("models/weapons/c_models/c_shogun_warbanner/c_shogun_warbanner.mdl", true);
-	
-	//if(g_DHookShouldCollide)
-	//	g_DHookShouldCollide.HookGamerules(Hook_Post, DHook_ShouldCollide);
 }
 
 public Action TimerGrantBannerDuration(Handle timer, int ref)
@@ -2346,5 +2368,24 @@ public MRESReturn DhookBlockCrossbowPost(int entity)
 		SetEntProp(entity, Prop_Data, "m_iClip1", 0);
 		SetBackAmmoCrossbow = false;
 	}
+	return MRES_Ignored;
+}
+
+int OffsetLagCompStart_UserInfoReturn()
+{
+	//Get to CUserCmd				*m_pCurrentCommand;
+	static int ReturnInfo;
+	if(!ReturnInfo)
+		ReturnInfo = (FindSendPropInfo("CTFPlayer", "m_hViewModel") + 76);
+
+	return ReturnInfo;
+}
+
+
+public MRESReturn Detour_CreateEvent(Address eventManager, DHookReturn returnVal, DHookParam params)
+{
+	g_aGameEventManager = eventManager;
+	
+	RequestFrame(OverrideNpcHurtShortToLong);
 	return MRES_Ignored;
 }

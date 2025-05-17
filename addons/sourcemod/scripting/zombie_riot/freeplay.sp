@@ -429,15 +429,13 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 				enemy.Data = "Im_The_raid;My_Twin";
 				enemy.ExtraDamage = 0.75;
 			}
-			/*
-			case -1: // might readd after i check the rework
+			case 21:
 			{
 				enemy.Index = NPC_GetByPlugin("npc_agent_johnson");
-				enemy.Health = RoundToFloor((5000000.0 / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
+				enemy.Health = RoundToFloor((5000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
 				enemy.ExtraDamage = 0.75; // johnson gets way too much damage in freeplay, reduce it
 			}
-			*/
-			case 21:
+			case 22:
 			{
 				enemy.Index = NPC_GetByPlugin("npc_agent_smith");
 				enemy.Health = RoundToFloor((8000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
@@ -463,7 +461,7 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 				enemy.Index = NPC_GetByPlugin("npc_castellan");
 				enemy.Health = RoundToFloor((8000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
 			}
-			case 26:
+			case 27:
 			{
 				enemy.Index = NPC_GetByPlugin("npc_lelouch");
 				enemy.Health = RoundToFloor((5000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
@@ -794,7 +792,7 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 
 static Action Freeplay_RouletteMessage(Handle timer)
 {
-	RaidFight = GetRandomInt(1, 26);
+	RaidFight = GetRandomInt(1, 28);
 	EmitSoundToAll("misc/halloween/spelltick_set.wav", _, _, _, _, _, GetRandomInt(70, 135));
 	switch(RaidFight)
 	{
@@ -898,7 +896,7 @@ static Action Freeplay_RouletteMessage(Handle timer)
 		{
 			CPrintToChatAll("{blue}CASTELLAN! {gold}- {red}In the name of victoria, he won't allow you further in!");
 		}
-		case 26:
+		case 27:
 		{
 			CPrintToChatAll("{darkviolet}LELOUCH! {gold}- {red}The chaos-afflicted ruinian i've spoken about before...");
 		}
@@ -959,18 +957,18 @@ void Freeplay_SpawnEnemy(int entity)
 		{
 			if(GetRandomInt(0, 100) < 1) // 1% chance for this to work, it NEEDS to be extra rare.
 			{
-				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * GetRandomFloat(4.0, 16.0)));
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * GetRandomFloat(2.0, 8.0)));
 				if(GetEntProp(entity, Prop_Data, "m_iHealth") < 0 || GetEntProp(entity, Prop_Data, "m_iHealth") > 2000000000)
 					SetEntProp(entity, Prop_Data, "m_iHealth", 2000000000);
 				SetEntProp(entity, Prop_Data, "m_iMaxHealth", GetEntProp(entity, Prop_Data, "m_iHealth"));
-				SetEntPropFloat(entity, Prop_Send, "m_flModelScale", GetEntPropFloat(entity, Prop_Send, "m_flModelScale") * GetRandomFloat(0.3, 3.5));
-				fl_Extra_MeleeArmor[entity] *= GetRandomFloat(0.075, 2.0);
-				fl_Extra_RangedArmor[entity] *= GetRandomFloat(0.075, 2.0);
-				fl_Extra_Speed[entity] *= GetRandomFloat(0.25, 5.0);
-				fl_Extra_Damage[entity] *= GetRandomFloat(0.5, 12.0);
-				f_AttackSpeedNpcIncrease[entity] *= GetRandomFloat(0.25, 1.5);
+				SetEntPropFloat(entity, Prop_Send, "m_flModelScale", GetEntPropFloat(entity, Prop_Send, "m_flModelScale") * GetRandomFloat(0.1, 3.5));
+				fl_Extra_MeleeArmor[entity] *= GetRandomFloat(0.1, 2.0);
+				fl_Extra_RangedArmor[entity] *= GetRandomFloat(0.1, 2.0);
+				fl_Extra_Speed[entity] *= GetRandomFloat(0.1, 3.0);
+				fl_Extra_Damage[entity] *= GetRandomFloat(0.5, 6.0);
+				f_AttackSpeedNpcIncrease[entity] *= GetRandomFloat(0.4, 1.5);
 
-				// surely this makes them stalkers... trust
+				// this works if you want to make them stalkers!!!!!!
 				if(GetRandomInt(0, 1) == 1)
 				{
 					b_StaticNPC[entity] = true;
@@ -1012,18 +1010,21 @@ void Freeplay_SpawnEnemy(int entity)
 				EmitSoundToAll("misc/halloween/hwn_bomb_flash.wav", _, _, _, _, _, GetRandomInt(75, 135));
 				if(b_thisNpcIsARaid[entity])
 				{
-					CPrintToChatAll("{orange}Uh oh... you got a raid with randomized stats.");
+					char thename[64];
+					NPC_GetNameById(entity, thename, sizeof(thename));
+					CPrintToChatAll("{orange}Uh oh... you got a {yellow}%s {orange}with randomized stats.", thename);
+					CPrintToChatAll("{orange}Bad luck!");
 				}
 			}
 		}
 
 		if(!b_thisNpcIsARaid[entity])
 		{
-			fl_Extra_Damage[entity] *= ((float(ZR_Waves_GetRound() - 59)) * 0.016);
+			fl_Extra_Damage[entity] *= 1.0 + ((float(ZR_Waves_GetRound() - 59)) * 0.02);
 		}
 		else
 		{
-			fl_Extra_Damage[entity] *= ((float(ZR_Waves_GetRound() - 59)) * 0.008);
+			fl_Extra_Damage[entity] *= 1.0 + ((float(ZR_Waves_GetRound() - 59)) * 0.01);
 		}
 
 		fl_Extra_Damage[entity] *= FM_Damage;
@@ -1336,13 +1337,13 @@ void Freeplay_OnEndWave(int &cash)
 		}
 		case MUSCLE:
 		{
-			FM_Damage *= 1.01;
+			FM_Damage *= 1.0075;
 		}
 		case SQUEEZER:
 		{
-			FM_Damage *= 1.02;
+			FM_Damage *= 1.01;
 			if(squeezerplus)
-				FM_Damage *= 1.04;
+				FM_Damage *= 1.02;
 		}
 	}
 
@@ -1350,17 +1351,17 @@ void Freeplay_OnEndWave(int &cash)
 	{
 		case INTENSE:
 		{
-			FM_Health *= 1.005;
+			FM_Health *= 1.0035;
 		}
 		case MUSCLE:
 		{
-			FM_Health *= 1.01;
+			FM_Health *= 1.0075;
 		}
 		case SQUEEZER:
 		{
-			FM_Health *= 1.0175;
+			FM_Health *= 1.0125;
 			if(squeezerplus)
-				FM_Health *= 1.0315;
+				FM_Health *= 1.02;
 		}
 	}
 
