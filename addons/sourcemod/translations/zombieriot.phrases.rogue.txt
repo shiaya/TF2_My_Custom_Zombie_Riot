@@ -5,69 +5,81 @@
 		"en"	"INVALID NAME"
 		"pt"	"NOME INVÁLIDO"
 		"ru"	"НЕДЕЙСТВИТЕЛЬНОЕ ИМЯ"
+		"ko"	"=Failed name="
 	}
 	"Missing Rogue Translation Desc"
 	{
 		"en"	"INVALID DESC"
 		"pt"	"DESCRIÇÃO INVÁLIDA"
 		"ru"	"НЕДЕЙСТВИТЕЛЬНОЕ ОПИСАНИЕ"
+		"ko"	"=Failed desc="
 	}
 	"Allies Amongst Chaos"
 	{
 		"en"	"Allies Amongst Chaos"
 		"pt"	"Aliados em meio o Caos"
 		"ru"	"Союзники среди хаоса"
+		"ko"	"혼돈속 동맹"
 	}
 	"A Deeper Discovery"
 	{
 		"en"	"A Deeper Discovery"
 		"pt"	"A Descoberta Profunda"
 		"ru"	"Более глубокая находка"
+		"ko"	"더 깊은 발견"
 	}
 	"All Parties Involved"
 	{
 		"en"	"All Parties Involved"
 		"ru"	"Все группы вовлечены"
 		"pt"	"Todas as partes envolvidas"
+		"ko"	"모든 관련 당사자"
 	}
 	"Nightmares Evolve"
 	{
 		"en"	"Nightmares Evolve"
 		"ru"	"Кошмар Эволиционирует"
 		"pt"	"Pesadelos Evolvem"
+		"ko"	"악몽의 진화"
 	}
 	"Lost Ingots"
 	{
 		"#format"	"{1:d}"
 		"en"		"{red}Lost {1} Australium Ingots!"
+		"ko"		"{red}{1}개의 오스트레일리움을 잃었습니다."
 	}
 	"Time Stands Still"
 	{
 		"en"	"Time Stands Still"
 		"ru"	"Время Стоит На Месте"
 		"pt"	"O Tempo Está Parado"
+		"ko"	"시간은 멈춘다"
 	}
 	"The Void"
 	{
 		"en"	"The Void"
 		"ru"	"Бездна"
 		"pt"	"O Vazio"
+		"ko"	"공허"
 	}
 	"For the Fallen"
 	{
 		"en"	"For the Fallen"
+		"ko"	"타락한 자들을 위하여"
 	}
 	"Vote for the starting item"
 	{
 		"en"	"Vote for the starting item:"
 		"pt"	"Vote no item inicial:"
 		"ru"	"Голосование за начальный предмет:"
+		"ko"	"시작 아이템 투표:"
 	}
 	"Vote for the next stage"
 	{
 		"en"	"Vote for the next stage:"
 		"pt"	"Vote na próxima etapa:"
 		"ru"	"Голосование за следующий этап:"
+		"ko"	"다음 단계 투표:"
 	}
 	"Additional Starting Ingot"
 	{
@@ -75,6 +87,7 @@
 		"en"	"Starting Australium Ingots ({1} -> {2})"
 		"pt"	"Lingotes iniciais de Austrálio ({1} -> {2})"
 		"ru"	"Начальные слитки австралия ({1} -> {2})"
+		"ko"	"스타팅 오스트레일리움 ({1} -> {2})"
 	}
 	"Stage"
 	{
@@ -82,6 +95,7 @@
 		"en"		"Stage: {1}-{2}"
 		"pt"		"Fase: {1}-{2}"
 		"ru"		"Этап: {1}-{2}"
+		"ko"		"스테이지: {1}-{2}"
 	}
 	"New Artifact"
 	{
@@ -89,6 +103,7 @@
 		"en"	"Collected Artifact: {yellow}{1}"
 		"pt"	"Artefatos Coletados: {yellow}{1}"
 		"ru"	"Получен артефакт: {yellow}{1}"
+		"ko"	"유물 확보: {yellow}{1}"
 	}
 	"Artifact Info"
 	{
@@ -101,6 +116,7 @@
 		"en"	"{green}Gained {1} Australium Ingots!"
 		"pt"	"{green}Adquiriu {1} Barras de Australium!"
 		"ru"	"{green}Получено {1} слитков австралия!"
+		"ko"	"{green}{1}개의 오스트레일리움 흭득!"
 	}
 	"Australium Ingots"
 	{
@@ -108,18 +124,21 @@
 		"en"	"Australium Ingots: {1}"
 		"pt"	"Barras de Australium: {1}"
 		"ru"	"Слитков австралия: {1}"
+		"ko"	"오스트레일리움: {1}"
 	}
 	"Encounter"
 	{
 		"en"	"Encounter"
 		"pt"	"Encontro"
 		"ru"	"Встреча"
+		"ko"	"우연한 만남"
 	}
 	"Collected Artifacts"
 	{
 		"en"	"Collected Artifacts"
 		"pt"	"Artefatos Coletados"
 		"ru"	"Собранные артефакты"
+		"ko"	"유물 확보"
 	}
 
 	// Encounters
@@ -128,36 +147,42 @@
 		"en"	"Something seems off about this, should we fight or leave right here?"
 		"ru"	"Что-то здесь не так, стоит ли нам драться или уйти прямо здесь?"
 		"pt"	"Algo parece errado sobre isso, devemos lutar ou sair daqui?"
+		"ko"	"뭔가 이상한데, 싸워야 할까, 아니면 여기서 나가야 할까?"
 	}
 	"We can handle this"
 	{
 		"en"	"We can handle this"
 		"pt"	"Podemos cuidar disso"
 		"ru"	"Мы справимся"
+		"ko"	"좋아 우린 이걸 처리 할 수 있어"
 	}
 	"Better leave now"
 	{
 		"en"	"Better leave now"
 		"pt"	"Melhor ir agora"
 		"ru"	"Лучше уйти сейчас"
+		"ko"	"지금은 떠나는게 좋겠어"
 	}
 	"Enter a special battle"
 	{
 		"en"	"Enter a special battle"
 		"pt"	"Entrar em uma batalha especial"
 		"ru"	"Вступить в особую битву"
+		"ko"	"특별한 전투에 참가하기"
 	}
 	"Leave this encounter"
 	{
 		"en"	"Leave this encounter"
 		"pt"	"Abandonar esse encontro"
 		"ru"	"Оставить эту встречу"
+		"ko"	"여기서 떠나기"
 	}
 	"Shop Encounter Title"
 	{
 		"en"	"You stumble upon a shop to find an old man selling goods, do you take up his offers?"
 		"pt"	"Você se depara com uma loja com um senhorzinho vendendo coisas, você aceita sua oferta?"
 		"ru"	"Наткнувшись на магазин, вы видите старика, продающего товары, примете ли вы его предложение?"
+		"ko"	"당신은 우연히 가게에 들어가서 물건을 파는 노인을 만났는데, 그의 제안을 받아들일 것인가요?"
 	}
 	"Shop Encounter Title Ruina"
 	{
@@ -188,18 +213,21 @@
 		"en"	"Better save up now"
 		"pt"	"É melhor salvar agora"
 		"ru"	"Лучше поднакопить"
+		"ko"	"지금 저축하는 게 낫겠어"
 	}
 	"Boons Encounter Title"
 	{
 		"en"	"Some items are present before you, but you seem to be only to pick one."
 		"pt"	"Alguns itens são apresentados diante a você, mas você so pode escolher um."
 		"ru"	"Перед вами лежат несколько предметов, но вы, кажется, должны выбрать только один."
+		"ko"	"당신 앞에 몇 가지 물건이 있는데, 당신은 그 중 하나만 고르려고 하는 것 같습니다."
 	}
 	"There's nothing here?"
 	{
 		"en"	"There's nothing here?"
 		"pt"	"Não tem nada aqui?"
 		"ru"	"Тут ничего не было?"
+		"ko"	"여기 아무것도 없나요?"
 	}
 	"Lore Title"
 	{
@@ -210,79 +238,94 @@
 		"en"	"You stumble on a knight wearing a worn-out set of armor and gloomily looking at a sword in a stone.\nHe claims to be a knight journeying in search of the holy sword, and he must bring this sword back to his kingdom to become its rightful ruler.\nHowever, he has no way to pull out the sword from the stone."
 		"pt"	"Você se depara com um cavaleiro vestindo uma armadura desgastada e olhando sombriamente para a espada em uma pedra.\nEle afirma ser um cavaleiro que viaja em busca da espada sagrada e deve trazer essa espada de volta ao seu reino para se tornar seu governante legítimo.\nNo entanto, ele não tem como retirar a espada da pedra."
 		"ru"	"Вы натыкаетесь на рыцаря в изношенных доспехах, который мрачно смотрит на меч в камне.\nОн утверждает, что является рыцарем, путешествующим в поисках священного меча, и должен вернуть этот меч в своё королевство, чтобы стать его законным правителем.\nОднако у него нет способа вытащить меч из камня."
+		"ko"	"당신은 낡은 갑주를 입은 기사가 커다란 바위에 박힌 보검을 수심에 찬 얼굴로 쳐다보고 있는것을 보았다. 자신을 성검을 찾으러 나선 용사라고 밝힌 그는 이 보검을 자신의 왕국으로 가져가야 자기가 왕이 될 수 있다고 한다. 하지만 지금은 돌에서 검을 뽑아낼 수도 없다."
 	}
 	"Sword and Stone Option 1"
 	{
 		"en"	"Might as well smash the sword into two halves"
 		"pt"	"Aproveitar e dividir a espada em duas metades"
 		"ru"	"С таким же успехом можно разбить меч на две половины."
+		"ko"	"검을 쳐서 아예 부러뜨린다"
 	}
 	"Sword and Stone Lore 1"
 	{
 		"en"	"You rack your brain to come up with a solution. In the end, you smash the sword in two. Seeing half of the sword still stuck in the stone, the knight lets out a long sigh, shakes his head, and leaves."
 		"pt"	"Você quebra a cabeça para encontrar uma solução. No final, você quebra a espada em duas. Ao ver a metade da espada ainda presa na pedra, o cavaleiro solta um longo suspiro, balança a cabeça e vai embora."
 		"ru"	"Вы ломаете голову, пытаясь найти решение. В конце концов, вы разбиваете меч на две части. Видя, что половина меча по-прежнему застряла в камне, рыцарь испустил долгий вздох, покачал головой и ушёл."
+		"ko"	"당신은 온갖 방법을 동원해서 결국 보검을 두 동강 내버렸다. 기사는 바위에 남아 있는 보검의 반쪽을 보고는 한숨을 내쉬며 고개를 돌렸다."
 	}
 	"Sword and Stone Option 2"
 	{
 		"en"	"Could use the stone as a hammer"
 		"pt"	"Poderia usar a pedra como martelo"
 		"ru"	"Может использовать камень в качестве молотка"
+		"ko"	"적어도 해머로는 사용할 수 있다"
 	}
 	"Sword and Stone Lore 2"
 	{
 		"en"	"Taking your advice, the knight attempts to lift the sword, the stone still attached. Unable to keep his balance, he trips and falls on the ground head first, knocking himself unconscious."
 		"pt"	"Seguindo seu conselho, o cavaleiro tenta levantar a espada com a pedra ainda presa. Sem conseguir manter o equilíbrio, ele tropeça e cai de cabeça no chão, ficando inconsciente."
 		"ru"	"Послушавшись вашего совета, рыцарь пытается поднять меч, камень всё ещё прикреплен к нему. Не удержав равновесия, он спотыкается и падает на землю головой вперёд, теряя сознание."
+		"ko"	"당신의 제안을 들은 기사는 바위와 함께 검을 들어올리려 했으나 불안정한 무게중심 때문에 쓰러져 머리가 땅에 닿는 순간 기절했다."
 	}
 	"Sword and Stone Option 3"
 	{
 		"en"	"Doesn't look like it's necessary"
 		"pt"	"Parece não ser necessário"
 		"ru"	"Не думаю, что оно больше нужно"
+		"ko"	"검과 왕위에 도대체 무슨 관계가 있다는 거야?"
 	}
 	"Sword and Stone Lore 3a"
 	{
 		"en"	"''Strange stones lying in forts distributing swords is no basis for a system of government."
 		"pt"	"\"Pedras estranhas em fortalezas distribuindo espadas não são base para um sistema de governo."
+		"ko"	"''요상한 바위에 꽂힌 반쪽짜리 검 따위는 결코 국가와 정부를 구성하는 토대가 될 수 없으며,"
 	}
 	"Sword and Stone Lore 3b"
 	{
 		"en"	"Supreme executive power derives from a mandate from the masses, not from some farcical geologic ceremony.'' The knight thinks you have a point and leaves on a satisfied note."
 		"pt"	"O poder executivo supremo deriva de um mandato das massas, não de alguma cerimônia geológica farsesca\". O cavaleiro acha que você tem razão e sai satisfeito."
+		"ko"	"왕은 민중의 지지로 왕위를 차지해야 합니다. 정체불명의 보검 하나로 왕이 된다는 것도 말이 안 됩니다.''. 기사는 당신의 답변에 만족하며 떠났다."
 	}
 	"Theatrical Lore"
 	{
 		"en"	"You find a middle-aged man rambling away in front of a dressing table.\nHe notices you and howls in your direction, asking you to deliver the prop on the table to the actress.\nYou look at the dressing table and find a crown entwined with thorns."
 		"ru"	"Вы обнаруживаете мужчину средних лет, бредущего к туалетному столику.\nОн замечает вас и завывает в вашу сторону, прося передать актрисе реквизит, лежащий на столике.\n Вы смотрите на туалетный столик и обнаруживаете корону, увитую шипами."
+		"ko"	"한 중년 남성이 화장대 앞에서 뭐라고 중얼거리고 있는 것을 발견했는데, 그가 당신을 보자마자 화장대의 소품을 배우에게 전해 달라고 소리질렀다. 화장대를 바라보니, 거기엔 가시덤불로 휘감긴 왕관이 있었다."
 	}
 	"Theatrical Option 1"
 	{
 		"en"	"Listen to his demands"
 		"ru"	"Выслушать его требования"
+		"ko"	"요구에따른다"
 	}
 	"Theatrical Desc 1"
 	{
 		"en"	"{yellow}Receive an unknown artifact {red}but lose 10 ammo supplies"
 		"ru"	"{yellow}Получить неизвестный артефакт{red}, но потерять 10 боеприпасов"
+		"ko"	"{yellow}알수없는 유물을 얻었습니다 {red}하지만 10의 탄약 보급품을 소모했습니다."
 	}
 	"Theatrical Lore 1a"
 	{
 		"en"	"You cut your fingers when you reach your hand out for the crown. You let go immediately, dropping the crown to the floor and shattering it in half. The middle-aged man is just about to yell at you but turns around all of a sudden."
+		"ko"	"당신이 왕관을 집으려고 손을 뻗었을 때, 가시덤불에 손가락을 베이는 바람에 깜짝 놀라 손에서 놓쳤더니, 왕관이 땅에 떨어져 반으로 부서졌다."
 	}
 	"Theatrical Lore 1b"
 	{
 		"en"	"You hear something. The man scratches his ear. Apparently the actress no longers want to play the queen and has run away. He trots away shortly afterwards. With the charade over, you pick up the intact half-crown, now freed from its thorny enclosure."
+		"ko"	"중년 남성이 당신에게 화를 내려다가 말고 갑자기 무슨 말을 들은 듯 고개를 돌렸다. 그는 머리를 긁적이면서 사실 그 여배우도 여왕 역할을 맡기 싫어서 도망갔다고 하더니, 잠시 뒤 그 역시 종종걸음으로 사라졌다. 소동이 끝난 후, 당신은 가시덤불에서 빠져나온 반쪽 왕관을 아직 온전한 상태로 주웠다."
 	}
 	"Theatrical Option 2"
 	{
 		"en"	"Ignore him"
 		"ru"	"Не обращать на него внимания"
+		"ko"	"그를 무시한다"
 	}
 	"Theatrical Lore 2"
 	{
 		"en"	"You ignore the middle-aged man's howlings and leave."
 		"ru"	"Вы не обращаете внимания на вопли мужчины и уходите."
+		"ko"	"쓸데없이 참견하지 말자"
 	}
 	"Eccentric Lore"
 	{

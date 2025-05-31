@@ -501,6 +501,7 @@
 	"Steam Sale"
 	{
 		"en"	"Steam Sale"
+		"ko"	"스팀 세일"
 	}
 	"Steam Sale Desc"
 	{
@@ -509,10 +510,12 @@
 	"Steal Grigori"
 	{
 		"en"	"Take them from Father Grigori"
+		"ko"	"그레고리에게 ''할인을 할 것''을 간청한다"
 	}
 	"Steal Grigori Desc"
 	{
 		"en"	"Fight Father Grigori for the chance to take all his items without pay"
+		"ko"	"그레고리와 싸워서 현재 진열된 모든 아이템을 100％ 할인된 가격으로 가져갈수있습니다."
 	}
 	"Steal Ruinian"
 	{
@@ -1173,10 +1176,12 @@
 	"Emergency Dispatch"
 	{
 		"en"	"Emergency Dispatch"
+		"ko"	"You're going to Brazil"
 	}
 	"Emergency Dispatch Lore"
 	{
 		"en"	"You find a Wildingen, seemingly in worry.\nHe asks you if you can spare someone to help his family.\nTheir village is under attack."
+		"ko"	"당신은 걱정스러워 보이는 와일딘겐을 만납니다.\n그는 당신에게 가족을 도울 사람을 보내줄 수 있겠느냐고 묻습니다.\n그들의 마을은 공격을 받고 있습니다."
 	}
 	"Emergency Dispatch Option 1"
 	{

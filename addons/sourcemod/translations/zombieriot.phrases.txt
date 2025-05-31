@@ -14,6 +14,7 @@
 	"Press To Open Store"
 	{
 		"en"		"TAB OPEN STORE MENU"
+		"ko"		"TAB키를 눌러 상점 열기"
 	}
 	"Last Alive"
 	{
@@ -98,6 +99,7 @@
 	{
 		"#format"	"{1:d}"
 		"en"		"{green}Current Skillpoints: {1}"
+		"ko"		"{green}현재 스킬 포인트: {1}"
 		"es"		"{green}Puntos de Habilidad actuales: {1}"
 	}
 	"Credits_Menu_New"
@@ -329,6 +331,7 @@
 	"Confirm Loadout"
 	{
 		"en"		"Confirm & Access Store"
+		"ko"		"로드아웃 확인 <필수>"
 		"es"		"Confirmar y acceder a la tienda"
 	}
 	"N/A"
@@ -897,7 +900,7 @@
 	{
 		"#format"	"{1:d},{2:.0f},{3:.0f}"
 		"en" 		"Mana: [{1}/{2}] (+{3})"
-//		"it"		"Ricevuto {1} in questa ondata!
+//		"it"		"Ricevuto {1} in questa ondata!"
 		"ru"		"Мана: [{1}/{2}] (+{3})"
 //		"pl"		"Otrzymaano {1} dzięki tej rundzie!"
 //		"es"		"Encontraste {1} en esta oleada!"
@@ -926,6 +929,7 @@
 		"pt"		"Mana insuficiente! Você precisa de {1} Mana!"
 		"nl"		"Niet genoeg Mana! U hebt maar {1} Mana!"
 		"chi"       "法力不足！需要 {1} 法力发动"
+		"ko"		"마나 부족! {1}만큼의 마나가 필요합니다!"
 	}
 	"Ability has cooldown"
 	{
@@ -940,6 +944,14 @@
 		"pt"		"Está habilidade ainda está em recarga de {1} segundos!"
 		"nl"		"Deze kracht heeft nog een afkoelingsperiode van {1} seconden!"
 		"chi"       "技能冷却还有 {1} 的时间!"
+		"ko"		"능력 재사용 대기중 {1}초 남음!"
+	}
+	"Not Enough Ammo"
+	{
+		"#format"	"{1:d}"
+		"en" 		"Not Enough Ammo! You need {1} Ammo!"
+		"de"		"Nicht Genügend Ammo! Du brauchst {1} Ammo!"
+		"ko"		"탄약 부족! {1}만큼의 탄약이 필요합니다!"
 	}
 	"Not Enough Ammo"
 	{
@@ -1286,6 +1298,7 @@
 		"pt"		"Dinheiro Extra!"
 		"ru" 		"Дополнительные деньги!"
 		"chi"       "额外的现金!"
+		"ko"		"Free Robux!"
 	}
 	"Grigori Shop Extra Activated"
 	{
@@ -1463,7 +1476,7 @@
 	}
 	"Building Explained"
 	{
-		"en" 		"You can use machines by pressing R/T on them.\nYou can mount buildings with a wrench.\nUse them by looking UP and pressing your interact key.\nThis allows you to press R on them for the same effect.\nBuilding display is shown above a building, in this order, its explained as:\nName of owner\nCurrent health\nRepair Left."
+		"en" 		"You can use machines by pressing R/T on them.\nPeople can mount buildings with a wrench.\nThis allows you to press R on them for the same effect."
 	}
 	"Extra Buttons Explained"
 	{
@@ -1511,11 +1524,6 @@
 	"Interact With R" //KEEP THE SPACE!
 	{
 		"en"		"Press [R/ Use] "
-	}
-	"Viality Building Display"
-	{
-		"#format"	"{1:s},{2:s},{3:.0f}"
-		"en"		"HP: {1} / {2} | Repair left: {3}％"
 	}
 	"Interact With T Spray"
 	{
@@ -1889,7 +1897,7 @@
 	//	"ru"		"Ваш последний экипированный Навык уровня был восстоновлен"
 	//	"de"		"Ihre letzten level perks wurden wiederhergestellt."
 	//	"pt"		"Sua ultima habilidade de nível foi restaurada"
-	//	"nl"		"Uw laatste gebruike level perks werden herstelt
+	//	"nl"		"Uw laatste gebruike level perks werden herstelt"
 
 		"#format"	"{1:s}"
 		"en"		"Could not buy {1}."
@@ -1902,6 +1910,7 @@
 	{
 		"#format"	"{1:s},{2:d}"
 		"en"		"{green}''{1}'' picked up a gift box! Everyone gains {2} XP!"
+		"ko"		"{green}''{1}'' 님이 선물상자를 흭득했습니다! 모두에게 추가 {2} XP!"
 		"es"		"{green}''{1}'' agarro un regalito! Todos reciben {2} de XP!"
 	}
 	"Press TAB To open the store"
@@ -2226,6 +2235,15 @@
 		"pt"		"Assegure-se de não passar de 32 caracteres e não inserir caracteres especiais no nome"
 		"nl"		"Wees zeker dat je naam onder de 32 karakters is en geen speciale tekens bevat"
 		"chi"       "请确保您的名字不超过32个字符，并且不包含特殊字符"
+	}
+	"Loadout Slots"
+	{
+		"#format"	"{1:d}"
+		"en"		"{1} Loadout Slot(s)"
+		"fr"		"{1} Espace(s) de Chargement"
+		"ru"		"Ячеек снаряжения: {1}"
+		"pt"		"Vagas para Loadout: {1}"
+		"nl"		"{1} Loadout Slot(en)"
 	}
 	"All Weapons Unlocked"
 	{
@@ -3769,18 +3787,21 @@
 		"#format"	"{1:s}"
 		"en"		"{darkgrey}Created by: {community}{1}"
 		"fr"		"{darkgrey}Creé par: {community}{1}"
+		"ko"		"{darkgrey}제작자: {community}{1}"
 	}
 	"NPCs By"
 	{
 		"#format"	"{1:s}"
 		"en"		"{darkgrey}NPCs by: {community}{1}"
 		"fr"		"{darkgrey}NPCs par: {community}{1}"
+		"ko"		"{darkgrey}NPC 제작자: {community}{1}"
 	}
 	"Format By"
 	{
 		"#format"	"{1:s}"
 		"en"		"{darkgrey}Format by: {community}{1}"
 		"fr"		"{darkgrey}Format par: {community}{1}"
+		"ko"		"{darkgrey}설정 제작자: {community}{1}"
 	}
 	"Raidboss By"
 	{
@@ -3788,6 +3809,7 @@
 		"en"		"{darkgrey}Raidboss by: {community}{1}"
 		"fr"		"{darkgrey}Raid boss par: {community}{1}"
 		"chi"		"{darkgrey}Raidboss作者：{community}{1}"
+		"ko"		"{darkgrey}레이드보스 제작자: {community}{1}"
 	}
 	"Now Playing Song"
 	{
@@ -3980,9 +4002,25 @@
 		"fr"	"Kleiner"
 		"chi"	"克莱恩"
 	}
+	"Neuron Activation"
+	{
+		"en"	"Neuron Activation"
+		"ko"	"멍끼"
+	}
+	"Lumine"
+	{
+		"en"	"Lumine"
+		"ko"	"여행자"
+	}
+	"Meruna Mint"
+	{
+		"en"	"Meruna Mint"
+		"ko"	"메루나 민트"
+	}
 	"Fat HHH"
 	{
 		"en"	"Fat HHH"
+		"ko"	"뚱띠 듀라한"
 	}
 	"Iberia & Nemal"
 	{
@@ -4055,74 +4093,92 @@
 	"Switch Class"
 	{
 		"en"	"Switch Class"
+		"ko"	"병과 변경"
 	}
 	"Switch Weapons"
 	{
 		"en"	"Switch Weapons"
+		"ko"	"무기 변경"
 	}
 	"Weapon Preference"
 	{
 		"en"	"Your Preference"
+		"ko"	"너가 선호하는건?"
 	}
 	"Preference Alyx"
 	{
 		"en"	"I'll just stick with my gun thanks.\nAnd don't worry, I'll patch you up whenever I can."
+		//"ko"	"저는 그냥 제 총을 가지고 있을게요. 고맙습니다.\n그리고 걱정하지 마세요. 시간이 되면 꼭 치료해 드리겠습니다."
 	}
 	"Preference Barney"
 	{
 		"en"	"Well I like anything I can get my hands on.\nDon't need to tell me what to get, I'll use it."
+		//"ko"	"글쎄다~, 난는 손에 넣을 수 있는 건 뭐든 좋아해.\n무엇을 사야 하는지 말할 필요 없어. 내가 사용할 꺼니깐."
 	}
 	"Preference Normal"
 	{
 		"en"	"Just standard weapons, nothing special."
+		"ko"	"평범한게 최고지~"
 	}
 	"Preference Speed"
 	{
 		"en"	"I like wepaons with a little more fire rate."
+		"ko"	"난 빠르게 연사로 갈길수있는 무기가 무난해."
 	}
 	"Preference Heavy"
 	{
 		"en"	"I like wepaons with a little more damage per shot."
+		"ko"	"난 묵직한 한방이 있는 무기가 손에 맞더라고."
 	}
 	"Preference No Clip"
 	{
 		"en"	"I like ranged weapons without needing to reload."
+		"ko"	"난 재장전이 필요없는 원거리 무가가 좋더라고."
 	}
 	"Preference Super Speed"
 	{
 		"en"	"I really like weapons with alot of attack speed."
+		"ko"	"공속이 빠르면 뭐든지 해결할수있지!"
 	}
 	"Preference Super Heavy"
 	{
 		"en"	"I really like weapons that can nuke at once."
+		"ko"	"난 일격에 주님곁에 보낼수있는 무기가 좋아!"
 	}
 	"Build Healing Station At Me"
 	{
 		"en"	"Build Healing Station At Me"
+		"ko"	"냉장고 건설"
 	}
 	"Build Barricade At Me"
 	{
 		"en"	"Build Barricade At Me"
+		"ko"	"방벽 건설"
 	}
 	"Build Sentry At Me"
 	{
 		"en"	"Build Sentry At Me"
+		"ko"	"센트리 건설"
 	}
 	"Build Ammo Box At Me"
 	{
 		"en"	"Build Ammo Box At Me"
+		"ko"	"탄약상자 설치"
 	}
 	"Build Armor Table At Me"
 	{
 		"en"	"Build Armor Table At Me"
+		"ko"	"아머 테이블 설치"
 	}
 	"Build Perk Machine At Me"
 	{
 		"en"	"Build Perk Machine At Me"
+		"ko"	"퍼크 머신 건설"
 	}
 	"Build Pack-a-Punch At Me"
 	{
 		"en"	"Build Pack-a-Punch At Me"
+		"ko"	"팩-어-펀치 건설"
 	}
 	"Name Rebel"
 	{
@@ -4155,20 +4211,148 @@
 	"Victoria Raid Desc"
 	{
 		"en" 	"(11) You are asked by Sensal to visit Ziberia where it is currently under attack by Victoria."
+		"ko" 	"(11) 센살은 당신에게 현재 빅토리아가 공격하고 있는 지베리아를 방문해달라고 부탁합니다."
+	}
+	"CYBER GRIND Desc"
+	{
+		"en" 	"YES. RaidBoss Rush."
+		"ko" 	"맞아요 평범하기 그지없는 레이드보스 러쉬입니다."
 	}
 	"Ability already Active"
 	{
 		"en"	"Ability already Active"
+	}
+	"Get_DrinkRND_1"
+	{
+		"en" 		"Armour Point Regenerativen"
+		"ko" 		"아머 포인트 재생"
+	}
+	"Get_DrinkRND_2"
+	{
+		"en" 		"HP Regenerativen"
+		"ko" 		"체력 재생"
+	}
+	"Get_DrinkRND_3"
+	{
+		"en" 		"Poison"
+		"ko" 		"독"
+	}
+	"Get_DrinkRND_4"
+	{
+		"en" 		"Energy Drink!"
+		"ko" 		"에너지 드링크!"
+	}
+	"Get_DrinkRND_5"
+	{
+		"en" 		"No Health?"
+		"ko" 		"체력... 없다?"
+	}
+	"Get_DrinkRND_6"
+	{
+		"en" 		"Min Crit!"
+		"ko" 		"소형 치명타!"
+	}
+	"Get_DrinkRND_7"
+	{
+		"en" 		"Burning"
+		"ko" 		"화상"
+	}
+	"Get_DrinkRND_8"
+	{
+		"en" 		"Slow"
+		"ko" 		"둔화"
+	}
+	"Get_DrinkRND_9"
+	{
+		"en" 		"Uber!"
+		"ko" 		"무적!"
+	}
+	"Get_DrinkRND_10"
+	{
+		"en" 		"Smite!"
+		"ko" 		"단죄!"
+	}
+	"Get_DrinkRND_11"
+	{
+		"en" 		"Toxic Gas"
+		"ko" 		"독 가스"
+	}
+	"Get_DrinkRND_12"
+	{
+		"en" 		"Teleport!"
+		"ko" 		"순간이동!"
+	}
+	"Get_DrinkRND_13"
+	{
+		"en" 		"Building Super Recharging!"
+		"ko" 		"구조물 슈퍼 재충전!"
+	}
+	"Orbital Cannon Out of Ammo This Round, Reload"
+	{
+		"en"	"Orbital Cannon Out of Ammo This Round, Reload"
+		"ko"	"궤도 캐논 재장전중! 다음 웨이브에 완료됨"	
+	}
+	"Eagle 1 Out of Ammo This Round, Reload"
+	{
+		"en"	"Eagle 1 Out of Ammo This Round, Reload"
+		"ko"	"이글 1 재장전중! 다음 웨이브에 완료됨"	
+	}
+	"Use Only On Wave"
+	{
+		"en"	"Use Only On Wave"
+		"ko"	"웨이브 진행중에만 사용할수있습니다."	
+	}
+	"Use Only Alive"
+	{
+		"en"	"Use Only Alive"
+		"ko"	"살아있을때만 사용할수있습니다."	
+	}
+	"Use Only Down"
+	{
+		"en"	"Use Only Down"
+		"ko"	"쓰러져있을때만 사용 가능합니다."	
+	}
+	"1 per wave"
+	{
+		"en"	"1 per wave"
+		"ko"	"웨이브당 한번만 사용할수있습니다."	
+	}
+	"Low Health No Use"
+	{
+		"en"	"Cannot be used to Low Health."
+		"ko"	"체력이 낮아 사용 할 수 없습니다."	
+	}
+	"Ability No Use"
+	{
+		"en"	"Cannot be used"
+		"ko"	"사용 할 수 없습니다."	
 	}
 	"Barrack Unit not detected"
 	{
 		"en"	"Barrack Unit not detected"
 		"ko"	"배럭 유닛를 감지 할 수 없습니다."	
 	}
+	"Not enough energy"
+	{
+		"en"	"Not enough energy"
+		"ko"	"에너지가 부족합니다"	
+	}
 	"Player not detected"
 	{
 		"en"	"Player not detected"
 		"ko"	"플레이어를 감지 할 수 없습니다."
+	}
+	"Need Healing Point"
+	{
+		"#format"	"{1:i}"
+		"en"	"Need {1} Healing Point"
+		"ko"	"{1} 치료 포인트가 필요합니다."	
+	}
+	"Pickup Gift Single"
+	{
+		"#format"	"{1:d}"
+		"en"		"{green}You already have everything in this rarity, but where given {1} XP as a compensation!{default}"
+		"ko"		"{green}현 단계의 모든 아이템을 가지고있습니다. 대신 추가 {1} XP 를 보상으로 받았습니다!{default}"
 	}
 	"Use Only Alive"
 	{

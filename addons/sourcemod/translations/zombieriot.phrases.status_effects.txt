@@ -402,7 +402,7 @@
 	}
 	"Void Presence Desc"
 	{
-		"en"	"Shows that youre standing in void creep, void creatures in keep get stronger."
+		"en"	"Shows that youre standing in void creep."
 	}
 	"Sea Presence"
 	{
@@ -560,12 +560,12 @@
 		"en"	"Increases damage dealt by 25％"
 		"es"	"Aumenta el daño hecho en un 25%%."
 	}
-	"War Cry"
+	"Buff Banner"
 	{
 		"en"	"War Cry"
 		"es"	"Grito de Guerra"
 	}
-	"War Cry Desc"
+	"Buff Banner Desc"
 	{
 		"en"	"Increases damage dealt by 25％"
 		"es"	"Aumenta el daño hecho en un 25%%."
@@ -578,12 +578,12 @@
 	{
 		"en"	"Increases damage dealt by 50％"
 	}
-	"Defensive Backup"
+	"Battilons Backup"
 	{
 		"en"	"Defensive Backup"
 		"es"	"Apoyo Defensivo"
 	}
-	"Defensive Backup Desc"
+	"Battilons Backup Desc"
 	{
 		"en"	"Decreases damage taken by 15％"
 		"es"	"Reduce el daño recibido en un 15%%."
@@ -605,22 +605,6 @@
 	{
 		"en"	"Decreases damage taken by 90％.\n{yellow}During raids, you take 50％ reduced damage instead."
 		"es"	"Reduce el daño recibido en un 90%%.\n{yellow}Durante un raid, recibes 50%% en lugar de 90%%."
-	}
-	"Unstoppable Force"
-	{
-		"en"	"Unstoppable Force"
-	}
-	"Unstoppable Force Desc"
-	{
-		"en"	"Immune to any and all damage with no exceptions."
-	}
-	"Archo's Posion"
-	{
-		"en"	"Archo's Posion"
-	}
-	"Archo's Posion Desc"
-	{
-		"en"	"Any and all damage you take is converted into true damage."
 	}
 	"Healing Resolve"
 	{
@@ -678,12 +662,12 @@
 	{
 		"en"	"Increases damage dealt by 10％\nDecreases damage taken by 7％"
 	}
-	"Ancient Melodies"
+	"Ancient Banner"
 	{
 		"en"	"Ancient Melodies"
 		"es"	"Melodias Antiguas"
 	}
-	"Ancient Melodies Desc"
+	"Ancient Banner Desc"
 	{
 		"en"	"Increases attack/reload speed & healrate by a 20％."
 		"es"	"Aumenta la velocidad de ataque/recarga y curacion medica en un 20%%."
@@ -792,9 +776,9 @@
 	{
 		"en"	"attack/reload speed & healrate increased by 20％.\nIncreases Max Health by 540."
 	}
-	"Abyssal Skills"
+	"Skadi's Skills"
 	{
-		"en"	"Abyssal Skills"
+		"en"	"Skadi's Skills"
 	}
 	"Skadi's Skills Desc"
 	{
@@ -848,11 +832,11 @@
 	{
 		"en"	"Increases attack/reload speed & healrate by 100％\nDecreases damage dealt by 40％"
 	}
-	"Tonic Affliction Hide"
+	"Tonic Affliction Hidden"
 	{
-		"en"	"Tonic Affliction Hide"
+		"en"	"Tonic Affliction Hidden"
 	}
-	"Tonic Affliction Hide Desc"
+	"Tonic Affliction  Hidden Desc"
 	{
 		"en"	"Ignore."
 	}
@@ -963,6 +947,56 @@
 	"Chaos Infliction Desc"
 	{
 		"en"	"Randomly changes damage and HUD elements depending on it's level."
+	}
+	"Concord Hero"
+	{
+		"en"	"Concord Hero"
+		"ko"	"콘코드 영웅"
+	}
+	"Concord Hero Desc"
+	{
+		"en"	"Damage dealt increases by 45%% and all damage taken is reduced by 25%%."
+		"ko"	"피해량이 45%%늘어나며 받는 모든 피해를 25%% 경감합니다."
+	}
+	"True Concord Hero"
+	{
+		"en"	"True Concord Hero"
+		"ko"	"진정한 콘코드 영웅"
+	}
+	"True Concord Hero Desc"
+	{
+		"en"	"Damage dealt increases by 45%% and all damage taken is reduced by 30%%."
+		"ko"	"피해량이 55%%늘어나며 받는 모든 피해를 30%% 경감합니다."
+	}
+	"Nanomachine"
+	{
+		"en"	"Nanomachine"
+		"ko"	"나노머신"
+	}
+	"Nanomachine Desc"
+	{
+		"en"	"all damage taken is reduced by 20%%."
+		"ko"	"받는 모든 피해를 20%% 경감합니다."
+	}
+	"Major Steam's Launcher Resistance"
+	{
+		"en"	"Major Steam's Resistance"
+		"ko"	"거대 증기 기사의 저항"
+	}
+	"Major Steam's Launcher Resistance Desc"
+	{
+		"en"	"all damage taken is reduced"
+		"ko"	"받는 모든 피해를 경감합니다."
+	}
+	"Cybergrind EX-Hard Enemy Buff"
+	{
+		"en"	"Cybergrind EX Hard Enemy Buff"
+		"ko"	"Cybergrind EX Hard 적 버프"
+	}
+	"Cybergrind EX-Hard Enemy Buff Desc"
+	{
+		"en"	"Enemies gain additional effects..."
+		"ko"	"적이 추가적인 효과를 얻습니다..."
 	}
 	"Iberia Morale Boost"
 	{
@@ -1137,14 +1171,6 @@
 	"Anti-Waves Desc"
 	{
 		"en"	"Prevents any healing.\n{green}Doesnt prevent absolute healing."
-	}
-	"Zeinas Protection"
-	{
-		"en" "Zeinas Protection"
-	}
-	"Zeinas Protection Desc"
-	{
-		"en"	"Take 15％ less damage"
 	}
 	"Zilius Prime Technology"
 	{
@@ -1344,6 +1370,22 @@
 	{
 		"en" 	"Take 25％ Less damage\nDeal 10％ More damage\nAttack 10％ Faster.\nReduces cooldowns by 15％"
 	}
+	"Charisma Effect"
+	{
+		"en"	"Ignore"
+	}
+	"Charisma Effect Desc"
+	{
+		"en"	"Ignore"
+	}
+	"Charisma Effect Detect"
+	{
+		"en"	"Ignore"
+	}
+	"Charisma Effect Detect Desc"
+	{
+		"en"	"Ignore"
+	}
 	"Dimensional Turbulence"
 	{
 		"en"	"Dimensional Turbulence"
@@ -1372,26 +1414,4 @@
 	{
 		"en"	"Increases damage +15％\nBoosts attackspeed by +25％\nReduces Ark's Parry cooldown by 60％.\nResets Ark parry cooldown upon activation to 1 Sec.\n{crimson}However, you take 20％ more damage..."
 	}
-	"Purging Intention"
-	{
-		"en" "Purging Intention"
-	}
-	"Purging Intention Desc"
-	{
-		"en" "Uncureable.\nPurge is after you.\nYou gain Primal fear much faster."
-	}
-	"Primal Fear"
-	{
-		"en" "Primal Fear"
-	}
-	"Primal Fear Desc"
-	{
-		"en" "Uncureable.\nGain a multiplicative damage vulnerability.\nStacks upto 2x damage taken.\nAvoid purge to lower this overtime."
-	}
-	//This is just used for cooldown stuff.
-	"Primal Fear Hide"
-	{
-		"en" "Primal Fear Hide"
-	}
-
 }

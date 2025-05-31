@@ -1,0 +1,133 @@
+"Phrases"
+{
+	"Setting Constraints"
+	{
+		"en"	"Setting Constraints"
+		"ko"	"제약 설정"
+	}
+	"Constraints Score Points"
+	{
+		"en"	"Score"
+		"ko"	"점수"
+	}
+	"Constraints_0"
+	{
+		"en"	"Strength Training"
+		"ko"	"강화 훈련"
+	}
+	"Constraints_desc_0"
+	{
+		"en"	"Enemies Damage +20%"
+		"ko"	"모든적 피해량 +20％"
+	}
+	"Constraints_1"
+	{
+		"en"	"Sharp Strike"
+		"ko"	"날카로운 타격"
+	}
+	"Constraints_desc_1"
+	{
+		"en"	"Enemies Damage +50%"
+		"ko"	"모든적 피해량 +50％"
+	}
+	"Constraints_2"
+	{
+		"en"	"Heavy Attack"
+		"ko"	"중타격"
+	}
+	"Constraints_desc_2"
+	{
+		"en"	"Enemies Damage +100%"
+		"ko"	"모든적 피해량 +100％"
+	}
+	"Constraints_3"
+	{
+		"en"	"Ceramic Coating"
+		"ko"	"세라믹 코팅"
+	}
+	"Constraints_desc_3"
+	{
+		"en"	"Enemies Resist +20%"
+		"ko"	"모든적 저항 +20％"
+	}
+	"Constraints_4"
+	{
+		"en"	"heavy equipment"
+		"ko"	"중장비"
+	}
+	"Constraints_desc_4"
+	{
+		"en"	"Enemies Resist +35%"
+		"ko"	"모든적 저항 +35％"
+	}
+	"Constraints_5"
+	{
+		"en"	"Agility I"
+		"ko"	"민첩성 I"
+	}
+	"Constraints_desc_5"
+	{
+		"en"	"Enemies MoveSpeed +15%"
+		"ko"	"모든적 이속 +15％"
+	}
+	"Constraints_6"
+	{
+		"en"	"Agility II"
+		"ko"	"민첩성 II"
+	}
+	"Constraints_desc_6"
+	{
+		"en"	"Enemies MoveSpeed +33%"
+		"ko"	"모든적 이속 +33％"
+	}
+	"Constraints_7"
+	{
+		"en"	"See You In Hell"
+		"ko"	"지옥에서 보자"
+	}
+	"Constraints_desc_7"
+	{
+		"en"	"Enemies explode when killed."
+		"ko"	"적이 사망시 폭발합니다."
+	}
+	"Constraints_8"
+	{
+		"en"	"Force Shield I"
+		"ko"	"포스 실드 I"
+	}
+	"Constraints_desc_8"
+	{
+		"en"	"Enemies Receieve +3 Expidonsan Shield"
+		"ko"	"적이 엑스피돈산 실드 +3 흭득"
+	}
+	"Constraints_9"
+	{
+		"en"	"Force Shield II"
+		"ko"	"포스 실드 II"
+	}
+	"Constraints_desc_9"
+	{
+		"en"	"Enemies Receieve +6 Expidonsan Shield"
+		"ko"	"적이 엑스피돈산 실드 +6 흭득"
+	}
+	"Constraints_10"
+	{
+		"en"	"Supply issues I"
+		"ko"	"보급 이슈 I"
+	}
+	"Constraints_desc_10"
+	{
+		"en"	"-1 reduction in supply gained at the end of a wave"
+		"ko"	"웨이브 종료시 얻는 보급 -1"
+	}
+	"Constraints_11"
+	{
+		"en"	"Supply issues II"
+		"ko"	"보급 이슈 II"
+	}
+	"Constraints_desc_11"
+	{
+		"en"	"-2 reduction in supply gained at the end of a wave"
+		"ko"	"웨이브 종료시 얻는 보급 -2"
+	}
+}
