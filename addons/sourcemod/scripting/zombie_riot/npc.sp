@@ -2045,10 +2045,10 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "npc/raidmode_bosses/victoria/npc_castellan.sp"
 
 //Special
-#include "zombie_riot/npc/special/npc_sans.sp"
-#include "zombie_riot/npc/special/npc_victoria_precision_strike.sp"
-#include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"
-#include "zombie_riot/npc/baka/npc_invisible_trigger_man.sp"
+#include "npc/baka/special/npc_sans.sp"
+#include "npc/baka/special/npc_victoria_precision_strike.sp"
+#include "npc/baka/npc_cybergrind_gm.sp"
+#include "npc/baka/npc_invisible_trigger_man.sp"
 
 //Matrix Enemies
 #include "npc/matrix/15/npc_agentalan.sp"
