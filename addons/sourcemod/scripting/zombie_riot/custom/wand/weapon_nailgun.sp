@@ -108,6 +108,7 @@ public void Weapon_Nailgun_Shotgun(DataPack pack)
 		float damage = Attributes_GetOnPlayer(client, 287, true);			//Sentry damage bonus
 		damage *= 0.85;
 		//reduce
+		damage *= f_Nailgun_Shotgun_Slug_Ammo[client];
 		Attributes_Set(weapon, 2, damage);
 			
 	}
