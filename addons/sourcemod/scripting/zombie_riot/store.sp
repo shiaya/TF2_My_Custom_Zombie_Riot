@@ -4241,7 +4241,7 @@ public int Store_MenuPage(Menu menu, MenuAction action, int client, int choice)
 						Format(buffer, sizeof(buffer), "%T", "Lumine", client);
 						menu2.AddItem("-1001", buffer);
 
-						Format(buffer, sizeof(buffer), "%T", "Meruna Mint", client);
+						FormatEx(buffer, sizeof(buffer), "%T", "Meruna Mint", client);
 						menu2.AddItem("-1002", buffer);
 						
 						Format(buffer, sizeof(buffer), "%T", "TRUE BLITZKRIEG", client);
