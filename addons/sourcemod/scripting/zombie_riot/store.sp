@@ -2669,10 +2669,6 @@ void Store_DiscountNamedItem(const char[] name, int timed = 0, float discount = 
 	}
 }
 
-#define ZR_STORE_RESET (1 << 1) //This will reset the entire store to default
-#define ZR_STORE_DEFAULT_SALE (1 << 2) //This  will reset the current normally sold items, and put up a new set of items
-#define ZR_STORE_WAVEPASSED (1 << 3) //any storelogic that should be called when a wave passes
-
 void Store_RandomizeNPCStore(int StoreFlags, int addItem = 0, float override = -1.0)
 {
 	int amount;
@@ -2763,11 +2759,14 @@ void Store_RandomizeNPCStore(int StoreFlags, int addItem = 0, float override = -
 					if(info.Cost > 0 && info.Cost_Unlock > ((GrigoriCashLogic / 3)- 1000) && info.Cost_Unlock < GrigoriCashLogic)
 						indexes[amount++] = i;
 				}
-
-				if(item.NPCSeller && addItem == 0 && item.NPCSeller_WaveStart <= 0)
+				
+				if(item.NPCSeller_WaveStart <= 0)
+				{
+					item.NPCSeller_Discount = 1.0;
+				}
+				if(item.NPCSeller && addItem == 0)
 				{
 					item.NPCSeller = false;
-					item.NPCSeller_Discount = 1.0;
 					StoreItems.SetArray(i, item);
 				}
 			}
@@ -2869,8 +2868,6 @@ void Store_RandomizeNPCStore(int StoreFlags, int addItem = 0, float override = -
 
 					if(ParentItem.NPCSeller_WaveStart < item.NPCSeller_WaveStart)
 						ParentItem.NPCSeller_WaveStart = item.NPCSeller_WaveStart;
-
-					ParentItem.NPCSeller = true;
 						
 					StoreItems.SetArray(item.Section, ParentItem);
 					if(ParentItem.Section != -1)
