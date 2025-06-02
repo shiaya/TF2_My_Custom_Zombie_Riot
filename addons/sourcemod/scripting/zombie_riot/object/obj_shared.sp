@@ -1244,7 +1244,7 @@ void BuildingUpdateTextHud(int building)
 		}
 		Format(HealthText, sizeof(HealthText), "%s(%0.f%% R)", HealthText, RatioLeft);
 		if(b_Interior_ExplosiveBuilding[building])
-			Format(HealthText, sizeof(HealthText), "%s\n💣️", HealthText);
+			Format(HealthText, sizeof(HealthText), "%s\nBomb Planted️", HealthText);
 	}
 
 
