@@ -19,6 +19,7 @@
 #include <profiler>
 #include <collisionhook>
 #include <sourcescramble>
+#include <rtd2>
 //#include <handledebugger>
 #undef REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
