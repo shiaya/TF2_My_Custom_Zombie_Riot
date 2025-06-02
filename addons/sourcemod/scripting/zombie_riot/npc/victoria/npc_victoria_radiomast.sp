@@ -16,6 +16,9 @@ static const char g_HurtSounds[][] = {
 	")physics/metal/metal_box_impact_bullet2.wav",
 	")physics/metal/metal_box_impact_bullet3.wav",
 };
+
+bool NoEmptyMode[MAXENTITIES]={false};
+
 /*
 int RadioMastID;
 

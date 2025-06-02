@@ -122,7 +122,7 @@ methodmap VictorianOfflineAvangard < CClotBody
 			i_AttacksTillMegahit[npc.index]=600;
 			npc.m_bFUCKYOU = true;
 		}
-		if(!StrContains(countext[i], "link_majorsteam"))
+		if(!StrContains(data, "link_majorsteam"))
 			npc.m_fbRangedSpecialOn = true;
 
 		SetEntityRenderMode(npc.index, RENDER_TRANSCOLOR);
@@ -261,7 +261,7 @@ static void ClotThink(int iNPC)
 					int entity = EntRefToEntIndex(LifeSupportDevice[npc.index]);
 					if(IsValidEntity(entity) && !b_NpcHasDied[entity] && GetTeam(entity) == GetTeam(npc.index))
 					{
-						IncreaceEntityDamageTakenBy(npc.index, 0.5, 0.25);
+						IncreaseEntityDamageTakenBy(npc.index, 0.5, 0.25);
 						HealEntityGlobal(npc.index, npc.index, 4000.0, 1.0);
 						HealEntityGlobal(npc.index, entity, 75.0, 1.0);
 						npc.m_flNextRangedAttack = gameTime + 0.25;
