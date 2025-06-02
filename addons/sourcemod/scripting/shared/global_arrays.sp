@@ -233,6 +233,10 @@ bool Viewchanges_PlayerModelsAnims[] =
 	true,
 	false,
 	true,
+	false,
+	false,
+	false,
+	false,
 };
 
 ConVar cvarTimeScale;
@@ -824,3 +828,37 @@ int i_ally_index[MAXENTITIES];
 //some lasers had some variation of this, i just condeced it down to 1
 int LaserVarious_HitDetection[MAXENTITIES];
 int i_SaidLineAlready[MAXENTITIES];
+
+float Mana_Regen_Delay_ManaFlower_Terrarium[MAXTF2PLAYERS];
+bool b_Hero_Of_Concord[MAXENTITIES];
+bool b_Hero_Of_Concord_LastMan[MAXTF2PLAYERS];
+bool b_Hero_Of_Concord_True;
+int i_Hero_Of_Concord[MAXTF2PLAYERS]={0, ...};
+bool b_Hero_Of_Concord_Deadman;
+bool b_Box_Office[MAXTF2PLAYERS];
+bool b_Sandvich_SafeHouse[MAXTF2PLAYERS];
+bool b_Sandvich_Crits[MAXTF2PLAYERS];
+int i_Sandvich_Crits_AttackCount[MAXTF2PLAYERS];
+int i_Sandvich_Crits_DamageCount[MAXTF2PLAYERS];
+bool b_DeathfromAbove[MAXTF2PLAYERS];
+bool b_POWERHEAL[MAXTF2PLAYERS]={false, ...};
+bool b_Chaos_Coil[MAXTF2PLAYERS];
+int i_Chaos_Coil_Speed[MAXTF2PLAYERS];
+float f_Chaos_Coil[MAXTF2PLAYERS];
+int i_Chaos_Coil[MAXTF2PLAYERS]={0, ...};
+bool b_Force_Shield_Generator[MAXTF2PLAYERS];
+bool b_Shotgun_Slug_Ammo[MAXTF2PLAYERS];
+float f_Nailgun_Shotgun_Slug_Ammo[MAXTF2PLAYERS];
+bool b_DrinkRND_BuildingCD_Buff[MAXTF2PLAYERS];
+bool b_Shotgun_Dragonr_Beath_Ammo[MAXTF2PLAYERS];
+bool b_Explosive_Structures[MAXTF2PLAYERS];
+bool b_On_Self_Damage[MAXENTITIES];
+bool b_Interior_ExplosiveBuilding[MAXENTITIES];
+int b_Interior_ExplosiveBuilding_MaxHP[MAXENTITIES];
+bool b_Barrack_Backup[MAXENTITIES];
+bool b_MarketGardener_Uniform[MAXTF2PLAYERS];
+bool b_ManaFlower_Terrarium[MAXTF2PLAYERS];
+bool b_Golden_Crown[MAXENTITIES];
+bool b_Mana_Infusion_Ammunition[MAXTF2PLAYERS];
+bool b_Barricade_Stabilizer[MAXTF2PLAYERS];
+bool b_Charisma_Catch_that_Bastard;

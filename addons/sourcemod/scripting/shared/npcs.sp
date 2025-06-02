@@ -48,7 +48,7 @@ void NPC_PluginStart()
 }
 
 #if defined ZR
-public void NPC_SpawnNext(bool panzer, bool panzer_warning)
+public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 {
 	float GameTime = GetGameTime();
 	if(f_DelaySpawnsForVariousReasons > GameTime)
@@ -186,7 +186,7 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning)
 	float pos[3], ang[3];
 
 	MiniBoss boss;
-	if(panzer && Waves_GetMiniBoss(boss))
+	if(panzer && Waves_GetMiniBoss(boss, RND))
 	{
 		bool isBoss = false;
 		int deathforcepowerup = boss.Powerup;
@@ -412,6 +412,7 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning)
 						//i put this here instead of in waves.sp as some NPCS dont have an HP defined in the config, resulting in no HP gain.
 						ScalingMultiplyEnemyHpGlobalScale(entity_Spawner);
 					}
+					CC_Contract_SpawnEnemy(entity_Spawner);
 					if(GetTeam(entity_Spawner) == 2)
 					{
 						Rogue_AllySpawned(entity_Spawner);
@@ -532,7 +533,7 @@ public Action Timer_Delay_BossSpawn(Handle timer, DataPack pack)
 		}
 		
 		b_NpcForcepowerupspawn[entity] = forcepowerup;
-
+		CC_Contract_SpawnEnemy(entity);
 		if(GetTeam(entity) == 2)
 		{
 			Rogue_AllySpawned(entity);
@@ -994,6 +995,10 @@ public Action NPC_TraceAttack(int victim, int& attacker, int& inflictor, float& 
 				if(b_ProximityAmmo[attacker])
 				{
 					WeaponDamageFalloff *= 0.8;
+				}
+				if(b_Shotgun_Slug_Ammo[attacker] && i_WeaponArchetype[weapon] == 1)
+				{
+					WeaponDamageFalloff *= 0.7;
 				}
 				if(DoCalcReduceHeadshotFalloff && WeaponDamageFalloff <= 1.0)
 				{
@@ -2350,10 +2355,20 @@ void BackstabNpcInternalModifExtra(int weapon, int attacker, int victim, float m
 #if defined ZR
 void OnKillUniqueWeapon(int attacker, int weapon, int victim)
 {
-	if(!IsValidEntity(weapon))
-		return;
-
 	if(!IsValidClient(attacker))
+		return;
+		
+	if(b_Box_Office[attacker])
+	{
+		if(!Waves_InSetup())
+		{
+			int cash = 1;
+			CashRecievedNonWave[attacker] += cash;
+			CashSpent[attacker] -= cash;
+		}
+	}
+		
+	if(!IsValidEntity(weapon))
 		return;
 		
 	if(i_HasBeenBackstabbed[victim])

@@ -3971,36 +3971,42 @@
 		"en"	"Custom Models"
 		"fr"	"Modèles personnalisés"
 		"chi"	"自定义模型"
+		"ko"	"커스텀 모델"
 	}
 	"TF2 Class"
 	{
 		"en"	"TF2 Class"
 		"fr"	"Classes TF2"
 		"chi"	"兵种模型"
+		"ko"	"TF2 병과"
 	}
 	"Barney"
 	{
 		"en"	"Barney"
 		"fr"	"Barney"
 		"chi"	"巴尼"
+		"ko"	"바니"
 	}
 	"Niko Oneshot"
 	{
 		"en"	"Niko Oneshot"
 		"fr"	"Niko Oneshot"
 		"chi"	"Niko [Oneshot]"
+		"ko"	"니코 [Oneshot]"
 	}
 	"Skeleboy"
 	{
 		"en"	"Skeleboy"
 		"fr"	"M. Squelette"
 		"chi"	"骷髅"
+		"ko"	"''뼈다귀''"
 	}
 	"Kleiner"
 	{
 		"en"	"Kleiner"
 		"fr"	"Kleiner"
 		"chi"	"克莱恩"
+		"ko"	"클라이너"
 	}
 	"Neuron Activation"
 	{
@@ -4021,6 +4027,11 @@
 	{
 		"en"	"Fat HHH"
 		"ko"	"뚱띠 듀라한"
+	}
+	"TRUE BLITZKRIEG"
+	{
+		"en"	"TRUE BLITZKRIEG"
+		"ko"	"블리츠크리그"
 	}
 	"Iberia & Nemal"
 	{

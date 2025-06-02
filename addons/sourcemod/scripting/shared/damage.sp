@@ -879,6 +879,37 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 				return Player_OnTakeDamage_Fractal(victim, damage, damagePosition,attacker);
 		}
 	}
+	if(!CheckInHud() && b_Chaos_Coil[victim])
+		Elemental_AddChaosDamage(victim, attacker, RoundToCeil(damage));
+	if(!CheckInHud() && b_Iron_Will[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red))
+	{
+		int health = GetClientHealth(victim);
+		if(damage>health)
+		{
+			damage=0.0;
+			SetEntityHealth(victim, 1);
+		}
+	}
+	if(IsInvuln(victim) && b_Force_Shield_Generator[victim])
+	{
+		RemoveAllBuffs(victim, false);
+		ApplyStatusEffect(victim, victim, "Hardened Aura", 0.6);
+	}
+	
+	if(!CheckInHud() && b_MarketGardener_Uniform[victim] && !(GetEntityFlags(attacker)&FL_ONGROUND))
+		damage*=0.97;
+
+	if(!CheckInHud() && LastMann && b_Hero_Of_Concord[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red) && TeutonType[victim] == TEUTON_NONE)
+	{
+		float Resist=damage;
+		if(Items_HasNamedItem(victim, "True Concord Hero"))
+			Resist*=0.7;
+		else if(b_thisNpcIsARaid[attacker] || b_thisNpcIsABoss[attacker])
+			Resist*=0.8;
+		else
+			Resist*=0.75;
+		damage=Resist;
+	}
 	return damage;
 }
 
@@ -1493,7 +1524,8 @@ float ExtraDamageWaveScaling()
 stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon)
 {	
 	float ExtraDamageDealt;
-
+	bool Crit=false;
+	bool Minicrit=true;
 	ExtraDamageDealt = ExtraDamageWaveScaling(); //at wave 60, this will equal to 60* dmg
 	if(ExtraDamageDealt <= 0.35)
 	{
@@ -1501,7 +1533,125 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 	}
 	if(LastMann && GetTeam(victim) != TFTeam_Red)
 	{
-		damage *= 1.35;
+		if(b_Hero_Of_Concord[attacker] && IsValidClient(attacker) && TeutonType[attacker] == TEUTON_NONE)
+		{
+			if(b_Hero_Of_Concord_True)
+				damage*=1.55;
+			else
+				damage*=1.45;
+			Minicrit=false;
+			Crit=true;
+		}
+		else
+		{
+			if(b_Hero_Of_Concord_Deadman)
+			{
+				if(b_Hero_Of_Concord_True)
+					damage*=1.5;
+				else
+					damage*=1.45;
+				Minicrit=false;
+				Crit=true;
+			}
+			else
+				damage *= 1.35;
+		}
+	}
+	if(IsValidClient(attacker) && b_Sandvich_Crits[attacker])
+	{
+		int CritChanceA = 100-i_Sandvich_Crits_AttackCount[attacker];
+		int CritChanceD = 1000000-i_Sandvich_Crits_DamageCount[attacker];
+		
+		int CritChance = RoundToCeil((float(i_Sandvich_Crits_AttackCount[attacker])*0.5)+(float(i_Sandvich_Crits_DamageCount[attacker])*0.000025));
+		
+		if(CritChanceA <= 0 || CritChanceD <= 0 ||GetRandomInt(0, 100) < CritChance)
+		{
+			damage *= 1.15;
+			i_Sandvich_Crits_AttackCount[attacker]=0;
+			i_Sandvich_Crits_DamageCount[attacker]=0;
+			Minicrit=false;
+			Crit=true;
+		}
+		else
+		{
+			++i_Sandvich_Crits_AttackCount[attacker];
+			i_Sandvich_Crits_DamageCount[attacker]+=RoundToCeil(damage);
+			/*PrintToChat(attacker, "CritChance A: %i",CritChanceA);
+			PrintToChat(attacker, "CritChance D: %i",CritChanceD);
+			PrintToChat(attacker, "CritChance: %i",CritChance);*/
+		}
+	}
+	if(IsValidClient(attacker) && b_DeathfromAbove[attacker])
+	{
+		float attackerPos[3], victimPos[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", attackerPos);
+		GetEntPropVector(victim, Prop_Send, "m_vecOrigin", victimPos);
+		attackerPos[0]=victimPos[0];
+		attackerPos[1]=victimPos[1];
+		float YPOS = GetVectorDistance(attackerPos, victimPos);
+		if(YPOS>100.0) damage *= 1.10;
+	}
+	if(IsValidClient(attacker) && b_MarketGardener_Uniform[attacker] && !(GetEntityFlags(attacker)&FL_ONGROUND))
+	{
+		float Speed = MoveSpeed(attacker, _, true);
+		damage += Speed*0.25;
+		damage *= 1.05;
+	}
+	if(IsValidEntity(weapon))
+	{
+		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TEUTON_DEAD)
+		{
+			ExtraDamageDealt *= 0.5;
+			damage *= ExtraDamageDealt;
+		}
+		if(IsValidClient(attacker) && b_Shotgun_Dragonr_Beath_Ammo[attacker] && i_WeaponArchetype[weapon] == 1)
+		{
+			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
+			{
+				float attackerPos[3], victimPos[3];
+				GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", attackerPos);
+				GetEntPropVector(victim, Prop_Send, "m_vecOrigin", victimPos);
+				float Dist = GetVectorDistance(attackerPos, victimPos);
+				if(Dist<1000.0) NPC_Ignite(victim, attacker, 3.0, weapon);
+			}
+		}
+		if(IsValidClient(attacker) && b_Mana_Infusion_Ammunition[attacker] &&
+		(i_WeaponArchetype[weapon] == 1 || i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3 || i_WeaponArchetype[weapon] == 5))
+		{
+			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
+			{
+				int mana_max = RoundToCeil(400.0*Mana_Regen_Level[attacker]);
+				int mana_cost = RoundToCeil(mana_max*((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.025 : 0.1));
+				bool IsBoomStick=false;
+				if(i_CustomWeaponEquipLogic[weapon] == WEAPON_BOOMSTICK)
+				{
+					mana_cost = RoundToCeil(mana_max*0.99);
+					IsBoomStick=true;
+				}
+				if(mana_cost <= Current_Mana[attacker])
+				{
+					Current_Mana[attacker] -=mana_cost;
+					SDKhooks_SetManaRegenDelayTime(attacker, (IsBoomStick ? 3.5 : 2.0));
+					damage+=float(mana_max)*(IsBoomStick ? 0.2 : ((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.1 : 0.15));
+					damage *= Attributes_Get(weapon, 410, 1.00);
+				}
+				else damage*=(IsBoomStick ? 0.65 : 0.9);
+			}
+		}
+	}
+	if(IsValidEntity(inflictor))
+	{
+		if(GetTeam(inflictor) == TFTeam_Red) 
+		{
+			CClotBody npc = view_as<CClotBody>(inflictor);
+			if(npc.m_bScalesWithWaves)
+			{
+				damage *= ExtraDamageDealt;
+			}
+		}
+	}
+	if(Crit)
+	{
 		int DisplayCritSoundTo;
 		if(attacker <= MaxClients)
 			DisplayCritSoundTo = attacker;
@@ -1517,26 +1667,7 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 				f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
 			}
 			
-			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,true); //Display crit above head
-		}
-	}
-	if(IsValidEntity(weapon))
-	{
-		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TEUTON_DEAD)
-		{
-			ExtraDamageDealt *= 0.5;
-			damage *= ExtraDamageDealt;
-		}
-	}
-	if(IsValidEntity(inflictor))
-	{
-		if(GetTeam(inflictor) == TFTeam_Red) 
-		{
-			CClotBody npc = view_as<CClotBody>(inflictor);
-			if(npc.m_bScalesWithWaves)
-			{
-				damage *= ExtraDamageDealt;
-			}
+			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,Minicrit); //Display crit above head
 		}
 	}
 	return false;
@@ -2010,6 +2141,34 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 	{
 		//Display morale!
 		MoraleIconShowHud(victim, Debuff_Adder_right, SizeOfChar);
+	}
+	if(LastMann && GetTeam(victim) == TFTeam_Red)
+	{
+		if(IsValidClient(victim))
+		{
+			if(IsPlayerAlive(victim) && b_Hero_Of_Concord[victim] && TeutonType[victim] == TEUTON_NONE)
+			{
+				TF2_AddCondition(victim, TFCond_CritCanteen, 1.0);
+				if(Items_HasNamedItem(victim, "True Concord Hero"))
+				{
+					b_Hero_Of_Concord_True=true;
+					TF2_AddCondition(victim, TFCond_KingAura, 1.0);
+				}
+				else
+					b_Hero_Of_Concord_True=false;
+				b_Hero_Of_Concord_LastMan[victim]=true;
+				b_Hero_Of_Concord_Deadman=true;
+			}
+			else if(b_Hero_Of_Concord_Deadman && TeutonType[victim] != TEUTON_WAITING && TeutonType[victim] != TEUTON_NONE)
+				TF2_AddCondition(victim, b_Hero_Of_Concord_True ? TFCond_CritOnWin : TFCond_CritCanteen, 1.0);
+		}
+		if(b_Hero_Of_Concord_Deadman)
+		{
+			if(b_Hero_Of_Concord_True)
+				Format(Debuff_Adder_right, SizeOfChar, "★%s", Debuff_Adder_right);
+			else
+				Format(Debuff_Adder_right, SizeOfChar, "☆%s", Debuff_Adder_right);
+		}
 	}
 	if(victim <= MaxClients)
 	{

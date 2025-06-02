@@ -222,6 +222,19 @@ enum
 	WEAPON_REIUJI_WAND = 145,
 	//WEAPON_CHEESY_MELEE = 146,
 	//WEAPON_CHEESY_PRIMARY = 147,
+	WEAPON_MARKET_GARDENER = 1000,
+	WEAPON_FARMER = 1001,
+	WEAPON_MINECRAFT_SWORD = 1002,
+	WEAPON_OVERCLOCKER = 1003,
+	WEAPON_PERSERKER = 1004,
+	WEAPON_SUPPORTWEAPONS = 1005,
+	WEAPON_LOCKDOWN = 1006,
+	WEAPON_STILLHUNT = 1007,
+	WEAPON_TRUMPET = 1008,
+	WEAPON_TROLLDIER = 1009,
+	WEAPON_TLQKF = 1010,
+	WEAPON_MAJORSTEAM_LAUNCHER = 1011,
+	WEAPON_KIT_OMEGA = 1012
 }
 
 enum
@@ -461,6 +474,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "teuton_sound_override.sp"
 #include "barney_sound_override.sp"
 #include "kleiner_sound_override.sp"
+#include "custom/boicechanger/neuron_activation_sound_override.sp"
 #include "tutorial.sp"
 #include "waves.sp"
 #include "zombie_drops.sp"
@@ -470,6 +484,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "zsclassic.sp"
 #include "construction.sp"
 #include "sm_skyboxprops.sp"
+#include "expidonsan_contract.sp"
 #include "custom/homing_projectile_logic.sp"
 #include "custom/weapon_slug_rifle.sp"
 #include "custom/weapon_boom_stick.sp"
@@ -603,6 +618,8 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "custom/weapon_walter.sp"
 #include "custom/wand/weapon_wand_nymph.sp"
 #include "custom/weapon_castlebreaker.sp"
+#include "custom/baka/weapon_trumpet.sp"
+#include "custom/baka/weapon_toolgun.sp"
 #include "custom/kit_soldine.sp"
 #include "custom/weapon_kritzkrieg.sp"
 #include "custom/wand/weapon_bubble_wand.sp"
@@ -673,6 +690,17 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_spawn_vehicle", Command_PropVehicle, ADMFLAG_ROOT, "Spawn Vehicle"); 	//DEBUG
 	RegAdminCmd("sm_loadbgmusic", CommandBGTest, ADMFLAG_RCON, "Load a config containing a music field as passive music");
 	RegAdminCmd("sm_forceset_team", Command_SetTeamCustom, ADMFLAG_ROOT, "Set Team custom to a player"); 	//DEBUG
+	RegAdminCmd("sm_kill_npc", CommandKillTheNPC, ADMFLAG_ROOT, "You can kill an NPC by aiming at it and hitting it.");
+	RegAdminCmd("sm_add_effect", CommandAimGotEffectsadd, ADMFLAG_ROOT, "You can add effects.");
+	RegAdminCmd("sm_dsw", CommandDeployingSupportWeapon, ADMFLAG_ROOT, "Deploying Support Weapon, yep is op");
+	RegAdminCmd("sm_rein", CommandAdminReinforce, ADMFLAG_ROOT, "Deploying Reinforce, yep is op");
+	RegAdminCmd("sm_waveend", Waves_AdminsWaveEndCmd, ADMFLAG_ROOT, "Wave Force END");
+	RegAdminCmd("sm_wavewin", Waves_AdminsWaveWinCmd, ADMFLAG_ROOT, "Wave Force END");
+	RegAdminCmd("sm_raidend", Waves_AdminsRaidTimeEndCmd, ADMFLAG_ROOT, "Raid Force END");
+	RegAdminCmd("sm_raidadd", Waves_AdminsRaidTimeAddCmd, ADMFLAG_ROOT, "Raid Time Add");
+	RegAdminCmd("zr_get_ammotype", CommandGetAmmoTypes, ADMFLAG_ROOT, "Get Ammo Type");
+	RegAdminCmd("zr_ccmode", CommandCC_Contract_Mod, ADMFLAG_ROOT, "Toggle CC");
+	RegAdminCmd("zr_ccblock", CommandCC_Constraints_Block, ADMFLAG_ROOT, "Toggle block");
 	CookieXP = new Cookie("zr_xp", "Your XP", CookieAccess_Protected);
 	CookieScrap = new Cookie("zr_Scrap", "Your Scrap", CookieAccess_Protected);
 
@@ -808,6 +836,7 @@ void ZR_MapStart()
 	
 	Waves_MapStart();
 	Freeplay_OnMapStart();
+	CC_Contract_OnMapStart();
 	Music_MapStart();
 	Wand_Map_Precache();
 	Wand_Skulls_Precache();
@@ -2282,6 +2311,9 @@ stock int MaxArmorCalculation(int ArmorLevel = -1, int client, float multiplyier
 										
 	else if(ArmorLevel == 200)
 		Armor_Max = 2000;
+										
+	else if(ArmorLevel > 200)	//Over 200!
+		Armor_Max = 2000+RoundToNearest(ArmorLevel*1.5);
 		
 	else
 		Armor_Max = 200;
@@ -2395,6 +2427,8 @@ stock void AddAmmoClient(int client, int AmmoType, int AmmoCount = 0, float Mult
 	{
 		AmmoToAdd = RoundToCeil(float(AmmoToAdd) * 1.33);
 	}
+	if(Items_HasNamedItem(client, "Widemouth Refill Port") && !ignoreperk)
+		AmmoToAdd = RoundToCeil(float(AmmoToAdd) * 1.1);
 	if(Multi != 1.0)
 	{
 		AmmoToAdd = RoundToCeil(float(AmmoToAdd) * Multi);

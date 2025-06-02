@@ -402,6 +402,17 @@ public void OnPostThink(int client)
 			}
 		}
 	}
+	
+	if(IsValidClient(client) && b_Chaos_Coil[client] && GameTime > f_Chaos_Coil[client])
+	{
+		int Chaos_Coil = EntRefToEntIndex(i_Chaos_Coil_Speed[client]);
+		if(IsValidEntity(Chaos_Coil))
+		{
+			Attributes_Set(Chaos_Coil, 107, 1.0+(0.01*float(GetRandomInt(0, 20))));
+			SDKCall_SetSpeed(client);
+			f_Chaos_Coil[client] = GameTime + 3.0;
+		}
+	}
 #if defined ZR
 	if(SkillTree_InMenu(client))
 	{
@@ -521,6 +532,52 @@ public void OnPostThink(int client)
 #if defined ZR
 	bool Mana_Regen_Tick = false;
 
+	if(Rogue_CanRegen() && (b_ManaFlower_Terrarium[client] && Mana_Regen_Delay_ManaFlower_Terrarium[client] < GameTime))
+	{
+		Mana_Regen_Delay_ManaFlower_Terrarium[client] = GameTime + 0.4;
+		float ManaRegenExtra = 1.0;
+		float ManaMaxExtra = 1.0;
+		int i, entity;
+		while(TF2_GetItem(client, entity, i))
+		{
+			if(i_IsWandWeapon[entity])
+			{
+				has_mage_weapon[client] = true;
+				ManaMaxExtra *= Attributes_Get(entity, 4019, 1.0);
+				ManaRegenExtra *= Attributes_Get(entity, 4020, 1.0);
+			}
+		}
+		Mana_Regen_Tick = true;
+
+		max_mana[client] *= ManaMaxExtra;
+		mana_regen[client] *= ManaRegenExtra;
+				
+		if(i_CurrentEquippedPerk[client] == 4)
+			mana_regen[client] *= 1.35;
+		if(Classic_Mode())
+			mana_regen[client] *= 0.7;
+
+		mana_regen[client] *= Mana_Regen_Level[client];
+		max_mana[client] *= Mana_Regen_Level[client];
+		mana_regen[client] *= 1.05;
+		max_mana[client] *= 1.05;
+		mana_regen[client]*=0.05;
+		
+		if(Current_Mana[client] < RoundToCeil(max_mana[client]) && Mana_Regen_Block_Timer[client] < GameTime)
+		{
+			Current_Mana[client] += RoundToCeil(mana_regen[client]);
+				
+			if(Current_Mana[client] > RoundToCeil(max_mana[client])) //Should only apply during actual regen
+			{
+				Current_Mana[client] = RoundToCeil(max_mana[client]);
+				mana_regen[client] = 0.0;
+			}
+		}
+		else
+		{
+			mana_regen[client] = 0.0;
+		}
+	}
 	if(Rogue_CanRegen() && (Mana_Regen_Delay[client] < GameTime || (b_AggreviatedSilence[client] && Mana_Regen_Delay_Aggreviated[client] < GameTime)))
 	{
 		Mana_Regen_Delay[client] = GameTime + 0.4;
@@ -1071,7 +1128,7 @@ public void OnPostThink(int client)
 		int Alpha = 255;
 
 #if defined ZR
-		if(has_mage_weapon[client])
+		if(has_mage_weapon[client] || b_Mana_Infusion_Ammunition[client])
 #endif
 		{
 			red = 255;
@@ -2106,7 +2163,7 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 				//https://github.com/lua9520/source-engine-2018-hl2_src/blob/3bf9df6b2785fa6d951086978a3e66f49427166a/game/shared/mp_shareddefs.cpp
 				MakePlayerGiveResponseVoice(victim, 2); //dead!
 				i_CurrentEquippedPerkPreviously[victim] = i_CurrentEquippedPerk[victim];
-				if(!Rogue_Mode() && !SpecterCheckIfAutoRevive(victim))
+				if(!Rogue_Mode() && !SpecterCheckIfAutoRevive(victim) && !b_Sandvich_SafeHouse[victim])
 				{
 					i_CurrentEquippedPerk[victim] = 0;
 				}
@@ -2475,6 +2532,14 @@ public Action SDKHook_NormalSHook(int clients[MAXPLAYERS], int &numClients, char
 						Changed = KleinerSoundOverride(numClients, sample, 
 						entity, channel, volume, level, pitch, flags,seed);
 					}
+					case Neuron_Activation:
+					{
+						Changed = Neuron_ActivationSoundOverride(numClients, sample, 
+						entity, channel, volume, level, pitch, flags,seed);
+					}
+					case Lumine:{}
+					case Meruna_Mint:{}
+					case MM_TRUE_BLITZKRIEG:{return Plugin_Changed;}
 				}
 				if(Changed)
 				{

@@ -46,6 +46,7 @@ static char gBluePoint2;
 #define SOUND_ARMOR_BEAM			"physics/metal/metal_box_strain1.wav"
 #define SOUND_REPAIR_BEAM			"physics/metal/metal_box_strain2.wav"
 
+#include "custom/baka/bakas_m3_abilities.sp"
 
 public void M3_Abilities_Precache()
 {
@@ -53,6 +54,7 @@ public void M3_Abilities_Precache()
 	gLaser1 = PrecacheModel("materials/sprites/laser.vmt");
 	gExplosive1 = PrecacheModel("materials/sprites/sprite_fire01.vmt");
 	PrecacheModel("models/props_urban/urban_crate002.mdl", true);
+	PrecacheModel("models/props_trainyard/cart_bomb_separate.mdl", true);
 //	PrecacheModel(ARROW_TRAIL_GRENADE);
 //	PrecacheDecal(ARROW_TRAIL_GRENADE, true);
 	static char model[PLATFORM_MAX_PATH];
@@ -72,6 +74,7 @@ public void M3_Abilities_Precache()
 	PrecacheSound("weapons/air_burster_explode3.wav");
 	HookEntityOutput("func_movelinear", "OnFullyOpen", OnBombDrop);
 	PrecacheSound("weapons/slam/throw.wav");
+	M3_Abilities_Baka_Precache();
 }
 public void M3_ClearAll()
 {
@@ -84,6 +87,19 @@ public void M3_ClearAll()
 	Zero(f_ReinforceTillMax);
 	Zero(MorphineCharge);
 	Zero(b_ReinforceReady_soundonly);
+	M3_ClearAll_forBaka();
+}
+
+public Action CommandDeployingSupportWeapon(int client, int args)
+{
+	if(!IsValidClient(client) || IsFakeClient(client))
+	{
+		PrintToConsole(client, "Command is in-game only");
+		return Plugin_Handled;
+	}
+	DeployingSupportWeapon(client, true);
+	
+	return Plugin_Handled;
 }
 
 public Action CommandAdminReinforce(int client, int args)
@@ -134,6 +150,7 @@ public void M3_Abilities(int client)
 		{
 			MorphineShot(client);
 		}
+		default:M3_Abilities_forBaka(client);
 	}
 }
 
@@ -142,6 +159,7 @@ void M3_AbilitiesWaveEnd()
 	Zero(i_BurstpackUsedThisRound);
 	Zero(i_MaxMorhpinesThisRound);
 	i_MaxRevivesAWave = 0;
+	M3_AbilitiesWaveEnd_forBaka();
 }
 
 bool MorphineMaxed(int client)
@@ -1959,6 +1977,104 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 						SDKHooks_TakeDamage(entity, HELLDIVER, HELLDIVER, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 					}
 				}
+			}
+		}
+	}
+	else if(StrContains(name, "ZR_Bomb_Drop_", false) != -1)
+	{
+		int client = GetEntProp(caller, Prop_Data, "m_iHammerID")-1972;
+		float position[3];
+		GetEntPropVector(caller, Prop_Data, "m_vecAbsOrigin", position);
+		AcceptEntityInput(caller, "KillHierarchy");
+		position[2]+=35.0;
+		if(IsValidClient(client))
+		{
+			float position2[3], distance;
+			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+			{
+				int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+				if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
+				{
+					GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position2);
+					distance = GetVectorDistance(position, position2);
+					if(distance<850.0)
+					{
+						float MaxHealth = float(ReturnEntityMaxHealth(entity));
+						float damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[client]), 1.18)/10.0);
+						SDKHooks_TakeDamage(entity, client, client, damage, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE);
+					}
+				}
+			}
+		}
+		ParticleEffectAt(position, "hightower_explosion", 1.0);
+		for(int all=1; all<=MaxClients; all++)
+		{
+			if(IsValidClient(all) && !IsFakeClient(all))
+				ClientCommand(all, "playgamesound \"baka/nuke_doom.mp3\"");
+		}
+	}
+	else if(StrContains(name, "ZR_SupportWeapon_", false) != -1)
+	{
+		float position[3];
+		GetEntPropVector(caller, Prop_Data, "m_vecAbsOrigin", position);
+		AcceptEntityInput(caller, "KillHierarchy");
+		position[2]-=10.0;
+		int client = GetEntProp(caller, Prop_Data, "m_iHammerID")-1972;
+		if(IsValidClient(client))
+		{
+			float entitypos[3], distance;
+			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+			{
+				int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+				if(IsValidEntity(entity))
+				{
+					GetEntPropVector(entity, Prop_Send, "m_vecOrigin", entitypos);
+					distance = GetVectorDistance(position, entitypos);
+					if(distance<125.0)
+					{
+						float MaxHealth = float(ReturnEntityMaxHealth(entity));
+						float damage=(MaxHealth*2.0);
+						if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] || b_IsGiant[entity])
+							damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[client]), 1.18)/10.0);
+						if(GetTeam(client) != GetTeam(entity))
+							SDKHooks_TakeDamage(entity, client, client, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
+						else
+							SDKHooks_TakeDamage(entity, 0, 0, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
+					}
+				}
+			}
+			for(int target=1; target<=MaxClients; target++)
+			{
+				if(IsValidClient(target) && IsPlayerAlive(target) && TeutonType[target] == TEUTON_NONE)
+				{
+					GetEntPropVector(target, Prop_Send, "m_vecOrigin", entitypos);
+					distance = GetVectorDistance(position, entitypos);
+					if(distance<=125.0)
+					{
+						int health = GetClientHealth(target);
+						SDKHooks_TakeDamage(target, 0, 0, float(health)*3.0, DMG_TRUEDAMAGE|DMG_CRIT);
+					}
+				}
+			}
+			int Prop = CreateEntityByName("prop_dynamic");
+			if(IsValidEntity(Prop))
+			{
+				//position[2]+=30.0;
+				DispatchKeyValue(Prop, "model", "models/props_urban/urban_crate002.mdl");
+				DispatchKeyValue(Prop, "angles", "0 0 0");
+				DispatchKeyValue(Prop, "solid", "0");
+				TeleportEntity(Prop, position, NULL_VECTOR, NULL_VECTOR);
+				DispatchSpawn(Prop);
+				/*CClotBody npc = view_as<CClotBody>(Prop);
+				npc.m_bThisEntityIgnored = true;*/
+				
+				f_HealDelay[Prop] = GetGameTime() + 300.0;
+				
+				SetEntProp(Prop, Prop_Data, "m_nNextThinkTick", -1);
+				DataPack pack;
+				CreateDataTimer(0.1, Timer_SupportWeapon_Get, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+				pack.WriteCell(EntIndexToEntRef(Prop));
+				pack.WriteCell(GetClientUserId(client));
 			}
 		}
 	}

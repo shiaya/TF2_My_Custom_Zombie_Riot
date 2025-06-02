@@ -603,6 +603,15 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 										float CooldownGive = info.Cooldown;
 										if(Rogue_Mode())
 											CooldownGive *= 0.5;
+										if(Items_HasNamedItem(client, "Builder's Blueprints"))
+										{
+											if(CooldownGive>1.0)
+												CooldownGive-=1.0;
+											else
+												CooldownGive=0.0;
+										}
+										b_Interior_ExplosiveBuilding[entity]=b_Explosive_Structures[client];
+										b_Interior_ExplosiveBuilding_MaxHP[entity]=GetEntProp(entity, Prop_Data, "m_iMaxHealth");
 											
 										if(Construction_Mode())
 											CooldownGive *= 3.0;
@@ -810,6 +819,11 @@ stock void ApplyBuildingCollectCooldown(int building, int client, float Duration
 	else if(GameRules_GetRoundState() == RoundState_BetweenRounds && !IgnoreVotingExtraCD)
 	{
 		Building_Collect_Cooldown[building][client] = FAR_FUTURE;
+	}
+	else if(b_DrinkRND_BuildingCD_Buff[client])
+	{
+		Duration*=0.1;
+		Building_Collect_Cooldown[building][client] = Duration;
 	}
 	else
 	{
@@ -1969,6 +1983,32 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 			if(BarracksUpgrade)
 				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) / 0.8));
 			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 0.8));
+		}
+		if(!b_Golden_Crown[entity] && b_Golden_Crown[client])
+		{
+			b_Golden_Crown[entity] = true;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 1.15));
+			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.15));
+		}
+		if(b_Golden_Crown[entity] && !b_Golden_Crown[client])
+		{
+			b_Golden_Crown[entity] = false;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) / 1.15));
+			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 1.15));
+		}
+		if(!b_Barrack_Backup[entity] && b_Barrack_Backup[client])
+		{
+			b_Barrack_Backup[entity] = true;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.5));
+		}
+		if(b_Barrack_Backup[entity] && !b_Barrack_Backup[client])
+		{
+			b_Barrack_Backup[entity] = false;
+			if(BarracksUpgrade)
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 1.5));
 		}
 
 		//	

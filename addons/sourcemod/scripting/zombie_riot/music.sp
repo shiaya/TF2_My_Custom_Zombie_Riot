@@ -536,6 +536,20 @@ void Music_EndLastmann(bool Reinforce=false)
 		{
 			if(IsClientInGame(client))
 			{
+				if(!Reinforce && IsValidClient(client))
+				{
+					if(b_Hero_Of_Concord_LastMan[client])
+					{
+						i_Hero_Of_Concord[client]++;
+						//CPrintToChatAll("%i", i_Hero_Of_Concord[client]);
+						if(i_Hero_Of_Concord[client]>5 && !(Items_HasNamedItem(client, "True Concord Hero")))
+						{
+							Items_GiveNamedItem(client, "True Concord Hero");
+							CPrintToChat(client, "%t", "True Concord Hero Give");
+						}
+						b_Hero_Of_Concord_LastMan[client]=false;
+					}
+				}
 				if(!BlockLastmanMusicRaidboss(client))
 				{
 					switch(Yakuza_Lastman())
@@ -553,7 +567,11 @@ void Music_EndLastmann(bool Reinforce=false)
 						case 6:
 							StopSound(client, SNDCHAN_STATIC, "#music/hl2_song23_suitsong3.mp3");
 						case 7:
+						{
+							//StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/altwaves_and_blitzkrieg/music/blitz_theme.mp3", 2.0);
 							StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/altwaves_and_blitzkrieg/music/blitzkrieg_ost.mp3", 2.0);
+							StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/altwaves_and_blitzkrieg/music/dm_loop1.mp3", 2.0);
+						}
 						case 8:
 							StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/flaggilant_lastman.mp3", 2.0);
 						case 9:
@@ -1014,8 +1032,16 @@ void Music_Update(int client)
 				}
 				case 7:
 				{
-					EmitCustomToClient(client, "#zombiesurvival/altwaves_and_blitzkrieg/music/blitzkrieg_ost.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
-					SetMusicTimer(client, GetTime() + 228);
+					if(Has_OverridePlayerModel(client,MM_TRUE_BLITZKRIEG))
+					{
+						EmitCustomToClient(client, "#zombiesurvival/altwaves_and_blitzkrieg/music/dm_loop1.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+						SetMusicTimer(client, GetTime() + 356);
+					}
+					else
+					{
+						EmitCustomToClient(client, "#zombiesurvival/altwaves_and_blitzkrieg/music/blitzkrieg_ost.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+						SetMusicTimer(client, GetTime() + 228);
+					}
 				}
 				case 8:
 				{
@@ -1035,7 +1061,7 @@ void Music_Update(int client)
 				}
 				*/
 				default:
-				{	
+				{
 					EmitCustomToClient(client, "#zombiesurvival/lasthuman.mp3",client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0);
 					SetMusicTimer(client, GetTime() + 120);	
 				}

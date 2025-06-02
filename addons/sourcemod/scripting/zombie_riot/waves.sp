@@ -255,7 +255,13 @@ public Action NpcEnemyAliveLimit(int client, int args)
 
 public Action Waves_ForcePanzer(int client, int args)
 {
-	NPC_SpawnNext(true, true); //This will force spawn a panzer.
+	char arg[20];
+	int index=0;
+	GetCmdArg(1, arg, sizeof(arg));
+	if(StringToIntEx(arg, index) <= 0 || index <= 0)
+		index=-1;
+
+	NPC_SpawnNext(true, true, index); //This will force spawn a panzer.
 	return Plugin_Handled;
 }
 
@@ -282,6 +288,10 @@ public Action Waves_RevoteCmd(int client, int args)
 	{
 		Rogue_RevoteCmd(client);
 	}
+	else if(CyberVote)
+	{
+		RaidMode_RevoteCmd(client);
+	}
 	else if(Voting)
 	{
 		VotedFor[client] = 0;
@@ -295,10 +305,77 @@ public Action Waves_RevoteCmd(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action Waves_AdminsWaveEndCmd(int client, int args)
+{
+	Waves_ClearWaves();
+	Waves_ResetCashGiveWaveEnd();
+	strcopy(LastWaveWas, sizeof(LastWaveWas), "none");
+	DeleteAndRemoveAllNpcs = 10.0;
+	mp_bonusroundtime.IntValue = (12 * 2);
+	ZR_NpcTauntWinClear();
+	ForcePlayerLoss();
+	RaidBossActive = INVALID_ENT_REFERENCE;
+	Waves_RoundEnd();
+	Waves_Progress();
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsWaveWinCmd(int client, int args)
+{
+	RaidBossActive = INVALID_ENT_REFERENCE;
+	ResetReplications();
+	cvarTimeScale.SetFloat(0.1);
+	CreateTimer(0.5, SetTimeBack);
+	if(!Music_Disabled())
+		EmitCustomToAll("#zombiesurvival/music_win_1.mp3", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+		
+	ConVar roundtime = FindConVar("mp_bonusroundtime");
+	float last = roundtime.FloatValue;
+	roundtime.FloatValue = 20.0;
+
+	MVMHud_Disable();
+	int entity = CreateEntityByName("game_round_win"); 
+	DispatchKeyValue(entity, "force_map_reset", "1");
+	SetEntProp(entity, Prop_Data, "m_iTeamNum", TFTeam_Red);
+	DispatchSpawn(entity);
+	AcceptEntityInput(entity, "RoundWin");
+	roundtime.FloatValue = last;
+	for(int target = 1; target <= MaxClients; target++)
+	{
+		if(IsClientInGame(target) && !b_IsPlayerABot[target])
+			Music_Stop_All(target);
+	}
+	RemoveAllCustomMusic();
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsRaidTimeEndCmd(int client, int args)
+{
+	RaidModeTime=GetGameTime();
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsRaidTimeAddCmd(int client, int args)
+{
+	if(args<1)
+	{
+		PrintToConsole(client, "Usage: sm_raidadd <Float:Time>");
+		return Plugin_Handled;
+	}
+	char arg[12];
+	GetCmdArg(1, arg, sizeof(arg));
+	float AddTime = float(StringToInt(arg));
+
+	RaidModeTime+=AddTime;
+	return Plugin_Handled;
+}
+
 bool Waves_CallVote(int client, int force = 0)
 {
 	if(Rogue_Mode() || Construction_Mode())
 		return Rogue_CallVote(client);
+	else if(CyberVote)
+		return RaidMode_CallVote(client);
 	
 	if((Voting || VotingMods) && (force || !VotedFor[client]))
 	{
@@ -905,7 +982,7 @@ void Waves_SetupMiniBosses(KeyValues map)
 		delete kv;
 }
 
-bool Waves_GetMiniBoss(MiniBoss boss)
+bool Waves_GetMiniBoss(MiniBoss boss, int RND = -1)
 {
 	if(!MiniBosses)
 		return false;
@@ -930,8 +1007,8 @@ bool Waves_GetMiniBoss(MiniBoss boss)
 
 	if(length > level)
 		length = level;
-	
-	MiniBosses.GetArray(GetURandomInt() % length, boss);
+
+	MiniBosses.GetArray((RND != -1 ? RND : GetURandomInt()) % length, boss);
 	return true;
 }
 
@@ -2841,6 +2918,22 @@ void WaveEndLogicExtra()
 	{
 		if(IsValidClient(client))
 		{
+			if(!b_Hero_Of_Concord[client])i_Hero_Of_Concord[client]=0;
+			if(!StrContains(WhatDifficultySetting_Internal, "Interitus Group"))
+			{
+				bool Chaostic = view_as<bool>(Store_HasNamedItem(client, "Glass Coil"));
+				if(Chaostic)
+				{
+					i_Chaos_Coil[client]++;
+					if(i_Chaos_Coil[client]>=32 && !(Items_HasNamedItem(client, "Chaos Coil")))
+					{
+						Items_GiveNamedItem(client, "Chaos Coil");
+						CPrintToChat(client, "%t", "Chaos Coil Give");
+					}
+				}
+				else
+					i_Chaos_Coil[client]=0;
+			}
 			b_BobsCuringHand_Revived[client] += GetRandomInt(1,2);
 
 			/*
@@ -3829,11 +3922,11 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 
 		if(Freeplay_ShouldMiniBoss())
 		{
-			NPC_SpawnNext(true, true);
+			NPC_SpawnNext(true, true, -1);
 		}
 		else
 		{
-			NPC_SpawnNext(false, false);
+			NPC_SpawnNext(false, false, -1);
 		}
 		
 		CurrentWave = 9;

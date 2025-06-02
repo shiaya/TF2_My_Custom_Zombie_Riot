@@ -43,9 +43,9 @@ void VictoriaRadiomast_OnMapStart_NPC()
 }
 
 
-static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally)
+static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 {
-	return VictoriaRadiomast(vecPos, vecAng, ally);
+	return VictoriaRadiomast(vecPos, vecAng, ally, data);
 }
 methodmap VictoriaRadiomast < CClotBody
 {
@@ -65,7 +65,7 @@ methodmap VictoriaRadiomast < CClotBody
 		EmitSoundToAll(g_DeathSounds[GetRandomInt(0, sizeof(g_DeathSounds) - 1)], this.index, SNDCHAN_STATIC, BOSS_ZOMBIE_SOUNDLEVEL, _, 0.3);
 	}
 	
-	public VictoriaRadiomast(float vecPos[3], float vecAng[3], int ally)
+	public VictoriaRadiomast(float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
 		VictoriaRadiomast npc = view_as<VictoriaRadiomast>(CClotBody(vecPos, vecAng, TOWER_MODEL, TOWER_SIZE,"1000000", ally, false,true,_,_,{30.0,30.0,200.0}, .NpcTypeLogic = 1));
 		
@@ -83,7 +83,8 @@ methodmap VictoriaRadiomast < CClotBody
 		SetVariantString("0.95");
 		AcceptEntityInput(npc.m_iWearable2, "SetModelScale");
 
-		
+		if(StrContains(data, "NoEmpty") != -1)
+			NoEmptyMode[npc.index]=true;
 		npc.m_flMeleeArmor = 2.5;
 		npc.m_flRangedArmor = 1.0;
 
@@ -206,7 +207,7 @@ public void VictoriaRadiomast_ClotThink(int iNPC)
 		}
 	}
 		
-	if(Waves_IsEmpty() && npc.m_flNextMeleeAttack < gameTime)
+	if((Waves_IsEmpty() || NoEmptyMode[npc.index]) && npc.m_flNextMeleeAttack < gameTime)
 	{
 		int ISVOLI= 1;
 		ISVOLI = RoundToNearest(4.0); 

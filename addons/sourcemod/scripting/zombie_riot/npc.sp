@@ -908,6 +908,12 @@ void NPC_ConfigSetup()
 	VictorianDroneAnvil_MapStart();
 	Victorian_Tacticalunit_OnMapStart_NPC();
 	Victorian_TacticalProtector_OnMapStart_NPC();
+	
+	//Special
+	TrumpetSkeleton_OnMapStart_NPC();
+	CyberGrindGM_OnMapStart_NPC();
+	Invisible_TRIGGER_Man_OnMapStart_NPC();
+	Victoria_Precision_Strike_OnMapStart_NPC();
 
 
 	BossSummonRandom_OnMapStart_NPC();
@@ -1182,6 +1188,7 @@ void ZR_NpcTauntWin()
 void NPCDeath(int entity)
 {
 	Freeplay_OnNPCDeath(entity);
+	CC_Contract_OnNPCDeath(entity);
 	if(view_as<CClotBody>(entity).m_fCreditsOnKill)
 	{
 		int GiveMoney = 0;
@@ -2036,6 +2043,12 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "npc/raidmode_bosses/victoria/npc_the_wall.sp"
 #include "npc/raidmode_bosses/victoria/npc_harrison.sp"
 #include "npc/raidmode_bosses/victoria/npc_castellan.sp"
+
+//Special
+#include "zombie_riot/npc/special/npc_sans.sp"
+#include "zombie_riot/npc/special/npc_victoria_precision_strike.sp"
+#include "zombie_riot/npc/baka/npc_cybergrind_gm.sp"
+#include "zombie_riot/npc/baka/npc_invisible_trigger_man.sp"
 
 //Matrix Enemies
 #include "npc/matrix/15/npc_agentalan.sp"

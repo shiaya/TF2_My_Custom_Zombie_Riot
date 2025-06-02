@@ -99,7 +99,7 @@
 		"chi"		"射程"
 		"ko"		"사거리"
 	}
-	"weapons"
+	"Weapons"
 	{
 		"en" 		"Weapons"
 		"es"		"Armas"
@@ -111,10 +111,10 @@
 		"chi"       	"武器"
 		"ko"		"무기들"
 	}
-	"Koshi's Goods"
+	"Misc Items"
 	{
-		"en" 		"Koshi's Goods"
-		"ko"		"Koshi's Goods"
+		"en" 		"Misc Items"
+		"ko"		"인벤토리"
 	}
 	"Personal Items"
 	{
@@ -131,10 +131,20 @@
 		"en" 		"Settings"
 		"ko"		"설정"
 	}
-	"Status EffectList"
+	"Status Effect List"
 	{
-		"en" 		"Status EffectList"
+		"en" 		"Status Effect List"
 		"ko"		"효과 목록"
+	}
+	"Encypedie"
+	{
+		"en" 		"Encypedie"
+		"ko"		"백과사전"
+	}
+	"Help/FAQ"
+	{
+		"en" 		"Help/FAQ"
+		"ko"		"도움/FAQ"
 	}
 	"Search Store Using Tags"
 	{
@@ -161,7 +171,7 @@
 		"pt"		"Arma de Seringas"
 		"nl"		"Spuitgeweer"
 		"chi"       	"注射枪"
-		"ko"		"주사기 총"
+		"ko"		"주'사기' 총"
 	}
 	"Sniper Rifle"
 	{
@@ -172,7 +182,7 @@
 		"pt"		"Rifle de Sniper"
 		"nl"		"Scherpshuttersgeweer"
 		"chi"       	"狙击步枪"
-		"ko"		"스나이퍼 라이플"
+		"ko"		"저격소총"
 	}
 	"Sawed off Shotgun"
 	{
@@ -184,6 +194,11 @@
 		"nl"		"Afgezaagd Jachtgeweer"
 		"chi"       	"锯断霰弹枪"
 		"ko"		"소드 오브 샷건"
+	}
+	"Shotgun"
+	{
+		"en"		"Shotgun"
+		"ko"		"산탄총"
 	}
 	"Annabelle"
 	{
@@ -273,6 +288,21 @@
 		"chi"       	"双管散弹枪"
 		"ko"		"더블 배럴 산탄총"
 	}
+	"Rusty Rifle"
+	{
+		"en"		"Rusty Rifle"
+		"ko"		"녹슨 소총"
+	}
+	"The Trash Cannon"
+	{
+		"en"		"The Trash Cannon"
+		"ko"		"쓰레기 캐논"
+	}
+	"Outlaw's Railcannon"
+	{
+		"en"		"Outlaw's Railcannon"
+		"ko"		"아웃로의 레일캐논"
+	}
 	"The Pompson 7000"
 	{
 		"en"		"The Pompson 7000"
@@ -304,7 +334,7 @@
 		"pt"		"Rifle de Atirador"
 		"nl"		"Scherpshutter Geweer"
 		"chi"       	"射手步枪"
-		"ko"		"사수의 소총"
+		"ko"		"지정사수 소총"
 	}
 	"Aresenal's Tripmine Layer"
 	{
@@ -493,6 +523,11 @@
 		"chi"       	"USPT.45"
 		"ko"		"H&K USP"
 	}
+	"Casino"
+	{
+		"en"		"Casino"
+		"ko"		"카지노"
+	}
 	"Nail Gun"
 	{
 		"en"		"Nail Gun"
@@ -542,6 +577,21 @@
 		"en"		"Super-Uber-Saw"
 		"ko"		"슈퍼 우버톱"
 	}
+	"Sensal's Scythe"
+	{
+		"en"		"Sensal's Scythe"
+		"ko"		"센살의 낫"
+	}
+	"Steel Dagger"
+	{
+		"en"		"Steel Dagger"
+		"ko"		"강철 단검"
+	}
+	"Old Wooden Board"
+	{
+		"en"		"Old Wooden Board"
+		"ko"		"낡은 나무 방패"
+	}
 	"Magic Potion"
 	{
 		"en"		"Mage Potion"
@@ -552,6 +602,11 @@
 		"nl"		"Magisch Drankje"
 		"chi"       	"魔法药水"
 		"ko"		"마법 물약"
+	}
+	"Basic Wand"
+	{
+		"en"		"Basic Wand"
+		"ko"		"기본 완드"
 	}
 	"Ranged Weapons"
 	{
@@ -829,6 +884,46 @@
 		"nl"		"Kunai"
 		"chi"       	"苦无"
 		"ko"		"쿠나이"
+	}
+	"Broken Rapier"
+	{
+		"en"		"Broken Rapier"
+		"ko"		"부숴진 레이피어"
+	}
+	"Angelica Shotgonnus"
+	{
+		"en"		"Angelica Shotgonnus"
+		"ko"		"안젤리카 샷건"
+	}
+	"Vampire Knives"
+	{
+		"en"		"Vampire Knives"
+		"ko"		"뱀파이어 나이프"
+	}
+	"Wrathful Blade"
+	{
+		"en"		"Wrathful Blade"
+		"ko"		"분노의 칼날"
+	}
+	"Fantasy Blade"
+	{
+		"en"		"Fantasy Blade"
+		"ko"		"판타지 블레이드"
+	}
+	"Mlynar's Newspaper"
+	{
+		"en"		"Mlynar's Newspaper"
+		"ko"		"무에나의 신문지"
+	}
+	"Chainsaw"
+	{
+		"en"		"Chainsaw"
+		"ko"		"전기톱"
+	}
+	"Abyssal Greatsword"
+	{
+		"en"		"Abyssal Greatsword"
+		"ko"		"심연의 대검"
 	}
 	"Longsword"
 	{
@@ -1202,7 +1297,7 @@
 	"Void's Glimpse"
 	{
 		"en"		"Void's Glimpse"
-		"ko"		"공허의 눈"
+		"ko"		"공허의 눈길"
 	}
 	"Building Upgrades"//Building Upgrades HERE!!!
 	{
@@ -1585,7 +1680,7 @@
 		"pt"		"Bênção de Grigori"
 		"nl" 		"Grigori's Zegen"
 		"chi"       	"耶稣的祝福"
-		"ko"		"예수의 축복"
+		"ko"		"그레고리의 축복"
 	}
 	"Full Riot Gear Set"
 	{
@@ -2556,6 +2651,11 @@
 		"chi"	"只允许装备一个！"
 		"ko"	"이 장비들은 하나만 장착할수있습니다."
 	}
+	"Only one allowed at a time [Use with M3]"
+	{
+		"en"	"Only one allowed at a time [Use with M3]"
+		"ko"	"이 장비들은 하나만 장착할수있습니다. [M3로 사용]"
+	}
 	"Throwable Armor Grenade"
 	{
 		"en"       "Throwable Armor Grenade"
@@ -3066,7 +3166,7 @@
 		"ru"	"Наказать"
 		"fr"	"Punition"
 		"chi"	"惩罚"
-		"ko"	"응징"
+		"ko"	"처벌"
 	}
 	"Deathless"
 	{
@@ -3074,7 +3174,12 @@
 		"ru"	"Бессмертный"
 		"fr"	"Sans Mort"
 		"chi"	"无死"
-		"ko"	"불사"
+		"ko"	"불멸"
+	}
+	"Acid Rain"
+	{
+		"en" "Acid Rain"
+		"ko" "산성 비"
 	}
 	"Ion-Blitz"
 	{
@@ -3083,7 +3188,7 @@
 		"fr"	"Ion-Blitz"
 		"chi"	"闪光"
 		"chi"	"闪「光」"
-		"ko"	"이온 블리츠"
+		"ko"	"이온-블리츠"
 	}
 	"Blitz-Blade"
 	{
@@ -3092,7 +3197,7 @@
 		"fr"	"Lame Blitz"
 		"chi"	"闪电刃"
 		"chi"	"电「刃」"
-		"ko"	"블리츠 칼날"
+		"ko"	"블리츠-칼날"
 	}
 	"Hurricane-Blitz"
 	{
@@ -3101,7 +3206,7 @@
 		"fr"	"Cyclone Blitz"
 		"chi"	"闪电战"
 		"chi"	"「闪电战」"
-		"ko"	"블리츠 허리케인"
+		"ko"	"허리케인-블리츠"
 	}
 	"Gravaton Spell"
 	{
@@ -3114,6 +3219,7 @@
 	"Reiuji Wand"
 	{
 		"en"	"Reiuji Wand"
+		"ko"	"레이우지 완드"
 	}
 	"Heavy Particle Rifle"
 	{
@@ -3644,6 +3750,11 @@
 		"en"	"Drink of Twisting Nether"
 		"ko"	"뒤틀린 황천의 음료수"
 	}
+	"Morphine"
+	{
+		"en"	"Morphine"
+		"ko"	"모르핀"
+	}
 	"Stim Packs"
 	{
 		"en"	"Stim Packs"
@@ -4132,6 +4243,16 @@
 		"en"		"Expidonsa's Prototype"
 		"ko"		"엑스피돈산 프로토타입"
 	}
+	"The Hyper Shovel"
+	{
+		"en"		"The Hyper Shovel"
+		"ko"		"''하이퍼 야전삽''"
+	}
+	"The Soldine Launcher"
+	{
+		"en"		"The Soldine Launcher"
+		"ko"		"''솔딘 런쳐''"
+	}
 	"Taurus Revolver"
 	{
 		"en"	"Taurus Revolver"
@@ -4279,22 +4400,102 @@
 	}
 	"Koshi's Goods"
 	{
-		"en" "Koshi's Goods"
+		"en"	"Koshi's Goods"
+		"ko"	"Koshi's Goods"
 	}
 	"Bubble Wand"
 	{
-		"en" "Bubble Wand"
+		"en"	"Bubble Wand"
+		"ko"	"비눗방울 완드"
 	}
 	"Plasmic Surprise"
 	{
 		"en" "Plasmic Surprise"
+		"ko" "플라스믹 서프라이즈"
 	}
 	"Plasmic Dosage"
 	{
 		"en" "Plasmic Dosage"
+		"ko" "플라스믹 투약"
 	}
 	"Koshi's Plasm-inator"
 	{
 		"en" "Koshi's Plasm-inator"
+		"ko" "코시의 플라스마 점화기"
+	}
+	"The Zealot"
+	{
+		"en" "The Zealot"
+		"ko" "광전사"
+	}
+	"Zealot"
+	{
+		"en" "Zealot"
+		"ko" "광전사"
+	}
+	"Braced Pistol"
+	{
+		"en" "Braced Pistol"
+		"ko" "브레이스드 권총"
+	}
+	"Zealot's Potion"
+	{
+		"en" "Zealot's Potion"
+		"ko" "광전사의 물약"
+	}
+	"King's Broken Blade"
+	{
+		"en" "King's Broken Blade"
+		"ko" "왕의 부러진 칼날"
+	}
+	"Confess Your Fears"
+	{
+		"en" "Confess Your Fears"
+		"ko" "''너의 두려움을 고하라''"
+	}
+	"Magia Fractal"
+	{
+		"en" "Magia Fractal"
+		"ko" "마기아 프랙탈"
+	}
+	"Fractal-Lenz"
+	{
+		"en" "Fractal-Lenz"
+		"ko" "프랙탈-렌즈"
+	}
+	"Fractal-Harvester"
+	{
+		"en" "Fractal-Harvester"
+		"ko" "프랙탈-하베스터"
+	}
+	"Fractal-Fantasia"
+	{
+		"en" "Fractal-Fantasia"
+		"ko" "프랙탈-판타지아"
+	}
+	"Therapy"
+	{
+		"en" "Therapy"
+		"ko" "''치료''"
+	}
+	"Taurus Revolver"
+	{
+		"en" "Taurus Revolver"
+		"ko" "타우루스 리볼버"
+	}
+	"The Blitzkrieg"
+	{
+		"en" "The Blitzkrieg"
+		"ko" "블리츠크리그"
+	}
+	"The Arsenals"
+	{
+		"en" "The Arsenals"
+		"ko" "아스날"
+	}
+	"The Arsenals Fist"
+	{
+		"en" "The Arsenals Fist"
+		"ko" "아스날 주먹"
 	}
 }

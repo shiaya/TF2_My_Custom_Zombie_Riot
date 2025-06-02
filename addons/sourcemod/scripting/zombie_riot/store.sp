@@ -572,6 +572,12 @@ void Store_OnCached(int client)
 		
 		if(Items_HasNamedItem(client, "ZR Contest 2024 Artist"))
 			amount += 50;
+			
+		if(Items_HasNamedItem(client, "Sardis Gold"))
+			amount += 20;
+			
+		if(Items_HasNamedItem(client, "Originium"))
+			amount += 30;
 		
 		amount += SkillTree_GetByName(client, "Cash Up 1") * 2;
 		amount += SkillTree_GetByName(client, "Cash Up 1 Infinite") / 5;
@@ -3800,6 +3806,12 @@ static void MenuPage(int client, int section)
 			menu.AddItem("-24", buffer);
 		}
 
+		if(Waves_InCCMode())
+		{
+			FormatEx(buffer, sizeof(buffer), "%t", "Setting Constraints");
+			menu.AddItem("-9000", buffer);
+		}
+
 		if(Level[client] > STARTER_WEAPON_LEVEL)
 		{
 			if(CvarSkillPoints.BoolValue)
@@ -4226,6 +4238,18 @@ public int Store_MenuPage(Menu menu, MenuAction action, int client, int choice)
 
 						Format(buffer, sizeof(buffer), "%T", "Fat HHH", client);
 						menu2.AddItem("-151", buffer);
+					
+						Format(buffer, sizeof(buffer), "%T", "Neuron Activation", client);
+						menu2.AddItem("-1000", buffer);
+
+						Format(buffer, sizeof(buffer), "%T", "Lumine", client);
+						menu2.AddItem("-1001", buffer);
+
+						Format(buffer, sizeof(buffer), "%T", "Meruna Mint");
+						menu2.AddItem("-1002", buffer);
+						
+						Format(buffer, sizeof(buffer), "%T", "TRUE BLITZKRIEG", client);
+						menu2.AddItem("-1003", buffer);
 
 						Format(buffer, sizeof(buffer), "%T", "Back", client);
 						menu2.AddItem("-1", buffer);
@@ -4267,6 +4291,34 @@ public int Store_MenuPage(Menu menu, MenuAction action, int client, int choice)
 						OverridePlayerModel(client, HHH_SkeletonOverride, true);
 						JoinClassInternal(client, CurrentClass[client]);
 						MenuPage(client, -1);
+					}
+					case -1000:
+					{
+						OverridePlayerModel(client, Neuron_Activation, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -1001:
+					{
+						OverridePlayerModel(client, Lumine, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -1002:
+					{
+						OverridePlayerModel(client, Meruna_Mint, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -1003:
+					{
+						OverridePlayerModel(client, MM_TRUE_BLITZKRIEG, true);
+						JoinClassInternal(client, CurrentClass[client]);
+						MenuPage(client, -1);
+					}
+					case -9000:
+					{
+						CC_ContractMenu(client, 0);
 					}
 					default:
 					{
@@ -5394,6 +5446,28 @@ void Store_GiveAll(int client, int health, bool removeWeapons = false)
 	b_PlayerWasAirbornKnockbackReduction[client] = false;
 	BannerOnEntityCreated(client);
 	FullmoonEarlyReset(client);
+	
+	if(!LastMann) b_Hero_Of_Concord[client] = false;
+	b_Box_Office[client] = false;
+	b_Sandvich_SafeHouse[client] = false;
+	b_Sandvich_Crits[client] = false;
+	b_DeathfromAbove[client] = false;
+	if(IsValidEntity(EntRefToEntIndex(i_Chaos_Coil_Speed[client])))
+	{
+		i_Chaos_Coil_Speed[client] = -1;
+	}
+	b_Chaos_Coil[client] = false;
+	b_Shotgun_Slug_Ammo[client] = false;
+	f_Nailgun_Shotgun_Slug_Ammo[client] = 1.0;
+	b_Force_Shield_Generator[client] = false;
+	b_Shotgun_Dragonr_Beath_Ammo[client] = false;
+	b_Explosive_Structures[client] = false;
+	b_Barrack_Backup[client] = false;
+	b_MarketGardener_Uniform[client] = false;
+	b_ManaFlower_Terrarium[client] = false;
+	b_Golden_Crown[client] = false;
+	b_Mana_Infusion_Ammunition[client] = false;
+	b_Barricade_Stabilizer[client] = false;
 
 	if(!i_ClientHasCustomGearEquipped[client])
 	{
@@ -6043,6 +6117,56 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 					{
 						b_Reinforce[client] = true;
 					}
+					
+					if(info.SpecialAdditionViaNonAttribute == 1001 && !LastMann)
+						b_Hero_Of_Concord[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1002)
+						b_Box_Office[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1003)
+						b_Sandvich_SafeHouse[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1004)
+					{
+						if(!b_POWERHEAL[client])
+						{
+							for(int all=1; all<=MaxClients; all++)
+							{
+								if(IsValidClient(all) && !IsFakeClient(all))
+									ClientCommand(all, "playgamesound \"baka/metal_pipe.mp3\"");
+							}
+							TF2_StunPlayer(client, 1.0, 0.0, TF_STUNFLAG_BONKSTUCK|TF_STUNFLAG_SOUND, 0);
+							StopSound(client, SNDCHAN_STATIC, "player/pl_impact_stun.wav");
+						}
+						b_POWERHEAL[client] = true;
+					}
+					if(info.SpecialAdditionViaNonAttribute == 1005)
+						b_Sandvich_Crits[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1006)
+						b_DeathfromAbove[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1007)
+					{
+						b_Chaos_Coil[client] = true;
+						if(IsValidEntity(entity))i_Chaos_Coil_Speed[client] = EntIndexToEntRef(entity);
+					}
+					if(info.SpecialAdditionViaNonAttribute == 1008)
+						b_Shotgun_Slug_Ammo[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1009)
+						b_Force_Shield_Generator[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1010)
+						b_Shotgun_Dragonr_Beath_Ammo[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1011)
+						b_Explosive_Structures[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1012)
+						b_Barrack_Backup[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1013)
+						b_MarketGardener_Uniform[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1014)
+						b_ManaFlower_Terrarium[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1015)
+						b_Golden_Crown[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1016)
+						b_Mana_Infusion_Ammunition[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1017)
+						b_Barricade_Stabilizer[client] = true;
 
 					int CostDo;
 
@@ -6120,6 +6244,31 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 
 	if(EntityIsAWeapon)
 	{
+		if(b_Shotgun_Slug_Ammo[client] && i_WeaponArchetype[entity] == 1)
+		{
+			int Pellets = 10;
+			float ExtraPellets=0.0;
+			if(Attributes_Has(entity, 45))
+				ExtraPellets=Attributes_Get(entity, 45, 0.0);
+				
+			if(ExtraPellets>0.0)
+			{
+				Pellets=RoundToCeil(float(Pellets)*ExtraPellets);
+				Attributes_Set(entity, 45, 0.1);
+			}
+			else
+				Pellets=0;
+			
+			if(Pellets>1)
+			{
+				if(i_CustomWeaponEquipLogic[entity] == WEAPON_NAILGUN_SHOTGUN)
+					f_Nailgun_Shotgun_Slug_Ammo[client]=float(Pellets);
+				else
+					Attributes_SetMulti(entity, 2, float(Pellets));
+				i_WeaponDamageFalloff[entity]=0.99;
+			}
+		}
+
 		//SPEED COLA!
 		if(i_CurrentEquippedPerk[client] == 4)
 		{
@@ -6279,6 +6428,17 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		Purnell_Enable(client, entity);
 		Medigun_SetModeDo(client, entity);
 		//Cheese_Enable(client, entity);
+		
+		// MarketGardener_Enable(client, entity);
+		// Farmer_Enable(client, entity);
+		// MSword_Enable(client, entity);
+		// Perserker_Enable(client, entity);
+		SupportWeapons_Enable(client, entity);
+		// LockDown_Enable(client, entity);
+		// Still_Hunt_Enable(client, entity);
+		// Enable_KitOmega(client, entity);
+		// Enable_MajorSteam_Launcher(client, entity);
+		// Wkit_Soldin_Enable(client, entity);
 
 		//give all revelant things back
 		WeaponSpawn_Reapply(client, entity, StoreWeapon[entity]);

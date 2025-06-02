@@ -61,6 +61,8 @@ static int i_RarityType[MAXENTITIES];
 static float f_IncreaseChanceManually = 1.0;
 static bool b_ForceSpawnNextTime;
 
+#include "zombie_riot/items_gift.sp"
+
 void Items_PluginStart()
 {
 	OwnedItems = new ArrayList(sizeof(OwnedItem));
@@ -603,15 +605,38 @@ void Gift_DropChance(int entity)
 				float VecOrigin[3];
 				GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
 				VecOrigin[2] += 20.0;
-				int rarity = RollRandom(); //Random for each clie
-				if(!IsPointHazard(VecOrigin)) //Is it valid?
+				int RND=GetRandomInt(1,100);
+				if(RND<=50)
 				{
-					b_ForceSpawnNextTime = false;
-					Stock_SpawnGift(VecOrigin, GIFT_MODEL, 45.0, rarity);
+					int rarity = RollRandom(); //Random for each clie
+					if(!IsPointHazard(VecOrigin)) //Is it valid?
+					{
+						b_ForceSpawnNextTime = false;
+						Stock_SpawnGift(VecOrigin, GIFT_MODEL, 45.0, rarity);
+					}
+					else //Not a valid position, we must force it! next time we try!
+					{
+						b_ForceSpawnNextTime = true;
+					}
 				}
-				else //Not a valid position, we must force it! next time we try!
+				else
 				{
-					b_ForceSpawnNextTime = true;
+					for (int client = 1; client <= MaxClients; client++)
+					{
+						if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) == view_as<int>(TFTeam_Red))
+						{
+							int rarity = RollRandom(); //Random for each clie
+							if(!IsPointHazard(VecOrigin)) //Is it valid?
+							{
+								b_ForceSpawnNextTime = false;
+								Stock_SpawnInvGift(VecOrigin, GIFT_MODEL, 45.0, client, rarity);
+							}
+							else //Not a valid position, we must force it! next time we try!
+							{
+								b_ForceSpawnNextTime = true;
+							}
+						}
+					}
 				}
 			}	
 			else
