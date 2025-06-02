@@ -1276,13 +1276,46 @@ public Action OnReloadCommand(int args)
 
 public Action Command_RTdFail(int client, int args)
 {
-	if(client)
+	if(client && StrContains(WhatDifficultySetting_Internal, "Gladiator Arena"))
 	{
 		SPrintToChat(client, "Looks like the dice broke.");
 		ClientCommand(client, "playgamesound vo/k_lab/kl_fiddlesticks.wav");
 	}
 	return Plugin_Handled;
 }
+
+public Action RTD_CanRollDice(int client)
+{
+	if(StrContains(WhatDifficultySetting_Internal, "Boss Battle Roulette"))
+		return Plugin_Handled;
+
+	return Plugin_Continue;
+}
+
+public Action RTD2_CanRollDice(int client)
+{
+	if(StrContains(WhatDifficultySetting_Internal, "Boss Battle Roulette"))
+		return Plugin_Handled;
+
+	return Plugin_Continue;
+}
+
+public void RTD2_Rolled(int client, RTDPerk perk, int iDuration)
+{
+	if(perk.Valid)
+	{
+		char buffer[64];
+		perk.GetToken(buffer, sizeof(buffer));
+		if(StrEqual(buffer, "striptomelee", false))
+		{
+			GetClientName(client, buffer, sizeof(buffer));
+			//RTD2_Remove(client, RTDRemove_Custom, "Force Weapon Reload!");
+			ServerCommand("sm_removertd \"#%s\" \"Force Weapon Reload!\"", buffer);
+			Store_GiveAll(client, GetClientHealth(client));
+		}
+	}
+}
+
 public Action Command_AFK(int client, int args)
 {
 	if(client)
@@ -3044,7 +3077,6 @@ void ForcePlayerWin(bool fakeout = false)
 void ForcePlayerLoss()
 {
 	MVMHud_Disable();
-	ZR_NpcTauntWin();
 	ZR_NpcTauntWinClear();
 	int entity = CreateEntityByName("game_round_win"); 
 	DispatchKeyValue(entity, "force_map_reset", "1");
