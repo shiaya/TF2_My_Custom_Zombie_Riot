@@ -1,6 +1,10 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define ZR_STORE_RESET (1 << 1) //This will reset the entire store to default
+#define ZR_STORE_DEFAULT_SALE (1 << 2) //This  will reset the current normally sold items, and put up a new set of items
+#define ZR_STORE_WAVEPASSED (1 << 3) //any storelogic that should be called when a wave passes
+
 static const char g_DeathSounds[][] = {
 	"weapons/rescue_ranger_teleport_receive_01.wav",
 	"weapons/rescue_ranger_teleport_receive_02.wav",
@@ -674,11 +678,11 @@ methodmap CyberGrindGM < CClotBody
 			if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
 				GrigoriMaxSells = GrigoriMaxSellsItems;
 			if(Grigori_RefreshTwo)
-				Store_RandomizeNPCStore(1);
+				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
 			if(Grigori_Refresh)
 			{
-				Store_RandomizeNPCStore(0, _, true);
-				Store_RandomizeNPCStore(0);
+				Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
+				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
 			}
 			
 			b_NpcForcepowerupspawn[npc.index] = 0;

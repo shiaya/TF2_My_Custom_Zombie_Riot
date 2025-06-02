@@ -391,7 +391,7 @@ static void TrumpetSkeleton_ClotThink(int iNPC)
 				SetEntProp(npc.index, Prop_Data, "m_iMaxHealth", MaxHealth);
 				GrantEntityArmor(npc.index, true, 0.2, 0.75, 0);
 				npc.m_bFUCKYOU=false;
-				IncreaceEntityDamageTakenBy(npc.index, 0.005, 1.0);
+				IncreaseEntityDamageTakenBy(npc.index, 0.005, 1.0);
 				b_NpcIsInvulnerable[npc.index] = false;
 				Is_a_Medic[npc.index] = false;
 				npc.m_bStaticNPC = false;
@@ -666,7 +666,7 @@ static void TrumpetAttack(int entity, int victim, float damage, int weapon)
 		SDKHooks_TakeDamage(victim, npc.index, npc.index, damageDealt, DMG_CLUB, -1, _, vecHit);
 		if(!NpcStats_IsEnemySilenced(npc.index))
 		{
-			IncreaceEntityDamageTakenBy(npc.index, 0.85, 1.0);
+			IncreaseEntityDamageTakenBy(npc.index, 0.85, 1.0);
 			HealEntityGlobal(npc.index, npc.index, (damageDealt*3.0), 1.5, _, HEAL_SELFHEAL);
 		}
 		else HealEntityGlobal(npc.index, npc.index, (damageDealt*0.5), 1.0, _, HEAL_SELFHEAL);
@@ -691,7 +691,7 @@ static void SuperAttack(int entity, int victim, float damage, int weapon)
 		SDKHooks_TakeDamage(victim, npc.index, npc.index, damageDealt, DMG_CLUB, -1, _, vecHit);
 		if(!NpcStats_IsEnemySilenced(npc.index))
 		{
-			IncreaceEntityDamageTakenBy(npc.index, 0.9, 0.3);
+			IncreaseEntityDamageTakenBy(npc.index, 0.9, 0.3);
 			HealEntityGlobal(npc.index, npc.index, (damageDealt*3.0), 1.5, _, HEAL_SELFHEAL);
 		}
 		else HealEntityGlobal(npc.index, npc.index, (damageDealt*1.0), 1.0, _, HEAL_SELFHEAL);

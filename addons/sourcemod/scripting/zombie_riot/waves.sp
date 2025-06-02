@@ -2522,7 +2522,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
 
 				
-				NPC_SpawnNext(panzer_spawn, panzer_sound);
+				NPC_SpawnNext(panzer_spawn, panzer_sound, -1);
 				return;
 			}
 
@@ -2541,6 +2541,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 	}
 	else
 	{
+		CC_Contract_OnEndWave(round.Cash);
 		bool EarlyReturn = false;
 		//We are in freeplay, past normal waves.
 		if(i_WaveHasFreeplay == 2)

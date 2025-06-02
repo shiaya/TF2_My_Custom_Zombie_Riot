@@ -6432,7 +6432,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		// Farmer_Enable(client, entity);
 		// MSword_Enable(client, entity);
 		// Perserker_Enable(client, entity);
-		SupportWeapons_Enable(client, entity);
+		// SupportWeapons_Enable(client, entity);
 		// LockDown_Enable(client, entity);
 		// Still_Hunt_Enable(client, entity);
 		// Enable_KitOmega(client, entity);

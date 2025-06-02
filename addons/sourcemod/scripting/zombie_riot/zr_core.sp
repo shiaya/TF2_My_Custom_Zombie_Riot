@@ -1237,6 +1237,16 @@ public void OnMapInit_ZR()
 	}
 }
 
+public Action CommandGetAmmoTypes(int client, int args)
+{
+	for(int i=Ammo_Pistol; i<Ammo_MAX; i++)
+	{
+		LogMessage("tpye: %i, GetAmmo: %i ", i, CurrentAmmo[0][i]);
+		PrintToConsole(client, "tpye: %i, GetAmmo: %i ", i, CurrentAmmo[0][i]);
+	}
+	return Plugin_Handled;
+}
+
 public Action OnReloadCommand(int args)
 {
 	char path[PLATFORM_MAX_PATH], filename[PLATFORM_MAX_PATH];

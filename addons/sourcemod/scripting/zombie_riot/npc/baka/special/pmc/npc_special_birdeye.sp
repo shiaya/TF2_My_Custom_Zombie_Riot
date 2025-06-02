@@ -435,7 +435,7 @@ public Action VictoriaSpecialBirdeye_OnTakeDamage(int victim, int &attacker, int
 		if(!npc.Anger)
 		{
 			damage=0.0;
-			IncreaceEntityDamageTakenBy(npc.index, 0.000001, 0.2);
+			IncreaseEntityDamageTakenBy(npc.index, 0.000001, 0.2);
 			if(b_SUPERDUPERRAGE[npc.index])
 			{
 				npc.PlayIdleAlertSound();

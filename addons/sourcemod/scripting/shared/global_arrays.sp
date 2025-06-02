@@ -852,7 +852,6 @@ float f_Nailgun_Shotgun_Slug_Ammo[MAXTF2PLAYERS];
 bool b_DrinkRND_BuildingCD_Buff[MAXTF2PLAYERS];
 bool b_Shotgun_Dragonr_Beath_Ammo[MAXTF2PLAYERS];
 bool b_Explosive_Structures[MAXTF2PLAYERS];
-bool b_On_Self_Damage[MAXENTITIES];
 bool b_Interior_ExplosiveBuilding[MAXENTITIES];
 int b_Interior_ExplosiveBuilding_MaxHP[MAXENTITIES];
 bool b_Barrack_Backup[MAXENTITIES];
