@@ -658,25 +658,26 @@ methodmap CyberGrindGM < CClotBody
 		
 			bool Grigori_Refresh=false;
 			bool Grigori_RefreshTwo=false;
-			bool GrigoriMaxSellsItems_Overide=false;
 			int GrigoriMaxSellsItems=-1;
 			static char countext[20][1024];
 			int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
 			for(int i = 0; i < count; i++)
 			{
-				if(i>=count)break;
-				else if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
-				else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
+				if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
+				else if(!StrContains(countext[i], "grigori_sells_items_max"))
+				{
+					ReplaceString(countext[i], sizeof(countext[i]), "grigori_sells_items_max", "");
+					GrigoriMaxSellsItems = StringToInt(countext[i]);
+				}
 				else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
-				GrigoriMaxSellsItems = StringToInt(countext[i]);
 			}
 		
-			if(Grigori_Refresh || (GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide))
+			if(Grigori_Refresh || GrigoriMaxSellsItems!=-1)
 			{
 				func_NPCDeath[npc.index] = INVALID_FUNCTION;
 				func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 				func_NPCThink[npc.index] = INVALID_FUNCTION;
-				if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
+				if(GrigoriMaxSellsItems!=-1)
 					GrigoriMaxSells = GrigoriMaxSellsItems;
 				if(Grigori_RefreshTwo)
 					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
