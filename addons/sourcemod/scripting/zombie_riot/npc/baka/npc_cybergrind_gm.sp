@@ -674,9 +674,6 @@ methodmap CyberGrindGM < CClotBody
 		
 			if(Grigori_Refresh || GrigoriMaxSellsItems!=-1)
 			{
-				func_NPCDeath[npc.index] = INVALID_FUNCTION;
-				func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
-				func_NPCThink[npc.index] = INVALID_FUNCTION;
 				if(GrigoriMaxSellsItems!=-1)
 					GrigoriMaxSells = GrigoriMaxSellsItems;
 				if(Grigori_RefreshTwo)
