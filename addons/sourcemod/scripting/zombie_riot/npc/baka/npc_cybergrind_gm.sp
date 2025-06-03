@@ -17,7 +17,7 @@ static bool TeleToU[MAXENTITIES];
 void CyberGrindGM_OnMapStart_NPC()
 {
 	NPCData data;
-	strcopy(data.Name, sizeof(data.Name), "Cyber Grind GM");
+	strcopy(data.Name, sizeof(data.Name), "Mr.V");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_cybergrind_gm");
 	strcopy(data.Icon, sizeof(data.Icon), "rnd_enemy");
 	data.IconCustom = true;
@@ -650,37 +650,43 @@ methodmap CyberGrindGM < CClotBody
 			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
 			return npc;
 		}
-		
-		bool Grigori_Refresh=false;
-		bool Grigori_RefreshTwo=false;
-		bool GrigoriMaxSellsItems_Overide=false;
-		int GrigoriMaxSellsItems=-1;
-		static char countext[20][1024];
-		int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
-		for(int i = 0; i < count; i++)
-		{
-			if(i>=count)break;
-			else if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
-			else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
-			else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
-			GrigoriMaxSellsItems = StringToInt(countext[i]);
-		}
-		
-		if(Grigori_Refresh || (GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide))
+		else if(!StrContains(data, "cybergrind_sells_mode"))
 		{
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
-			if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
-				GrigoriMaxSells = GrigoriMaxSellsItems;
-			if(Grigori_RefreshTwo)
-				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-			if(Grigori_Refresh)
+		
+			bool Grigori_Refresh=false;
+			bool Grigori_RefreshTwo=false;
+			bool GrigoriMaxSellsItems_Overide=false;
+			int GrigoriMaxSellsItems=-1;
+			static char countext[20][1024];
+			int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
+			for(int i = 0; i < count; i++)
 			{
-				Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
-				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+				if(i>=count)break;
+				else if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
+				else if(!StrContains(countext[i], "grigori_sells_items_max"))GrigoriMaxSellsItems_Overide=true;
+				else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
+				GrigoriMaxSellsItems = StringToInt(countext[i]);
 			}
-			
+		
+			if(Grigori_Refresh || (GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide))
+			{
+				func_NPCDeath[npc.index] = INVALID_FUNCTION;
+				func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
+				func_NPCThink[npc.index] = INVALID_FUNCTION;
+				if(GrigoriMaxSellsItems!=-1 && GrigoriMaxSellsItems_Overide)
+					GrigoriMaxSells = GrigoriMaxSellsItems;
+				if(Grigori_RefreshTwo)
+					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+				if(Grigori_Refresh)
+				{
+					Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
+					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+				}
+			}
+				
 			b_NpcForcepowerupspawn[npc.index] = 0;
 			i_RaidGrantExtra[npc.index] = 0;
 			b_DissapearOnDeath[npc.index] = true;
@@ -688,7 +694,6 @@ methodmap CyberGrindGM < CClotBody
 			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
-		
 		func_NPCDeath[npc.index] = view_as<Function>(CyberGrindGM_NPCDeath);
 		func_NPCOnTakeDamage[npc.index] = view_as<Function>(CyberGrindGM_OnTakeDamage);
 		func_NPCThink[npc.index] = view_as<Function>(CyberGrindGM_ClotThink);
@@ -777,14 +782,14 @@ static void CyberGrindGM_FreePlayer(int iNPC)
 		{
 			case 0:
 			{
-				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: ayo! See you here again");
+				CPrintToChatAll("{slateblue}Mr.V{default}: ayo! See you here again");
 				npc.m_flNextMeleeAttack = gameTime + 2.0;
 				npc.m_iOverlordComboAttack=1;
 			}
 			case 1:
 			{
-				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Take this, it will help");
-				CPrintToChatAll("{green}Gained 59300 cash from {unique}[GM] {slateblue}Cyber Grind");
+				CPrintToChatAll("{slateblue}Mr.V{default}: Take this, it will help");
+				CPrintToChatAll("{green}Gained 59300 cash from {slateblue}Mr.V");
 				CPrintToChatAll("{green}FREEPLAY Items is now buyable!");
 				Store_DiscountNamedItem("Wildingen's Elite Building Components FREEPLAY", 999);
 				Store_DiscountNamedItem("Void's Glimpse FREEPLAY", 999);
@@ -794,7 +799,7 @@ static void CyberGrindGM_FreePlayer(int iNPC)
 			}
 			case 2:
 			{
-				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: I'm busy cya!");
+				CPrintToChatAll("{slateblue}Mr.V{default}: I'm busy cya!");
 				b_NpcForcepowerupspawn[npc.index] = 0;
 				i_RaidGrantExtra[npc.index] = 0;
 				b_DissapearOnDeath[npc.index] = true;
@@ -860,13 +865,13 @@ static void CyberGrindGM_Final_Item(int iNPC)
 		{
 			case 0:
 			{
-				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Congratulations, Cleared the Challenge");
+				CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Congratulations, Cleared the Challenge");
 				npc.m_flNextMeleeAttack = gameTime + 4.0;
 				npc.m_iOverlordComboAttack=1;
 			}
 			case 1:
 			{
-				CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Here, I'll give you the {unique}Item{default} as promised.");
+				CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Here, I'll give you the {unique}Item{default} as promised.");
 				for (int client = 0; client < MaxClients; client++)
 				{
 					if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING)
@@ -1076,18 +1081,18 @@ static void CyberGrindGM_ClotThink(int iNPC)
 				case 0:
 				{
 					if(CyberGrind_Difficulty==4)
-						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: What, really?");
+						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: What, really?");
 					else
-						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Oh, I See...");
+						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Oh, I See...");
 					npc.m_flNextMeleeAttack = gameTime + 1.0;
 					npc.m_iOverlordComboAttack=1;
 				}
 				case 1:
 				{
 					if(CyberGrind_Difficulty==4)
-						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: Okay, {crimson}Good Luck.{default}");
+						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Okay, {crimson}Good Luck.{default}");
 					else
-						CPrintToChatAll("{unique}[GM] {slateblue}Cyber Grind{default}: I checked. Have a Funny Time.");
+						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: I checked. Have a Funny Time.");
 					CyberGrind_InternalDifficulty = CyberGrind_Difficulty;
 					npc.m_flNextMeleeAttack = gameTime + 1.0;
 					npc.m_iOverlordComboAttack=2;
