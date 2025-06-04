@@ -667,8 +667,8 @@ methodmap CyberGrindGM < CClotBody
 					if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
 					else if(!StrContains(countext[i], "grigori_sells_items_max"))
 					{
-						ReplaceString(countext[i], sizeof(countext[i]), "grigori_sells_items_max", "");
-						float value = StringToInt(countext[i]);
+						ReplaceString(countext[i], 1024, "grigori_sells_items_max", "");
+						int value = StringToInt(countext[i]);
 						GrigoriMaxSellsItems = value;
 					}
 					else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
