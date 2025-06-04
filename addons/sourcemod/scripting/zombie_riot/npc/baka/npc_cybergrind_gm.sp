@@ -619,9 +619,9 @@ methodmap CyberGrindGM < CClotBody
 		}
 		else if(!StrContains(data, "final_item"))
 		{
-			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
-			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
-			func_NPCThink[npc.index] = CyberGrindGM_Final_Item;
+			func_NPCDeath[npc.index] = view_as<Function>(CyberGrindGM_NPCDeath);
+			func_NPCOnTakeDamage[npc.index] = view_as<Function>(CyberGrindGM_OnTakeDamage);
+			func_NPCThink[npc.index] = view_as<Function>(CyberGrindGM_Final_Item);
 			
 			npc.m_iBleedType = BLEEDTYPE_NORMAL;
 			npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
@@ -652,9 +652,9 @@ methodmap CyberGrindGM < CClotBody
 		}
 		else if(!StrContains(data, "cybergrind_sells_mode"))
 		{
-			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
-			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
-			func_NPCThink[npc.index] = CyberGrindGM_Instantkill;
+			func_NPCDeath[npc.index] = view_as<Function>(CyberGrindGM_NPCDeath);
+			func_NPCOnTakeDamage[npc.index] = view_as<Function>(CyberGrindGM_OnTakeDamage);
+			func_NPCThink[npc.index] = view_as<Function>(CyberGrindGM_Instantkill);
 			bool Grigori_Refresh=false;
 			bool Grigori_RefreshTwo=false;
 			int GrigoriMaxSellsItems=-1;
@@ -1137,7 +1137,7 @@ static void CyberGrindGM_ClotThink(int iNPC)
 					if(CyberGrind_Difficulty!=4)
 					{
 						Waves_ClearWaves();
-						CurrentRound = 1;
+						CurrentRound = 2;
 						CurrentWave = -1;
 						Waves_Progress();
 					}
