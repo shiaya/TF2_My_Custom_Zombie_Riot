@@ -749,6 +749,7 @@ public void OnPluginStart()
 	LoadTranslations("zombieriot.phrases.item.gift.desc"); 
 	LoadTranslations("common.phrases");
 	LoadTranslations("zombieriot.phrases.status_effects");
+	LoadTranslations("zombieriot.phrases.construction");
 	
 	DHook_Setup();
 	SDKCall_Setup();
