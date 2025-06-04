@@ -681,7 +681,6 @@ methodmap CyberGrindGM < CClotBody
 				Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
 				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
 			}
-			CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
 			b_NpcForcepowerupspawn[npc.index] = 0;
 			i_RaidGrantExtra[npc.index] = 0;
 			b_DissapearOnDeath[npc.index] = true;
