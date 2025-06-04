@@ -13,6 +13,9 @@ int CyberGrind_Difficulty;
 int CyberGrind_InternalDifficulty;
 bool CyberVote;
 static bool TeleToU[MAXENTITIES];
+static bool Grigori_Refresh=false;
+static bool Grigori_RefreshTwo=false;
+static int GrigoriMaxSellsItems=-1;
 
 void CyberGrindGM_OnMapStart_NPC()
 {
@@ -655,6 +658,25 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCDeath[npc.index] = view_as<Function>(CyberGrindGM_NPCDeath);
 			func_NPCOnTakeDamage[npc.index] = view_as<Function>(CyberGrindGM_OnTakeDamage);
 			func_NPCThink[npc.index] = view_as<Function>(CyberGrindGM_Instantkill);
+			
+			Grigori_Refresh=false;
+			Grigori_RefreshTwo=false;
+			GrigoriMaxSellsItems=-1;
+			
+			static char countext[20][1024];
+			int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
+			for(int i = 0; i < count; i++)
+			{
+				if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
+				else if(!StrContains(countext[i], "grigori_sells_items_max"))
+				{
+					ReplaceString(countext[i], 1024, "grigori_sells_items_max", "");
+					int value = StringToInt(countext[i]);
+					GrigoriMaxSellsItems = value;
+				}
+				else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
+			}
+			
 			npc.m_flNextRangedAttack = GetGameTime() + 1.0;
 			int skin = 1;
 			SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
@@ -795,23 +817,6 @@ static void CyberGrindGM_Instantkill(int iNPC)
 	npc.m_flNextThinkTime = gameTime + 0.1;
 	if(npc.m_flNextRangedAttack < gameTime)
 	{
-		bool Grigori_Refresh=false;
-		bool Grigori_RefreshTwo=false;
-		int GrigoriMaxSellsItems=-1;
-		static char countext[20][1024];
-		int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
-		for(int i = 0; i < count; i++)
-		{
-			if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
-			else if(!StrContains(countext[i], "grigori_sells_items_max"))
-			{
-				ReplaceString(countext[i], 1024, "grigori_sells_items_max", "");
-				int value = StringToInt(countext[i]);
-				GrigoriMaxSellsItems = value;
-			}
-			else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
-		}
-
 		if(GrigoriMaxSellsItems!=-1)
 			GrigoriMaxSells = GrigoriMaxSellsItems;
 		if(Grigori_RefreshTwo)
