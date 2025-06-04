@@ -652,9 +652,9 @@ methodmap CyberGrindGM < CClotBody
 		}
 		else if(!StrContains(data, "cybergrind_sells_mode"))
 		{
-			func_NPCDeath[npc.index] = INVALID_FUNCTION;
-			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
-			func_NPCThink[npc.index] = INVALID_FUNCTION;
+			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
+			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
+			func_NPCThink[npc.index] = CyberGrindGM_Instantkill;
 			if(CyberGrind_Difficulty==4)
 			{
 				bool Grigori_Refresh=false;
@@ -668,24 +668,31 @@ methodmap CyberGrindGM < CClotBody
 					else if(!StrContains(countext[i], "grigori_sells_items_max"))
 					{
 						ReplaceString(countext[i], sizeof(countext[i]), "grigori_sells_items_max", "");
-						GrigoriMaxSellsItems = StringToInt(countext[i]);
+						float value = StringToInt(countext[i]);
+						GrigoriMaxSellsItems = value;
 					}
 					else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
 				}
-			
-				if(Grigori_Refresh || GrigoriMaxSellsItems!=-1)
+
+				if(GrigoriMaxSellsItems!=-1)
+					GrigoriMaxSells = GrigoriMaxSellsItems;
+				if(Grigori_RefreshTwo)
+					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+				if(Grigori_Refresh)
 				{
-					if(GrigoriMaxSellsItems!=-1)
-						GrigoriMaxSells = GrigoriMaxSellsItems;
-					if(Grigori_RefreshTwo)
-						Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-					if(Grigori_Refresh)
-					{
-						Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
-						Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-					}
+					Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
+					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
 				}
 			}
+			int skin = 1;
+			SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
+
+			npc.m_iWearable1 = npc.EquipItem("head", "models/workshop/player/items/spy/spr18_assassins_attire/spr18_assassins_attire.mdl");
+
+			npc.m_iWearable2 = npc.EquipItem("head", "models/player/items/spy/spy_hat.mdl");
+
+			SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
+			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
 				
 			b_NpcForcepowerupspawn[npc.index] = 0;
 			i_RaidGrantExtra[npc.index] = 0;
@@ -811,6 +818,15 @@ static void CyberGrindGM_FreePlayer(int iNPC)
 	}
 }
 
+static void CyberGrindGM_Instantkill(int iNPC)
+{
+	CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
+	b_NpcForcepowerupspawn[npc.index] = 0;
+	i_RaidGrantExtra[npc.index] = 0;
+	b_DissapearOnDeath[npc.index] = true;
+	b_DoGibThisNpc[npc.index] = true;
+	SmiteNpcToDeath(npc.index);
+}
 static void CyberGrindGM_Final_Item(int iNPC)
 {
 	CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
