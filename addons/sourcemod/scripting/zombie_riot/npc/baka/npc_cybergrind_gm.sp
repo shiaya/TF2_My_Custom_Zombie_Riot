@@ -1104,9 +1104,9 @@ static void CyberGrindGM_ClotThink(int iNPC)
 				{
 					Citizen_SpawnAtPoint("b");
 					Citizen_SpawnAtPoint();
+					Spawn_Cured_Grigori();
 					if(CyberGrind_Difficulty==4)
 					{
-						Spawn_Cured_Grigori();
 						float SelfPos[3];
 						GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
 						float AllyAng[3];
@@ -1134,13 +1134,13 @@ static void CyberGrindGM_ClotThink(int iNPC)
 						NPC_CreateByName("npc_invisible_trigger_man", -1, SelfPos, AllyAng, TFTeam_Stalkers, "delete_timerlimit");
 					}
 					CPrintToChatAll("{gray}Barney: {default}Hey! We came late to assist! Got a friend too!");
-					if(CyberGrind_Difficulty!=4)
+					/*if(CyberGrind_Difficulty!=4)
 					{
 						Waves_ClearWaves();
 						CurrentRound = 2;
 						CurrentWave = -1;
 						Waves_Progress();
-					}
+					}*/
 					b_NpcForcepowerupspawn[npc.index] = 0;
 					i_RaidGrantExtra[npc.index] = 0;
 					b_DissapearOnDeath[npc.index] = true;
