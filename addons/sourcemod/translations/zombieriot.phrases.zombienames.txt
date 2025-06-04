@@ -4526,10 +4526,10 @@
 		"en"	"<<Rare bloodsucking TrumpetSkeleton of Conflagration>>"
 		"ko"	"<<Rare bloodsucking TrumpetSkeleton of Conflagration>>"
 	}
-	"Cyber Grind GM"
+	"Mr.V"
 	{
-		"en"	"[GM] Cyber Grind"
-		"ko"	"[GM] Cyber Grind"
+		"en"	"Mr.V"
+		"ko"	"Mr.V"
 	}
 	"Victoria Precision Strike"
 	{
