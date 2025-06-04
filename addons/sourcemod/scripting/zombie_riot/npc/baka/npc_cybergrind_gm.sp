@@ -655,6 +655,8 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
 			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
 			func_NPCThink[npc.index] = CyberGrindGM_Instantkill;
+			AddNpcToAliveList(npc.index, 1);
+			Is_a_Medic[npc.index] = true;
 			if(CyberGrind_Difficulty==4)
 			{
 				bool Grigori_Refresh=false;
@@ -693,13 +695,6 @@ methodmap CyberGrindGM < CClotBody
 
 			SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
 			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
-				
-			b_NpcForcepowerupspawn[npc.index] = 0;
-			i_RaidGrantExtra[npc.index] = 0;
-			b_DissapearOnDeath[npc.index] = true;
-			b_DoGibThisNpc[npc.index] = true;
-			SmiteNpcToDeath(npc.index);
-			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
 		func_NPCDeath[npc.index] = view_as<Function>(CyberGrindGM_NPCDeath);
