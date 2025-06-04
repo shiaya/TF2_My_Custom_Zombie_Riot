@@ -655,46 +655,38 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
 			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
 			func_NPCThink[npc.index] = CyberGrindGM_Instantkill;
-			AddNpcToAliveList(npc.index, 1);
-			Is_a_Medic[npc.index] = true;
-			if(CyberGrind_Difficulty==4)
+			bool Grigori_Refresh=false;
+			bool Grigori_RefreshTwo=false;
+			int GrigoriMaxSellsItems=-1;
+			static char countext[20][1024];
+			int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
+			for(int i = 0; i < count; i++)
 			{
-				bool Grigori_Refresh=false;
-				bool Grigori_RefreshTwo=false;
-				int GrigoriMaxSellsItems=-1;
-				static char countext[20][1024];
-				int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
-				for(int i = 0; i < count; i++)
+				if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
+				else if(!StrContains(countext[i], "grigori_sells_items_max"))
 				{
-					if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
-					else if(!StrContains(countext[i], "grigori_sells_items_max"))
-					{
-						ReplaceString(countext[i], 1024, "grigori_sells_items_max", "");
-						int value = StringToInt(countext[i]);
-						GrigoriMaxSellsItems = value;
-					}
-					else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
+					ReplaceString(countext[i], 1024, "grigori_sells_items_max", "");
+					int value = StringToInt(countext[i]);
+					GrigoriMaxSellsItems = value;
 				}
-
-				if(GrigoriMaxSellsItems!=-1)
-					GrigoriMaxSells = GrigoriMaxSellsItems;
-				if(Grigori_RefreshTwo)
-					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-				if(Grigori_Refresh)
-				{
-					Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
-					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-				}
+				else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
 			}
-			int skin = 1;
-			SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
 
-			npc.m_iWearable1 = npc.EquipItem("head", "models/workshop/player/items/spy/spr18_assassins_attire/spr18_assassins_attire.mdl");
-
-			npc.m_iWearable2 = npc.EquipItem("head", "models/player/items/spy/spy_hat.mdl");
-
-			SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
-			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
+			if(GrigoriMaxSellsItems!=-1)
+				GrigoriMaxSells = GrigoriMaxSellsItems;
+			if(Grigori_RefreshTwo)
+				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+			if(Grigori_Refresh)
+			{
+				Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
+				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+			}
+			CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
+			b_NpcForcepowerupspawn[npc.index] = 0;
+			i_RaidGrantExtra[npc.index] = 0;
+			b_DissapearOnDeath[npc.index] = true;
+			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
 		func_NPCDeath[npc.index] = view_as<Function>(CyberGrindGM_NPCDeath);
@@ -1143,6 +1135,13 @@ static void CyberGrindGM_ClotThink(int iNPC)
 						NPC_CreateByName("npc_invisible_trigger_man", -1, SelfPos, AllyAng, TFTeam_Stalkers, "delete_timerlimit");
 					}
 					CPrintToChatAll("{gray}Barney: {default}Hey! We came late to assist! Got a friend too!");
+					if(CyberGrind_Difficulty!=4)
+					{
+						Waves_ClearWaves();
+						CurrentRound = 1;
+						CurrentWave = -1;
+						Waves_Progress();
+					}
 					b_NpcForcepowerupspawn[npc.index] = 0;
 					i_RaidGrantExtra[npc.index] = 0;
 					b_DissapearOnDeath[npc.index] = true;
