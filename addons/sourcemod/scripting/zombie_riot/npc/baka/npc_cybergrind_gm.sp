@@ -1125,9 +1125,9 @@ static void CyberGrindGM_ClotThink(int iNPC)
 				{
 					Citizen_SpawnAtPoint("b");
 					Citizen_SpawnAtPoint();
-					Spawn_Cured_Grigori();
 					if(CyberGrind_Difficulty==4)
 					{
+						Spawn_Cured_Grigori();
 						float SelfPos[3];
 						GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
 						float AllyAng[3];

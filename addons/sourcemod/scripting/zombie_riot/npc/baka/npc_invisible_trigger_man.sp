@@ -178,7 +178,10 @@ methodmap Invisible_TRIGGER_Man < CClotBody
 		if(!StrContains(data, "cover_twins"))
 			npc.i_NPCStats=4;
 		if(!StrContains(data, "delete_timerlimit"))
+		{
+			ally = TFTeam_Stalkers;
 			npc.i_NPCStats=3000;
+		}
 
 		func_NPCDeath[npc.index] = view_as<Function>(Invisible_TRIGGER_Man_NPCDeath);
 		func_NPCOnTakeDamage[npc.index] = view_as<Function>(Invisible_TRIGGER_Man_OnTakeDamage);
