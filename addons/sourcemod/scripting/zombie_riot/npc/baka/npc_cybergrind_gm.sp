@@ -655,33 +655,35 @@ methodmap CyberGrindGM < CClotBody
 			func_NPCDeath[npc.index] = INVALID_FUNCTION;
 			func_NPCOnTakeDamage[npc.index] = INVALID_FUNCTION;
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
-		
-			bool Grigori_Refresh=false;
-			bool Grigori_RefreshTwo=false;
-			int GrigoriMaxSellsItems=-1;
-			static char countext[20][1024];
-			int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
-			for(int i = 0; i < count; i++)
+			if(CyberGrind_Difficulty==4)
 			{
-				if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
-				else if(!StrContains(countext[i], "grigori_sells_items_max"))
+				bool Grigori_Refresh=false;
+				bool Grigori_RefreshTwo=false;
+				int GrigoriMaxSellsItems=-1;
+				static char countext[20][1024];
+				int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
+				for(int i = 0; i < count; i++)
 				{
-					ReplaceString(countext[i], sizeof(countext[i]), "grigori_sells_items_max", "");
-					GrigoriMaxSellsItems = StringToInt(countext[i]);
+					if(!StrContains(countext[i], "grigori_refresh_store"))Grigori_Refresh=true;
+					else if(!StrContains(countext[i], "grigori_sells_items_max"))
+					{
+						ReplaceString(countext[i], sizeof(countext[i]), "grigori_sells_items_max", "");
+						GrigoriMaxSellsItems = StringToInt(countext[i]);
+					}
+					else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
 				}
-				else if(!StrContains(countext[i], "grigori_refresh_storetwo"))Grigori_RefreshTwo=true;
-			}
-		
-			if(Grigori_Refresh || GrigoriMaxSellsItems!=-1)
-			{
-				if(GrigoriMaxSellsItems!=-1)
-					GrigoriMaxSells = GrigoriMaxSellsItems;
-				if(Grigori_RefreshTwo)
-					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-				if(Grigori_Refresh)
+			
+				if(Grigori_Refresh || GrigoriMaxSellsItems!=-1)
 				{
-					Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
-					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+					if(GrigoriMaxSellsItems!=-1)
+						GrigoriMaxSells = GrigoriMaxSellsItems;
+					if(Grigori_RefreshTwo)
+						Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+					if(Grigori_Refresh)
+					{
+						Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
+						Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
+					}
 				}
 			}
 				
@@ -689,6 +691,7 @@ methodmap CyberGrindGM < CClotBody
 			i_RaidGrantExtra[npc.index] = 0;
 			b_DissapearOnDeath[npc.index] = true;
 			b_DoGibThisNpc[npc.index] = true;
+			SmiteNpcToDeath(npc.index);
 			SmiteNpcToDeath(npc.index);
 			return npc;
 		}
