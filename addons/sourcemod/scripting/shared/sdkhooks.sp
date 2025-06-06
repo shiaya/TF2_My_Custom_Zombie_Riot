@@ -2655,6 +2655,7 @@ public void OnWeaponSwitchPost(int client, int weapon)
 				}
 			}
 		}
+		b_CanSeeBuildingValues[client] = b_CanSeeBuildingValues[weapon];
 #endif
 	}
 
