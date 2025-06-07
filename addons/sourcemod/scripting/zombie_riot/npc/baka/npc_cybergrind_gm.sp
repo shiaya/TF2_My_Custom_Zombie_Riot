@@ -1140,20 +1140,6 @@ static void CyberGrindGM_ClotThink(int iNPC)
 						}
 						NPC_CreateByName("npc_invisible_trigger_man", -1, SelfPos, AllyAng, TFTeam_Stalkers, "cybergrind_ex_hard");
 					}
-					else
-					{
-						float SelfPos[3];
-						GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
-						float AllyAng[3];
-						GetEntPropVector(npc.index, Prop_Data, "m_angRotation", AllyAng);
-						int Spawner_entity = GetRandomActiveSpawner();
-						if(IsValidEntity(Spawner_entity))
-						{
-							GetEntPropVector(Spawner_entity, Prop_Data, "m_vecOrigin", SelfPos);
-							GetEntPropVector(Spawner_entity, Prop_Data, "m_angRotation", AllyAng);
-						}
-						NPC_CreateByName("npc_invisible_trigger_man", -1, SelfPos, AllyAng, TFTeam_Stalkers, "delete_timerlimit");
-					}
 					CPrintToChatAll("{gray}Barney: {default}Hey! We came late to assist! Got a friend too!");
 					/*if(CyberGrind_Difficulty!=4)
 					{
