@@ -2663,7 +2663,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 			SDKHook(entity, SDKHook_SpawnPost, Set_Projectile_Collision);
 		//	SDKHook(entity, SDKHook_ShouldCollide, Never_ShouldCollide);
 			b_IsAProjectile[entity] = true;
-			
+			TFProjectile_Rocket_Spawn(entity);
 		}
 #endif
 		else if(!StrContains(classname, "zr_projectile_base"))

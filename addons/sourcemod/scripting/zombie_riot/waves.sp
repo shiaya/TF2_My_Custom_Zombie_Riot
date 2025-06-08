@@ -86,6 +86,8 @@ enum struct Round
 	float FogStart;
 	float FogEnd;
 	float FogDesnity;
+	
+	bool Override_Music_Setup;
 }
 
 enum struct Vote
@@ -1125,6 +1127,8 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 	kv.GotoFirstSubKey();
 	do
 	{
+		round.music_setup.SetupKv("music_setup", kv);
+		round.Override_Music_Setup=view_as<bool>(kv.GetNum("override_music_setup"));
 		if(kv.GetSectionName(buffer, sizeof(buffer)) && StrContains(buffer, "music_setup") != -1)
 		{
 			continue;
@@ -2029,6 +2033,15 @@ void Waves_Progress(bool donotAdvanceRound = false)
 					{
 						Music_Stop_All(client);
 					}
+				}
+			}
+			if(round.music_setup.Valid()&&round.Override_Music_Setup)
+			{
+				round.music_setup.CopyTo(MusicSetup1);
+				for(int client=1; client<=MaxClients; client++)
+				{
+					if(IsClientInGame(client) && !b_IsPlayerABot[client])
+						SetMusicTimer(client, GetTime() + 5);
 				}
 			}
 			if(round.GrigoriMaxSellsItems > 0)
@@ -2963,6 +2976,7 @@ void ResetAbilitiesWaveEnd()
 	CastleBreaker_ResetCashGain();
 	ZombieDrops_AllowExtraCash();
 	Zero(i_MaxArmorTableUsed);
+	TeamBakaCustom_WaveEnd();
 }
 
 void WaveStart_SubWaveStart(float time = 0.0)

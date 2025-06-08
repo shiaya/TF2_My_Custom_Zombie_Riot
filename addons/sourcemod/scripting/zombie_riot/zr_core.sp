@@ -222,19 +222,8 @@ enum
 	WEAPON_REIUJI_WAND = 145,
 	//WEAPON_CHEESY_MELEE = 146,
 	//WEAPON_CHEESY_PRIMARY = 147,
-	WEAPON_MARKET_GARDENER = 1000,
-	WEAPON_FARMER = 1001,
-	WEAPON_MINECRAFT_SWORD = 1002,
-	WEAPON_OVERCLOCKER = 1003,
-	WEAPON_PERSERKER = 1004,
-	WEAPON_SUPPORTWEAPONS = 1005,
-	WEAPON_LOCKDOWN = 1006,
-	WEAPON_STILLHUNT = 1007,
-	WEAPON_TRUMPET = 1008,
-	WEAPON_TROLLDIER = 1009,
-	WEAPON_TLQKF = 1010,
-	WEAPON_MAJORSTEAM_LAUNCHER = 1011,
-	WEAPON_KIT_OMEGA = 1012
+	WEAPON_TRUMPET = 1000,
+	WEAPON_MAJORSTEAM_LAUNCHER = 1001
 }
 
 enum
@@ -618,8 +607,10 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "custom/weapon_walter.sp"
 #include "custom/wand/weapon_wand_nymph.sp"
 #include "custom/weapon_castlebreaker.sp"
+#include "custom/baka/baka_base.sp"
 #include "custom/baka/weapon_trumpet.sp"
 #include "custom/baka/weapon_toolgun.sp"
+#include "custom/baka/weapon_majorsteam_launcher.sp"
 #include "custom/kit_soldine.sp"
 #include "custom/weapon_kritzkrieg.sp"
 #include "custom/wand/weapon_bubble_wand.sp"
@@ -1276,7 +1267,7 @@ public Action OnReloadCommand(int args)
 
 public Action Command_RTdFail(int client, int args)
 {
-	if(client && StrContains(WhatDifficultySetting_Internal, "Gladiator Arena"))
+	if(client && !StrContains(WhatDifficultySetting_Internal, "Gladiator Arena"))
 	{
 		SPrintToChat(client, "Looks like the dice broke.");
 		ClientCommand(client, "playgamesound vo/k_lab/kl_fiddlesticks.wav");
@@ -1286,8 +1277,12 @@ public Action Command_RTdFail(int client, int args)
 
 public Action RTD_CanRollDice(int client)
 {
-	if(StrContains(WhatDifficultySetting_Internal, "Boss Battle Roulette"))
+	if(StrContains(WhatDifficultySetting_Internal, "Gladiator Arena"))
+	{
+		CPrintToChat(client, "{yellow}[RTD] {default}Looks like the dice broke.");
+		ClientCommand(client, "playgamesound vo/k_lab/kl_fiddlesticks.wav");
 		return Plugin_Handled;
+	}
 
 	return Plugin_Continue;
 }

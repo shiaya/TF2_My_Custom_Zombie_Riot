@@ -6440,6 +6440,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		Medigun_SetModeDo(client, entity);
 		//Cheese_Enable(client, entity);
 		
+		TeamBakaCustom_Enable(client, entity);
 		// MarketGardener_Enable(client, entity);
 		// Farmer_Enable(client, entity);
 		// MSword_Enable(client, entity);

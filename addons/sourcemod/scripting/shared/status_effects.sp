@@ -1704,7 +1704,7 @@ void StatusEffects_Baka()
 
 float MajorSteam_Launcher_ResistanceFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)
 {
-	return 1.0;//f_MajorSteam_Launcher_Resistance(victim);
+	return f_MajorSteam_Launcher_Resistance(victim);
 }
 
 float Cybergrind_EX_Hard_ResistanceFunc(int attacker, int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect, int damagetype)

@@ -878,6 +878,10 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 			if(!(damagetype & DMG_TRUEDAMAGE))
 				return Player_OnTakeDamage_Fractal(victim, damage, damagePosition,attacker);
 		}
+		default:
+		{
+			TeamBakaCustom_PlayerTakeDamage(victim, attacker, damage, equipped_weapon, damagePosition, damagetype);
+		}
 	}
 	if(!CheckInHud() && b_Chaos_Coil[victim])
 		Elemental_AddChaosDamage(victim, attacker, RoundToCeil(damage));
@@ -1252,6 +1256,10 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		case WEAPON_KIT_PROTOTYPE:
 		{
 			Wkit_Soldin_NPCTakeDamage_Ranged(attacker, victim, damage, weapon, damagetype);
+		}
+		default:
+		{
+			TeamBakaCustom_NPCTakeDamage(attacker, victim, damage, weapon, damagePosition, damagetype);
 		}
 		/*
 		case WEAPON_CHEESY_MELEE:

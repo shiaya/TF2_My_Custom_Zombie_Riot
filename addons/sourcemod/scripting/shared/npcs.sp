@@ -2410,6 +2410,7 @@ void OnKillUniqueWeapon(int attacker, int weapon, int victim)
 		{
 			CastleBreakerCashOnKill(attacker);
 		}
+		default:TeamBakaCustom_OnKill(attacker);
 	}
 }
 #endif
