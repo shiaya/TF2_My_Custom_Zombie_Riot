@@ -2045,7 +2045,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 	}
 	else if(StrContains(name, "ZR_Bomb_Drop_", false) != -1)
 	{
-		int client = GetEntProp(caller, Prop_Data, "m_iHammerID")-1972;
+		int client = GetEntProp(caller, Prop_Data, "m_iHammerID");
 		float position[3];
 		GetEntPropVector(caller, Prop_Data, "m_vecAbsOrigin", position);
 		AcceptEntityInput(caller, "KillHierarchy");
@@ -2055,7 +2055,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 			float position2[3], distance;
 			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 			{
-				int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+				int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
 				if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
 				{
 					GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position2);
@@ -2082,14 +2082,14 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 		GetEntPropVector(caller, Prop_Data, "m_vecAbsOrigin", position);
 		AcceptEntityInput(caller, "KillHierarchy");
 		position[2]-=10.0;
-		int client = GetEntProp(caller, Prop_Data, "m_iHammerID")-1972;
+		int client = GetEntProp(caller, Prop_Data, "m_iHammerID");
 		if(IsValidClient(client))
 		{
 			float entitypos[3], distance;
 			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 			{
-				int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
-				if(IsValidEntity(entity))
+				int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
+				if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
 				{
 					GetEntPropVector(entity, Prop_Send, "m_vecOrigin", entitypos);
 					distance = GetVectorDistance(position, entitypos);
@@ -2098,11 +2098,8 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 						float MaxHealth = float(ReturnEntityMaxHealth(entity));
 						float damage=(MaxHealth*2.0);
 						if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] || b_IsGiant[entity])
-							damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[client]), 1.18)/10.0);
-						if(GetTeam(client) != GetTeam(entity))
-							SDKHooks_TakeDamage(entity, client, client, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
-						else
-							SDKHooks_TakeDamage(entity, 0, 0, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
+							damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[HELLDIVER]), 1.18)/10.0);
+						SDKHooks_TakeDamage(entity, HELLDIVER, HELLDIVER, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 					}
 				}
 			}
@@ -2754,7 +2751,7 @@ public Action Timer_Orbital_GAS_Stratagems(Handle timer, DataPack pack)
 					float position2[3], distance;
 					for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 					{
-						int npc = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+						int npc = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
 						if(IsValidEntity(npc) && GetTeam(npc) != TFTeam_Red)
 						{
 							GetEntPropVector(npc, Prop_Send, "m_vecOrigin", position2);
@@ -2935,7 +2932,7 @@ public void Seeyou_in_HELL(int client)
 		float entitypos[3], distance;
 		for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 		{
-			int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+			int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
 			if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
 			{
 				GetEntPropVector(entity, Prop_Send, "m_vecOrigin", entitypos);
@@ -3201,8 +3198,10 @@ public Action Timer_EagleBomb_Stratagems(Handle timer, DataPack pack)
 			int color[4];
 			
 			color = {145, 47, 47, 200};
-	
-			TE_SetupBeamRingPoint(bomb_pos, 350.0 * (f_HealDelay[entity]-GetGameTime()), (350.0 * (f_HealDelay[entity]-GetGameTime()))+0.5, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 1.0, color, 0, 0);
+			
+			TE_SetupBeamRingPoint(bomb_pos, 850.0 * 2.0, (850.0 * 2.0)+0.5, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 1.0, color, 0, 0);
+			TE_SendToAll();
+			TE_SetupBeamRingPoint(bomb_pos, 850.0 * (f_HealDelay[entity]-GetGameTime()), (850.0 * (f_HealDelay[entity]-GetGameTime()))+0.5, g_BeamIndex_heal, -1, 0, 5, 0.5, 5.0, 1.0, color, 0, 0);
 			TE_SendToAll();
 			float position[3];
 			position[0] = bomb_pos[0];
@@ -3459,7 +3458,7 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 				float position[3]; WorldSpaceCenter(client, position);
 				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 				{
-					int npc = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+					int npc = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
 					if(IsValidEntity(npc) && GetTeam(npc) != TFTeam_Red)
 					{
 						float position2[3], distance;
@@ -3496,7 +3495,7 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 				int TempTarget;
 				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 				{
-					int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
+					int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
 					if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
 					{
 						TempTarget=entity;

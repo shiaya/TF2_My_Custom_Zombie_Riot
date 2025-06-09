@@ -1084,8 +1084,7 @@ void DestroyBuildingDo(int entity, bool DontCheckAgain = false)
 		float damage = (float(b_Interior_ExplosiveBuilding_MaxHP[entity])*0.1)+300.0;
 		float AOE_range = 100.0;
 		
-		if(!IsValidClient(client))client=-1;
-		else
+		if(IsValidClient(client)&&GetTeam(client) == TFTeam_Red)
 		{
 			float attack_speed;
 
@@ -1096,10 +1095,10 @@ void DestroyBuildingDo(int entity, bool DontCheckAgain = false)
 			float sentry_range = Attributes_GetOnPlayer(client, 344, true, true);
 			
 			AOE_range *= sentry_range;
+			KillFeed_SetKillIcon(entity, "ullapool_caber_explosion");
+			Explode_Logic_Custom(damage, client, entity, -1, VecOrigin, AOE_range, 0.75, _, false);
+			EmitSoundToAll(g_ExplosionSounds, entity, SNDCHAN_VOICE, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME, GetRandomInt(80,125));
 		}
-		KillFeed_SetKillIcon(entity, "ullapool_caber_explosion");
-		Explode_Logic_Custom(damage, client, entity, -1, VecOrigin, AOE_range, 0.75, _, false);
-		EmitSoundToAll(g_ExplosionSounds, entity, SNDCHAN_VOICE, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME, GetRandomInt(80,125));
 	}
 	DataPack pack = new DataPack();
 	pack.WriteFloat(VecOrigin[0]);
@@ -1233,7 +1232,10 @@ void BuildingUpdateTextHud(int building)
 		}
 		Format(HealthText, sizeof(HealthText), "%s(%0.f%% R)", HealthText, RatioLeft);
 		if(b_Interior_ExplosiveBuilding[building])
-			Format(HealthText, sizeof(HealthText), "%s\nBomb Planted️", HealthText);
+		{
+			if(IsValidClient(Owner)&&GetTeam(Owner) == TFTeam_Red)
+				Format(HealthText, sizeof(HealthText), "%s\nBomb Planted️", HealthText);
+		}
 	}
 
 
