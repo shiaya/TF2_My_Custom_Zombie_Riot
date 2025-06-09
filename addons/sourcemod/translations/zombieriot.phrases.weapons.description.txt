@@ -1469,7 +1469,7 @@
 	"Builders Axe Desc"
 	{
 		"en"	"A melee axe that scales with builder damage.\nM2 to Lunge and for the next attack to deal 12x the damage.\nYou need to have enough upgrades for this to work."
-		"es"	"Un hacha que escala con el daño de constructor.\nM2: Embiste hacia adelante, el siguiente golpe hara un +1200%% de daño extra.\nNecesitas suficientes mejoras de constructor para que funcione."
+		"es"	"Un hacha que escala con el daño de constructor.\nM2: Embiste hacia adelante, el siguiente golpe hara un +1200％ de daño extra.\nNecesitas suficientes mejoras de constructor para que funcione."
 		"fr"	"Dégats corps-à-corps s'améliorent avec vos Améliorations Constructeur.\nAppuyez M2 pour vous lancer et améliorer les dégats de cet arme 12x.\nAméliorations Construction requis."
 	//	"ru"	"Гаечный ключ ближнего боя, у которого увеличивается урон с уроном строителя.\nM2 для броска и следующей атаки, наносящей в два раза больше урона.\nВам нужно иметь достаточно улучшений, чтобы это сработало."
 		"chi"   "一个近战扳手，随建造者伤害缩放。\nM2为突刺，下一次攻击将造成12倍伤害。你需要足够的金属才能让它工作。"
@@ -1622,7 +1622,7 @@
 	}
 	"Repair Handling book for dummies Desc"
 	{
-		"en"	"2x more repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25%% (Cant go below 1)"
+		"en"	"2x more repair Rate\nBuilding damage increaed by 1.15x (Not barracks)\nReduces cost of metal usage by 25％ (Cant go below 1)"
 		"fr"	"2x vitesse de réparation"
 		"ru"	"На 2x выше скорость починки."
 		"chi"   "修复建筑生命值提高2x"
@@ -4118,32 +4118,32 @@
 
 	"Glass Cannon Desc"
 	{
-		"en"	"35%% increased Weapon Damage But 50%% Damage Taken increased"
+		"en"	"35％ increased Weapon Damage But 50％ Damage Taken increased"
 		"ko"	"주무기, 보조무기 피해량 +35％, 하지만 받는 피해 +50％"
 	}
 	"Compact Feed Mechanism Desc"
 	{
-		"en"	"You attack 40%%, reload 20%% slower but 100%% more max clip."
+		"en"	"You attack 40％, reload 20％ slower but 100％ more max clip."
 		"ko"	"공속 -40％, 장속 -20％, 대신 장탄수 +100％"
 	}
 	"Nails Tape Desc"
 	{
-		"en"	"50%% Blast radius increased"
+		"en"	"50％ Blast radius increased"
 		"ko"	"폭발 범위 +50％"
 	}
 	"Sharpness v Desc"
 	{
-		"en"	"25%% increased Melee Damage"
+		"en"	"25％ increased Melee Damage"
 		"ko"	"근접무기 피해량 +25％"
 	}
 	"eTG-c Desc"
 	{
-		"en"	"+1 HP on hit and HP +15 Regen and 15%% Damage Taken increased with Melee Weapons out"
+		"en"	"+1 HP on hit and HP +15 Regen and 15％ Damage Taken increased with Melee Weapons out"
 		"ko"	"근접무기를 들고있을때: 자힐 +15, 적중 시 체력 +1, 하지만 받는 피해 +15％"
 	}
 	"LBT Slick Desc"
 	{
-		"en"	"Increased How much armour you get per use and max cap.\nProvides passive resistance if armor is broken and increaces with more armor upgrades.\nbut 20%% decreased Move Speed"
+		"en"	"Increased How much armour you get per use and max cap.\nProvides passive resistance if armor is broken and increaces with more armor upgrades.\nbut 20％ decreased Move Speed"
 		"ko"	"아머 포인트가 증가하고, 받는 근거리 피해 10％ 저항 받는 원거리 피해 20％ 저항\n이속 -20％"
 	}
 	"Overclocked Ubercharger Desc"
@@ -4153,53 +4153,53 @@
 	}
 	"Medi Shield Desc"
 	{
-		"en"	"Increased armour pointn and 10%% Damage Resistance with Healing Support Weapons out"
+		"en"	"Increased armour pointn and 10％ Damage Resistance with Healing Support Weapons out"
 		"ko"	"아머 포인트가 증가하고 지원무기를 사용중일때 모든 피해 10％ 저항"
 	}
 	"Stick of Faith Desc"
 	{
-		"en"	"1.5x Medigun Hurt and Heal and -100%% All Weapons Damage decreased"
+		"en"	"1.5x Medigun Hurt and Heal and -100％ All Weapons Damage decreased"
 		"ko"	"적에게 피해를 줄수 없게 되지만 치료량이 +50％까지 증가합니다."
 	}
 	"Mana Glass Desc"
 	{
-		"en"	"25%% increased Magic Damage and 25%% Mana Regen and Max Mana, but 50%% Damage Taken increased with Magic Weapons out"
+		"en"	"25％ increased Magic Damage and 25％ Mana Regen and Max Mana, but 50％ Damage Taken increased with Magic Weapons out"
 		"ko"	"마법 무기를 사용중일때 마법 피해 +25％, 마나 회복 속도및 최대치 +25％\n받는 피해 +50％"
 	}
 	"Mana Flower Desc"
 	{
-		"en"	"25%% increased Magic Damage and 25%% Mana Regen and Max Mana, but 0%% Damage Taken increased with Magic Weapons out"
+		"en"	"25％ increased Magic Damage and 25％ Mana Regen and Max Mana, but 0％ Damage Taken increased with Magic Weapons out"
 		"ko"	"마법 무기를 사용중일때 마법 피해 -20％, 마나 회복 속도및 최대치 +100％"
 	}
 	"Turret Whip Desc"
 	{
-		"en"	"2.0x sentry damage But 20%% Damage Taken increased with Magic Weapons out"
+		"en"	"2.0x sentry damage But 20％ Damage Taken increased with Magic Weapons out"
 		"ko"	"센트리 피해량 +200％, 받는 피해 +20％"
 	}
 	"Reinforced Iron Plate Desc"
 	{
-		"en"	"100%% more building health But -50%% Repair Rate"
+		"en"	"100％ more building health But -50％ Repair Rate"
 		"ko"	"구조물 체력 +100％, 수리 효율 -50％"
 	}
 	"High Value Target Desc"
 	{
-		"en"	"All Weapons Deals 2.5x damage against raidbosses.\nBut -50%% All Weapons Damage decreased"
+		"en"	"All Weapons Deals 2.5x damage against raidbosses.\nBut -50％ All Weapons Damage decreased"
 		"ko"	"모든 무기 레이드보스 대상 피해량 +200％ 하지만 모든 무기 피해량 -50％"
 	}
 	
 	"Iron Helmet desc"
 	{
-		"en"	"Gain +5 max health and 2%% Range Damage Resistance\nbut 1%% decreased Move Speed"
+		"en"	"Gain +5 max health and 2％ Range Damage Resistance\nbut 1％ decreased Move Speed"
 		"ko"	"최대 체력 +5, 받는 원거리 피해 -2％\n하지만 이속 -1％"
 	}
 	"Iron Chestplate desc"
 	{
-		"en"	"1%% Damage Resistance but 1%% decreased Move Speed"
+		"en"	"1％ Damage Resistance but 1％ decreased Move Speed"
 		"ko"	"받는 피해 -1％, 하지만 이속 -1％"
 	}
 	"Iron Leggings desc"
 	{
-		"en"	"Gain +2 max health and 1%% Melee Damage Resistance \nbut 1%% decreased Move Speed"
+		"en"	"Gain +2 max health and 1％ Melee Damage Resistance \nbut 1％ decreased Move Speed"
 		"ko"	"최대 체력 +2, 근거리 받는 피해 -1％, 하지만 이속 -1％"
 	}
 	"Iron Boots desc"
@@ -4209,12 +4209,12 @@
 	}
 	"Red Pants desc"
 	{
-		"en"	"5 More HP and 1%% Melee Damage Resistance"
+		"en"	"5 More HP and 1％ Melee Damage Resistance"
 		"ko"	"최대 체력 +5, 근거리 받는 피해 -1％"
 	}
 	"Ceramic Coating desc"
 	{
-		"en"	"Increased armour pointn but 2%% decreased Move Speed"
+		"en"	"Increased armour pointn but 2％ decreased Move Speed"
 		"ko"	"아머 포인트가 증가, 하지만 이속 -1％"
 	}
 	"Killer Focus desc"
@@ -4224,7 +4224,7 @@
 	}
 	"Meruna desc"
 	{
-		"en"	"8%% more repair Rate and 5%% more building health and 3%% attack speed, range for sentry guns \nBut 10%% Damage Taken increased and 2.0x Fire Damage Taken increased"
+		"en"	"8％ more repair Rate and 5％ more building health and 3％ attack speed, range for sentry guns \nBut 10％ Damage Taken increased and 2.0x Fire Damage Taken increased"
 		"ko"	"받는 화상 피해 +100％, 받는 피해량 +3％\n수리 효율 +3％, 구조물 체력 +1％, 센트리 사거리 +1％, 센트리 공속 +1％"
 	}
 	"Meruna Desc Extra"
@@ -4234,7 +4234,7 @@
 	}
 	"Katana desc"
 	{
-		"en"	"2.5%% increased Melee Damage"
+		"en"	"2.5％ increased Melee Damage"
 		"ko"	"근접 무기 피해량 +2.5％"
 	}
 	"Katana Desc Extra"
@@ -4249,17 +4249,17 @@
 	}
 	"14gi desc"
 	{
-		"en"	"+5.5%% bonus healing from all sources"
+		"en"	"+5.5％ bonus healing from all sources"
 		"ko"	"받는 체력 회복량 +5.5％"
 	}
 	"Glass Coil desc"
 	{
-		"en"	"5%% increased Move Speed But 35%% Damage Taken increased"
+		"en"	"5％ increased Move Speed But 35％ Damage Taken increased"
 		"ko"	"이속 +5％, 하지만 받는 피해 +35％"
 	}
 	"Speed Coil desc"
 	{
-		"en"	"1%% increased Move Speed"
+		"en"	"1％ increased Move Speed"
 		"ko"	"이속 +1％"
 	}
 	"HCB desc"
@@ -4269,42 +4269,42 @@
 	}
 	"Dwarf Rage desc"
 	{
-		"en"	"25%% increased damage But 15%% decreased Attack Speed\nWarning! If equipped by a Leaf Lover, it will inflict a powerful debuff."
+		"en"	"25％ increased damage But 15％ decreased Attack Speed\nWarning! If equipped by a Leaf Lover, it will inflict a powerful debuff."
 		"ko"	"피해량 +5％, 공속 -5％\n경고! 리프러버가 장착하면 강력한 디버프를 받습니다."
 	}
 	"True Biker Desc"
 	{
-		"en"	"2%% Damage Resistance"
+		"en"	"2％ Damage Resistance"
 		"ko"	"받는 피해 -2％"
 	}
 	"DS BuckShot desc"
 	{
-		"en"	"Secondary and Primary weapon bullets per shot increased by 30%\nbut 15%% decreased Attack Speed"
+		"en"	"Secondary and Primary weapon bullets per shot increased by 30％\nbut 15％ decreased Attack Speed"
 		"ko"	"발사되는 탄환수 +30％, 하지만 공속 -15％"
 	}
 	"Khaydarin C desc"
 	{
-		"en"	"+10%% increased Magic Damage and +10%% Mana Regen and Max Mana"
+		"en"	"+10％ increased Magic Damage and +10％ Mana Regen and Max Mana"
 		"ko"	"마법 피해 +10％, 마나 회복 속도및 최대치 +10％"
 	}
 	"U-238 desc"
 	{
-		"en"	"Secondary and Primary weapon rage gain rate increased by 25%\nand 5%% increased Weapon Damage"
+		"en"	"Secondary and Primary weapon rage gain rate increased by 25％\nand 5％ increased Weapon Damage"
 		"ko"	"주무기및 보조무기 사거리 +25％, 피해량 +5％"
 	}
 	"DRG Pickaxe desc"
 	{
-		"en"	"Melee weapon Attack speed increased by 5.0%"
+		"en"	"Melee weapon Attack speed increased by 5.0％"
 		"ko"	"근접 무기 공속 +5.0％"
 	}
 	"Time Warden Badge desc"
 	{
-		"en"	"All weapon Attack speed increased by 5% and All weapon Damage increased by 5%\nbut -10 HP Degen"
+		"en"	"All weapon Attack speed increased by 5％ and All weapon Damage increased by 5％\nbut -10 HP Degen"
 		"ko"	"모든 무기의 피해량, 공속 +5％\n하지만 초당 체력 -10"
 	}
 	"Dual-Fusion Welders desc"
 	{
-		"en"	"10%% more repair Rate and 5%% more building health"
+		"en"	"10％ more repair Rate and 5％ more building health"
 		"ko"	"수리 효율 +10％, 구조물 체력 +5％"
 	}
 	"Secret Mad Milk Recipe Desc"
@@ -4354,7 +4354,7 @@
 	}
 	"Sacred Medical Bag desc"
 	{
-		"en"	"1.1x Medigun Hurt and Heal. but all weapnos -100%% decreased Damage"
+		"en"	"1.1x Medigun Hurt and Heal. but all weapnos -100％ decreased Damage"
 		"ko"	"치료량 +10％ 하지만 모든 무기의 피해량이 -100％"
 	}
 	"POWER HEAL Desc"
@@ -4369,7 +4369,7 @@
 	}
 	"Death from Above Desc"
 	{
-		"en"	"When you are above an enemy, you gain a 10%% damage buff."
+		"en"	"When you are above an enemy, you gain a 10％ damage buff."
 		"ko"	"자신보다 낮은 위치에 있는 적 공격시, 10％ 피해량 버프"
 	}
 	"Chaos Coil Give"
@@ -4394,17 +4394,17 @@
 	}
 	"Leaf Belt desc"
 	{
-		"en"	"+7%% bonus healing from all sources"
+		"en"	"+7％ bonus healing from all sources"
 		"ko"	"받는 체력 회복량 +7％"
 	}
 	"HE HUD desc"
 	{
-		"en"	"3%% more repair Rate"
+		"en"	"3％ more repair Rate"
 		"ko"	"수리 효율 +3％"
 	}
 	"Snow Boots desc"
 	{
-		"en"	"1%% Damage Resistance"
+		"en"	"1％ Damage Resistance"
 		"ko"	"받는 피해 -1％"
 	}
 	"Slug Shell desc"
@@ -4427,9 +4427,14 @@
 		"en"	"Building explodes when destroyed!\Building health reduced by -10％"
 		"ko"	"구조물이 파괴될때 폭발합니다!\n구조물 체력 -10％"
 	}
+	"Mini Shell desc"
+	{
+		"en"	"''Archetype: Multi Pellet'' Only\n50％ more Max Clip, and Reload Speed +5％\Damage -30％, Bullets per shot -20％, Accuracy -30％"
+		"ko"	"''유형: 산탄'' 전용\n장탄수 +50％, 장속 +5％\n피해량 -30％, 탄환수 -20％, 집탄율 -30％"
+	}
 	"Barrack Backup desc"
 	{
-		"en"	"Barrack units spawn with x1.5 overhealing.\1%% decreased movement speed and -100 max HP"
+		"en"	"Barrack units spawn with x1.5 overhealing.\1％ decreased movement speed and -100 max HP"
 		"ko"	"아쎄이들이 x1.5 과치료를 받고 스폰합니다.\n이속 -1％, 최대 체력 -100"
 	}
 	"Market Gardener Office Uniform desc"
@@ -4515,7 +4520,7 @@
 	}
 	"Stim Packs Desc"
 	{
-		"en"	"Take damage equal to 25%% of your maximum health, but your Reload speed and Attack speed increase for 10 seconds."
+		"en"	"Take damage equal to 25％ of your maximum health, but your Reload speed and Attack speed increase for 10 seconds."
 		"ko"	"최대 체력의 25％의 피해를 받지만 10초동안 공속,장속이 증가함."
 	}
 	"Nanomachine Device Desc"
@@ -5177,7 +5182,7 @@
 	}
 	"Plasminator Pap 2 Desc"
 	{
-		"en"	"Unlocks Plasmic Burst, which shoots a short-ranged Plasmic laser.\nPlasmic Burst deals AoE damage and inflicts 35%% of its damage as Plasmic Elemental damage."
+		"en"	"Unlocks Plasmic Burst, which shoots a short-ranged Plasmic laser.\nPlasmic Burst deals AoE damage and inflicts 35％ of its damage as Plasmic Elemental damage."
 	}
 	"Plasminator Pap 3 Desc"
 	{

@@ -114,12 +114,7 @@
 	"Misc Items"
 	{
 		"en" 		"Misc Items"
-		"ko"		"인벤토리"
-	}
-	"Personal Items"
-	{
-		"en" 		"Personal Items"
-		"ko"		"인벤토리"
+		"ko"		"기타 아이템"
 	}
 	"Loadouts"
 	{
@@ -2064,7 +2059,7 @@
 		"chi"       	"库存"
 		"ko"		"인벤토리"
 	}
-	"head"
+	"Head"
 	{
 		"en"		"Head"
 		"fr"		"Tête"
@@ -2152,7 +2147,7 @@
 		"chi"		"牛仔裤 [常见]"
 		"ko"		"청바지 [흔한]"
 	}
-	"shoes"
+	"Shoes"
 	{
 		"en"		"Shoes"
 		"fr"		"Souliers"
@@ -4117,6 +4112,11 @@
 	{
 		"en"		"Adam Smith's invisible Hand [Rare]"
 		"ko"		"애덤스미스의 보이지 않는 손 [희귀한]"
+	}
+	"Mini Shell [Rare]"
+	{
+		"en"		"12g Mini Shell [Rare]"
+		"ko"		"12g 미니 쉘 [희귀한]"
 	}
 	"Barrack Backup [Legendary]"
 	{

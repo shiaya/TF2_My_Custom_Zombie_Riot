@@ -925,6 +925,7 @@ void ZR_MapStart()
 	Kritzkrieg_OnMapStart();
 	BubbleWand_MapStart();
 	//Cheese_MapStart();
+	TeamBakaCustom_OnMapStart();
 	
 	Zombies_Currently_Still_Ongoing = 0;
 	// An info_populator entity is required for a lot of MvM-related stuff (preserved entity)

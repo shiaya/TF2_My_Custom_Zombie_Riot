@@ -109,7 +109,7 @@ public void Enable_MajorSteam_Launcher(int client, int weapon)
 		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_MAJORSTEAM_LAUNCHER)
 		{
 			i_MajorSteam_Launcher_Perk[client]=i_CurrentEquippedPerk[client];
-			i_MajorSteam_Launcher_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
+			i_MajorSteam_Launcher_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 122, 0.0));
 			b_MajorSteam_Launcher_Toggle[client] = false;
 			int RocketLoad = GetEntData(weapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"));
 			int RockeyAmmo=GetAmmo(client, 8);
@@ -213,7 +213,7 @@ public void MajorSteam_Launcher_PlayerTakeDamage(int victim, int attacker, float
 
 public void MajorSteam_Launcher_NPCTakeDamage(int attacker, int victim, float &damage, int weapon, int damagetype)
 {
-	if(i_MajorSteam_Launcher_WeaponPap[attacker]==1)
+	if(!CheckInHud() && i_MajorSteam_Launcher_WeaponPap[attacker]==1)
 	{
 		if(Items_HasNamedItem(attacker, "Major Steam's Rocket"))
 		{

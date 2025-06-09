@@ -1000,6 +1000,10 @@ public Action NPC_TraceAttack(int victim, int& attacker, int& inflictor, float& 
 				{
 					WeaponDamageFalloff *= 0.7;
 				}
+				if(b_Shotgun_Mini_Ammo[attacker] && i_WeaponArchetype[weapon] == 1)
+				{
+					WeaponDamageFalloff *= 0.8;
+				}
 				if(DoCalcReduceHeadshotFalloff && WeaponDamageFalloff <= 1.0)
 				{
 					WeaponDamageFalloff *= 1.3;

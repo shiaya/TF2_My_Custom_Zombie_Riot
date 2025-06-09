@@ -109,6 +109,8 @@ public void Weapon_Nailgun_Shotgun(DataPack pack)
 		damage *= 0.85;
 		//reduce
 		damage *= f_Nailgun_Shotgun_Slug_Ammo[client];
+		if(b_Shotgun_Mini_Ammo[client])
+			damage *= 0.7;
 		Attributes_Set(weapon, 2, damage);
 			
 	}

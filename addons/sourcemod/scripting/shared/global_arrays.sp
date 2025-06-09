@@ -868,3 +868,4 @@ bool b_Golden_Crown[MAXENTITIES];
 bool b_Mana_Infusion_Ammunition[MAXTF2PLAYERS];
 bool b_Barricade_Stabilizer[MAXTF2PLAYERS];
 bool b_Charisma_Catch_that_Bastard;
+bool b_Shotgun_Mini_Ammo[MAXTF2PLAYERS];

@@ -6,7 +6,7 @@ public void TeamBakaCustom_OnMapStart()
 public void TeamBakaCustom_Enable(int client, int weapon)
 {
 	Enable_MajorSteam_Launcher(client, weapon);
-
+	Neuron_ActivationSoundOverrideMapStart();
 }
 
 void TeamBakaCustom_WaveEnd()
@@ -19,7 +19,7 @@ void TeamBakaCustom_OnKill(int attacker)
 
 }
 
-public void TeamBakaCustom_NPCTakeDamage(int victim, int attacker, float &damage, int weapon, float damagePosition[3], int damagetype)
+public void TeamBakaCustom_NPCTakeDamage(int attacker, int victim, float &damage, int weapon, float damagePosition[3], int damagetype)
 {
 	/*if(!CheckInHud())
 		return;*/
