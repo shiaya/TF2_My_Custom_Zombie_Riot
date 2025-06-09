@@ -535,37 +535,16 @@ public void OnPostThink(int client)
 	if(Rogue_CanRegen() && (b_ManaFlower_Terrarium[client] && Mana_Regen_Delay_ManaFlower_Terrarium[client] < GameTime))
 	{
 		Mana_Regen_Delay_ManaFlower_Terrarium[client] = GameTime + 0.4;
-		float ManaRegenExtra = 1.0;
-		float ManaMaxExtra = 1.0;
-		int i, entity;
-		while(TF2_GetItem(client, entity, i))
-		{
-			if(i_IsWandWeapon[entity])
-			{
-				has_mage_weapon[client] = true;
-				ManaMaxExtra *= Attributes_Get(entity, 4019, 1.0);
-				ManaRegenExtra *= Attributes_Get(entity, 4020, 1.0);
-			}
-		}
+
+		has_mage_weapon[client] = false;
+		
 		Mana_Regen_Tick = true;
 
-		max_mana[client] *= ManaMaxExtra;
-		mana_regen[client] *= ManaRegenExtra;
-				
-		if(i_CurrentEquippedPerk[client] == 4)
-			mana_regen[client] *= 1.35;
-		if(Classic_Mode())
-			mana_regen[client] *= 0.7;
-
-		mana_regen[client] *= Mana_Regen_Level[client];
-		max_mana[client] *= Mana_Regen_Level[client];
-		mana_regen[client] *= 1.05;
-		max_mana[client] *= 1.05;
-		mana_regen[client]*=0.05;
-		
+		ManaCalculationsBefore(client);
+	
 		if(Current_Mana[client] < RoundToCeil(max_mana[client]) && Mana_Regen_Block_Timer[client] < GameTime)
 		{
-			Current_Mana[client] += RoundToCeil(mana_regen[client]);
+			Current_Mana[client] += RoundToCeil(mana_regen[client]*0.025);
 				
 			if(Current_Mana[client] > RoundToCeil(max_mana[client])) //Should only apply during actual regen
 			{
@@ -574,9 +553,7 @@ public void OnPostThink(int client)
 			}
 		}
 		else
-		{
 			mana_regen[client] = 0.0;
-		}
 	}
 	if(Rogue_CanRegen() && (Mana_Regen_Delay[client] < GameTime || (b_AggreviatedSilence[client] && Mana_Regen_Delay_Aggreviated[client] < GameTime)))
 	{

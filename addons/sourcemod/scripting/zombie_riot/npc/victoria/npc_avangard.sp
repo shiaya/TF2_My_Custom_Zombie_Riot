@@ -116,14 +116,19 @@ methodmap VictorianOfflineAvangard < CClotBody
 		npc.m_fbRangedSpecialOn = false;
 		npc.m_bFUCKYOU = false;
 		b_Already_Link[npc.index] = false;
-		
-		if(!StrContains(data, "only"))
+			
+		static char countext[20][1024];
+		int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
+		for(int i = 0; i < count; i++)
 		{
-			i_AttacksTillMegahit[npc.index]=600;
-			npc.m_bFUCKYOU = true;
+			if(!StrContains(data, "only"))
+			{
+				i_AttacksTillMegahit[npc.index]=600;
+				npc.m_bFUCKYOU = true;
+			}
+			if(!StrContains(data, "link_majorsteam"))
+				npc.m_fbRangedSpecialOn = true;
 		}
-		if(!StrContains(data, "link_majorsteam"))
-			npc.m_fbRangedSpecialOn = true;
 
 		SetEntityRenderMode(npc.index, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(npc.index, 80, 50, 50, 255);

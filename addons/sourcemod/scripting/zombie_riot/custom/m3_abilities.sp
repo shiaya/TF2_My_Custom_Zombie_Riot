@@ -3421,7 +3421,7 @@ public Action Timer_DrinkRND(Handle timer, DataPack pack)
 			case 9:
 			{
 				TF2_RemoveCondition(client, TFCond_UberchargedCanteen);
-				TF2_AddCondition(client, TFCond_UberchargedCanteen, 5.0);
+				TF2_AddCondition(client, TFCond_UberchargedCanteen, 10.0);
 				return Plugin_Stop;
 			}
 			case 10:
