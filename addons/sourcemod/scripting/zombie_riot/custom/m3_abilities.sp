@@ -1136,6 +1136,10 @@ public void BuilderMenu(int client)
 									
 		FormatEx(buffer, sizeof(buffer), "%t", "Bring up Class Change Menu");
 		menu.AddItem("-4", buffer);
+
+	//	FormatEx(buffer, sizeof(buffer), "%t", "Display top 5");
+	//	menu.AddItem("-5", buffer);
+		
 									
 		menu.ExitButton = true;
 		menu.Display(client, MENU_TIME_FOREVER);
@@ -1186,6 +1190,13 @@ public int BuilderMenuM(Menu menu, MenuAction action, int client, int choice)
 						ShowVGUIPanel(client, GetTeam(client) == TFTeam_Red ? "class_red" : "class_blue");
 					}
 				}
+				//case -5:
+				//{
+				//	if(IsValidClient(client))
+				//	{
+				//		DisplayCurrentTopScorers(client);
+				//	}
+				//}
 				default:
 				{
 					delete menu;
@@ -1199,8 +1210,12 @@ public int BuilderMenuM(Menu menu, MenuAction action, int client, int choice)
 	}
 	return 0;
 }
-
-
+/*
+void DisplayCurrentTopScorers(int client)
+{
+	nv
+}
+*/
 int i_BuildingSelectedToBeDeleted[MAXTF2PLAYERS + 1];
 int i_BuildingSelectedToBeUnClaimed[MAXTF2PLAYERS + 1];
 
