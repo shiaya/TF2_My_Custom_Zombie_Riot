@@ -2060,12 +2060,13 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 	}
 	else if(StrContains(name, "ZR_Bomb_Drop_", false) != -1)
 	{
-		int client = GetEntProp(caller, Prop_Data, "m_iHammerID");
+		int client = GetEntPropEnt(caller, Prop_Data, "m_hOwnerEntity");
+		int PreviousOwner = client;
 		float position[3];
 		GetEntPropVector(caller, Prop_Data, "m_vecAbsOrigin", position);
 		AcceptEntityInput(caller, "KillHierarchy");
 		position[2]+=35.0;
-		if(IsValidClient(client))
+		if(IsValidClient(PreviousOwner))
 		{
 			float position2[3], distance;
 			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
@@ -2078,8 +2079,8 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 					if(distance<850.0)
 					{
 						float MaxHealth = float(ReturnEntityMaxHealth(entity));
-						float damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[client]), 1.18)/10.0);
-						SDKHooks_TakeDamage(entity, client, client, damage, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE);
+						float damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[PreviousOwner]), 1.18)/10.0);
+						SDKHooks_TakeDamage(entity, PreviousOwner, PreviousOwner, damage, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE);
 					}
 				}
 			}
@@ -2091,14 +2092,15 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 				ClientCommand(all, "playgamesound \"baka/nuke_doom.mp3\"");
 		}
 	}
-	else if(StrContains(name, "ZR_SupportWeapon_", false) != -1)
+	else if(StrContains(name, "ZR_SupportWeapon_Drop_", false) != -1)
 	{
+		int client = GetEntProp(caller, Prop_Data, "m_iHammerID");
+		int PreviousOwner = client;
 		float position[3];
 		GetEntPropVector(caller, Prop_Data, "m_vecAbsOrigin", position);
 		AcceptEntityInput(caller, "KillHierarchy");
 		position[2]-=10.0;
-		int client = GetEntProp(caller, Prop_Data, "m_iHammerID");
-		if(IsValidClient(client))
+		if(IsValidClient(PreviousOwner))
 		{
 			float entitypos[3], distance;
 			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
@@ -2113,12 +2115,12 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 						float MaxHealth = float(ReturnEntityMaxHealth(entity));
 						float damage=(MaxHealth*2.0);
 						if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity] || b_IsGiant[entity])
-							damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[HELLDIVER]), 1.18)/10.0);
-						SDKHooks_TakeDamage(entity, HELLDIVER, HELLDIVER, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
+							damage=(MaxHealth*0.05)+(Pow(float(CashSpentTotal[client]), 1.18)/10.0);
+						SDKHooks_TakeDamage(entity, client, client, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 					}
 				}
 			}
-			for(int target=1; target<=MaxClients; target++)
+			/*for(int target=1; target<=MaxClients; target++)
 			{
 				if(IsValidClient(target) && IsPlayerAlive(target) && TeutonType[target] == TEUTON_NONE)
 				{
@@ -2130,7 +2132,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 						SDKHooks_TakeDamage(target, 0, 0, float(health)*3.0, DMG_TRUEDAMAGE|DMG_CRIT);
 					}
 				}
-			}
+			}*/
 			int Prop = CreateEntityByName("prop_dynamic");
 			if(IsValidEntity(Prop))
 			{
@@ -2149,7 +2151,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 				DataPack pack;
 				CreateDataTimer(0.1, Timer_SupportWeapon_Get, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 				pack.WriteCell(EntIndexToEntRef(Prop));
-				pack.WriteCell(GetClientUserId(client));
+				pack.WriteCell(GetClientUserId(PreviousOwner));
 			}
 		}
 	}
@@ -2424,7 +2426,7 @@ public Action Timer_SupportWeapon_Stratagems(Handle timer, DataPack pack)
 				{
 					case 1:
 					{
-						Drop_Prop(client, position, 2000.0, "ZR_SupportWeapon_", "models/props_urban/urban_crate002.mdl");
+						Drop_Prop(client, position, 2000.0, "ZR_SupportWeapon", "models/props_urban/urban_crate002.mdl");
 						EmitSoundToAll("weapons/air_burster_explode3.wav", 0, SNDCHAN_AUTO, SNDLEVEL_TRAIN, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, position);
 						i_AttackCount[entity]=2;
 					}

@@ -6176,7 +6176,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 						b_Mana_Infusion_Ammunition[client] = true;
 					if(info.SpecialAdditionViaNonAttribute == 1017)
 						b_Barricade_Stabilizer[client] = true;
-					if(info.SpecialAdditionViaNonAttribute == 1017)
+					if(info.SpecialAdditionViaNonAttribute == 1018)
 						b_Shotgun_Mini_Ammo[client] = true;
 
 					int CostDo;
@@ -6285,11 +6285,19 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 				Attributes_Set(entity, 45, 1.0);
 			if(!Attributes_Has(entity, 36))
 				Attributes_Set(entity, 36, 1.0);
+			if(!Attributes_Has(entity, 104))
+				Attributes_Set(entity, 104, 1.0);
+			if(!Attributes_Has(entity, 2))
+				Attributes_Set(entity, 2, 1.0);
 			Attributes_SetMulti(entity, 36, 1.3);
 			Attributes_SetMulti(entity, 104, 0.5);
 			Attributes_SetMulti(entity, 45, 0.8);
 			Attributes_SetMulti(entity, 2, 0.7);
 			
+			if(!Attributes_Has(entity, 4))
+				Attributes_Set(entity, 4, 1.0);
+			if(!Attributes_Has(entity, 97))
+				Attributes_Set(entity, 97, 1.0);
 			Attributes_SetMulti(entity, 4, 1.5);
 			Attributes_SetMulti(entity, 97, 0.95);
 			i_WeaponDamageFalloff[entity]=0.99;
