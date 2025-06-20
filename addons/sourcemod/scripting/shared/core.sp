@@ -2274,7 +2274,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	if (entity > 0 && entity <= 2048 && IsValidEntity(entity))
 	{
 		f_TimeTillMeleeAttackShould[entity] = 0.0;
-		StatusEffectReset(entity);
+		StatusEffectReset(entity, true);
 		f_InBattleDelay[entity] = 0.0;
 		b_AllowCollideWithSelfTeam[entity] = false;
 		NPCStats_SetFuncsToZero(entity);
@@ -2589,6 +2589,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 		else if(!StrContains(classname, "func_respawnroomvisualizer"))
 		{
 			b_IsARespawnroomVisualiser[entity] = true;
+			b_ThisEntityIsAProjectileForUpdateContraints[entity] = true;
 		}
 		else if(!StrContains(classname, "prop_physics_multiplayer"))
 		{
@@ -3091,7 +3092,6 @@ stock bool InteractKey(int client, int weapon, bool Is_Reload_Button = false)
 		int entity = GetClientPointVisible(client, 100.0, _, _, vecEndOrigin); //So you can also correctly interact with players holding shit.
 		if(entity > 0)
 		{
-
 #if defined RPG
 			if(b_is_a_brush[entity]) //THIS is for brushes that act as collision boxes for NPCS inside quests.sp
 			{
@@ -3111,7 +3111,12 @@ stock bool InteractKey(int client, int weapon, bool Is_Reload_Button = false)
 			if(GetEntityClassname(entity, buffer, sizeof(buffer)))
 			{
 				if (GetTeam(entity) != TFTeam_Red)
+				{
+					if(Construction_Material_Interact(client, entity))
+						return false;
+
 					return false;
+				}
 				
 				if(Object_Interact(client, weapon, entity))
 					return true;
@@ -3125,7 +3130,6 @@ stock bool InteractKey(int client, int weapon, bool Is_Reload_Button = false)
 
 				if(Escape_Interact(client, entity))
 					return true;
-
 				//interacting with citizens shouldnt invalidate clicking, it makes battle hard.
 				if(Is_Reload_Button && !PlayerIsInNpcBattle(client) && Citizen_Interact(client, entity))
 					return false;

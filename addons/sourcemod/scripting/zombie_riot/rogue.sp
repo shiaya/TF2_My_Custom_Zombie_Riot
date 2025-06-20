@@ -1139,6 +1139,27 @@ void Rogue_NextProgress()
 				}
 			}
 
+			CPrintToChatAll("{crimson}%t", "Explain Construction 0");
+
+			switch(RogueTheme)
+			{
+				case BobChaos:
+				{
+					CPrintToChatAll("{crimson}%t", "Explain Construction 0");
+					CPrintToChatAll("{green}%t", "Explain Rogue1 1");
+					CPrintToChatAll("{green}%t", "Explain Rogue1 2");
+					CPrintToChatAll("{green}%t", "Explain Rogue1 3");
+				}
+				case BlueParadox:
+				{
+					CPrintToChatAll("{crimson}%t", "Explain Construction 0");
+					CPrintToChatAll("{green}%t", "Explain Rogue1 1");
+					CPrintToChatAll("{green}%t", "Explain Rogue1 2");
+					CPrintToChatAll("{green}%t", "Explain Rogue1 3");
+					CPrintToChatAll("{green}%t", "Explain Rogue2 1");
+					CPrintToChatAll("{green}%t", "Explain Rogue2 2");
+				}
+			}
 			//Currentfunc_stagestart = 0;
 			
 			CurrentFloor = 0;
@@ -2619,9 +2640,9 @@ bool Rogue_Started()	// Waves_Started()
 	return GameState != State_Setup;
 }
 
-int Rogue_GetRound()	// ZR_Waves_GetRound()
+int Rogue_GetRound()	// Waves_GetRoundScale()
 {
-	return (CurrentFloor * 15) + (CurrentCount * 2);
+	return (CurrentFloor * 10) + CurrentCount;
 }
 
 int Rogue_GetFloor()

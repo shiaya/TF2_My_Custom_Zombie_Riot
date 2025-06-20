@@ -24,11 +24,11 @@ enum
 
 int dieingstate[MAXTF2PLAYERS];
 int TeutonType[MAXTF2PLAYERS];
-bool EscapeModeForNpc;
 bool b_NpcHasBeenAddedToZombiesLeft[MAXENTITIES];
 int Zombies_Currently_Still_Ongoing;
 int RaidBossActive = INVALID_ENT_REFERENCE;					//Is the raidboss alive, if yes, what index is the raid?
 float Medival_Difficulty_Level = 0.0;
+int Medival_Difficulty_Level_NotMath = 0;
 bool b_ThisNpcIsImmuneToNuke[MAXENTITIES];
 int i_NpcOverrideAttacker[MAXENTITIES];
 bool b_thisNpcHasAnOutline[MAXENTITIES];
@@ -8353,7 +8353,7 @@ public void NPCStats_SetFuncsToZero(int entity)
 }
 public void SetDefaultValuesToZeroNPC(int entity)
 {
-	StatusEffectReset(entity);
+	StatusEffectReset(entity, true);
 #if defined ZR
 	b_NpcHasBeenAddedToZombiesLeft[entity] = false;
 	i_SpawnProtectionEntity[entity] = -1; 
@@ -9126,7 +9126,8 @@ stock void FreezeNpcInTime(int npc, float Duration_Stun, bool IgnoreAllLogic = f
 		}
 		if(HasSpecificBuff(npc, "Dimensional Turbulence"))
 			Duration_Stun *= 0.25;
-		TF2_AddCondition(npc, TFCond_FreezeInput, Duration_Stun);
+		
+		TF2_StunPlayer(npc, Duration_Stun, 1.0, TF_STUNFLAGS_NORMALBONK);
 		ApplyStatusEffect(npc, npc, "Stunned", Duration_Stun);	
 		return;
 	}
@@ -10421,7 +10422,7 @@ Handle Timer_Ingition_Settings[MAXENTITIES] = {INVALID_HANDLE, ...};
 Handle Timer_Ingition_ReApply[MAXENTITIES] = {INVALID_HANDLE, ...};
 float Reapply_BurningCorpse[MAXENTITIES];
 
-void IgniteTargetEffect(int target, int ViewmodelSetting = 0, int viewmodelClient = 0)
+void IgniteTargetEffect(int target, int ViewmodelSetting = 0, int viewmodelClient = 0, bool type = false)
 {
 	Reapply_BurningCorpse[target] = GetGameTime() + 5.0;
 	if(ViewmodelSetting > 0)
@@ -10438,11 +10439,11 @@ void IgniteTargetEffect(int target, int ViewmodelSetting = 0, int viewmodelClien
 		pack.WriteCell(EntIndexToEntRef(target));
 		pack.WriteCell(ViewmodelSetting);
 		pack.WriteCell(viewmodelClient);
-
+		pack.WriteCell(type);
 	}
 	else
 	{
-		TE_SetupParticleEffect("burningplayer_corpse", PATTACH_ABSORIGIN_FOLLOW, target);
+		TE_SetupParticleEffect(type ? "halloween_burningplayer_flyingbits" : "burningplayer_corpse", PATTACH_ABSORIGIN_FOLLOW, target);
 		TE_WriteNum("m_bControlPoint1", target);	
 		TE_SendToAll();
 		if(Timer_Ingition_ReApply[target] != null)
@@ -10451,9 +10452,10 @@ void IgniteTargetEffect(int target, int ViewmodelSetting = 0, int viewmodelClien
 			Timer_Ingition_ReApply[target] = null;
 		}		
 		DataPack pack;
-		Timer_Ingition_ReApply[target] = CreateDataTimer(5.0, IgniteTimerVisual_Reignite, pack);
+		Timer_Ingition_ReApply[target] = CreateDataTimer(type ? 1.5 : 5.0, IgniteTimerVisual_Reignite, pack);
 		pack.WriteCell(target);
 		pack.WriteCell(EntIndexToEntRef(target));
+		pack.WriteCell(type);
 	}
 }
 
@@ -10466,10 +10468,11 @@ public Action IgniteTimerVisual_Reignite(Handle timer, DataPack pack)
 	{
 		Timer_Ingition_ReApply[targetoriginal] = null;
 		return Plugin_Continue;
-	}	
+	}
+	bool type = pack.ReadCell();
 	ExtinguishTarget(target, true);
 	Timer_Ingition_ReApply[targetoriginal] = null;
-	IgniteTargetEffect(target);
+	IgniteTargetEffect(target, _, _, type);
 	return Plugin_Continue;
 }
 public Action IgniteTimerVisual(Handle timer, DataPack pack)
@@ -10484,6 +10487,7 @@ public Action IgniteTimerVisual(Handle timer, DataPack pack)
 	}	
 	int InvisMode = pack.ReadCell();
 	int ownerclient = pack.ReadCell();
+	bool type = pack.ReadCell();
 	for( int client = 1; client <= MaxClients; client++ ) 
 	{
 		if (IsValidClient(client))
@@ -10492,18 +10496,18 @@ public Action IgniteTimerVisual(Handle timer, DataPack pack)
 			if(Reapply_BurningCorpse[target] < GetGameTime())
 			{
 				Reapply_BurningCorpse[target] = GetGameTime() + 5.0;
-				IngiteTargetClientside(target, client, false);
+				IngiteTargetClientside(target, client, false, type);
 			}
 			if(b_FirstPersonUsesWorldModel[client])
 			{
 				//always ignited.
 				if(InvisMode == THIRDPERSON)
 				{
-					IngiteTargetClientside(target, client, true);
+					IngiteTargetClientside(target, client, true, type);
 				}
 				else
 				{
-					IngiteTargetClientside(target, client, false);
+					IngiteTargetClientside(target, client, false, type);
 				}
 				continue;		
 			}
@@ -10515,11 +10519,11 @@ public Action IgniteTimerVisual(Handle timer, DataPack pack)
 					//its invis in third person
 					if(InvisMode == THIRDPERSON)
 					{
-						IngiteTargetClientside(target, client, false);
+						IngiteTargetClientside(target, client, false, type);
 					}
 					else
 					{
-						IngiteTargetClientside(target, client, true);
+						IngiteTargetClientside(target, client, true, type);
 					}
 					continue;		
 				}
@@ -10527,11 +10531,11 @@ public Action IgniteTimerVisual(Handle timer, DataPack pack)
 				{
 					if(InvisMode == THIRDPERSON)
 					{
-						IngiteTargetClientside(target, client, true);
+						IngiteTargetClientside(target, client, true, type);
 					}
 					else
 					{
-						IngiteTargetClientside(target, client, false);
+						IngiteTargetClientside(target, client, false, type);
 					}
 					continue;	
 				}
@@ -10543,21 +10547,21 @@ public Action IgniteTimerVisual(Handle timer, DataPack pack)
 				*/
 				if(InvisMode == THIRDPERSON)
 				{
-					IngiteTargetClientside(target, client, false);
+					IngiteTargetClientside(target, client, false, type);
 				}
 				else
 				{
-					IngiteTargetClientside(target, client, true);
+					IngiteTargetClientside(target, client, true, type);
 				}
 				continue;	
 			}
 			if(InvisMode == THIRDPERSON)
 			{
-				IngiteTargetClientside(target, client, true);
+				IngiteTargetClientside(target, client, true, type);
 			}
 			else
 			{
-				IngiteTargetClientside(target, client, false);
+				IngiteTargetClientside(target, client, false, type);
 			}
 		}
 	}
@@ -10566,12 +10570,12 @@ public Action IgniteTimerVisual(Handle timer, DataPack pack)
 
 
 
-void IngiteTargetClientside(int target, int client, bool ingite)
+void IngiteTargetClientside(int target, int client, bool ingite, bool type)
 {
 	if(ingite && !IsIn_HitDetectionCooldown(target,client, IgniteClientside))
 	{
 		Set_HitDetectionCooldown(target,client, FAR_FUTURE, IgniteClientside);
-		TE_SetupParticleEffect("burningplayer_corpse", PATTACH_ABSORIGIN_FOLLOW, target);
+		TE_SetupParticleEffect(type ? "halloween_burningplayer_flyingbits" : "burningplayer_corpse", PATTACH_ABSORIGIN_FOLLOW, target);
 		TE_WriteNum("m_bControlPoint1", target);	
 		TE_SendToClient(client);
 	}
@@ -10583,7 +10587,7 @@ void IngiteTargetClientside(int target, int client, bool ingite)
 		if(target > 0)
 			TE_WriteNum("entindex", target);
 		
-		TE_WriteNum("m_nHitBox", GetParticleEffectIndex("burningplayer_corpse"));
+		TE_WriteNum("m_nHitBox", GetParticleEffectIndex(type ? "halloween_burningplayer_flyingbits" : "burningplayer_corpse"));
 		TE_WriteNum("m_iEffectName", GetEffectIndex("ParticleEffectStop"));
 		TE_SendToClient(client);	
 	}

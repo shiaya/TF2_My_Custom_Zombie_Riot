@@ -3916,8 +3916,9 @@
 	}
 	"Cambino Desc"
 	{
-		"en"		"If its with melee, attacks with a gun 3 times. Deals no melee knockback (silenceable)"
-		"ko"		"근접 무기를 들고 있다면 총으로 3회 공격합니다. 근접무기 넉백이 없습니다(침묵가능)"
+		"en"		"If its with melee, attacks with a gun 3 times. Deals no melee knockback"
+		"ko"		"근접 무기를 들고 있다면 총으로 3회 공격합니다. 근접무기 넉백이 없습니다"
+		"en"		"If its with melee, attacks with a gun 3 times. Deals no melee knockback"
 	}
 	"Irani"
 	{
@@ -3926,8 +3927,8 @@
 	}
 	"Irani Desc"
 	{
-		"en"		"Marks an enemy on hit. Deals no melee knockback (silenceable)"
-		"ko"		"적중 시 적을 마크합니다. 근접무기 넉백이 없습니다(침묵가능)"
+		"en"		"Marks an enemy on hit. Deals no melee knockback"
+		"ko"		"적중 시 적을 마크합니다. 근접무기 넉백이 없습니다"
 	}
 	"Kinat"
 	{
@@ -3996,8 +3997,8 @@
 	}
 	"Vivintu Desc"
 	{
-		"en"		"Marks an enemy on hit. Deals no melee knockback (silenceable)"
-		"ko"		"적중 시 적을 마크합니다. 근접무기 넉백이 없습니다(침묵가능)"
+		"en"		"Marks an enemy on hit. Deals no melee knockback"
+		"ko"		"적중 시 적을 마크합니다. 근접무기 넉백이 없습니다"
 	}
 	"Cenula"
 	{
@@ -4016,8 +4017,8 @@
 	}
 	"Kumbai Desc"
 	{
-		"en"		"If its with melee, attacks with a gun 3 times, backs off if enemy is too close while shooting. Deals no melee knockback (silenceable)"
-		"ko"		"근접무기를 들고 있다면 총으로 3번 공격합니다, 사격도중 적이 너무 가깝다면 후퇴합니다. 밀리 넉백이 없습니다(침묵가능)"
+		"en"		"If its with melee, attacks with a gun 3 times, backs off if enemy is too close while shooting. Deals no melee knockback"
+		"ko"		"근접무기를 들고 있다면 총으로 3번 공격합니다, 사격도중 적이 너무 가깝다면 후퇴합니다. 밀리 넉백이 없습니다"
 	}
 	"Speedus Instantus"
 	{
@@ -4166,8 +4167,8 @@
 	}
 	"Death Marker Desc"
 	{
-		"en"	"Marks an enemy on hit. Deals no melee knockback (silenceable)"
-		"ko"	"적중 시 적을 마크합니다. 근접무기 넉백이 없습니다(침묵가능)"
+		"en"	"Marks an enemy on hit. Deals no melee knockback"
+		"ko"	"적중 시 적을 마크합니다. 근접무기 넉백이 없습니다"
 	}
 	"W.F. Flowering Darkness"
 	{
@@ -4996,5 +4997,9 @@
 	"Vaus Shaldus Desc"
 	{
 		"en"	"Simular to Vaus Techicus.\nFollows an ally when it wants to give a shield, it will take the allies speed and be faster by them by 10%"
+	}
+	"Instinct's Summon"
+	{
+		"en"	"Instinct's Summon"
 	}
 }

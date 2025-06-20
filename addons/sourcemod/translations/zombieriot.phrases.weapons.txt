@@ -4498,4 +4498,20 @@
 		"en" "The Arsenals Fist"
 		"ko" "아스날 주먹"
 	}
+	"Chemical Spewer"
+	{
+		"en"	"Chemical Spewer"
+	}
+	"The Ritualist"
+	{
+		"en"	"The Ritualist"
+	}
+	"Necrosis Ritualist"
+	{
+		"en"	"The Decrescendo"
+	}
+	"Impairment Ritualist"
+	{
+		"en"	"The Crimson"
+	}
 }
