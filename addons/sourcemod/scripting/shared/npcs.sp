@@ -1530,7 +1530,7 @@ stock void RemoveHudCooldown(int client)
 #define ZR_DEFAULT_HUD_OFFSET 0.15
 
 #if defined ZR
-float RaidHudOffsetSave[MAXTF2PLAYERS];
+float RaidHudOffsetSave[MAXPLAYERS];
 #endif
 
 /*
@@ -1933,7 +1933,7 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 		if(Debuff_Adder[0])
 			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s \n%s", ExtraHudHurt, Debuff_Adder);
 
-		if(b_DisplayDamageHudSetting[attacker] || !b_DamageNumbers[attacker])
+		if(!(b_DamageNumbers[attacker] && b_DisplayDamageHudSettingInvert[attacker])) //hide if dmg numbers on, and setting on
 		{
 			static char c_DmgDelt[64];
 			IntToString(RoundToNearest(f_damageAddedTogether[attacker]),c_DmgDelt, sizeof(c_DmgDelt));
@@ -2043,7 +2043,7 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 		if(Debuff_Adder[0])
 			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s \n%s", ExtraHudHurt, Debuff_Adder);
 
-		if(b_DisplayDamageHudSetting[attacker] || !b_DamageNumbers[attacker])
+		if(!(b_DamageNumbers[attacker] && b_DisplayDamageHudSettingInvert[attacker])) //hide if dmg numbers on, and setting on
 		{
 			static char c_DmgDelt[64];
 			IntToString(RoundToNearest(f_damageAddedTogether[attacker]),c_DmgDelt, sizeof(c_DmgDelt));

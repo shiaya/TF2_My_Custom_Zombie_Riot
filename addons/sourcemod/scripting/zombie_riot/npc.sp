@@ -12,7 +12,7 @@
 #define RAIDITEM_INDEX_WIN_COND 9999
 
 static float f_FactionCreditGain;
-static float f_FactionCreditGainReduction[MAXTF2PLAYERS];
+static float f_FactionCreditGainReduction[MAXPLAYERS];
 
 static ArrayList NPCList;
 
@@ -255,6 +255,7 @@ void NPC_ConfigSetup()
 	BigBones_OnMapStart_NPC();*/
 	AlliedLeperVisualiserAbility_OnMapStart_NPC();
 	AlliedKiryuVisualiserAbility_OnMapStart_NPC();
+	AlliedRitualistAbility_OnMapStart_NPC();
 	
 	Mecha_Engineer_OnMapStart_NPC();
 	Mecha_Heavy_OnMapStart_NPC();
@@ -828,6 +829,7 @@ void NPC_ConfigSetup()
 	HallamGreatDemon_OnMapStart_NPC();
 	HallamDemonWhisperer_OnMapStart_NPC();
 	ChaosSwordsman_OnMapStart_NPC();
+	NightmareSwordsman_OnMapStart_NPC();
 	MajorVoided_MapStart();
 	DuckFollower_Setup();
 	BobTheFirstFollower_Setup();
@@ -1451,6 +1453,7 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 #include "npc/ally/npc_allied_leper_visualiser.sp"
 #include "npc/ally/npc_allied_kahml_afterimage.sp"
 #include "npc/ally/npc_allied_kiyru_visualiser.sp"
+#include "npc/ally/npc_allied_ritualist_visualiser.sp"
 
 #include "npc/raidmode_bosses/npc_true_fusion_warrior.sp"
 #include "npc/raidmode_bosses/npc_blitzkrieg.sp"
@@ -1915,6 +1918,7 @@ Action NpcSpecificOnTakeDamage(int victim, int &attacker, int &inflictor, float 
 
 #include "npc/rogue/chaos_expansion/npc_evil_chaos_demon.sp"
 #include "npc/rogue/chaos_expansion/npc_chaos_swordsman.sp"
+#include "npc/rogue/chaos_expansion/npc_nightmare_swordsman.sp"
 #include "npc/rogue/chaos_expansion/npc_bob_first_follower.sp"
 #include "npc/rogue/chaos_expansion/npc_twirl_follower.sp"
 #include "npc/rogue/chaos_expansion/npc_hallam_great_demon.sp"

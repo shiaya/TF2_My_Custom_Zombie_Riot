@@ -464,8 +464,8 @@ static void ClotThink(int iNPC)
 	}
 	else
 	{
-		NPC_StopPathing(npc.index);
-		npc.m_bPathing = false;
+		npc.StopPathing();
+		
 		npc.m_flGetClosestTargetTime = 0.0;
 		npc.m_iTarget = GetClosestTarget(npc.index);
 		npc.m_bAllowBackWalking = false;
@@ -530,7 +530,7 @@ static void Lancelot_Melee(Lancelot npc, float flDistanceToTarget, int PrimaryTh
 			float vBackoffPos[3];
 			retreat = true;
 			BackoffFromOwnPositionAndAwayFromEnemy(npc, PrimaryThreatIndex,_,vBackoffPos);
-			NPC_SetGoalVector(npc.index, vBackoffPos, true);
+			npc.SetGoalVector(vBackoffPos, true);
 			npc.FaceTowards(vecTarget, 20000.0);
 			npc.m_flSpeed =  fl_npc_basespeed*RUINA_BACKWARDS_MOVEMENT_SPEED_PENALTY;
 		}
@@ -665,8 +665,12 @@ static float Modify_Damage(Lancelot npc, int Target, float damage)
 	char classname[32];
 	GetEntityClassname(weapon, classname, 32);
 
-	int weapon_slot = TF2_GetClassnameSlot(classname);
-
+	int weapon_slot = TF2_GetClassnameSlot(classname, weapon);
+										
+	if(i_OverrideWeaponSlot[weapon] != -1)
+	{
+		weapon_slot = i_OverrideWeaponSlot[weapon];
+	}
 	if(weapon_slot != 2 || i_IsWandWeapon[weapon])
 		damage *= 1.7;
 

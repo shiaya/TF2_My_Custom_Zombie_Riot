@@ -86,37 +86,6 @@ static const char g_MeleeMissSounds[][] = {
 float SpawnedOneAlready;
 int IdRef;
 
-static char[] GetBuildingHealth()
-{
-	int health = 110;
-	
-	health = RoundToNearest(float(health) * ZRStocks_PlayerScalingDynamic()); //yep its high! will need tos cale with waves expoentially.
-	
-	float temp_float_hp = float(health);
-	float wave = float(Waves_GetRoundScale()+1) / 0.75;
-	
-	if(wave < 30)
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + wave) * wave),1.20));
-	}
-	else if(wave < 45)
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + wave) * wave),1.25));
-	}
-	else
-	{
-		health = RoundToCeil(Pow(((temp_float_hp + wave) * wave),1.35)); //Yes its way higher but i reduced overall hp of him
-	}
-	
-	health /= 2;
-	
-	health = RoundToCeil(float(health) * 1.6);
-	
-	char buffer[16];
-	IntToString(health, buffer, sizeof(buffer));
-	return buffer;
-}
-
 static bool b_is_magia_tower[MAXENTITIES];
 static bool b_allow_weaver[MAXENTITIES];
 static float fl_weaver_charge[MAXENTITIES];
@@ -125,7 +94,7 @@ static int i_wave[MAXENTITIES];
 static bool b_allow_spawns[MAXENTITIES];
 static int i_special_tower_logic[MAXENTITIES];
 static int i_current_cycle[MAXENTITIES];
-static int i_strikes[MAXTF2PLAYERS];
+static int i_strikes[MAXPLAYERS];
 
 #define RUINA_TOWER_CORE_MODEL "models/props_urban/urban_skybuilding005a.mdl"
 #define RUINA_TOWER_CORE_MODEL_SIZE "0.75"
@@ -218,7 +187,7 @@ methodmap Magia_Anchor < CClotBody
 	
 	public Magia_Anchor(float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
-		Magia_Anchor npc = view_as<Magia_Anchor>(CClotBody(vecPos, vecAng, RUINA_TOWER_CORE_MODEL, RUINA_TOWER_CORE_MODEL_SIZE, GetBuildingHealth(), ally, false,true,_,_,{30.0,30.0,350.0}, .NpcTypeLogic = 1));
+		Magia_Anchor npc = view_as<Magia_Anchor>(CClotBody(vecPos, vecAng, RUINA_TOWER_CORE_MODEL, RUINA_TOWER_CORE_MODEL_SIZE, MinibossHealthScaling(180.0), ally, false,true,_,_,{30.0,30.0,350.0}, .NpcTypeLogic = 1));
 		
 		i_NpcWeight[npc.index] = 999;
 		
@@ -893,6 +862,7 @@ static int i_summon_weaver(Magia_Anchor npc)
 	int spawn_index = NPC_CreateByName("npc_ruina_stellar_weaver", npc.index, Npc_Loc, ang, GetTeam(npc.index), "anchor");
 	if(spawn_index > MaxClients)
 	{
+		NpcStats_CopyStats(npc.index, spawn_index);
 		if(GetTeam(npc.index) != TFTeam_Red)
 		{
 			NpcAddedToZombiesLeftCurrently(spawn_index, true);
@@ -930,13 +900,16 @@ static bool Charging(Magia_Anchor npc)
 	{
 		if(GetTeam(npc.index) != TFTeam_Red)
 		{
-			for(int i; i < ZR_MAX_SPAWNERS; i++)
+			if(!VIPBuilding_Active())
 			{
-				if(!i_ObjectsSpawners[i] || !IsValidEntity(i_ObjectsSpawners[i]))
+				for(int i; i < ZR_MAX_SPAWNERS; i++)
 				{
-					Spawns_AddToArray(npc.index, true);
-					i_ObjectsSpawners[i] = EntIndexToEntRef(npc.index);
-					break;
+					if(!i_ObjectsSpawners[i] || !IsValidEntity(i_ObjectsSpawners[i]))
+					{
+						Spawns_AddToArray(npc.index, true);
+						i_ObjectsSpawners[i] = EntIndexToEntRef(npc.index);
+						break;
+					}
 				}
 			}
 		}

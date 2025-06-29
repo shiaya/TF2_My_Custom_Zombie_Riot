@@ -268,17 +268,17 @@ public void VictorianHardener_ClotThink(int iNPC)
 		int PrimaryThreatIndex = npc.m_iTarget;
 		if(IsValidAlly(npc.index, PrimaryThreatIndex))
 		{
-			NPC_SetGoalEntity(npc.index, PrimaryThreatIndex);
+			npc.SetGoalEntity(PrimaryThreatIndex);
 			float vecTarget[3]; WorldSpaceCenter(PrimaryThreatIndex, vecTarget);
 			
 			float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
 			float flDistanceToTarget = GetVectorDistance(vecTarget, VecSelfNpc, true);
 			
-			if(flDistanceToTarget < 250000)
+			if(flDistanceToTarget < 250000 && Can_I_See_Enemy_Only(npc.index, PrimaryThreatIndex))
 			{
 				if(flDistanceToTarget < 62500)
 				{
-					NPC_StopPathing(npc.index);
+					npc.StopPathing();
 				}
 				else
 				{
@@ -293,14 +293,14 @@ public void VictorianHardener_ClotThink(int iNPC)
 				}
 				int MaxHealth = ReturnEntityMaxHealth(PrimaryThreatIndex);
 				if(b_thisNpcIsABoss[PrimaryThreatIndex])
-					MaxHealth *= 0.25;
+					MaxHealth = RoundToCeil(float(MaxHealth) * 0.05);
 
 				if(NpcStats_VictorianCallToArms(npc.index))
 					MaxHealth *= 2.0;
-				HealEntityGlobal(npc.index, PrimaryThreatIndex, float(MaxHealth / 35), 1.0);
-				if(NpcStats_VictorianCallToArms(npc.index))
-					MaxHealth *= 2.0;
-				GrantEntityArmor(PrimaryThreatIndex, false, 1.5, 0.75, 0, float(MaxHealth / 200));
+
+				HealEntityGlobal(npc.index, PrimaryThreatIndex, float(MaxHealth / 80), 1.0);
+
+				GrantEntityArmor(PrimaryThreatIndex, false, 1.5, 0.75, 0, float(MaxHealth / 400));
 				
 				float WorldSpaceVec[3]; WorldSpaceCenter(PrimaryThreatIndex, WorldSpaceVec);
 				
@@ -331,8 +331,8 @@ public void VictorianHardener_ClotThink(int iNPC)
 			if(IsValidEntity(npc.m_iWearable4))
 				RemoveEntity(npc.m_iWearable4);
 				
-			NPC_StopPathing(npc.index);
-			npc.m_bPathing = false;
+			npc.StopPathing();
+			
 			npc.StopHealing();
 			npc.Healing = false;
 			npc.m_bnew_target = false;
@@ -381,9 +381,9 @@ public void VictorianHardener_ClotThink(int iNPC)
 				TE_SetupBeamPoints(vPredictedPos, vecTarget, xd, xd, 0, 0, 0.25, 0.5, 0.5, 5, 5.0, color, 30);
 				TE_SendToAllInRange(vecTarget, RangeType_Visibility);*/
 				
-				NPC_SetGoalVector(npc.index, vPredictedPos);
+				npc.SetGoalVector(vPredictedPos);
 			} else {
-				NPC_SetGoalEntity(npc.index, PrimaryThreatIndex);
+				npc.SetGoalEntity(PrimaryThreatIndex);
 			}
 			
 			//Target close enough to hit
@@ -451,8 +451,8 @@ public void VictorianHardener_ClotThink(int iNPC)
 		}
 		else
 		{
-			NPC_StopPathing(npc.index);
-			npc.m_bPathing = false;
+			npc.StopPathing();
+			
 			npc.m_flGetClosestTargetTime = 0.0;
 			npc.m_iTarget = GetClosestTarget(npc.index);
 		}

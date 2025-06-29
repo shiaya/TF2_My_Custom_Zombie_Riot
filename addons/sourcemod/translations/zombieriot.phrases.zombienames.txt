@@ -3636,8 +3636,8 @@
 	}
 	"Chaos Elemental Damage Desc"
 	{
-		"en"	"Once full, Causes you to enrage in insufferable talk and lash out.\nYou deal 250 truedamage to all allies.\nAlso gives 30％ Vulnerability for 10 seconds."
-		"es"	"Cuando se llena, te enrabias en un habla insufrible y te arremetes a lo que sea.\nHaces 250 de daño verdadero en area a tus aliados.\nDurante 10 segundos, recibiras +30%% de daño."
+		"en"	"Once full, Causes you to enrage in insufferable talk and lash out.\nYou deal 350 truedamage to all allies.\nAlso gives 40％ Vulnerability for 10 seconds.}nHits only upto 3 additional allies."
+		"es"	"Cuando se llena, te enrabias en un habla insufrible y te arremetes a lo que sea.\nHaces 350 de daño verdadero en area a tus aliados.\nDurante 10 segundos, recibiras +40%% de daño."
 	}
 	"Nervous Impairment Elemental Damage"
 	{
@@ -3669,6 +3669,14 @@
 		"en" "It will display in your hud as the above icon.\nIf it fills up your armor bar, you take heavy drawbacks, unqiue to each.\nRegain armor to cure yourself."
 		"es" "Se mostrara en tu HUD como el icono superior.\nSi la barra entera se llena, recibes maleficios fuertes y diferentes.\nRecibe armadura para curar este daño."
 	}
+	"Necrosis Elemental Damage"
+	{
+		"en"	"Necrosis Elemental Damage"
+	}
+	"Necrosis Elemental Damage Desc"
+	{
+		"en"	"Once full, causes your body to rot.\nInflicts bleed and increases ability cooldowns for 7.5 seconds."
+	}
 
 	"Overmana Overload"
 	{
@@ -3680,7 +3688,22 @@
 		"en" "Your mana overloads, you cannot contain it.\nYou are slowed for some time heavily, a ruinan cannon strikes onto your location after sometime.\nDamage depends on your Max mana."
 		"es" "Tu mana se sobrecarga, no puedes contenerlo.\nEres ralentizado temporalmente, y un Cañon Ruiniaco es marcado en tu posicion.\nEl daño depende de tu mana maximo."
 	}
-
+	"Wrench Building"
+	{
+		"en" "Wrench Usage"
+	}
+	"Wrench Building Desc"
+	{
+		"en" "Press {yellow}(R) {green}to access your building menu.\nWith {yellow}(F) {green}You have access to an extra menu for buildings.\nPlace buildings by buying them with scrap in this menu."
+	}
+	"Barracks Building Explain"
+	{
+		"en" "Barracks Building"
+	}
+	"Barracks Building Explain Desc"
+	{
+		"en" "Make an army!\nMake units that fit the situation.\nBuilder upgrades allow better units.\nResearch barracks upgrades aswell.\nInteract with units {yellow}(R or T) {green}to give them commands personally.\nScroll up for more info."
+	}
 	"Vhxis"
 	{
 		"en"	"Vhxis"
@@ -3734,6 +3757,10 @@
 	"Chaos Swordsman Desc"
 	{
 		"en"	"Its mind fell.\nCauses rapid pulse attacks that, when hitting, teleports them behind you."
+	}
+	"Xeno Seaborn W.F. Chaos Voided Acclaimed Swordsman The First"
+	{
+		"en" "Xeno Seaborn W.F. Chaos Voided Acclaimed Swordsman The First"
 	}
 	"Chaos Mercenaries"
 	{

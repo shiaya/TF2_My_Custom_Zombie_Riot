@@ -46,8 +46,8 @@ static char g_RangedReloadSound[][] = {
 };
 
 static int i_Victim_Infection[MAXENTITIES];
-static float fl_Cure_Meter[MAXTF2PLAYERS];
-static float fl_Infection_Meter[MAXTF2PLAYERS];
+static float fl_Cure_Meter[MAXPLAYERS];
+static float fl_Infection_Meter[MAXPLAYERS];
 static float fl_Default_Speed = 300.0;
 static int smith_id = -1;
 static int i_RedAmount;
@@ -421,11 +421,11 @@ static void AgentSmith_ClotThink(int iNPC)
 		if(flDistanceToTarget < npc.GetLeadRadius())
 		{
 			float vPredictedPos[3]; PredictSubjectPosition(npc, closest, _, _, vPredictedPos);
-			NPC_SetGoalVector(npc.index, vPredictedPos);
+			npc.SetGoalVector(vPredictedPos);
 		}
 		else
 		{
-			NPC_SetGoalEntity(npc.index, closest);
+			npc.SetGoalEntity(closest);
 		}
 		
 		//Target close enough to hit

@@ -64,8 +64,8 @@ static const char Categories[][] =
 };
 #define MAXBUFFSEXPLAIN 500
 //thres never gonna be more then 500 lol
-bool DisplayBuffHintToClient[MAXTF2PLAYERS][MAXBUFFSEXPLAIN];
-float DisplayChatBuffCD[MAXTF2PLAYERS];
+bool DisplayBuffHintToClient[MAXPLAYERS][MAXBUFFSEXPLAIN];
+float DisplayChatBuffCD[MAXPLAYERS];
 
 static ArrayList E_AL_StatusEffects[MAXENTITIES];
 
@@ -201,7 +201,7 @@ void InitStatusEffects()
 #endif
 }
 
-static int CategoryPage[MAXTF2PLAYERS];
+static int CategoryPage[MAXPLAYERS];
 void Items_StatusEffectListMenu(int client, int page = -1, bool inPage = false)
 {
 	Menu menu = new Menu(Items_StatusEffectListMenuH);
@@ -985,7 +985,7 @@ float StatusEffect_OnTakeDamage_DealPositive(int victim, int attacker, float &ba
 
 //strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 
-void Force_ExplainBuffToClient(int client, const char[] name)
+void Force_ExplainBuffToClient(int client, const char[] name, bool IgnoreCooldown = false)
 {
 	int index;
 	index = AL_StatusEffects.FindString(name, StatusEffect::BuffName);
@@ -997,9 +997,9 @@ void Force_ExplainBuffToClient(int client, const char[] name)
 	}
 	StatusEffect Apply_MasterStatusEffect;
 	AL_StatusEffects.GetArray(index, Apply_MasterStatusEffect);
-	ExplainBuffToClient(client, Apply_MasterStatusEffect, false, index);
+	ExplainBuffToClient(client, Apply_MasterStatusEffect, false, index, IgnoreCooldown);
 }
-void ExplainBuffToClient(int client, StatusEffect Apply_MasterStatusEffect, bool AppliedOntoOthers = false, int index = -1)
+void ExplainBuffToClient(int client, StatusEffect Apply_MasterStatusEffect, bool AppliedOntoOthers = false, int index = -1, bool IgnoreCooldown = false)
 {
 	//Bad client
 	if(client <= 0 && client > MaxClients)
@@ -1020,7 +1020,7 @@ void ExplainBuffToClient(int client, StatusEffect Apply_MasterStatusEffect, bool
 	if(b_DisableStatusEffectHints[client])
 		return;
 		
-	if(DisplayChatBuffCD[client] > GetGameTime())
+	if(DisplayChatBuffCD[client] > GetGameTime() && !IgnoreCooldown)
 		return;
 
 	DisplayChatBuffCD[client] = GetGameTime() + 5.0;
@@ -3373,6 +3373,19 @@ void StatusEffects_MERLT0N_BUFF()
 void StatusEffects_SevenHeavySouls()
 {
 	StatusEffect data;
+	strcopy(data.BuffName, sizeof(data.BuffName), "Nightmare Terror");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "...");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= false;
+	data.ShouldScaleWithPlayerCount = false; //lol why was it on yes
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
+
 	strcopy(data.BuffName, sizeof(data.BuffName), "7 Heavy Souls");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "♥");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
@@ -5847,6 +5860,32 @@ void StatusEffects_Explainelemental()
 	data.DamageDealMulti			= -1.0;
 	data.MovementspeedModif			= -1.0;
 	data.Positive 					= false;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	StatusEffect_AddGlobal(data);
+
+	strcopy(data.BuffName, sizeof(data.BuffName), "Wrench Building");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), " ");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	StatusEffect_AddGlobal(data);
+
+	strcopy(data.BuffName, sizeof(data.BuffName), "Barracks Building Explain");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), " ");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
 	data.ShouldScaleWithPlayerCount = false;
 	data.Slot						= 0;
 	data.SlotPriority				= 0;

@@ -253,17 +253,17 @@ public void HiaRejuvinator_ClotThink(int iNPC)
 	int PrimaryThreatIndex = npc.m_iTargetAlly;
 	if(IsValidAlly(npc.index, PrimaryThreatIndex))
 	{
-		NPC_SetGoalEntity(npc.index, PrimaryThreatIndex);
+		npc.SetGoalEntity(PrimaryThreatIndex);
 		float vecTarget[3]; WorldSpaceCenter(PrimaryThreatIndex, vecTarget);
 	
 		float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
 		float flDistanceToTarget = GetVectorDistance(vecTarget, VecSelfNpc, true);
 		
-		if(flDistanceToTarget < 250000)
+		if(flDistanceToTarget < 250000 && Can_I_See_Enemy_Only(npc.index, PrimaryThreatIndex))
 		{
 			if(flDistanceToTarget < 62500)
 			{
-				NPC_StopPathing(npc.index);
+				npc.StopPathing();
 			}
 			else
 			{
@@ -286,9 +286,9 @@ public void HiaRejuvinator_ClotThink(int iNPC)
 			}
 			int MaxHealth = ReturnEntityMaxHealth(PrimaryThreatIndex);
 			if(b_thisNpcIsABoss[PrimaryThreatIndex])
-				MaxHealth *= 0.25;
+				MaxHealth = RoundToCeil(float(MaxHealth) * 0.05);
 
-			HealEntityGlobal(npc.index, PrimaryThreatIndex, float(MaxHealth / 25), 1.5);
+			HealEntityGlobal(npc.index, PrimaryThreatIndex, float(MaxHealth / 40), 1.5);
 
 			ApplyStatusEffect(PrimaryThreatIndex, PrimaryThreatIndex, "Rejuvinator's Medizine", 5.0);
 			float WorldSpaceVec[3]; WorldSpaceCenter(PrimaryThreatIndex, WorldSpaceVec);

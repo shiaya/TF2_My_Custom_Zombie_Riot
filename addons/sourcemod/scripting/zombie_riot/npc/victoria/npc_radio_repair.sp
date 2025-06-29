@@ -287,17 +287,17 @@ public void VictoriaRepair_ClotThink(int iNPC)
 	int PrimaryThreatIndex = npc.m_iTarget;
 	if(IsValidAlly(npc.index, PrimaryThreatIndex))
 	{
-		NPC_SetGoalEntity(npc.index, PrimaryThreatIndex);
+		npc.SetGoalEntity(PrimaryThreatIndex);
 		float vecTarget[3]; WorldSpaceCenter(PrimaryThreatIndex, vecTarget);
 		
 		float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
 		float flDistanceToTarget = GetVectorDistance(vecTarget, VecSelfNpc, true);
 		
-		if(flDistanceToTarget < 300000)
+		if(flDistanceToTarget < 300000 && Can_I_See_Enemy_Only(npc.index, PrimaryThreatIndex))
 		{
 			if(flDistanceToTarget < 100000)
 			{
-				NPC_StopPathing(npc.index);
+				npc.StopPathing();
 			}
 			else
 			{

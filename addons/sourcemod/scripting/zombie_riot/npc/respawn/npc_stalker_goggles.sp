@@ -368,7 +368,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 							damage *= 4.0;
 						else
 						{
-							if(target > MAXTF2PLAYERS)
+							if(target > MAXPLAYERS)
 								damage *= 10.0;
 						}
 						
@@ -444,11 +444,11 @@ public void StalkerGoggles_ClotThink(int iNPC)
 						if(distance < npc.GetLeadRadius()) 
 						{
 							PredictSubjectPosition(npc, npc.m_iTarget,_,_,LastKnownPos);
-							NPC_SetGoalVector(npc.index, LastKnownPos);
+							npc.SetGoalVector(LastKnownPos);
 						}
 						else
 						{
-							NPC_SetGoalEntity(npc.index, npc.m_iTarget);
+							npc.SetGoalEntity(npc.m_iTarget);
 						}
 
 						if(state)
@@ -512,7 +512,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 					npc.PickRandomPos(LastKnownPos);
 
 				npc.StartPathing();
-				NPC_SetGoalVector(npc.index, LastKnownPos);
+				npc.SetGoalVector(LastKnownPos);
 			}
 			case 1:
 			{
@@ -772,7 +772,7 @@ int BlueGogglesSelfDefense(StalkerGoggles npc, float gameTime)
 
 				float damageDealt = 150.0;
 				damageDealt *= npc.m_flWaveScale;
-				if(target > MAXTF2PLAYERS)
+				if(target > MAXPLAYERS)
 					damageDealt *= 10.0;
 				
 				SDKHooks_TakeDamage(target, npc.index, npc.index, damageDealt, DMG_BULLET, -1, _, ThrowPos[npc.index]);

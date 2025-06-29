@@ -650,7 +650,7 @@ public void RaidbossBobTheFirst_ClotThink(int iNPC)
 			}
 			
 			// Play funny animation intro
-			NPC_StopPathing(npc.index);
+			npc.StopPathing();
 			npc.m_flNextThinkTime = FAR_FUTURE;
 			npc.m_bisWalking = false;
 			npc.SetActivity("ACT_IDLE_ZOMBIE");
@@ -680,7 +680,7 @@ public void RaidbossBobTheFirst_ClotThink(int iNPC)
 
 	if(i_RaidGrantExtra[npc.index] > 1)
 	{
-		NPC_StopPathing(npc.index);
+		npc.StopPathing();
 		npc.m_flNextThinkTime = FAR_FUTURE;
 		npc.m_bisWalking = false;
 		npc.SetActivity("ACT_IDLE_SHIELDZOBIE");
@@ -1133,7 +1133,7 @@ public void RaidbossBobTheFirst_ClotThink(int iNPC)
 			case 9:
 			{
 				PredictSubjectPosition(npc, npc.m_iTarget,_,_, vecTarget);
-				NPC_SetGoalVector(npc.index, vecTarget);
+				npc.SetGoalVector(vecTarget);
 
 				npc.FaceTowards(vecTarget, 20000.0);
 				
@@ -1250,11 +1250,11 @@ public void RaidbossBobTheFirst_ClotThink(int iNPC)
 				if(distance < npc.GetLeadRadius()) 
 				{
 					PredictSubjectPosition(npc, npc.m_iTarget,_,_, vecTarget);
-					NPC_SetGoalVector(npc.index, vecTarget);
+					npc.SetGoalVector(vecTarget);
 				}
 				else
 				{
-					NPC_SetGoalEntity(npc.index, npc.m_iTarget);
+					npc.SetGoalEntity(npc.m_iTarget);
 				}
 
 				npc.StartPathing();
@@ -1319,7 +1319,7 @@ public void RaidbossBobTheFirst_ClotThink(int iNPC)
 						{
 							Zero(ClientTargeted);
 							TotalEnemeisInSight = 0;
-							int enemy_2[MAXENTITIES];
+							int enemy_2[RAIDBOSS_GLOBAL_ATTACKLIMIT];
 							GetHighDefTargets(npcGetInfo, enemy_2, sizeof(enemy_2), true, false);
 							for(int i; i < sizeof(enemy_2); i++)
 							{
@@ -1336,7 +1336,7 @@ public void RaidbossBobTheFirst_ClotThink(int iNPC)
 						}
 
 
-						int enemy_2[MAXENTITIES];
+						int enemy_2[RAIDBOSS_GLOBAL_ATTACKLIMIT];
 						int EnemyToPull = 0;
 						GetHighDefTargets(npcGetInfo, enemy_2, sizeof(enemy_2), true, false);
 						for(int i; i < sizeof(enemy_2); i++)
@@ -1523,11 +1523,11 @@ public void RaidbossBobTheFirst_ClotThink(int iNPC)
 						if(distance < npc.GetLeadRadius()) 
 						{
 							PredictSubjectPosition(npc, npc.m_iTarget,_,_, vecTarget);
-							NPC_SetGoalVector(npc.index, vecTarget);
+							npc.SetGoalVector(vecTarget);
 						}
 						else
 						{
-							NPC_SetGoalEntity(npc.index, npc.m_iTarget);
+							npc.SetGoalEntity(npc.m_iTarget);
 						}
 
 						npc.StartPathing();
@@ -1718,10 +1718,6 @@ static void AddBobEnemy(int bobindx, const char[] plugin, const char[] name = ""
 	if(health != 0)
 	{
 		enemy.Health = health;
-		if(!boss)
-		{
-			enemy.Health = RoundToNearest(float(enemy.Health) * MultiGlobalHealth);
-		}
 	}
 	enemy.Team = GetTeam(bobindx);
 	strcopy(enemy.CustomName, sizeof(enemy.CustomName), name);

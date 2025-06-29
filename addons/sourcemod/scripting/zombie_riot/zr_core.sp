@@ -305,10 +305,10 @@ int PlayersAliveScaling;
 int PlayersInGame;
 bool ZombieMusicPlayed;
 int GlobalIntencity;
-bool b_HasBeenHereSinceStartOfWave[MAXTF2PLAYERS];
+bool b_HasBeenHereSinceStartOfWave[MAXPLAYERS];
 Cookie CookieScrap;
 Cookie CookieXP;
-ArrayList Loadouts[MAXTF2PLAYERS];
+ArrayList Loadouts[MAXPLAYERS];
 
 float f_RingDelayGift[MAXENTITIES];
 float Resistance_for_building_High[MAXENTITIES];
@@ -327,21 +327,21 @@ int StartCash;
 float RoundStartTime;
 char WhatDifficultySetting_Internal[32];
 char WhatDifficultySetting[32];
-float healing_cooldown[MAXTF2PLAYERS];
-float f_TimeAfterSpawn[MAXTF2PLAYERS];
-float WoodAmount[MAXTF2PLAYERS];
-float FoodAmount[MAXTF2PLAYERS];
-float GoldAmount[MAXTF2PLAYERS];
-int SupplyRate[MAXTF2PLAYERS];
+float healing_cooldown[MAXPLAYERS];
+float f_TimeAfterSpawn[MAXPLAYERS];
+float WoodAmount[MAXPLAYERS];
+float FoodAmount[MAXPLAYERS];
+float GoldAmount[MAXPLAYERS];
+int SupplyRate[MAXPLAYERS];
 //int i_PreviousBuildingCollision[MAXENTITIES];
 bool b_AlaxiosBuffItem[MAXENTITIES];
-int i_Reviving_This_Client[MAXTF2PLAYERS];
-float f_Reviving_This_Client[MAXTF2PLAYERS];
-float f_HudCooldownAntiSpamRaid[MAXTF2PLAYERS];
-int i_MaxArmorTableUsed[MAXTF2PLAYERS];
+int i_Reviving_This_Client[MAXPLAYERS];
+float f_Reviving_This_Client[MAXPLAYERS];
+float f_HudCooldownAntiSpamRaid[MAXPLAYERS];
+int i_MaxArmorTableUsed[MAXPLAYERS];
 float ResourceRegenMulti;
 bool Barracks_InstaResearchEverything;
-bool b_HoldingInspectWeapon[MAXTF2PLAYERS];
+bool b_HoldingInspectWeapon[MAXPLAYERS];
 
 #define SF2_PLAYER_VIEWBOB_TIMER 10.0
 #define SF2_PLAYER_VIEWBOB_SCALE_X 0.05
@@ -351,34 +351,34 @@ bool b_HoldingInspectWeapon[MAXTF2PLAYERS];
 #define ZR_ARMOR_DAMAGE_REDUCTION 0.75
 #define ZR_ARMOR_DAMAGE_REDUCTION_INVRERTED 0.25
 
-float Armor_regen_delay[MAXTF2PLAYERS];
+float Armor_regen_delay[MAXPLAYERS];
 
 //ConVar CvarSvRollspeed; // sv_rollspeed 
 //ConVar CvarSvRollagle; // sv_rollangle
-//int i_SvRollAngle[MAXTF2PLAYERS];
+//int i_SvRollAngle[MAXPLAYERS];
 
 	
-int CashSpent[MAXTF2PLAYERS];
-int CashSpentGivePostSetup[MAXTF2PLAYERS];
-bool CashSpentGivePostSetupWarning[MAXTF2PLAYERS];
-int CashSpentTotal[MAXTF2PLAYERS];
-int CashSpentLoadout[MAXTF2PLAYERS];
-int CashRecievedNonWave[MAXTF2PLAYERS];
-bool StarterCashMode[MAXTF2PLAYERS] = {true, ...};
-int Scrap[MAXTF2PLAYERS];
-int PlayStreak[MAXTF2PLAYERS];
+int CashSpent[MAXPLAYERS];
+int CashSpentGivePostSetup[MAXPLAYERS];
+bool CashSpentGivePostSetupWarning[MAXPLAYERS];
+int CashSpentTotal[MAXPLAYERS];
+int CashSpentLoadout[MAXPLAYERS];
+int CashRecievedNonWave[MAXPLAYERS];
+bool StarterCashMode[MAXPLAYERS] = {true, ...};
+int Scrap[MAXPLAYERS];
+int PlayStreak[MAXPLAYERS];
 int Ammo_Count_Ready;
-int Ammo_Count_Used[MAXTF2PLAYERS];
-//float Armor_Ready[MAXTF2PLAYERS];
+int Ammo_Count_Used[MAXPLAYERS];
+//float Armor_Ready[MAXPLAYERS];
 int b_NpcForcepowerupspawn[MAXENTITIES]={0, ...}; 
 
-int Armour_Level_Current[MAXTF2PLAYERS];
+int Armour_Level_Current[MAXPLAYERS];
 int Armor_Charge[MAXENTITIES];
 int Armor_DebuffType[MAXENTITIES];
 float f_Armor_BreakSoundDelay[MAXENTITIES];
 
-float LastStoreMenu[MAXTF2PLAYERS];
-bool LastStoreMenu_Store[MAXTF2PLAYERS];
+float LastStoreMenu[MAXPLAYERS];
+bool LastStoreMenu_Store[MAXPLAYERS];
 
 //We kinda check these almost 24/7, its better to put them into an array!
 const int i_MaxcountSpawners = ZR_MAX_SPAWNERS;
@@ -389,16 +389,16 @@ int i_ObjectsTraps[ZR_MAX_TRAPS];
 float f_ChargeTerroriserSniper[MAXENTITIES];
 
 int StoreWeapon[MAXENTITIES];
-int i_HealthBeforeSuit[MAXTF2PLAYERS]={0, ...};
-float f_HealthBeforeSuittime[MAXTF2PLAYERS]={0.0, ...};
+int i_HealthBeforeSuit[MAXPLAYERS]={0, ...};
+float f_HealthBeforeSuittime[MAXPLAYERS]={0.0, ...};
 
-int Level[MAXTF2PLAYERS];
-int XP[MAXTF2PLAYERS];
-int i_ExtraPlayerPoints[MAXTF2PLAYERS];
-int i_PreviousPointAmount[MAXTF2PLAYERS];
+int Level[MAXPLAYERS];
+int XP[MAXPLAYERS];
+int i_ExtraPlayerPoints[MAXPLAYERS];
+int i_PreviousPointAmount[MAXPLAYERS];
 int SpecialLastMan;
 
-bool WaitingInQueue[MAXTF2PLAYERS];
+bool WaitingInQueue[MAXPLAYERS];
 float FreeplayTimeLimit;
 
 float fl_blitz_ioc_punish_timer[MAXENTITIES+1][MAXENTITIES+1];
@@ -417,28 +417,28 @@ float MultiGlobalHealthBoss = 0.25;
 float MultiGlobalHighHealthBoss = 0.34;
 //This is Raidboss/Single boss scaling, this is used if the boss only spawns once.
 
-float f_WasRecentlyRevivedViaNonWave[MAXTF2PLAYERS];
-float f_WasRecentlyRevivedViaNonWaveClassChange[MAXTF2PLAYERS];
+float f_WasRecentlyRevivedViaNonWave[MAXPLAYERS];
+float f_WasRecentlyRevivedViaNonWaveClassChange[MAXPLAYERS];
 
-float f_MedigunChargeSave[MAXTF2PLAYERS][4];
-float f_SaveBannerRageMeter[MAXTF2PLAYERS][2];
+float f_MedigunChargeSave[MAXPLAYERS][4];
+float f_SaveBannerRageMeter[MAXPLAYERS][2];
 
 int Building_Mounted[MAXENTITIES];
 
 
-float f_DisableDyingTimer[MAXTF2PLAYERS + 1]={0.0, ...};
-int i_DyingParticleIndication[MAXTF2PLAYERS + 1][3];
+float f_DisableDyingTimer[MAXPLAYERS + 1]={0.0, ...};
+int i_DyingParticleIndication[MAXPLAYERS + 1][3];
 //1 is text, 2 is glow, 3 is death marker
-float f_DyingTextTimer[MAXTF2PLAYERS + 1];
-bool b_DyingTextOff[MAXTF2PLAYERS + 1];
+float f_DyingTextTimer[MAXPLAYERS + 1];
+bool b_DyingTextOff[MAXPLAYERS + 1];
 
 float GlobalCheckDelayAntiLagPlayerScale;
 bool AllowSpecialSpawns;
-int i_AmountDowned[MAXTF2PLAYERS+1];
+int i_AmountDowned[MAXPLAYERS+1];
 
-bool b_IgnoreWarningForReloadBuidling[MAXTF2PLAYERS];
+bool b_IgnoreWarningForReloadBuidling[MAXPLAYERS];
 
-float Building_Collect_Cooldown[MAXENTITIES][MAXTF2PLAYERS];
+float Building_Collect_Cooldown[MAXENTITIES][MAXPLAYERS];
 
 bool b_SpecialGrigoriStore = true;
 float f_ExtraDropChanceRarity = 1.0;
@@ -716,6 +716,7 @@ void ZR_PluginStart()
 	Object_PluginStart();
 	SteamWorks_PluginStart();
 	Vehicle_PluginStart();
+	Kritzkrieg_PluginStart();
 	Format(WhatDifficultySetting_Internal, sizeof(WhatDifficultySetting_Internal), "%s", "No Difficulty Selected Yet");
 	Format(WhatDifficultySetting, sizeof(WhatDifficultySetting), "%s", "No Difficulty Selected Yet");
 	
@@ -730,6 +731,7 @@ void ZR_PluginStart()
 	}
 	
 	BobTheGod_OnPluginStart();
+	VIPBuilding_PluginStart();
 }
 
 void ZR_MapStart()
@@ -901,6 +903,7 @@ void ZR_MapStart()
 	Ion_Beam_Wand_MapStart();
 	OnMapStartLeper();
 	Flagellant_MapStart();
+	Ritualist_MapStart();
 	Wand_Impact_Lance_Mapstart();
 	Trash_Cannon_Precache();
 	Rusty_Rifle_Precache();
@@ -1094,6 +1097,7 @@ void ZR_ClientPutInServer(int client)
 
 void ZR_ClientDisconnect(int client)
 {
+	Citizen_PlayerReplacement(client);
 	Native_ZR_OnGetXP(client, XP[client], 1);
 	SetClientTutorialMode(client, false);
 	SetClientTutorialStep(client, 0);
@@ -1101,7 +1105,6 @@ void ZR_ClientDisconnect(int client)
 	Building_ClientDisconnect(client);
 	Queue_ClientDisconnect(client);
 	Vehicle_Exit(client, true, false);
-	Citizen_PlayerReplacement(client);
 	Reset_stats_Irene_Singular(client);
 	Reset_stats_PHLOG_Singular(client);
 	Reset_stats_Passanger_Singular(client);
@@ -1346,7 +1349,7 @@ public Action Command_TestTutorial(int client, int args)
 	static char pattern[PLATFORM_MAX_PATH];
 	GetCmdArg(1, pattern, sizeof(pattern));
 
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{
@@ -1366,7 +1369,7 @@ public Action CommandDebugHudTest(int client, int args)
 	//What are you.
 	if(args < 1)
     {
-        ReplyToCommand(client, "[SM] Usage: wat <cash>");
+        ReplyToCommand(client, "[SM] Usage: sm_displayhud <number>");
         return Plugin_Handled;
     }
 
@@ -1375,6 +1378,12 @@ public Action CommandDebugHudTest(int client, int args)
 	DoGlobalMultiScaling();
 	float ScalingTestDo = GetScaledPlayerCountMulti(Number);
 	PrintToChatAll("ScalingTestDo %f",ScalingTestDo);
+	int entity, i;
+	while(TF2U_GetWearable(client, entity, i))
+	{
+		SetTeam(entity, 2);
+		SetEntProp(entity, Prop_Send, "m_nSkin", Number);
+	}	
 	return Plugin_Handled;
 }
 
@@ -1421,7 +1430,7 @@ public Action Command_GiveCash(int client, int args)
 	GetCmdArg(2, buf, sizeof(buf));
 	int money = StringToInt(buf); 
 
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{
@@ -1468,7 +1477,7 @@ public Action Command_GiveBuff(int client, int args)
 	float buffduration = StringToFloat(buf2); 
 	
 
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{
@@ -1502,7 +1511,7 @@ public Action Command_GiveScrap(int client, int args)
 	GetCmdArg(2, buf, sizeof(buf));
 	int money = StringToInt(buf); 
 
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{
@@ -1546,7 +1555,7 @@ public Action Command_SetXp(int client, int args)
 	GetCmdArg(2, buf, sizeof(buf));
 	int money = StringToInt(buf); 
 
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{
@@ -1584,7 +1593,7 @@ public Action Command_GiveXp(int client, int args)
 	GetCmdArg(2, buf, sizeof(buf));
 	int money = StringToInt(buf); 
 
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{
@@ -1632,7 +1641,7 @@ public Action Command_GiveDialogBox(int client, int args)
 	char buf2[64];
 	GetCmdArg(3, buf2, sizeof(buf2));
 
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{
@@ -2030,7 +2039,7 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 
 	if(LastMann)
 	{
-		static bool Died[MAXTF2PLAYERS];
+		static bool Died[MAXPLAYERS];
 		for(int client=1; client<=MaxClients; client++)
 		{
 			Died[client] = false;
@@ -2697,7 +2706,7 @@ void ReviveAll(bool raidspawned = false, bool setmusicfalse = false)
 	CheckAlivePlayers();
 }
 
-float XpFloatGive[MAXTF2PLAYERS];
+float XpFloatGive[MAXPLAYERS];
 
 void GiveXP(int client, int xp, bool freeplay = false, bool SetXpAndLevelSilently = false)
 {
@@ -2823,8 +2832,8 @@ void CheckAllClientPrefs(int client)
 	}
 }
 
-float GetClientSaveUberGametime[MAXTF2PLAYERS];
-float GetClientSaveRageGametime[MAXTF2PLAYERS];
+float GetClientSaveUberGametime[MAXPLAYERS];
+float GetClientSaveRageGametime[MAXPLAYERS];
 
 void ClientSaveUber(int client)
 {
@@ -3148,7 +3157,7 @@ public Action Command_SetTeamCustom(int client, int args)
 	GetCmdArg(2, buf, sizeof(buf));
 	int teamset = StringToInt(buf); 
 	
-	int targets[MAXTF2PLAYERS], matches;
+	int targets[MAXPLAYERS], matches;
 	bool targetNounIsMultiLanguage;
 	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage)) < 1)
 	{

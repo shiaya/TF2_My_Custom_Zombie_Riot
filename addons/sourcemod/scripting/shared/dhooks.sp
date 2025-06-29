@@ -9,7 +9,7 @@ enum struct RawHooks
 }
 
 static DynamicHook ForceRespawn;
-static int ForceRespawnHook[MAXTF2PLAYERS];
+static int ForceRespawnHook[MAXPLAYERS];
 Handle g_DhookWantsLagCompensationOnEntity;
 
 #if !defined RENDER_TRANSCOLOR
@@ -94,6 +94,7 @@ void DHook_Setup()
 	DHook_CreateDetour(gamedata, "CTFBaseBoss::ResolvePlayerCollision", DHook_ResolvePlayerCollisionPre, _);
 	DHook_CreateDetour(gamedata, "CTFGCServerSystem::PreClientUpdate", DHook_PreClientUpdatePre, DHook_PreClientUpdatePost);
 	DHook_CreateDetour(gamedata, "CTFSpellBook::CastSelfStealth", Dhook_StealthCastSpellPre, _);
+	DHook_CreateDetour(gamedata, "CTFPlayerShared::RecalculateChargeEffects", DHookCallback_RecalculateChargeEffects_Pre);
 	
 	g_DHookGrenadeExplode = DHook_CreateVirtual(gamedata, "CBaseGrenade::Explode");
 	g_DHookGrenade_Detonate = DHook_CreateVirtual(gamedata, "CBaseGrenade::Detonate");
@@ -1669,7 +1670,7 @@ public MRESReturn DHook_GetChargeEffectBeingProvidedPost(int client, DHookReturn
 	return MRES_Ignored;
 }
 
-bool WasMedicPreRegen[MAXTF2PLAYERS];
+bool WasMedicPreRegen[MAXPLAYERS];
 
 public MRESReturn DHook_RegenThinkPre(int client, DHookParam param)
 {
@@ -1725,7 +1726,7 @@ public MRESReturn DHookCallback_GameModeUsesUpgrades_Post(DHookReturn ret)
 static TFClassType LastClass;
 public MRESReturn DHook_TauntPre(int client, DHookParam param)
 {
-	if(TF2_IsPlayerInCondition(client, TFCond_Disguising) || TF2_IsPlayerInCondition(client, TFCond_Disguised) || TF2_IsPlayerInCondition(client, TFCond_Cloaked))
+	if(f_PreventMovementClient[client] > GetGameTime() || TF2_IsPlayerInCondition(client, TFCond_Disguising) || TF2_IsPlayerInCondition(client, TFCond_Disguised) || TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 		return MRES_Supercede;
 	
 	LastClass = TF2_GetPlayerClass(client);
@@ -1884,7 +1885,7 @@ void DHook_ScoutSecondaryFireAbilityDelay(int ref)
 
 
 #if defined ZR
-int BannerWearable[MAXTF2PLAYERS];
+int BannerWearable[MAXPLAYERS];
 int BannerWearableModelIndex[3];
 #endif
 bool DidEventHandleChange = false;
@@ -1931,7 +1932,7 @@ void OverrideNpcHurtShortToLong()
 	}
 }
 #if defined ZR
-bool PersonInitiatedHornBlow[MAXTF2PLAYERS];
+bool PersonInitiatedHornBlow[MAXPLAYERS];
 public MRESReturn Dhook_BlowHorn_Post(int entity)
 {
 	Attributes_Set(entity, 698, 1.0); // disable weapon switch
@@ -2309,4 +2310,11 @@ public MRESReturn Detour_CreateEvent(Address eventManager, DHookReturn returnVal
 	
 	RequestFrame(OverrideNpcHurtShortToLong);
 	return MRES_Ignored;
+}
+
+
+static MRESReturn DHookCallback_RecalculateChargeEffects_Pre(Address pShared, DHookParam params)
+{
+//	DHookSetParam(params, 1, true);
+	return MRES_Supercede;
 }

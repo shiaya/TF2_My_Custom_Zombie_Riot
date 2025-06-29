@@ -115,9 +115,9 @@ static int i_TrashNumEffects = 8;
 static int i_TrashWeapon[2049] = { -1, ... };
 static int i_TrashTier[2049] = { 0, ... };
 
-static int i_NextShot[MAXTF2PLAYERS + 1] = { 0, ... };
-static float f_TrashNextHUD[MAXTF2PLAYERS + 1] = { 0.0, ... };
-Handle Timer_Trash[MAXTF2PLAYERS + 1] = { INVALID_HANDLE, ... };
+static int i_NextShot[MAXPLAYERS + 1] = { 0, ... };
+static float f_TrashNextHUD[MAXPLAYERS + 1] = { 0.0, ... };
+Handle Timer_Trash[MAXPLAYERS + 1] = { INVALID_HANDLE, ... };
 
 #define MODEL_ROCKET				"models/weapons/w_models/w_rocket.mdl"
 #define MODEL_DRG					"models/weapons/w_models/w_drg_ball.mdl"
@@ -819,7 +819,7 @@ public MRESReturn Ice_Explode(int entity)
 
 void Trash_IceHitPre(int entity, int victim, float damage, int weapon)
 {
-	Cryo_FreezeZombie(entity, victim, 1);
+	Elemental_AddCyroDamage(entity, victim, RoundFloat(damage * 12.5), 1);
 }
 
 public bool Trash_RollTrash(int client, int tier)
