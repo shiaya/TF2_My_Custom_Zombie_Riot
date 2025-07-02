@@ -1,16 +1,16 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static Handle h_TimerMajorSteam_Launcher[MAXTF2PLAYERS] = {null, ...};
-static float f_MajorSteam_Launcher_Delay[MAXTF2PLAYERS];
-static float f_MajorSteam_Launcher_HUDDelay[MAXTF2PLAYERS];
-static int i_MajorSteam_Launcher_Resistance[MAXTF2PLAYERS];
-static int i_MajorSteam_Launcher_Recharging[MAXTF2PLAYERS];
-static int i_MajorSteam_Launcher_WeaponPap[MAXTF2PLAYERS];
-static int i_MajorSteam_Launcher_Perk[MAXTF2PLAYERS];
-static bool b_MajorSteam_Launcher_Toggle[MAXTF2PLAYERS];
-static int Chaos_ParticleEffect_I[MAXTF2PLAYERS];
-static int Chaos_ParticleEffect_II[MAXTF2PLAYERS];
+static Handle h_TimerMajorSteam_Launcher[MAXPLAYERS] = {null, ...};
+static float f_MajorSteam_Launcher_Delay[MAXPLAYERS];
+static float f_MajorSteam_Launcher_HUDDelay[MAXPLAYERS];
+static int i_MajorSteam_Launcher_Resistance[MAXPLAYERS];
+static int i_MajorSteam_Launcher_Recharging[MAXPLAYERS];
+static int i_MajorSteam_Launcher_WeaponPap[MAXPLAYERS];
+static int i_MajorSteam_Launcher_Perk[MAXPLAYERS];
+static bool b_MajorSteam_Launcher_Toggle[MAXPLAYERS];
+static int Chaos_ParticleEffect_I[MAXPLAYERS];
+static int Chaos_ParticleEffect_II[MAXPLAYERS];
 
 static const char g_ResistanceSounds[][] = {
 	"weapons/fx/rics/ric1.wav",

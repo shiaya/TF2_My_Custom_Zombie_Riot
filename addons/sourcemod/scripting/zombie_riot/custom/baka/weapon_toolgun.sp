@@ -1,9 +1,9 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static int i_ToolGun_Mode[MAXTF2PLAYERS];
-static int i_ToolGun_Extra[MAXTF2PLAYERS];
-static int i_ToolGun_GetEntities[MAXTF2PLAYERS];
+static int i_ToolGun_Mode[MAXPLAYERS];
+static int i_ToolGun_Extra[MAXPLAYERS];
+static int i_ToolGun_GetEntities[MAXPLAYERS];
 
 static int gLaser1;
 

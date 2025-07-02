@@ -1,18 +1,18 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static int i_OrbitalCount [MAXTF2PLAYERS];
-static int i_EagleCount [MAXTF2PLAYERS];
+static int i_OrbitalCount [MAXPLAYERS];
+static int i_EagleCount [MAXPLAYERS];
 static int i_AttackCount [MAXENTITIES];
-static float f_PDelay[MAXTF2PLAYERS];
-static float f_PDuration[MAXTF2PLAYERS];
-bool b_Iron_Will[MAXTF2PLAYERS];
-static bool b_OneWave[MAXTF2PLAYERS];
-static bool b_OneDown[MAXTF2PLAYERS];
-static int i_SupportWeapons[MAXTF2PLAYERS];
-static int i_SupportWeapon_Delete[MAXTF2PLAYERS];
-static int i_SupportWeapon_Lvl[MAXTF2PLAYERS];
-static float f_SupportWeapon_Timer[MAXTF2PLAYERS];
+static float f_PDelay[MAXPLAYERS];
+static float f_PDuration[MAXPLAYERS];
+bool b_Iron_Will[MAXPLAYERS];
+static bool b_OneWave[MAXPLAYERS];
+static bool b_OneDown[MAXPLAYERS];
+static int i_SupportWeapons[MAXPLAYERS];
+static int i_SupportWeapon_Delete[MAXPLAYERS];
+static int i_SupportWeapon_Lvl[MAXPLAYERS];
+static float f_SupportWeapon_Timer[MAXPLAYERS];
 
 static char gRedPoint;
 static int LSPR=-1;

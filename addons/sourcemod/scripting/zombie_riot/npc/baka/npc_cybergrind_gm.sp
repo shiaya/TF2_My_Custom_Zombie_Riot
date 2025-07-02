@@ -7,7 +7,7 @@ static const char g_DeathSounds[][] = {
 };
 
 static ArrayList Voting;
-static int VotedFor[MAXTF2PLAYERS];
+static int VotedFor[MAXPLAYERS];
 static float VoteEndTime;
 int CyberGrind_Difficulty;
 int CyberGrind_InternalDifficulty;
@@ -766,7 +766,7 @@ static void CyberGrindGM_FreePlayer(int iNPC)
 			TeleToU[npc.index]=false;
 			WorldSpaceCenter(npc.index, WorldSpaceVec);
 			ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-			NPC_SetGoalVector(npc.index, WorldSpaceVec, true);
+			npc.SetGoalVector(WorldSpaceVec, true);
 			npc.PlayDeathSound();
 		}
 	}
@@ -878,7 +878,7 @@ static void CyberGrindGM_Final_Item(int iNPC)
 			TeleToU[npc.index]=false;
 			WorldSpaceCenter(npc.index, WorldSpaceVec);
 			ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-			NPC_SetGoalVector(npc.index, WorldSpaceVec, true);
+			npc.SetGoalVector(WorldSpaceVec, true);
 			npc.PlayDeathSound();
 		}
 	}
@@ -1090,7 +1090,7 @@ static void CyberGrindGM_ClotThink(int iNPC)
 			}
 			TeleToU[npc.index]=false;
 			ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-			NPC_SetGoalVector(npc.index, WorldSpaceVec, true);
+			npc.SetGoalVector(WorldSpaceVec, true);
 			npc.PlayDeathSound();
 			RaidMode_SetupVote();
 		}

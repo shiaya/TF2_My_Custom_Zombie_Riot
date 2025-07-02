@@ -1,7 +1,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static Handle h_TimerTrumpetrWeaponManagement[MAXTF2PLAYERS] = {null, ...};
+static Handle h_TimerTrumpetrWeaponManagement[MAXPLAYERS] = {null, ...};
 
 public void Weapon_Trumpet_MapStart()
 {
