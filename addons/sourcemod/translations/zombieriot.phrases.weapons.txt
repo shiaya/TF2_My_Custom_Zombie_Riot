@@ -4412,15 +4412,23 @@
 	{
 		"en" "Plasmic Surprise"
 		"ko" "플라스믹 서프라이즈"
+		"es" "Sorpresa Plasmica"
 	}
 	"Plasmic Dosage"
 	{
 		"en" "Plasmic Dosage"
 		"ko" "플라스믹 투약"
+		"es" "Dosis Plasmica"
+	}
+	"Plasm-ubblinator"
+	{
+		"en" "Plasm-ubblinator"
+		"es" "Plasm-urbujinador"
 	}
 	"Koshi's Plasm-inator"
 	{
 		"en" "Koshi's Plasm-inator"
+		"es" "El Plasm-inador de Koshi"
 		"ko" "코시의 플라스마 점화기"
 	}
 	"The Zealot"

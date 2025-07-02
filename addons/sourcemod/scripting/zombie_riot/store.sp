@@ -6474,8 +6474,6 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		Enable_CastleBreakerWeapon(client, entity);
 		Purnell_Enable(client, entity);
 		Medigun_SetModeDo(client, entity);
-		//Cheese_Enable(client, entity);
-		
 		TeamBakaCustom_Enable(client, entity);
 		// MarketGardener_Enable(client, entity);
 		// Farmer_Enable(client, entity);
@@ -6487,6 +6485,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 		// Enable_KitOmega(client, entity);
 		// Enable_MajorSteam_Launcher(client, entity);
 		// Wkit_Soldin_Enable(client, entity);
+		Cheese_Enable(client, entity);
 		Ritualist_Enable(client, entity);
 
 		//give all revelant things back

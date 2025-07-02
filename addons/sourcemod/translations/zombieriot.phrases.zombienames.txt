@@ -648,6 +648,10 @@
 		"nl"		"Xeno Strijd Medicus Main"
 		"ko"		"제노 전투메딕"
 	}
+	"Xeno Infected Lab Doctor"
+	{
+		"en" 	"Xeno Infected Lab Doctor"
+	}
 	"Xeno Giant Pyro Main"
 	{
 		"en" 		"Xeno Giant Pyro Main"
@@ -771,12 +775,15 @@
 		"ru" 		"Золотой шар"
 		"ko"		"황금 벌룬"
 	}
-	"Bloonarius"
+	"Bloonarius the Inflator"
 	{
-		"en" 		"Bloonarius"
-		"pt"		"Balãorista"
-		"ru" 		"Шариус"
-		"ko"		"블루나리우스"
+		"en" 		"Bloonarius the Inflator"
+		"ko"		"인플레이터 블루나리우스"
+	}
+	"Reality Warper Phayze"
+	{
+		"en" 		"Reality Warper Phayze"
+		"ko" 		"리얼리티 워퍼 페이즈"
 	}
 	"Medic Apprentice Mage"
 	{
@@ -990,6 +997,10 @@
 	{
 		"en"		"Basic unit of basic melee needs."
 		"ko"		"민병대 기본 유닛"
+	}
+	"Xeno Infected Lab Doctor Desc"
+	{
+		"en" 	"A doctor trying to cure the xeno virus in the lab, failed and got infected himself.\nThe lower their HP is the more resitance they obtain when they think.\nStun them to avoid this affect, or oneshot them."
 	}
 	"Archer"
 	{
@@ -5028,5 +5039,15 @@
 	"Instinct's Summon"
 	{
 		"en"	"Instinct's Summon"
+	}
+	"Plasmic Elemental Damage"
+	{
+		"en"	"Plasmic Elemental Damage"
+		"es"	"Daño Elemental Plasmico"
+	}
+	"Plasmic Elemental Damage Desc"
+	{
+		"en"	"Once full, your body's plasma will break down, weakening your body.\nYou receive a level of Plasm until you reach III.\nIf you have Plasm III, you will be debuffed and recieve 10％ of your maximum health as true damage.\nCan be healed with armor."
+		"es"	"Cuando se llena, el plasma de tu cuerpo se rompera, debilitandote.\nRecibes un nivel de Plasm hasta que llegas a III.\nSi tienes Plasm III, eres debilitado y ralentizado, y recibes el 10％ de tu vida maxima como daño verdadero.\nPuede curarse con armadura."
 	}
 }
