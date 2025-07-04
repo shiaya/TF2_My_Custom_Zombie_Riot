@@ -8,7 +8,7 @@ void K_Unspeakable_OnMapStart_NPC()
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Unspeakable");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_k_unspeakable");
-	strcopy(data.Icon, sizeof(data.Icon), "k_unspeakable");
+	strcopy(data.Icon, sizeof(data.Icon), "victoria_precision_strike");
 	data.IconCustom = true;
 	data.Flags = 0;
 	data.Category = Type_Special;

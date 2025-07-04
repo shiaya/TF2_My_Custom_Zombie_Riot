@@ -129,28 +129,25 @@ public void Enable_MajorSteam_Launcher(int client, int weapon)
 			pack.WriteCell(EntIndexToEntRef(weapon));
 		}
 	}
-	else
+	else if(i_CustomWeaponEquipLogic[weapon] == WEAPON_MAJORSTEAM_LAUNCHER)
 	{
-		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_MAJORSTEAM_LAUNCHER)
+		i_MajorSteam_Launcher_Perk[client]=i_CurrentEquippedPerk[client];
+		i_MajorSteam_Launcher_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
+		b_MajorSteam_Launcher_Toggle[client] = false;
+		int RocketLoad = GetEntData(weapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"));
+		int RockeyAmmo=GetAmmo(client, 8);
+		int RocketAmmoMAX=(i_MajorSteam_Launcher_WeaponPap[client]==1 ? 11 : 6);
+		if(RocketLoad<RocketAmmoMAX)
 		{
-			i_MajorSteam_Launcher_Perk[client]=i_CurrentEquippedPerk[client];
-			i_MajorSteam_Launcher_WeaponPap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
-			b_MajorSteam_Launcher_Toggle[client] = false;
-			int RocketLoad = GetEntData(weapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"));
-			int RockeyAmmo=GetAmmo(client, 8);
-			int RocketAmmoMAX=(i_MajorSteam_Launcher_WeaponPap[client]==1 ? 11 : 6);
-			if(RocketLoad<RocketAmmoMAX)
-			{
-				SetAmmo(client, 8, RockeyAmmo+RocketLoad);
-				SetEntData(weapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"), 0);
-			}
-			DestroyChaos_ParticleEffect(client);
-			Add_Chaos_ParticleEffect(client);
-			DataPack pack;
-			h_TimerMajorSteam_Launcher[client] = CreateDataTimer(0.1, Timer_MajorSteam_Launcher, pack, TIMER_REPEAT);
-			pack.WriteCell(client);
-			pack.WriteCell(EntIndexToEntRef(weapon));
+			SetAmmo(client, 8, RockeyAmmo+RocketLoad);
+			SetEntData(weapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"), 0);
 		}
+		DestroyChaos_ParticleEffect(client);
+		Add_Chaos_ParticleEffect(client);
+		DataPack pack;
+		h_TimerMajorSteam_Launcher[client] = CreateDataTimer(0.1, Timer_MajorSteam_Launcher, pack, TIMER_REPEAT);
+		pack.WriteCell(client);
+		pack.WriteCell(EntIndexToEntRef(weapon));
 	}
 }
 

@@ -1,15 +1,15 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static Handle LockDownTimer[MAXPLAYERS+1] = {null, ...};
+static Handle LockDownTimer[MAXPLAYERS] = {null, ...};
 static int Key_HitEntities[MAXENTITIES];
-static float KeyofOrdered_charges[MAXTF2PLAYERS+1];
-static float KeyofOrdered_charges_Max[MAXTF2PLAYERS+1];
-static int i_Current_Pap[MAXTF2PLAYERS+1];
-static float fl_hud_timer[MAXTF2PLAYERS+1];
-static float KeyofOrdered_duration[MAXTF2PLAYERS+1];
-static float Passive_delay[MAXTF2PLAYERS+1];
-static float f3_LastGravitonHitLoc[MAXTF2PLAYERS+1][3];
+static float KeyofOrdered_charges[MAXPLAYERS];
+static float KeyofOrdered_charges_Max[MAXPLAYERS];
+static int i_Current_Pap[MAXPLAYERS];
+static float fl_hud_timer[MAXPLAYERS];
+static float KeyofOrdered_duration[MAXPLAYERS];
+static float Passive_delay[MAXPLAYERS];
+static float f3_LastGravitonHitLoc[MAXPLAYERS][3];
 
 static int LaserIndex;
 
@@ -42,21 +42,21 @@ public void LockDown_Enable(int client, int weapon)
 	{
 		if(i_CustomWeaponEquipLogic[weapon]==WEAPON_LOCKDOWN)
 		{
-			i_Current_Pap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
+			i_Current_Pap[client] = RoundToFloor(Attributes_Get(weapon, 122, 0.0));
 			delete LockDownTimer[client];
 			LockDownTimer[client] = null;
 			DataPack pack;
-			LockDownTimer[client] = CreateDataTimer(0.1, Timer_LockDown_Wand, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			LockDownTimer[client] = CreateDataTimer(0.1, Timer_LockDown_Wand, pack, TIMER_REPEAT);
 			pack.WriteCell(client);
 			pack.WriteCell(EntIndexToEntRef(weapon));
 		}
 		return;
 	}
-	if(i_CustomWeaponEquipLogic[weapon] == WEAPON_LOCKDOWN)
+	else if(i_CustomWeaponEquipLogic[weapon] == WEAPON_LOCKDOWN)
 	{
-		i_Current_Pap[client] = RoundToFloor(Attributes_Get(weapon, 391, 0.0));
+		i_Current_Pap[client] = RoundToFloor(Attributes_Get(weapon, 122, 0.0));
 		DataPack pack;
-		LockDownTimer[client] = CreateDataTimer(0.1, Timer_LockDown_Wand, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		LockDownTimer[client] = CreateDataTimer(0.1, Timer_LockDown_Wand, pack, TIMER_REPEAT);
 		pack.WriteCell(client);
 		pack.WriteCell(EntIndexToEntRef(weapon));
 	}
@@ -87,15 +87,12 @@ public Action Timer_LockDown_Wand(Handle timer, DataPack pack)
 			if(KeyofOrdered_charges[client] > KeyofOrdered_charges_Max[client])KeyofOrdered_charges[client] = KeyofOrdered_charges_Max[client];
 			if(i_Current_Pap[client]>=2 && Passive_delay[client] < GameTime)
 			{
-				bool KeyofOrderedOn;
-				if(KeyofOrdered_duration[client] >= GameTime) KeyofOrderedOn=true;
 				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 				{
 					int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
 					if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
 					{
-						if(!b_thisNpcIsARaid[entity])
-							NpcStats_SpeedModifyEnemy(entity, 2.0, KeyofOrderedOn ? 0.9 : 0.95, true);
+						ApplyStatusEffect(client, entity, "AOE Slowdown", 1.0);
 					}
 				}
 			}
@@ -333,7 +330,7 @@ void UGotSlowDown(int attacker, int victim, float damage, int weapon)
 		return;
 	if(!IsValidClient(attacker))
 		return;
-	NpcStats_SpeedModifyEnemy(victim, 3.0, b_thisNpcIsARaid[victim] ? 0.95 : 0.85, true);
+	ApplyStatusEffect(attacker, victim, "Slowdown", 3.0);
 }
 
 static void LockDown_Wand_Hud(int client, float GameTime)
@@ -632,7 +629,7 @@ public void Laser_Key_of_Ordered(DataPack pack)
 					SDKHooks_TakeDamage(Key_HitEntities[entity_traced], client, client, damage, DMG_PLASMA, weapon, damage_force, pos1);
 					GetEntPropVector(Key_HitEntities[entity_traced], Prop_Send, "m_vecOrigin", damage_force);
 					damage_force[2]+=30.0;
-					NpcStats_SpeedModifyEnemy(Key_HitEntities[entity_traced], 2.0, b_thisNpcIsARaid[Key_HitEntities[entity_traced]] ? 0.9 : 0.65, true);
+					ApplyStatusEffect(client, Key_HitEntities[entity_traced], "Subjective Time Dilation", 2.0);
 					/*GetVectorAnglesTwoPoints(pos2, damage_force, ang2);
 					static float vel[3];
 					GetAngleVectors(ang2, vel, NULL_VECTOR, NULL_VECTOR);

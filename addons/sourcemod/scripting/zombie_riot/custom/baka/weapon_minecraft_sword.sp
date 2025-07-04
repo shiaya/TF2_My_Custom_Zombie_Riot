@@ -2,10 +2,10 @@
 #pragma newdecls required
 
 static int Ms_HitEntities[MAXENTITIES];
-static float Ms_Weapon_Energy[MAXTF2PLAYERS];
-static float Ms_Weapon_Energy_Max[MAXTF2PLAYERS];
-static Handle MSwordTimer[MAXTF2PLAYERS];
-static float MSwordHUDDelay[MAXTF2PLAYERS];
+static float Ms_Weapon_Energy[MAXPLAYERS];
+static float Ms_Weapon_Energy_Max[MAXPLAYERS];
+static Handle MSwordTimer[MAXPLAYERS];
+static float MSwordHUDDelay[MAXPLAYERS];
 
 /*public void Market_Gardener_Attack(int client, int weapon, bool crit)
 {
@@ -23,10 +23,20 @@ public void MSword_OnMapStart()
 
 public void MSword_Enable(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
 {
-	if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MINECRAFT_SWORD)
+	if(MSwordTimer[client] != null)
 	{
-		delete MSwordTimer[client];
-		MSwordTimer[client] = null;
+		if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MINECRAFT_SWORD)
+		{
+			delete MSwordTimer[client];
+			MSwordTimer[client] = null;
+			DataPack pack;
+			MSwordTimer[client] = CreateDataTimer(0.2, Timer_MSword, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			pack.WriteCell(client);
+			pack.WriteCell(EntIndexToEntRef(weapon));
+		}
+	}
+	else if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MINECRAFT_SWORD)
+	{
 		DataPack pack;
 		MSwordTimer[client] = CreateDataTimer(0.2, Timer_MSword, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		pack.WriteCell(client);

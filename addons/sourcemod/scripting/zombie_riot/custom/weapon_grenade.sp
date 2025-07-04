@@ -250,7 +250,8 @@ public void Weapon_ShotgunGrenadeLauncher(int client, int weapon, const char[] c
 		
 		float speed = 1500.0;
 		float damage = 100.0;
-			
+		int PerShot = RoundToCeil(4.0*Attributes_Get(weapon, 4, 1.0));
+		Attributes_Set(weapon, 298, float(PerShot));
 		damage *= Attributes_Get(weapon, 1, 1.0);
 
 		damage *= Attributes_Get(weapon, 2, 1.0);
@@ -267,7 +268,7 @@ public void Weapon_ShotgunGrenadeLauncher(int client, int weapon, const char[] c
 			
 		int team = GetClientTeam(client);
 			
-		for (int repeat = 1; repeat <= 4; repeat++)
+		for (int repeat = 1; repeat <= PerShot; repeat++)
 		{
 		
 			int entity = CreateEntityByName("tf_projectile_pipe");
@@ -298,6 +299,34 @@ public void Weapon_ShotgunGrenadeLauncher(int client, int weapon, const char[] c
 						{
 							ang[0] += -extra_accuracy;
 							ang[1] += -extra_accuracy;
+						}
+						case 5:
+						{
+							ang[0] += -extra_accuracy;
+							ang[1] += extra_accuracy * 2.0;
+						}
+						case 6:
+						{
+							ang[0] += extra_accuracy;
+							ang[1] += extra_accuracy * 2.0;
+						}
+						case 7:
+						{
+							ang[0] += extra_accuracy;
+							ang[1] += -(extra_accuracy * 2.0);
+						}
+						case 8:
+						{
+							ang[0] += -extra_accuracy;
+							ang[1] += -(extra_accuracy * 2.0);
+						}
+						case 9:
+						{
+							ang[0] += extra_accuracy;
+						}
+						case 10:
+						{
+							ang[0] += -extra_accuracy;
 						}
 					}
 	
@@ -358,7 +387,9 @@ public void Weapon_ShotgunGrenadeLauncher_PAP(int client, int weapon, const char
 		
 		float speed = 1500.0;
 		float damage = 100.0;
+		int PerShot = RoundToCeil(4.0*Attributes_Get(weapon, 4, 2.5));
 			
+		Attributes_Set(weapon, 298, float(PerShot));
 		damage *= Attributes_Get(weapon, 1, 1.0);
 
 		damage *= Attributes_Get(weapon, 2, 1.0);
@@ -375,7 +406,8 @@ public void Weapon_ShotgunGrenadeLauncher_PAP(int client, int weapon, const char
 			
 		int team = GetClientTeam(client);
 			
-		for (int repeat = 1; repeat <= 10; repeat++)
+		int OverridePos;
+		for (int repeat = 1; repeat <= PerShot; repeat++)
 		{
 		
 			int entity = CreateEntityByName("tf_projectile_pipe");
@@ -434,6 +466,34 @@ public void Weapon_ShotgunGrenadeLauncher_PAP(int client, int weapon, const char
 						case 10:
 						{
 							ang[0] += -extra_accuracy;
+						}
+						default:
+						{
+							int i2 = repeat%4;
+							switch(i2)
+							{
+								case 0:
+								{
+									OverridePos++;
+									ang[0]+=extra_accuracy+OverridePos+2.0;
+								}
+								case 1:
+								{	
+									ang[1]+=extra_accuracy+OverridePos+2.0;
+								}
+								case 2:
+								{
+									ang[0]-=extra_accuracy+OverridePos+2.0;
+								}
+								case 3:
+								{
+									ang[1]-=extra_accuracy+OverridePos+2.0;
+								}
+								default:
+								{
+									ang[1]+=extra_accuracy+OverridePos+2.0;
+								}
+							}
 						}
 					}
 	

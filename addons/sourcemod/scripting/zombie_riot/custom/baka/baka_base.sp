@@ -1,12 +1,14 @@
 public void TeamBakaCustom_OnMapStart()
 {
+	Neuron_ActivationSoundOverrideMapStart();
 	MajorSteam_Launcher_OnMapStart();
+	LockDown_Wand_MapStart();
 }
 
 public void TeamBakaCustom_Enable(int client, int weapon)
 {
 	Enable_MajorSteam_Launcher(client, weapon);
-	Neuron_ActivationSoundOverrideMapStart();
+	LockDown_Enable(client, weapon);
 }
 
 void TeamBakaCustom_WaveEnd()
