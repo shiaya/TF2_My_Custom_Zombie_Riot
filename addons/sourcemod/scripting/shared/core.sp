@@ -1201,7 +1201,16 @@ public Action OnReloadBlockNav(int args)
 public void OnGameFrame()
 {
 #if defined ZR
-	NPC_SpawnNext(false, false, -1);
+	int MaxLimitTest = 0;
+	while(NPC_SpawnNext(false, false, -1))
+	{
+		MaxLimitTest++;
+		//failsafe
+		if(MaxLimitTest >= 2)
+		{
+			break;
+		}
+	}
 #endif	
 #if defined RPG
 	DoubleJumpGameFrame();
@@ -1509,6 +1518,8 @@ public void OnClientPutInServer(int client)
 	SetEntProp(client, Prop_Send, "m_iHideHUD", HIDEHUD_BUILDING_STATUS | HIDEHUD_CLOAK_AND_FEIGN | HIDEHUD_BONUS_PROGRESS); 
 	if(ForceNiko)
 		OverridePlayerModel(client, NIKO_2, true);
+	if(!Waves_Started() || Waves_InSetup())
+		DoGlobalMultiScaling();
 #endif
 	MedigunPutInServerclient(client);
 }
@@ -1987,7 +1998,7 @@ public void Update_Ammo(DataPack pack)
 {
 	pack.Reset();
 	int client = GetClientOfUserId(pack.ReadCell());
-	if(IsValidClient(client) && i_HealthBeforeSuit[client] == 0 && TeutonType[client] == TEUTON_NONE)
+	if(IsValidClient(client) && IsPlayerAlive(client) && i_HealthBeforeSuit[client] == 0 && TeutonType[client] == TEUTON_NONE)
 	{
 		for(int i; i<Ammo_MAX; i++)
 		{
@@ -3062,6 +3073,10 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 	else if (condition == TFCond_Slowed && IsPlayerAlive(client))
 	{
 		SDKCall_SetSpeed(client);
+	}
+	else if (condition == TFCond_Taunting && f_PreventMovementClient[client] > GetGameTime())
+	{
+		TF2_RemoveCondition(client, TFCond_Taunting);
 	}
 }
 

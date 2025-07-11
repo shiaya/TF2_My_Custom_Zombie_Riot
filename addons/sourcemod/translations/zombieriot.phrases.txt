@@ -2622,10 +2622,7 @@
 	}	
 	"You have been Infected by Nemesis"
 	{
-		"en"		"You have been Infected by Nemesis!\nDo not get close to allies."
-		"fr"		"Vous êtes infectés par Nemesis!\nGardez votre distance de vos alliés."
-		"ru"		"Вы были заражены Немезидом!\nНе приближайтесь к союзникам."
-		"chi"		"你被复仇女神感染了!不要与队友走得太近。"
+		"en"		"You have been Infected by Nemesis!\nDo not get close to allies.\nYou cannot stop this bleeding with thick blood..."
 	}	
 	"Xeno_Wave_1"
 	{
@@ -4108,7 +4105,7 @@
 	}
 	"Enable Visual Clutter Desc"
 	{
-		"en"	"Re-Enables Things like arrows in npc's and other things that are just hindering visual things.\nIf you love it, enable it again."
+		"en"	"Re-Enables Things like arrows in npc's and other things that are just hindering visual things.\nThis will also enable you seeing dead players (teutons)\nIf you love it, enable it again."
 	}
 	"Enable Reload Interact Desc"
 	{
@@ -4499,7 +4496,7 @@
 	{
 		"en"		"Insufficient charge!!"
 	}
-	"Plasma Kit Plasm III Warning"
+	"Plasma Kit Warning"
 	{
 		"en"		"Your body slowly starts to break down...."
 	}

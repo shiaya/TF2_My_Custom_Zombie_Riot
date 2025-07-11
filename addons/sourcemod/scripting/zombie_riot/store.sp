@@ -3018,6 +3018,9 @@ static void MenuPage(int client, int section)
 	if(dieingstate[client] > 0) //They shall not enter the store if they are downed.
 		return;
 	
+	if(f_PreventMovementClient[client] > GetGameTime())
+		return;
+	
 	if(Waves_Started())
 	{
 	//	if(CashSpentTotal[client] <= 0)
@@ -3061,18 +3064,22 @@ static void MenuPage(int client, int section)
 	}
 	
 	int cash = CurrentCash-CashSpent[client];
-	
+	/*
+
+	remove, dont bother.
 	if(ClientTutorialStep(client) == 2)
 	{
 		//This is here so the player doesnt just have no money to buy anything.
-		if(cash < 1000)
+		if(cash < 700)
 		{
-			int give_Extra_JustIncase = cash - 1000;
+			int give_Extra_JustIncase = cash - 700;
 			
 			CashSpent[client] += give_Extra_JustIncase;
 			cash += give_Extra_JustIncase;
 		}
 	}
+
+	*/
 	
 	if(StarterCashMode[client])
 	{
@@ -4368,6 +4375,11 @@ public int Store_MenuItem(Menu menu, MenuAction action, int client, int choice)
 			
 			if(dieingstate[client] > 0) //They shall not enter the store if they are downed.
 			{
+				return 0;
+			}
+			if(f_PreventMovementClient[client] > GetGameTime())
+			{
+				//dont call anything.
 				return 0;
 			}
 			

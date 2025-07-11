@@ -195,6 +195,7 @@ void InitStatusEffects()
 	StatusEffects_Modifiers();
 	StatusEffects_Explainelemental();
 	StatusEffects_Purge();
+	StatusEffects_XenoLab();
 
 #if defined ZR
 	StatusEffects_Ritualist();
@@ -5783,65 +5784,30 @@ void StatusEffects_Plasm()
 	data.LinkedStatusEffectNPC = 0;
 	data.AttackspeedBuff = 0.0;
 
-	strcopy(data.BuffName, sizeof(data.BuffName), "Plasm I");
-	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "ϧ");
-	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
-	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.08;
-	data.DamageDealMulti			= -1.0;
-	data.MovementspeedModif			= 0.08;
-	data.Positive 					= false;
-	data.ShouldScaleWithPlayerCount = true;
-	data.Slot						= 15; //0 means ignored
-	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
-	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
-	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
-	data.AttackspeedBuff			= 1.08;
-	StatusEffect_AddGlobal(data);
-
-	data.LinkedStatusEffect = 0;
-	data.LinkedStatusEffectNPC = 0;
-	data.AttackspeedBuff = 0.0;
-
-	strcopy(data.BuffName, sizeof(data.BuffName), "Plasm II");
+	strcopy(data.BuffName, sizeof(data.BuffName), "Plasmic Layering I");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "ϥ");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.12;
-	data.DamageDealMulti			= -1.0;
-	data.MovementspeedModif			= 0.12;
-	data.Positive 					= false;
+	data.DamageTakenMulti 			= 0.90;
+	data.DamageDealMulti			= 0.15;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 15; //0 means ignored
-	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
-	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
-	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
-	data.AttackspeedBuff			= 1.12;
+	data.SlotPriority				= 1; //if its higher, then the lower version is entirely ignored.
 	StatusEffect_AddGlobal(data);
-
-	data.LinkedStatusEffect = 0;
-	data.LinkedStatusEffectNPC = 0;
-	data.AttackspeedBuff = 0.0;
-
-	strcopy(data.BuffName, sizeof(data.BuffName), "Plasm III");
+	strcopy(data.BuffName, sizeof(data.BuffName), "Plasmic Layering II");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "Ϥ");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.16;
-	data.DamageDealMulti			= -1.0;
-	data.MovementspeedModif			= 0.16;
-	data.Positive 					= false;
+	data.DamageTakenMulti 			= 0.85;
+	data.DamageDealMulti			= 0.25;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
 	data.ShouldScaleWithPlayerCount = true;
 	data.Slot						= 15; //0 means ignored
-	data.SlotPriority				= 3; //if its higher, then the lower version is entirely ignored.
-	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
-	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
-	data.AttackspeedBuff			= 1.16;
+	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
 	StatusEffect_AddGlobal(data);
-
-	data.LinkedStatusEffect = 0;
-	data.LinkedStatusEffectNPC = 0;
-	data.AttackspeedBuff = 0.0;
 }
 stock void StatusEffects_SetCustomValue(int victim, float NewBuffValue, int Index)
 {
@@ -6150,4 +6116,41 @@ stock void NpcStats_PrimalFearChange(int victim, float AddBuff)
 	}
 	if(E_AL_StatusEffects[victim].Length < 1)
 		delete E_AL_StatusEffects[victim];
+}
+
+
+void StatusEffects_XenoLab()
+{
+	StatusEffect data;
+	strcopy(data.BuffName, sizeof(data.BuffName), "Xeno's Territory");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "Ӂ");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= 0.75;
+	data.DamageDealMulti			= 0.25;
+	data.MovementspeedModif			= 1.15;
+	data.AttackspeedBuff			= (1.0 / 1.25);
+	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
+	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = true;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Corrupted Godly Power");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "¶");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= 0.85;
+	data.DamageDealMulti			= 0.1;
+	data.MovementspeedModif			= -1.0;
+	data.AttackspeedBuff			= (1.0 / 1.05);
+	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
+	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = true;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
 }

@@ -48,12 +48,12 @@ void NPC_PluginStart()
 }
 
 #if defined ZR
-public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
+public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 {
 	float GameTime = GetGameTime();
 	if(f_DelaySpawnsForVariousReasons > GameTime)
 	{
-		return;
+		return false;
 	}
 	int limit = 0;
 	
@@ -130,7 +130,7 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 	
 	if(!b_GameOnGoing) //no spawn if the round is over
 	{
-		return;
+		return false;
 	}
 	
 	if(!AllowSpecialSpawns)
@@ -174,13 +174,13 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 		//emercency stop. 
 		if((EnemyNpcAlive - EnemyNpcAliveStatic) >= MaxEnemiesAllowedSpawnNext())
 		{
-			return;
+			return false;
 		}
 	}
 
 	if(!Spawns_CanSpawnNext())
 	{
-		return;
+		return false;
 	}
 	
 	float pos[3], ang[3];
@@ -259,6 +259,7 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 			pack.WriteCell(boss.Index);
 			pack.WriteCell(deathforcepowerup);
 			pack.WriteFloat(boss.HealthMulti);
+			return true;
 		}
 		else
 		{
@@ -367,10 +368,6 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 					if(enemy.ExtraThinkSpeed != 0.0 && enemy.ExtraThinkSpeed != 1.0)
 						f_AttackSpeedNpcIncrease[entity_Spawner]	= enemy.ExtraThinkSpeed;
 						
-					if(!b_thisNpcIsARaid[entity_Spawner] && XenoExtraLogic(true))
-					{
-						fl_Extra_Damage[entity_Spawner] *= 1.1;
-					}
 					if(enemy.ExtraSize != 1.0)
 					{
 						float scale = GetEntPropFloat(entity_Spawner, Prop_Send, "m_flModelScale");
@@ -428,6 +425,8 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 
 					if(Waves_InFreeplay())
 						Freeplay_SpawnEnemy(entity_Spawner);
+
+					return true;
 				}
 			}
 			else
@@ -459,8 +458,11 @@ public void NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 			{
 				Waves_Progress(donotprogress);
 			}
+			return true;
+			//we reached limit. stop trying.
 		}
 	}
+	return false;
 }
 #endif	// ZR
 
