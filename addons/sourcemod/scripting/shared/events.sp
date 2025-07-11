@@ -110,6 +110,8 @@ public void OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 	CreateMVMPopulator();
 	Zero(b_BobsCuringHand_Revived);
 	
+	ResetITMLogic();
+	ResetCyberGrindGMLogic();
 	Escape_RoundStart();
 	Waves_RoundStart(true);
 	Blacksmith_RoundStart();

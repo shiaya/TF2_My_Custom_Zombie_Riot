@@ -633,7 +633,7 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 										}
 										b_Interior_ExplosiveBuilding[entity]=b_Explosive_Structures[client];
 										b_Interior_ExplosiveBuilding_MaxHP[entity]=GetEntProp(entity, Prop_Data, "m_iMaxHealth");
-											
+										
 										if(Construction_Mode())
 											CooldownGive *= 3.0;
 											
