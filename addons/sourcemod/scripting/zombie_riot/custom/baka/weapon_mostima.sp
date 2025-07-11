@@ -92,7 +92,7 @@ public Action Timer_LockDown_Wand(Handle timer, DataPack pack)
 					int entity = EntRefToEntIndex(i_ObjectsNpcsTotal[entitycount]);
 					if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
 					{
-						ApplyStatusEffect(client, entity, "AOE Slowdown", 1.0);
+						ApplyStatusEffect(client, entity, "Subjective Time Dilation", 1.0);
 					}
 				}
 			}
@@ -629,7 +629,7 @@ public void Laser_Key_of_Ordered(DataPack pack)
 					SDKHooks_TakeDamage(Key_HitEntities[entity_traced], client, client, damage, DMG_PLASMA, weapon, damage_force, pos1);
 					GetEntPropVector(Key_HitEntities[entity_traced], Prop_Send, "m_vecOrigin", damage_force);
 					damage_force[2]+=30.0;
-					ApplyStatusEffect(client, Key_HitEntities[entity_traced], "Subjective Time Dilation", 2.0);
+					ApplyStatusEffect(client, Key_HitEntities[entity_traced], "Power Slowdown", 2.0);
 					/*GetVectorAnglesTwoPoints(pos2, damage_force, ang2);
 					static float vel[3];
 					GetAngleVectors(ang2, vel, NULL_VECTOR, NULL_VECTOR);

@@ -7,7 +7,6 @@ static int TempTargetOne[MAXENTITIES];
 static int TempTargetTwo[MAXENTITIES];
 static int TempTargetTree[MAXENTITIES];
 static float TempDelayOne[MAXENTITIES];
-//static float TempDelayTwo[MAXENTITIES];
 
 static char g_BlitzkriegVioce_StartSounds[][] = {
 	"zombiesurvival/altwaves_and_blitzkrieg/music/dm_start1.mp3",
@@ -495,7 +494,7 @@ static void Invisible_TRIGGER_Man_ClotThink(int iNPC)
 										GetEntPropVector(Spawner_entity, Prop_Data, "m_vecOrigin", SelfPos);
 										GetEntPropVector(Spawner_entity, Prop_Data, "m_angRotation", AllyAng);
 									}
-									int IsThatSawRunner = NPC_CreateByName("npc_sawrunner", -1, SelfPos, AllyAng, GetTeam(entity), "no_play_music");
+									int IsThatSawRunner = NPC_CreateByName("npc_soulrunner", -1, SelfPos, AllyAng, GetTeam(entity));
 									if(IsValidEntity(IsThatSawRunner))
 									{
 										b_ThisNpcIsImmuneToNuke[IsThatSawRunner] = true;
@@ -568,7 +567,7 @@ static void Invisible_TRIGGER_Man_ClotThink(int iNPC)
 										GetEntPropVector(Spawner_entity, Prop_Data, "m_vecOrigin", SelfPos);
 										GetEntPropVector(Spawner_entity, Prop_Data, "m_angRotation", AllyAng);
 									}
-									int IsThatSawRunner = NPC_CreateByName("npc_sawrunner", -1, SelfPos, AllyAng, GetTeam(entity), "no_play_music");
+									int IsThatSawRunner = NPC_CreateByName("npc_soulrunner", -1, SelfPos, AllyAng, GetTeam(entity));
 									if(IsValidEntity(IsThatSawRunner))
 									{
 										b_ThisNpcIsImmuneToNuke[IsThatSawRunner] = true;

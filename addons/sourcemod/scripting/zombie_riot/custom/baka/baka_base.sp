@@ -3,12 +3,14 @@ public void TeamBakaCustom_OnMapStart()
 	Neuron_ActivationSoundOverrideMapStart();
 	MajorSteam_Launcher_OnMapStart();
 	LockDown_Wand_MapStart();
+	MSword_OnMapStart();
 }
 
 public void TeamBakaCustom_Enable(int client, int weapon)
 {
 	Enable_MajorSteam_Launcher(client, weapon);
 	LockDown_Enable(client, weapon);
+	MSword_Enable(client, weapon);
 }
 
 void TeamBakaCustom_WaveEnd()
@@ -32,6 +34,7 @@ public void TeamBakaCustom_NPCTakeDamage(int attacker, int victim, float &damage
 	switch(i_CustomWeaponEquipLogic[weapon])
 	{
 		case WEAPON_MAJORSTEAM_LAUNCHER:MajorSteam_Launcher_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
+		case WEAPON_MINECRAFT_SWORD:MSword_NPCTakeDamage(attacker, victim, damage, weapon);
 	}
 }
 

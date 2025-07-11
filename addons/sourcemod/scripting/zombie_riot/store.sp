@@ -6197,6 +6197,8 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 						b_Barricade_Stabilizer[client] = true;
 					if(info.SpecialAdditionViaNonAttribute == 1018)
 						b_Shotgun_Mini_Ammo[client] = true;
+					if(info.SpecialAdditionViaNonAttribute == 1019)
+						b_Leaders_Belt[client] = true;
 
 					int CostDo;
 

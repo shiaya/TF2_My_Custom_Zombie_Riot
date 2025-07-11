@@ -2777,6 +2777,7 @@ public Action Timer_Orbital_GAS_Stratagems(Handle timer, DataPack pack)
 							{
 								SDKHooks_TakeDamage(npc, client, client, damage, DMG_TRUEDAMAGE|DMG_PREVENT_PHYSICS_FORCE);
 								//NpcStats_SpeedModifyEnemy(npc, 1.0, 0.9, true);
+								ApplyStatusEffect(client, npc, "HAL GAS", 1.0);
 							}
 						}
 					}

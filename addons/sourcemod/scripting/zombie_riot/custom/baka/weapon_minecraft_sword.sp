@@ -6,6 +6,13 @@ static float Ms_Weapon_Energy[MAXPLAYERS];
 static float Ms_Weapon_Energy_Max[MAXPLAYERS];
 static Handle MSwordTimer[MAXPLAYERS];
 static float MSwordHUDDelay[MAXPLAYERS];
+static int i_Current_Pap[MAXPLAYERS];
+
+static bool Task_I[MAXPLAYERS];
+static bool Task_II[MAXPLAYERS];
+static bool Task_III[MAXPLAYERS];
+static bool Task_IV[MAXPLAYERS];
+static bool Task_V[MAXPLAYERS];
 
 /*public void Market_Gardener_Attack(int client, int weapon, bool crit)
 {
@@ -14,11 +21,23 @@ static float MSwordHUDDelay[MAXPLAYERS];
 
 public void MSword_OnMapStart()
 {
+	PrecacheSound("baka_zr/minecraft_challenge_complete.mp3", true);
+	PrecacheSound("baka_zr/blacksmith_tick_quad.mp3", true);
+	PrecacheSound("baka_zr/blacksmith_tick_five.mp3", true);
+	PrecacheSound("baka_zr/blacksmith_tick_quad_friend.mp3", true);
+	PrecacheSound("baka_zr/blacksmith_tick_five_friend.mp3", true);
+	
 	Zero(Ms_Weapon_Energy);
 	Zero(Ms_Weapon_Energy_Max);
 	Zero(Ms_HitEntities);
 	Zero(MSwordHUDDelay);
-	PrecacheSound("ambient/explosions/explode_9.wav", true);
+	Zero(i_Current_Pap);
+	
+	Zero(Task_I);
+	Zero(Task_II);
+	Zero(Task_III);
+	Zero(Task_IV);
+	Zero(Task_V);
 }
 
 public void MSword_Enable(int client, int weapon) // Enable management, handle weapons change but also delete the timer if the client have the max weapon
@@ -27,18 +46,70 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 	{
 		if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MINECRAFT_SWORD)
 		{
+			i_Current_Pap[client] = RoundToFloor(Attributes_Get(weapon, 122, 0.0));
+			Ms_Weapon_Energy_Max[client]=Attributes_Get(weapon, 41, 2.0);
+			static char name[32];
+			GetClientName(client, name, sizeof(name));
+			switch(i_Current_Pap[client])
+			{
+				case 1:
+				{
+					if(!Task_I[client])
+					{
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Stone Age]");
+						Task_I[client]=true;
+					}
+				}
+				case 2:
+				{
+					if(!Task_II[client])
+					{
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Isn't It Iron Pick]");
+						Task_II[client]=true;
+					}
+				}
+				case 3:
+				{
+					if(!Task_III[client])
+					{
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Enchanter]");
+						Task_III[client]=true;
+					}
+				}
+				case 4:
+				{
+					if(!Task_IV[client])
+					{
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Diamonds!]");
+						Task_IV[client]=true;
+					}
+				}
+				case 5:
+				{
+					if(!Task_V[client])
+					{
+						CPrintToChatAll("%t", "Minecraft Sword Challenge", name, "[Cover Me in Debris]");
+						EmitSoundToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
+						EmitSoundToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
+						EmitSoundToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
+						Task_V[client]=true;
+					}
+				}
+			}
 			delete MSwordTimer[client];
 			MSwordTimer[client] = null;
 			DataPack pack;
-			MSwordTimer[client] = CreateDataTimer(0.2, Timer_MSword, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			MSwordTimer[client] = CreateDataTimer(0.2, Timer_MSword, pack, TIMER_REPEAT);
 			pack.WriteCell(client);
 			pack.WriteCell(EntIndexToEntRef(weapon));
 		}
 	}
 	else if(i_CustomWeaponEquipLogic[weapon]==WEAPON_MINECRAFT_SWORD)
 	{
+		i_Current_Pap[client] = RoundToFloor(Attributes_Get(weapon, 122, 0.0));
+		Ms_Weapon_Energy_Max[client]=Attributes_Get(weapon, 41, 2.0);
 		DataPack pack;
-		MSwordTimer[client] = CreateDataTimer(0.2, Timer_MSword, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		MSwordTimer[client] = CreateDataTimer(0.2, Timer_MSword, pack, TIMER_REPEAT);
 		pack.WriteCell(client);
 		pack.WriteCell(EntIndexToEntRef(weapon));
 	}
@@ -56,14 +127,16 @@ public Action Timer_MSword(Handle timer, DataPack pack)
 	}
 	if(GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon") == weapon)
 	{
-		Ms_Weapon_Energy_Max[client]=Attributes_Get(weapon, 41);
-		if(Ms_Weapon_Energy[client] < Ms_Weapon_Energy_Max[client])Ms_Weapon_Energy[client] += 0.25;
-		if(Ms_Weapon_Energy[client] > Ms_Weapon_Energy_Max[client])Ms_Weapon_Energy[client] = Ms_Weapon_Energy_Max[client];
-		if(MSwordHUDDelay[client] < GetGameTime())
+		if(Ms_Weapon_Energy_Max[client]>0.0)
 		{
-			PrintHintText(client, "Sweeping Edge [%i％]", RoundToFloor(Ms_Weapon_Energy[client]/Ms_Weapon_Energy_Max[client]*100.0));
-			StopSound(client, SNDCHAN_STATIC, "ui/hint.wav");
-			MSwordHUDDelay[client] = GetGameTime() + 0.5;
+			if(Ms_Weapon_Energy[client] < Ms_Weapon_Energy_Max[client])Ms_Weapon_Energy[client] += 0.25;
+			if(Ms_Weapon_Energy[client] > Ms_Weapon_Energy_Max[client])Ms_Weapon_Energy[client] = Ms_Weapon_Energy_Max[client];
+			if(MSwordHUDDelay[client] < GetGameTime())
+			{
+				PrintHintText(client, "Sweeping Edge [%i％]", RoundToFloor(Ms_Weapon_Energy[client]/Ms_Weapon_Energy_Max[client]*100.0));
+				StopSound(client, SNDCHAN_STATIC, "ui/hint.wav");
+				MSwordHUDDelay[client] = GetGameTime() + 0.5;
+			}
 		}
 	}
 	return Plugin_Continue;
@@ -71,12 +144,16 @@ public Action Timer_MSword(Handle timer, DataPack pack)
 
 public void MSword_Attack(int client, int weapon, bool &result, int slot)
 {
-	if(Ms_Weapon_Energy[client] >= Ms_Weapon_Energy_Max[client])
+	if(Ms_Weapon_Energy_Max[client]>0.0)
 	{
-		DataPack pack;
-		CreateDataTimer(0.25, Timer_MSword_Attack, pack, TIMER_FLAG_NO_MAPCHANGE);
-		pack.WriteCell(client);
-		pack.WriteCell(EntIndexToEntRef(weapon));
+		if(Ms_Weapon_Energy[client] >= Ms_Weapon_Energy_Max[client])
+		{
+			DataPack pack;
+			CreateDataTimer(0.25, Timer_MSword_Attack, pack, TIMER_FLAG_NO_MAPCHANGE);
+			pack.WriteCell(client);
+			pack.WriteCell(EntIndexToEntRef(weapon));
+		}
+		MSwordHUDDelay[client]=0.0;
 	}
 }
 
@@ -87,30 +164,44 @@ public Action Timer_MSword_Attack(Handle timer, DataPack pack)
 	int weapon = EntRefToEntIndex(pack.ReadCell());
 	if(!IsValidClient(client) || !IsClientInGame(client) || !IsPlayerAlive(client) || !IsValidEntity(weapon) || i_CustomWeaponEquipLogic[weapon]!=WEAPON_MINECRAFT_SWORD)
 		return Plugin_Stop;
-	float damage=65.0;
+	float damage=130.0;
 	
-	damage *= Attributes_Get(weapon, 1, 1.0);
 	damage *= Attributes_Get(weapon, 2, 1.0);
-	damage *= Attributes_Get(weapon, 1000, 1.0);
-	damage *= Attributes_Get(weapon, 425, 0.5);
+	damage *= Attributes_Get(weapon, 425, 1.0);
+	damage *= 0.25;
 	
 	DataPack pack2 = new DataPack();
 	pack2.WriteCell(GetClientUserId(client));
 	pack2.WriteCell(EntIndexToEntRef(weapon));
+	pack2.WriteCell(RoundToFloor(Attributes_Get(weapon, 4, 4.0)));
+	pack2.WriteFloat(Attributes_Get(weapon, 99, 150.0));
 	pack2.WriteFloat(damage);
 	RequestFrames(Weapon_Sweeping_Edge, 12, pack2);
 	Ms_Weapon_Energy[client]=0.0;
 	return Plugin_Stop;
 }
 
-public void MSword_NPCTakeDamage(int victim, int attacker, float &damage, int weapon)
+public void MSword_NPCTakeDamage(int attacker, int victim, float &damage, int weapon)
 {
 	if(!IsValidEntity(victim) || GetTeam(victim) == TFTeam_Red)
 		return;
 	if(!IsValidClient(attacker))
 		return;
-	if(Ms_Weapon_Energy[attacker] >= Ms_Weapon_Energy_Max[attacker])
-		damage*=1.0-Attributes_Get(weapon, 425, 0.5);
+	if(CheckInHud())
+		return;
+	else if(!(GetEntityFlags(attacker) & FL_ONGROUND))
+	{
+		damage*=Attributes_Get(weapon, 410, 1.1);
+		DisplayCritAboveNpc(victim, attacker, true, _, _, false);
+	}
+	float f_Silenced = Attributes_Get(weapon, 411, 1.0);
+	f_Silenced-=1.0;
+	if(f_Silenced>0.0)
+		ApplyStatusEffect(attacker, victim, "Silenced", f_Silenced);
+	f_Silenced = Attributes_Get(weapon, 397, 1.0);
+	f_Silenced-=1.0;
+	if(f_Silenced>0.0)
+		NPC_Ignite(victim, attacker, f_Silenced, weapon);
 }
 
 public void Weapon_Sweeping_Edge(DataPack pack)
@@ -118,6 +209,8 @@ public void Weapon_Sweeping_Edge(DataPack pack)
 	pack.Reset();
 	int client = 	GetClientOfUserId(pack.ReadCell());
 	int weapon = EntRefToEntIndex(pack.ReadCell());
+	int MaxRepeats = pack.ReadCell();
+	float MaxRange = pack.ReadFloat();
 	float damage = pack.ReadFloat();
 	if(IsValidClient(client) && IsValidCurrentWeapon(client, weapon))
 	{
@@ -132,7 +225,6 @@ public void Weapon_Sweeping_Edge(DataPack pack)
 		AngEffect = ang2;
 
 		AngEffect[1] -= 90.0;
-		int MaxRepeats = 4;
 		float Speed = 1500.0;
 		int PreviousProjectile;
 
@@ -165,7 +257,7 @@ public void Weapon_Sweeping_Edge(DataPack pack)
 		{
 			Ms_HitEntities[i] = false;
 		}
-		TR_EnumerateEntitiesSphere(pos2, Attributes_Get(weapon, 101), PARTITION_NON_STATIC_EDICTS, TraceSweeping_Edge, client);
+		TR_EnumerateEntitiesSphere(pos2, MaxRange, PARTITION_NON_STATIC_EDICTS, TraceSweeping_Edge, client);
 
 	//	bool Hit = false;
 		for (int entity_traced = 0; entity_traced < 8; entity_traced++)

@@ -1,12 +1,10 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-static int NPCId;
-
 void K_Unspeakable_OnMapStart_NPC()
 {
 	NPCData data;
-	strcopy(data.Name, sizeof(data.Name), "Unspeakable");
+	strcopy(data.Name, sizeof(data.Name), "Uglyble");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_k_unspeakable");
 	strcopy(data.Icon, sizeof(data.Icon), "victoria_precision_strike");
 	data.IconCustom = true;
@@ -14,12 +12,13 @@ void K_Unspeakable_OnMapStart_NPC()
 	data.Category = Type_Special;
 	data.Precache = ClotPrecache;
 	data.Func = ClotSummon;
-	NPCId = NPC_Add(data);
+	NPC_Add(data);
 }
 
 static void ClotPrecache()
 {
-
+	PrecacheSoundCustom("baka_zr/0hn0.mp3");
+	PrecacheSoundCustom("baka_zr/ki11me.mp3");
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
@@ -29,6 +28,18 @@ static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, co
 
 methodmap K_Unspeakable < CClotBody
 {
+	public void PlayIdleAlertSound() 
+	{
+		if(this.m_flNextIdleSound > GetGameTime(this.index))
+			return;
+		
+		EmitSoundToAll("baka_zr/0hn0.mp3", this.index, SNDCHAN_VOICE, NORMAL_ZOMBIE_SOUNDLEVEL, _, NORMAL_ZOMBIE_VOLUME);
+		this.m_flNextIdleSound = GetGameTime(this.index) + GetRandomFloat(12.0, 24.0);
+	}
+	public void PlayTeleportSound() 
+	{
+		EmitSoundToAll("baka_zr/ki11me.mp3", this.index, SNDCHAN_STATIC, BOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
+	}
 
 	public K_Unspeakable(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
@@ -60,8 +71,8 @@ methodmap K_Unspeakable < CClotBody
 		npc.StartPathing();
 		npc.m_flSpeed = 300.0;
 		npc.m_iOverlordComboAttack = 0;
-		npc.m_flNextMeleeAttack = 0.0;
-		npc.m_flNextRangedAttack = 0.0;
+		npc.m_flNextMeleeAttack = GetGameTime(npc.index) + 30.0;
+		npc.m_flJumpCooldown = GetGameTime(npc.index) + 10.0;
 		
 		AddNpcToAliveList(npc.index, 1);
 		Is_a_Medic[npc.index] = true;
@@ -74,6 +85,9 @@ methodmap K_Unspeakable < CClotBody
 		b_ThisEntityIgnoredByOtherNpcsAggro[npc.index] = true;
 		MakeObjectIntangeable(npc.index);
 		b_NoHealthbar[npc.index]=true;
+		
+		ApplyStatusEffect(npc.index, npc.index, "Solid Stance", 999999.0);	
+		ApplyStatusEffect(npc.index, npc.index, "Fluid Movement", 999999.0);	
 		
 		int skin = 1;
 		SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
@@ -130,6 +144,14 @@ static void K_Unspeakable_ClotThink(int iNPC)
 		return;
 	npc.m_flNextThinkTime = gameTime + 0.1;
 	
+	if(GetGameTime(npc.index) > npc.m_flNextMeleeAttack)
+	{
+		npc.m_flNextMeleeAttack = GetGameTime(npc.index) + 35.0;
+		npc.m_flJumpCooldown = GetGameTime(npc.index) + 5.0;
+		npc.m_flGetClosestTargetTime = 0.0;
+		npc.m_iTarget = GetClosestTarget(npc.index);
+	}
+
 	if(IsValidEnemy(npc.index, npc.m_iTarget))
 	{
 		float vecTarget[3]; WorldSpaceCenter(npc.m_iTarget, vecTarget );
@@ -141,17 +163,22 @@ static void K_Unspeakable_ClotThink(int iNPC)
 			float vPredictedPos[3];
 			PredictSubjectPosition(npc, npc.m_iTarget,_,_, vPredictedPos);
 			npc.SetGoalVector(vPredictedPos);
+			ApplyStatusEffect(npc.index, npc.m_iTarget, "Oh No Kill Me", 1.0);
 		}
 		else 
 		{
+			if(!npc.m_bPathing)
+				npc.StartPathing();
 			npc.SetGoalEntity(npc.m_iTarget);
 		}
+		KUglyble_TeleToU(npc);
 	}
 	else
 	{
 		npc.m_flGetClosestTargetTime = 0.0;
 		npc.m_iTarget = GetClosestTarget(npc.index);
 	}
+	npc.PlayIdleAlertSound();
 }
 
 static Action K_Unspeakable_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
@@ -190,4 +217,69 @@ static void K_Unspeakable_NPCDeath(int entity)
 		RemoveEntity(npc.m_iWearable2);
 	if(IsValidEntity(npc.m_iWearable1))
 		RemoveEntity(npc.m_iWearable1);
+}
+
+bool KUglyble_TeleToU(K_Unspeakable npc)
+{
+	if(npc.m_flJumpCooldown < GetGameTime(npc.index))
+	{
+		static float hullcheckmaxs[3];
+		static float hullcheckmins[3];
+		hullcheckmaxs = view_as<float>( { 30.0, 30.0, 120.0 } );
+		hullcheckmins = view_as<float>( { -30.0, -30.0, 0.0 } );
+		if(IsValidEnemy(npc.index, npc.m_iTarget, true, true))
+		{
+			float vecTarget[3]; WorldSpaceCenter(npc.m_iTarget, vecTarget );	
+				
+			float PreviousPos[3];
+			WorldSpaceCenter(npc.index, PreviousPos);
+			//randomly around the target.
+			vecTarget[0] += (GetRandomInt(0, 1)) ? -60.0 : 60.0;
+			vecTarget[1] += (GetRandomInt(0, 1)) ? -60.0 : 60.0;
+			
+			bool Succeed = Npc_Teleport_Safe(npc.index, vecTarget, hullcheckmins, hullcheckmaxs, true);
+			if(Succeed)
+			{
+				npc.PlayTeleportSound();
+				ParticleEffectAt(PreviousPos, "teleported_blue", 0.5);
+				ParticleEffectAt(PreviousPos, "teleported_red", 0.5);
+				float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
+				ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
+				ParticleEffectAt(WorldSpaceVec, "teleported_red", 0.5);
+				float VecEnemy[3]; WorldSpaceCenter(npc.m_iTarget, VecEnemy);
+				npc.FaceTowards(VecEnemy, 15000.0);
+				npc.FaceTowards(vecTarget, 15000.0);
+				npc.m_flJumpCooldown = GetGameTime(npc.index) + 20.0;
+				static float flPos[3]; 
+				GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", flPos);
+				flPos[2] += 5.0;
+				int particle = ParticleEffectAt(flPos, "utaunt_headless_glow", 1.5);
+				SetParent(npc.index, particle);
+
+				int red = 125;
+				int green = 0;
+				int blue = 125;
+				int Alpha = 200;
+				int colorLayer4[4];
+				float diameter = float(10 * 4);
+				SetColorRGBA(colorLayer4, red, green, blue, Alpha);
+				//we set colours of the differnet laser effects to give it more of an effect
+				int colorLayer1[4];
+				SetColorRGBA(colorLayer1, colorLayer4[0] * 5 + 765 / 8, colorLayer4[1] * 5 + 765 / 8, colorLayer4[2] * 5 + 765 / 8, Alpha);
+				int glowColor[4];
+				SetColorRGBA(glowColor, red, green, blue, Alpha);
+				TE_SetupBeamPoints(PreviousPos, WorldSpaceVec, Shared_BEAM_Laser, 0, 0, 0, 0.35, ClampBeamWidth(diameter * 0.5), ClampBeamWidth(diameter * 0.8), 0, 5.0, colorLayer1, 3);
+				TE_SendToAll(0.0);
+				TE_SetupBeamPoints(PreviousPos, WorldSpaceVec, Shared_BEAM_Laser, 0, 0, 0, 0.35, ClampBeamWidth(diameter * 0.4), ClampBeamWidth(diameter * 0.5), 0, 5.0, colorLayer1, 3);
+				TE_SendToAll(0.0);
+				TE_SetupBeamPoints(PreviousPos, WorldSpaceVec, Shared_BEAM_Laser, 0, 0, 0, 0.35, ClampBeamWidth(diameter * 0.3), ClampBeamWidth(diameter * 0.3), 0, 5.0, colorLayer1, 3);
+				TE_SendToAll(0.0);
+			}
+			else
+			{
+				npc.m_flJumpCooldown = GetGameTime(npc.index) + 0.25;
+			}
+		}
+	}
+	return false;
 }

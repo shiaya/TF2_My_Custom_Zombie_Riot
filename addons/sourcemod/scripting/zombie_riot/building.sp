@@ -2096,6 +2096,18 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 			if(BarracksUpgrade)
 				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 1.5));
 		}
+		if(!b_Leaders_Belt[entity] && b_Leaders_Belt[client])
+		{
+			b_Leaders_Belt[entity] = true;
+			view_as<BarrackBody>(entity).BonusDamageBonus *= 1.15;
+			view_as<BarrackBody>(entity).BonusFireRate *= 0.9;
+		}
+		if(b_Leaders_Belt[entity] && !b_Leaders_Belt[client])
+		{
+			b_Leaders_Belt[entity] = false;
+			view_as<BarrackBody>(entity).BonusDamageBonus /= 1.15;			
+			view_as<BarrackBody>(entity).BonusFireRate /= 0.9;
+		}
 		if(i_CurrentEquippedPerk[entity] != 3 && i_CurrentEquippedPerk[client] == 3)
 		{
 			view_as<BarrackBody>(entity).BonusFireRate *= 0.85;

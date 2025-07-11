@@ -1649,6 +1649,7 @@ stock bool NpcStats_IsEnemyTeslar(int victim, bool High)
 int Slowdown_I_Index;
 int Slowdown_II_Index;
 int Slowdown_III_Index;
+int Ohno_KillME_Index;
 void StatusEffects_Baka()
 {
 	StatusEffect data;
@@ -1690,13 +1691,13 @@ void StatusEffects_Baka()
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 	
-	strcopy(data.BuffName, sizeof(data.BuffName), "AOE Slowdown");
+	strcopy(data.BuffName, sizeof(data.BuffName), "Subjective Time Dilation");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "↓");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.0;
+	data.DamageTakenMulti 			= -1.0;
 	data.DamageDealMulti			= -1.0;
-	data.MovementspeedModif			= -1.0;
+	data.MovementspeedModif			= 0.0;
 	data.Positive 					= false;
 	data.ShouldScaleWithPlayerCount = false;
 	data.Slot						= 0;
@@ -1713,9 +1714,9 @@ void StatusEffects_Baka()
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "<");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.0;
+	data.DamageTakenMulti 			= -1.0;
 	data.DamageDealMulti			= -1.0;
-	data.MovementspeedModif			= -1.0;
+	data.MovementspeedModif			= 0.0;
 	data.Positive 					= false;
 	data.ShouldScaleWithPlayerCount = false;
 	data.Slot						= 0;
@@ -1728,13 +1729,13 @@ void StatusEffects_Baka()
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	Slowdown_II_Index=StatusEffect_AddGlobal(data);
 	
-	strcopy(data.BuffName, sizeof(data.BuffName), "Subjective Time Dilation");
+	strcopy(data.BuffName, sizeof(data.BuffName), "Power Slowdown");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "<<");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.0;
+	data.DamageTakenMulti 			= -1.0;
 	data.DamageDealMulti			= -1.0;
-	data.MovementspeedModif			= -1.0;
+	data.MovementspeedModif			= 0.0;
 	data.Positive 					= false;
 	data.ShouldScaleWithPlayerCount = false;
 	data.Slot						= 0;
@@ -1752,8 +1753,8 @@ void StatusEffects_Baka()
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
 	//-1.0 means unused
 	data.DamageTakenMulti 			= 0.0;
-	data.DamageDealMulti			= -1.0;
-	data.MovementspeedModif			= -1.0;
+	data.DamageDealMulti			= 0.0;
+	data.MovementspeedModif			= 0.0;
 	data.Positive 					= true;
 	data.ShouldScaleWithPlayerCount = false;
 	data.Slot						= 0;
@@ -1766,11 +1767,30 @@ void StatusEffects_Baka()
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Oh No Kill Me");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "☠");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= 0.75;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= false;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
+	Ohno_KillME_Index=StatusEffect_AddGlobal(data);
+	
 	strcopy(data.BuffName, sizeof(data.BuffName), "Charisma Effect");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.0;
+	data.DamageTakenMulti 			= -1.0;
 	data.DamageDealMulti			= -1.0;
 	data.MovementspeedModif			= -1.0;
 	data.Positive 					= false;
@@ -1789,7 +1809,7 @@ void StatusEffects_Baka()
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.0;
+	data.DamageTakenMulti 			= -1.0;
 	data.DamageDealMulti			= -1.0;
 	data.MovementspeedModif			= -1.0;
 	data.Positive 					= false;
@@ -1801,6 +1821,25 @@ void StatusEffects_Baka()
 	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
 	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
+	StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "HAL GAS");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "☠");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= 0.9;
+	data.MovementspeedModif			= 0.0;
+	data.Positive 					= false;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= HAL_SpeedFunc;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	StatusEffect_AddGlobal(data);
 }
@@ -1899,6 +1938,18 @@ float SubjectiveTimeDilation_Func(int victim, StatusEffect Apply_MasterStatusEff
 		if(b_thisNpcIsARaid[victim])f_Speed += 0.05;
 	}
 	return f_Speed;
+}
+
+float HAL_SpeedFunc(int victim, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect)
+{
+	float f_Speed = 0.1;
+	if(b_thisNpcIsARaid[victim])f_Speed = 0.05;
+	return f_Speed;
+}
+
+stock bool NpcStats_OhnoKillMEDeBuff(int victim)
+{
+	return CheckBuffIndex(victim, Ohno_KillME_Index);
 }
 
 static Handle Charisma_Handle = null;
@@ -3312,6 +3363,27 @@ void StatusEffects_Victoria()
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
 	VictoriaCallToArmsIndex = StatusEffect_AddGlobal(data);
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Victorian Launcher Overdrive");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.AttackspeedBuff			= 0.5;
+	data.LinkedStatusEffect 		= StatusEffect_AddBlank();
+	data.LinkedStatusEffectNPC 		= StatusEffect_AddBlank();
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	data.OnTakeDamage_TakenFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_DealFunc 	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostVictim	= INVALID_FUNCTION;
+	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
+	data.Status_SpeedFunc 		= INVALID_FUNCTION;
+	data.HudDisplay_Func 			= INVALID_FUNCTION;
+	StatusEffect_AddGlobal(data);
 }
 
 stock bool NpcStats_VictorianCallToArms(int victim)

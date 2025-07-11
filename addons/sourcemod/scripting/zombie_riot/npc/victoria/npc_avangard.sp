@@ -121,12 +121,12 @@ methodmap VictorianOfflineAvangard < CClotBody
 		int count = ExplodeString(data, ";", countext, sizeof(countext), sizeof(countext[]));
 		for(int i = 0; i < count; i++)
 		{
-			if(!StrContains(data, "only"))
+			if(!StrContains(countext[i], "only"))
 			{
 				i_AttacksTillMegahit[npc.index]=600;
 				npc.m_bFUCKYOU = true;
 			}
-			if(!StrContains(data, "link_majorsteam"))
+			else if(!StrContains(countext[i], "link_majorsteam"))
 				npc.m_fbRangedSpecialOn = true;
 		}
 

@@ -749,6 +749,41 @@ stock bool Damage_BuildingAttacker(int &attacker, float &damage)
 #if defined ZR
 static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, int equipped_weapon, float damagePosition[3])
 {
+	if(!CheckInHud() && b_Barricade_Stabilizer[victim])
+	{
+		int building = EntRefToEntIndex(i2_MountedInfoAndBuilding[1][victim]);
+		if(building != -1)
+		{
+			if(StrEqual(c_NpcName[building], "Barricade"))
+			{
+				int health = GetEntProp(building, Prop_Data, "m_iHealth") - RoundToCeil(damage*(RaidbossIgnoreBuildingsLogic(1) ? 1.2 : 0.8));
+				if(health > 0)
+				{
+					SetEntProp(building, Prop_Data, "m_iHealth", health);
+				}
+				else
+				{
+					int entity = EntRefToEntIndex(i2_MountedInfoAndBuilding[1][victim]);
+					if(IsValidEntity(i2_MountedInfoAndBuilding[1][victim]))
+					{
+						float posStacked[3]; 
+						GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", posStacked);
+						AcceptEntityInput(i2_MountedInfoAndBuilding[1][victim], "ClearParent");
+						SDKCall_SetLocalOrigin(entity, posStacked);	
+						i2_MountedInfoAndBuilding[1][victim] = INVALID_ENT_REFERENCE;
+					}
+					if(IsValidEntity(i2_MountedInfoAndBuilding[0][victim]))
+					{
+						RemoveEntity(i2_MountedInfoAndBuilding[0][victim]);
+						i2_MountedInfoAndBuilding[0][victim] = INVALID_ENT_REFERENCE;
+					}
+					DestroyBuildingDo(building);
+				}
+				damage*=0.8;
+			}
+		}
+	}
+
 	switch(i_CustomWeaponEquipLogic[equipped_weapon])
 	{
 		case WEAPON_ARK: // weapon_ark
@@ -883,7 +918,7 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 			TeamBakaCustom_PlayerTakeDamage(victim, attacker, damage, equipped_weapon, damagePosition, damagetype);
 		}
 	}
-	if(!CheckInHud() && b_Chaos_Coil[victim])
+	if(!CheckInHud() && (b_Chaos_Coil[victim] || NpcStats_OhnoKillMEDeBuff(victim)))
 		Elemental_AddChaosDamage(victim, attacker, RoundToCeil(damage));
 	if(!CheckInHud() && b_Iron_Will[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red))
 	{
@@ -899,9 +934,6 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 		RemoveAllBuffs(victim, false);
 		ApplyStatusEffect(victim, victim, "Hardened Aura", 0.6);
 	}
-	
-	if(!CheckInHud() && b_MarketGardener_Uniform[victim] && !(GetEntityFlags(attacker)&FL_ONGROUND))
-		damage*=0.97;
 
 	if(!CheckInHud() && LastMann && b_Hero_Of_Concord[victim] && (IsValidEntity(attacker) || GetTeam(attacker) != TFTeam_Red) && TeutonType[victim] == TEUTON_NONE)
 	{
@@ -1601,18 +1633,23 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 		float YPOS = GetVectorDistance(attackerPos, victimPos);
 		if(YPOS>100.0) damage *= 1.10;
 	}
-	if(IsValidClient(attacker) && b_MarketGardener_Uniform[attacker] && !(GetEntityFlags(attacker)&FL_ONGROUND))
-	{
-		float Speed = MoveSpeed(attacker, _, true);
-		damage += Speed*0.25;
-		damage *= 1.05;
-	}
 	if(IsValidEntity(weapon))
 	{
 		if(i_CustomWeaponEquipLogic[weapon] == WEAPON_TEUTON_DEAD)
 		{
 			ExtraDamageDealt *= 0.5;
 			damage *= ExtraDamageDealt;
+		}
+		else if(IsValidClient(attacker))
+		{
+			if(b_MarketGardener_Uniform[attacker] && !(GetEntityFlags(attacker)&FL_ONGROUND))
+			{
+				float Speed = MoveSpeed(attacker, _, true);
+				damage += Speed*0.25;
+				damage *= 1.05;
+			}
+			if(b_Leaders_Belt[attacker])
+				damage *= 0.8;
 		}
 		if(IsValidClient(attacker) && b_Shotgun_Dragonr_Beath_Ammo[attacker] && i_WeaponArchetype[weapon] == 1)
 		{

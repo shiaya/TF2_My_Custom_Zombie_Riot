@@ -229,7 +229,8 @@ enum
 	WEAPON_CHEESY_SECONDARY = 152,
 	WEAPON_TRUMPET = 1000,
 	WEAPON_MAJORSTEAM_LAUNCHER = 1001,
-	WEAPON_LOCKDOWN = 1002
+	WEAPON_LOCKDOWN = 1002,
+	WEAPON_MINECRAFT_SWORD = 1003
 }
 
 enum
@@ -618,6 +619,7 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "custom/baka/weapon_toolgun.sp"
 #include "custom/baka/weapon_majorsteam_launcher.sp"
 #include "custom/baka/weapon_mostima.sp"
+#include "custom/baka/weapon_minecraft_sword.sp"
 #include "custom/kit_soldine.sp"
 #include "custom/weapon_kritzkrieg.sp"
 #include "custom/wand/weapon_bubble_wand.sp"
@@ -634,6 +636,7 @@ void ZR_PluginLoad()
 void ZR_PluginStart()
 {
 	LoadTranslations("zombieriot.phrases.zombienames");
+	LoadTranslations("zombieriot.phrases.npctalk");
 	
 	RegServerCmd("zr_reloadnpcs", OnReloadCommand, "Reload NPCs");
 	RegServerCmd("sm_reloadnpcs", OnReloadCommand, "Reload NPCs", FCVAR_HIDDEN);

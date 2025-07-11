@@ -873,3 +873,4 @@ bool b_Mana_Infusion_Ammunition[MAXPLAYERS];
 bool b_Barricade_Stabilizer[MAXPLAYERS];
 bool b_Charisma_Catch_that_Bastard;
 bool b_Shotgun_Mini_Ammo[MAXPLAYERS];
+bool b_Leaders_Belt[MAXENTITIES];

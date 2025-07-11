@@ -246,12 +246,12 @@ methodmap CyberGrindGM < CClotBody
 				{
 					case 0: NPC_SpawnNext(true, true, 0);
 					case 1: NPC_SpawnNext(true, true, 1);
-					case 2: NPC_SpawnNext(true, true, 3);
+					case 2: NPC_SpawnNext(true, true, 2);
 					case 3: NPC_SpawnNext(true, true, 4);
 					case 4: NPC_SpawnNext(true, true, 5);
 					case 5: NPC_SpawnNext(true, true, 6);
 					case 6: NPC_SpawnNext(true, true, 7);
-					case 7: NPC_SpawnNext(true, true, 8);
+					case 7: NPC_SpawnNext(true, true, 9);
 					case 8: NPC_SpawnNext(true, true, 10);
 				}
 			}
@@ -285,7 +285,8 @@ methodmap CyberGrindGM < CClotBody
 					if(GetClientHealth(i)<maxhealth)
 						SetEntityHealth(i, maxhealth);
 					GiveArmorViaPercentage(i, 0.5, 1.0);
-					CPrintToChat(i, "{green}Adrenalive rushes through your body, healing you and giving you an extra revive.");
+					SetGlobalTransTarget(i);
+					CPrintToChat(i, "%t", "Adrenalive rushes engage");
 					GiveCompleteInvul(i, 3.5);
 				}
 			}
@@ -295,39 +296,6 @@ methodmap CyberGrindGM < CClotBody
 			b_DissapearOnDeath[npc.index] = true;
 			b_DoGibThisNpc[npc.index] = true;
 			SmiteNpcToDeath(npc.index);
-			return npc;
-		}
-		else if(!StrContains(data, "freeplayfkgoooooo"))
-		{
-			func_NPCDeath[npc.index] = CyberGrindGM_NPCDeath;
-			func_NPCOnTakeDamage[npc.index] = CyberGrindGM_OnTakeDamage;
-			func_NPCThink[npc.index] = CyberGrindGM_FreePlayer;
-			
-			npc.m_iBleedType = BLEEDTYPE_NORMAL;
-			npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
-			npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
-			
-			//IDLE
-			b_ThisNpcIsImmuneToNuke[npc.index] = true;
-			npc.m_iState = 0;
-			npc.m_flGetClosestTargetTime = 0.0;
-			npc.StartPathing();
-			npc.m_flSpeed = 0.0;
-			npc.m_iOverlordComboAttack = 0;
-			npc.m_flNextMeleeAttack = 0.0;
-			npc.m_flNextRangedAttack = GetGameTime() + 1.0;
-			CyberGrind_Difficulty = 0;
-			TeleToU[npc.index] = true;
-		
-			int skin = 1;
-			SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
-
-			npc.m_iWearable1 = npc.EquipItem("head", "models/workshop/player/items/spy/spr18_assassins_attire/spr18_assassins_attire.mdl");
-
-			npc.m_iWearable2 = npc.EquipItem("head", "models/player/items/spy/spy_hat.mdl");
-
-			SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
-			SetEntProp(npc.m_iWearable2, Prop_Send, "m_nSkin", skin);
 			return npc;
 		}
 		else if(!StrContains(data, "we_got_soldine"))
@@ -722,89 +690,6 @@ methodmap CyberGrindGM < CClotBody
 	}
 }
 
-static void CyberGrindGM_FreePlayer(int iNPC)
-{
-	CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
-	float gameTime = GetGameTime(npc.index);
-	if(npc.m_flNextDelayTime > gameTime)
-	npc.m_flNextDelayTime = gameTime + DEFAULT_UPDATE_DELAY_FLOAT;
-	npc.Update();
-	if(npc.m_flNextThinkTime > gameTime)
-		return;
-	npc.m_flNextThinkTime = gameTime + 0.1;
-	if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
-	{
-		float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
-		ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-		if(npc.m_flNextRangedAttack < gameTime && TeleToU[npc.index])
-		{
-			b_DoNotUnStuck[npc.index] = true;
-			b_NoKnockbackFromSources[npc.index] = true;
-			b_NpcIsInvulnerable[npc.index] = true;
-			b_ThisEntityIgnored[npc.index] = true;
-			MakeObjectIntangeable(npc.index);
-			int Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 300.0);
-			switch(Decicion)
-			{
-				case 2:
-				{
-					Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 150.0);
-					if(Decicion == 2)
-					{
-						Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 50.0);
-						if(Decicion == 2)
-						{
-							Decicion = TeleportDiversioToRandLocation(npc.index, true, 300.0, 0.0);
-						}
-					}
-				}
-				case 3:
-				{
-					//todo code on what to do if random teleport is disabled
-				}
-			}
-			TeleToU[npc.index]=false;
-			WorldSpaceCenter(npc.index, WorldSpaceVec);
-			ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-			npc.SetGoalVector(WorldSpaceVec, true);
-			npc.PlayDeathSound();
-		}
-	}
-	
-	if(!TeleToU[npc.index] && npc.m_flNextMeleeAttack < gameTime)
-	{
-		switch(npc.m_iOverlordComboAttack)
-		{
-			case 0:
-			{
-				CPrintToChatAll("{slateblue}Mr.V{default}: ayo! See you here again");
-				npc.m_flNextMeleeAttack = gameTime + 2.0;
-				npc.m_iOverlordComboAttack=1;
-			}
-			case 1:
-			{
-				CPrintToChatAll("{slateblue}Mr.V{default}: Take this, it will help");
-				CPrintToChatAll("{green}Gained 59300 cash from {slateblue}Mr.V");
-				CPrintToChatAll("{green}FREEPLAY Items is now buyable!");
-				Store_DiscountNamedItem("Wildingen's Elite Building Components FREEPLAY", 999);
-				Store_DiscountNamedItem("Void's Glimpse FREEPLAY", 999);
-				CurrentCash = 60000;
-				npc.m_flNextMeleeAttack = gameTime + 1.5;
-				npc.m_iOverlordComboAttack=2;
-			}
-			case 2:
-			{
-				CPrintToChatAll("{slateblue}Mr.V{default}: I'm busy cya!");
-				b_NpcForcepowerupspawn[npc.index] = 0;
-				i_RaidGrantExtra[npc.index] = 0;
-				b_DissapearOnDeath[npc.index] = true;
-				b_DoGibThisNpc[npc.index] = true;
-				SmiteNpcToDeath(npc.index);
-			}
-		}
-	}
-}
-
 static void CyberGrindGM_Instantkill(int iNPC)
 {
 	CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
@@ -889,75 +774,66 @@ static void CyberGrindGM_Final_Item(int iNPC)
 		{
 			case 0:
 			{
-				CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Congratulations, Cleared the Challenge");
+				CyberGrindGM_Talk("MrV Talk 05");
 				npc.m_flNextMeleeAttack = gameTime + 4.0;
 				npc.m_iOverlordComboAttack=1;
 			}
 			case 1:
 			{
-				CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Here, I'll give you the {unique}Item{default} as promised.");
+				CyberGrindGM_Talk("MrV Talk 06");
 				for (int client = 0; client < MaxClients; client++)
 				{
 					if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING)
 					{
-						char Give_me_the_item[512];
-						Format(Give_me_the_item, sizeof(Give_me_the_item),
-						"{default}He opened his briefcase and handed over the items:");
+						SetGlobalTransTarget(client);
+						CPrintToChat(client,"%t", "MrV Talk 07");
 						if(CyberGrind_InternalDifficulty>0 && !(Items_HasNamedItem(client, "Widemouth Refill Port")))
 						{
 							Items_GiveNamedItem(client, "Widemouth Refill Port");
-							Format(Give_me_the_item, sizeof(Give_me_the_item),
-							"%s\n{gray}[Normal]{uncommon}''Widemouth Refill Port''{default}", Give_me_the_item);
+							CPrintToChat(client,"%t", "MrV Talk 08");
 						}
 						if(CyberGrind_InternalDifficulty>1 && !(Items_HasNamedItem(client, "Builder's Blueprints")))
 						{
 							Items_GiveNamedItem(client, "Builder's Blueprints");
-							Format(Give_me_the_item, sizeof(Give_me_the_item),
-							"%s\n{red}[Hard]{darkblue}''Builder's Blueprints''{default}", Give_me_the_item);
+							CPrintToChat(client,"%t", "MrV Talk 09");
 						}
 						if(CyberGrind_InternalDifficulty>2 && !(Items_HasNamedItem(client, "Sardis Gold")))
 						{
 							Items_GiveNamedItem(client, "Sardis Gold");
-							Format(Give_me_the_item, sizeof(Give_me_the_item),
-							"%s\n{collectors}[Expert]{gold}''Sardis Gold''{default}", Give_me_the_item);
+							CPrintToChat(client,"%t", "MrV Talk 10");
 						}
 						if(CyberGrind_InternalDifficulty>3)
 						{
 							if(!(Items_HasNamedItem(client, "Originium")))
 							{
 								Items_GiveNamedItem(client, "Originium");
-								Format(Give_me_the_item, sizeof(Give_me_the_item),
-								"%s\n{maroon}[EX Hard]{darkgoldenrod}''Originium''{default}", Give_me_the_item);
+								CPrintToChat(client,"%t", "MrV Talk 11");
 							}
-							Format(Give_me_the_item, sizeof(Give_me_the_item),
-							"%s\n{maroon}[EX Hard]{olive}''Inventory Items!''{default}", Give_me_the_item);
-							float VecOrigin[3];
-							GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", VecOrigin);
-							VecOrigin[2] += 45.0;
-
-							if(!(Item_ClientHasAllRarity(client, 2)))
-								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 1);
-							if(!(Item_ClientHasAllRarity(client, 3)))
-								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 2);
-							else if(!(Item_ClientHasAllRarity(client, 4)))
-								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 3);
-							else if(!(Item_ClientHasAllRarity(client, 5)))
-								Stock_SpawnInvGift(VecOrigin, "models/items/tf_gift.mdl", 45.0, client, 4);
+						}
+						int MultiExtra = 1;
+						switch(CyberGrind_InternalDifficulty)
+						{
+							case 0, 1:
+								MultiExtra = 5;
+							case 2:
+								MultiExtra = 10;
+							case 3:
+								MultiExtra = 15;
+							case 4:
+								MultiExtra = 25;
 						}
 
 						int TempCalc = Level[client];
-						if(TempCalc >= 100)
-							TempCalc = 100;
+						if(TempCalc >= 101)
+							TempCalc = 101;
 
 						TempCalc = LevelToXp(TempCalc) - LevelToXp(TempCalc - 1);
 						TempCalc /= 40;
 
-						int XpToGive = TempCalc * 25;
+						int XpToGive = TempCalc * MultiExtra;
 						XP[client] += XpToGive;
 						GiveXP(client, 0);
-						Format(Give_me_the_item, sizeof(Give_me_the_item),
-						"%s\n{maroon}[EX Hard]{green}Everyone gains %i XP!{default}", Give_me_the_item, XpToGive);
-						CPrintToChat(client,"%s", Give_me_the_item);
+						CPrintToChat(client,"MrV Talk 12", XpToGive);
 					}
 				}
 				npc.m_flNextMeleeAttack = gameTime + 1.5;
@@ -1036,7 +912,6 @@ static void CyberGrindGM_Final_Item(int iNPC)
 	}
 }
 
-
 static void CyberGrindGM_ClotThink(int iNPC)
 {
 	CyberGrindGM npc = view_as<CyberGrindGM>(iNPC);
@@ -1105,18 +980,18 @@ static void CyberGrindGM_ClotThink(int iNPC)
 				case 0:
 				{
 					if(CyberGrind_Difficulty==4)
-						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: What, really?");
+						CyberGrindGM_Talk("MrV Talk 03");
 					else
-						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Oh, I See...");
+						CyberGrindGM_Talk("MrV Talk 01");
 					npc.m_flNextMeleeAttack = gameTime + 1.0;
 					npc.m_iOverlordComboAttack=1;
 				}
 				case 1:
 				{
 					if(CyberGrind_Difficulty==4)
-						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: Okay, {crimson}Good Luck.{default}");
+						CyberGrindGM_Talk("MrV Talk 04");
 					else
-						CPrintToChatAll("{unique}[GM] {slateblue}Mr.V{default}: I checked. Have a Funny Time.");
+						CyberGrindGM_Talk("MrV Talk 02");
 					CyberGrind_InternalDifficulty = CyberGrind_Difficulty;
 					npc.m_flNextMeleeAttack = gameTime + 1.0;
 					npc.m_iOverlordComboAttack=2;
@@ -1127,7 +1002,6 @@ static void CyberGrindGM_ClotThink(int iNPC)
 					Citizen_SpawnAtPoint();
 					if(CyberGrind_Difficulty==4)
 					{
-						Spawn_Cured_Grigori();
 						float SelfPos[3];
 						GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", SelfPos);
 						float AllyAng[3];
@@ -1140,7 +1014,8 @@ static void CyberGrindGM_ClotThink(int iNPC)
 						}
 						NPC_CreateByName("npc_invisible_trigger_man", -1, SelfPos, AllyAng, TFTeam_Stalkers, "cybergrind_ex_hard");
 					}
-					CPrintToChatAll("{gray}Barney: {default}Hey! We came late to assist! Got a friend too!");
+					Spawn_Cured_Grigori();
+					CyberGrindGM_Talk("Rebels Arrive", true);
 					/*if(CyberGrind_Difficulty!=4)
 					{
 						Waves_ClearWaves();
@@ -1217,26 +1092,26 @@ static void RaidMode_SetupVote()
 	CyberVote=true;
 	Vote vote;
 	
-	strcopy(vote.Name, sizeof(vote.Name), "Normal");
-	strcopy(vote.Desc, sizeof(vote.Desc), "Normal Desc");
+	strcopy(vote.Name, sizeof(vote.Name), "CyberGrind_Normal");
+	strcopy(vote.Desc, sizeof(vote.Desc), "CyberGrind_Normal Desc");
 	vote.Config[0] = 0;
 	vote.Level = 120;
 	Voting.PushArray(vote);
 	
-	strcopy(vote.Name, sizeof(vote.Name), "Hard");
-	strcopy(vote.Desc, sizeof(vote.Desc), "Hard Desc");
+	strcopy(vote.Name, sizeof(vote.Name), "CyberGrind_Hard");
+	strcopy(vote.Desc, sizeof(vote.Desc), "CyberGrind_Hard Desc");
 	vote.Config[0] = 0;
 	vote.Level = 150;
 	Voting.PushArray(vote);
 	
-	strcopy(vote.Name, sizeof(vote.Name), "Expert");
-	strcopy(vote.Desc, sizeof(vote.Desc), "Expert Desc");
+	strcopy(vote.Name, sizeof(vote.Name), "CyberGrind_Expert");
+	strcopy(vote.Desc, sizeof(vote.Desc), "CyberGrind_Expert Desc");
 	vote.Config[0] = 0;
 	vote.Level = 200;
 	Voting.PushArray(vote);
 	
-	strcopy(vote.Name, sizeof(vote.Name), "EX-Hard");
-	strcopy(vote.Desc, sizeof(vote.Desc), "EX-Hard Desc");
+	strcopy(vote.Name, sizeof(vote.Name), "CyberGrind_EX_Hard");
+	strcopy(vote.Desc, sizeof(vote.Desc), "CyberGrind_EX_Hard Desc");
 	vote.Config[0] = 0;
 	vote.Level = 250;
 	Voting.PushArray(vote);
@@ -1467,7 +1342,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 			Voting.GetArray(highest, vote);
 			delete Voting;
 			
-			if(!StrContains(vote.Name, "EX-Hard"))
+			if(!StrContains(vote.Name, "CyberGrind_EX_Hard"))
 			{
 				CyberGrind_Difficulty = 4;
 				CurrentCash = 4100;
@@ -1478,7 +1353,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 				}
 				
 			}
-			else if(!StrContains(vote.Name, "Expert"))
+			else if(!StrContains(vote.Name, "CyberGrind_Expert"))
 			{
 				CyberGrind_Difficulty = 3;
 				CurrentCash = 4500;
@@ -1489,7 +1364,7 @@ static Action RaidMode_EndVote(Handle timer, float time)
 				}
 				
 			}
-			else if(!StrContains(vote.Name, "Hard"))
+			else if(!StrContains(vote.Name, "CyberGrind_Hard"))
 			{
 				CyberGrind_Difficulty = 2;
 				CurrentCash = 4700;
@@ -1510,8 +1385,21 @@ static Action RaidMode_EndVote(Handle timer, float time)
 				}
 			}
 			PrintToChatAll("%t: %t","Difficulty set to", vote.Name);
+			CyberVote=false;
 		}
 	}
 	return Plugin_Continue;
 }
 
+static void CyberGrindGM_Talk(const char[] text, bool NoName=false)
+{
+	for(int i=0 ; i < MaxClients ; i++)
+	{
+		if(IsValidClient(i) && IsClientInGame(i))
+		{
+			SetGlobalTransTarget(i);
+			if(NoName) CPrintToChat(i, "%t", text);
+			else CPrintToChat(i, "{slateblue}Mr.V{default}: %t", text);
+		}
+	}
+}
