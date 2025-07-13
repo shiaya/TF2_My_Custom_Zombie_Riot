@@ -4498,6 +4498,11 @@
 		"en"	"Ranged Weapnos +3％ Faster Attack, +10％ faster weapon switch"
 		"ko"	"원거리 무기 공속 +3％ 증가, 무기 전환 속도 +10％"
 	}
+	"Leaders Belt desc"
+	{
+		"en"		"Barracks units increased Damage by +15％\nBarracks units increased Attack Speed by +10％\nbut all weapnos -100％ decreased Damage"
+		"ko"		"아쎄이의 피해량 +15％, 공속 +10％ 증가\n하지만 모든 무기의 피해량이 -100％"
+	}
 	"Barricade Stabilizer desc"
 	{
 		"en"	"Barricade is mounted, damage taken is reduced by 10％, but when the mounted Barricade also takes damage."
@@ -4647,53 +4652,40 @@
 	}
 	"Minecraft Sword Pap 1"
 	{
-		"en"	"Increased damage, decreased attack speed"
-		"ko"	"피해량 증가, 공속 감소"
-	}
-	"Minecraft Sword Extra Pap 1"
-	{
-		"en"	"It's made of stone and feels cheap. Increased damage, decreased attack speed"
-		"ko"	"돌로 만들었습니다. 피해량은 늘었지만 공속이 낮아졌습니다."
+		"en"	"It's made of stone and feels cheap. Increased damage"
+		"ko"	"돌로 만들었습니다. 피해량 증가"
 	}
 	"Minecraft Sword Pap 2"
 	{
-		"en"	"Increased damage, increased attack speed"
-		"ko"	"피해량 증가, 공속 증가"
-	}
-	"Minecraft Sword Extra Pap 2"
-	{
-		"en"	"Forged from iron. Damage increased and attack speed restored."
-		"ko"	"철로 만들었습니다. 피해량은 늘고 공속이 다시 돌아왔습니다."
+		"en"	"Forged from iron. Increased damage, increased attack speed"
+		"ko"	"철로 만들었습니다. 피해량 증가, 공속 증가"
 	}
 	"Minecraft Sword Pap 3"
 	{
-		"en"	"Increased damage, greatly increased attack speed, -50% cooldown on Sweeping Edge ability\nEnchant: Silence"
-		"ko"	"피해량 증가, 공속 대폭 증가, 휩쓸기 능력 재사용 대기시간 -50％\n인첸트: 침묵"
-	}
-	"Minecraft Sword Extra Pap 3"
-	{
-		"en"	"Made of gold! Damage increased and attack speed greatly increased.\nAs a bonus, the cooldown of the Sweep ability has been shortened."
-		"en"	"금으로 이루어져있다!. 피해량은 늘고 공속이 매우 빨라졌습니다.\n덤으로 휩쓸기 능력 재사용시간이 단축되었습니다."
+		"en"	"Increased damage, greatly increased attack speed, -50% cooldown on Sweeping Edge ability\nSome tinkering effects applied."
+		"ko"	"피해량 증가, 공속 대폭 증가, 휩쓸기 능력 재사용 대기시간 -50％\n대장장이 효과 일부 적용."
 	}
 	"Minecraft Sword Pap 4"
 	{
-		"en"	"Increased damage, decreased attack speed, increased area damage.\nEnchantment removed"
-		"ko"	"피해량 증가, 공속 정상화, 범위 피해 증가.\n인첸트 제거됨"
-	}
-	"Minecraft Sword Extra Pap 4"
-	{
-		"en"	"Diamond! Damage increased and attack speed returned. But enchantment is gone."
-		"en"	"다이아몬드!. 피해량은 늘고 공속이 돌아왔습니다. 하지만 인첸트를 포기했습니다."
+		"en"	"Diamond! Increased damage, attack speed, increased area damage."
+		"ko"	"다이아몬드! 피해량, 공속증가, 범위 피해 증가."
 	}
 	"Minecraft Sword Pap 5"
 	{
-		"en"	"Damage increased, attack range and area damage increased."
-		"ko"	"피해량 증가, 범위공격 사거리 증가, 범위 피해 증가."
-	}
-	"Minecraft Sword Extra Pap 5"
-	{
 		"en"	"Netherite! Damage increased, attack range and area damage increased."
-		"ko"	"네더라이트!. 피해량은 늘고 공격범위, 범위 피해가 높아졌습니다."
+		"ko"	"네더라이트! 피해량 증가, 범위공격 사거리 증가, 범위 피해 증가."
+	}
+	"Minecraft Sword Advancement"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"	"{1} has made the advancement {2}"
+		"ko"	"{1}이(가) {2} 발전 과제를 달성했습니다"
+	}
+	"Minecraft Sword Challenge"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"	"{1} has completed the challenge {2}"
+		"ko"	"{1}이(가) {2} 도전을 완료했습니다"
 	}
 	
 	"The Soul Eater Desc"

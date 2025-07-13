@@ -3633,10 +3633,10 @@
 		"en"		"Armageddon UP1"
 		"ko"		"아마겟돈 UP1"
 	}
-	"Minecraft Sword"
+	"Pixel Sword"
 	{
-		"en"		"Minecraft Sword"
-		"ko"		"나무 검"
+		"en"		"Pixel Sword"
+		"ko"		"픽셀 나무 검"
 	}
 	"Stone Age"
 	{
@@ -3648,10 +3648,10 @@
 		"en"		"Isn't It Iron Pick"
 		"ko"		"이젠 철 좀 들어라"
 	}
-	"Cover Me With Gold"
+	"Enchanted Gold Sword"
 	{
-		"en"		"Cover Me With Gold"
-		"ko"		"금으로 날 감싸줘"
+		"en"		"Enchanted Gold Sword"
+		"ko"		"인첸드된 금 검"
 	}
 	"Diamonds!"
 	{
@@ -4192,6 +4192,11 @@
 	{
 		"en"		"Quick Draw Belt [Uncommon]"
 		"ko"		"퀵드로우 벨트 [드문]"
+	}
+	"Leaders Belt [Rare]"
+	{
+		"en"		"Leaders Belt [Rare]"
+		"ko"		"리더 벨트 [희귀한]"
 	}
 	"Barricade Stabilizer [Mythic]"
 	{
