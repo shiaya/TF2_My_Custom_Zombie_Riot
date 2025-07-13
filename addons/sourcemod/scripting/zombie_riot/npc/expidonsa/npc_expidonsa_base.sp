@@ -184,7 +184,10 @@ void VausMagicaGiveShield(int entity, int amount, bool ignorecooldown = false, b
 		SetVariantString("1.0");
 
 	AcceptEntityInput(Shield, "SetModelScale");
-	SetEntityRenderMode(Shield, RENDER_TRANSCOLOR);
+	if(alpha == 255)
+		SetEntityRenderMode(Shield, RENDER_NORMAL);
+	else
+		SetEntityRenderMode(Shield, RENDER_TRANSCOLOR);
 	
 	SetEntityRenderFx(Shield, RENDERFX_NONE);
 	if(npc.m_iBleedType == BLEEDTYPE_VOID)

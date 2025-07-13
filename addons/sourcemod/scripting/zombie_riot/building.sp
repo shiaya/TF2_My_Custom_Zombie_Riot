@@ -1162,7 +1162,7 @@ bool BuildingSafeSpot(int client, float endPos[3], float hullcheckmins_Player[3]
 	if(IsSafePosition_Building(client, endPos, hullcheckmins_Player, hullcheckmaxs_Player))
 		FoundSafeSpot = true;
 
-	for (int x = 0; x < 5; x++)
+	for (int x = 0; x < 3; x++)
 	{
 		//first we check up and down here
 		if (FoundSafeSpot)
@@ -1177,17 +1177,11 @@ bool BuildingSafeSpot(int client, float endPos[3], float hullcheckmins_Player[3]
 				endPos[2] += TELEPORT_STUCK_CHECK_1;
 			case 2:
 				endPos[2] += TELEPORT_STUCK_CHECK_1 * 2.0;
-			case 3:
-				endPos[2] += TELEPORT_STUCK_CHECK_2;
-			case 4:
-				endPos[2] += TELEPORT_STUCK_CHECK_2 * 2.0;
-			case 5:
-				endPos[2] += TELEPORT_STUCK_CHECK_3;
 		}
 		if(IsSafePosition_Building(client, endPos, hullcheckmins_Player, hullcheckmaxs_Player))
 			FoundSafeSpot = true;
 	}
-	for (int x = -1; x < 6; x++)
+	for (int x = -1; x < 4; x++)
 	{
 		if (FoundSafeSpot)
 			break;
@@ -1208,14 +1202,8 @@ bool BuildingSafeSpot(int client, float endPos[3], float hullcheckmins_Player[3]
 
 			case 3:
 				endPos[2] -= TELEPORT_STUCK_CHECK_2;
-
-			case 4:
-				endPos[2] += TELEPORT_STUCK_CHECK_3;
-
-			case 5:
-				endPos[2] -= TELEPORT_STUCK_CHECK_3;	
 		}
-		for (int y = 0; y < 7; y++)
+		for (int y = 0; y < 5; y++)
 		{
 			if (FoundSafeSpot)
 				break;
@@ -1235,15 +1223,9 @@ bool BuildingSafeSpot(int client, float endPos[3], float hullcheckmins_Player[3]
 
 				case 4:
 					endPos[1] -= TELEPORT_STUCK_CHECK_2;
-
-				case 5:
-					endPos[1] += TELEPORT_STUCK_CHECK_3;
-
-				case 6:
-					endPos[1] -= TELEPORT_STUCK_CHECK_3;	
 			}
 
-			for (int z = 0; z < 7; z++)
+			for (int z = 0; z < 5; z++)
 			{
 				if (FoundSafeSpot)
 					break;
@@ -1263,12 +1245,6 @@ bool BuildingSafeSpot(int client, float endPos[3], float hullcheckmins_Player[3]
 
 					case 4:
 						endPos[0] -= TELEPORT_STUCK_CHECK_2;
-
-					case 5:
-						endPos[0] += TELEPORT_STUCK_CHECK_3;
-
-					case 6:
-						endPos[0] -= TELEPORT_STUCK_CHECK_3;
 				}
 				if(IsSafePosition_Building(client, endPos, hullcheckmins_Player, hullcheckmaxs_Player))
 					FoundSafeSpot = true;
