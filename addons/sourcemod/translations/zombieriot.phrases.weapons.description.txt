@@ -4678,14 +4678,14 @@
 	"Minecraft Sword Advancement"
 	{
 		"#format"	"{1:s},{2:s}"
-		"en"	"{1} has made the advancement {2}"
-		"ko"	"{1}이(가) {2} 발전 과제를 달성했습니다"
+		"en"	"{1} has made the advancement {lime}{2}{default}"
+		"ko"	"{1}이(가) {lime}{2}{default} 발전 과제를 달성했습니다"
 	}
 	"Minecraft Sword Challenge"
 	{
 		"#format"	"{1:s},{2:s}"
-		"en"	"{1} has completed the challenge {2}"
-		"ko"	"{1}이(가) {2} 도전을 완료했습니다"
+		"en"	"{1} has completed the challenge {valve}{2}{default}"
+		"ko"	"{1}이(가) 	{valve}{2}{default} 도전을 완료했습니다"
 	}
 	
 	"The Soul Eater Desc"

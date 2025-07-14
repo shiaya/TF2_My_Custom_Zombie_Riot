@@ -21,11 +21,11 @@ static bool Task_V[MAXPLAYERS];
 
 public void MSword_OnMapStart()
 {
-	PrecacheSound("baka_zr/minecraft_challenge_complete.mp3", true);
-	PrecacheSound("baka_zr/blacksmith_tick_quad.mp3", true);
-	PrecacheSound("baka_zr/blacksmith_tick_five.mp3", true);
-	PrecacheSound("baka_zr/blacksmith_tick_quad_friend.mp3", true);
-	PrecacheSound("baka_zr/blacksmith_tick_five_friend.mp3", true);
+	PrecacheSoundCustom("baka_zr/minecraft_challenge_complete.mp3");
+	PrecacheSoundCustom("baka_zr/blacksmith_tick_quad.mp3");
+	PrecacheSoundCustom("baka_zr/blacksmith_tick_five.mp3");
+	PrecacheSoundCustom("baka_zr/blacksmith_tick_quad_friend.mp3");
+	PrecacheSoundCustom("baka_zr/blacksmith_tick_five_friend.mp3");
 	
 	Zero(Ms_Weapon_Energy);
 	Zero(Ms_Weapon_Energy_Max);
@@ -89,9 +89,9 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 					if(!Task_V[client])
 					{
 						CPrintToChatAll("%t", "Minecraft Sword Challenge", name, "[Cover Me in Debris]");
-						EmitSoundToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
-						EmitSoundToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
-						EmitSoundToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
+						EmitCustomToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
+						EmitCustomToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
+						EmitCustomToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
 						Task_V[client]=true;
 					}
 				}
