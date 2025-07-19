@@ -942,7 +942,6 @@ int Store_CycleItems(int client, int slot, bool ChangeWeapon = true)
 	int topWeapon = -1;
 	int firstWeapon = -1;
 	int previousIndex = -1;
-
 	int length = GetMaxWeapons(client);
 	for(int i; i < length; i++)
 	{
@@ -5117,6 +5116,7 @@ void Store_ApplyAttribs(int client)
 		map.SetValue("820", 1.0);
 		map.SetValue("821", 1.0);
 		map.SetValue("107", 0.001);
+		map.SetValue("698", 1.0);
 		//try prevent.
 	}
 	else
@@ -5262,20 +5262,6 @@ void Store_ApplyAttribs(int client)
 	Waves_ApplyAttribs(client, map);
 	FullMoonDoubleHp(client, map);
 
-	/*
-	int entity = -1;
-	while(TF2_GetWearable(client, entity))
-	{
-		int ref = EntIndexToEntRef(entity);
-		if(ref == i_Viewmodel_PlayerModel[client] ||
-		   ref == WeaponRef_viewmodel[client] ||
-		   ref == i_Worldmodel_WeaponModel[client])
-			continue;
-		
-		Attributes_RemoveAll(entity);
-	}
-	*/
-
 	StringMapSnapshot snapshot = map.Snapshot();
 //	entity = client;
 	int length = snapshot.Length;
@@ -5283,22 +5269,6 @@ void Store_ApplyAttribs(int client)
 //	int ClientsideAttribs = 0;
 	for(int i; i < length; i++)
 	{
-		/*
-		if(attribs && !(attribs % 16))
-		{
-			if(!TF2_GetWearable(client, entity))
-				break;
-
-			int ref = EntIndexToEntRef(entity);
-			if(ref == i_Viewmodel_PlayerModel[client] ||
-			   ref == WeaponRef_viewmodel[client] ||
-			   ref == i_Worldmodel_WeaponModel[client])
-				continue;
-			
-			//Attributes_RemoveAll(entity);
-			attribs++;
-		}
-		*/
 
 		snapshot.GetKey(i, buffer1, sizeof(buffer1));
 		if(map.GetValue(buffer1, value))

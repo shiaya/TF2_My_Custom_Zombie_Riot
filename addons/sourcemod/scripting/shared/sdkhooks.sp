@@ -3507,7 +3507,7 @@ void CorrectClientsideMultiweapon(int client, int Mode)
 			//Compare active weapon to weapon that in "myweapons"
 
 			
-		//	f_CheckWeaponDouble[client] = GetGameTime () + 0.5; 
+			f_CheckWeaponDouble[client] = 0.0;
 			//check every 0.5 seconds.
 
 			int weaponAm = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
@@ -3518,7 +3518,7 @@ void CorrectClientsideMultiweapon(int client, int Mode)
 			GetEntityClassname(weaponAm, buffer, sizeof(buffer));
 			int CurrentSlot = TF2_GetClassnameSlot(buffer, weaponAm);
 
-			int WeaponValidCheck = Store_CycleItems(client, CurrentSlot, true);
+			int WeaponValidCheck = Store_CycleItems(client, CurrentSlot, false);
 
 			int Maxloop = 1;
 			while(WeaponValidCheck == weaponAm && Maxloop < 10) //dont be on same weapon!
