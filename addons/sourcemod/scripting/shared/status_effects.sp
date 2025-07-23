@@ -394,7 +394,7 @@ stock void RemoveSpecificBuff(int victim, const char[] name, int IndexID = -1)
 
 //Got lazy, tired of doing so many indexs.
 
-int HasSpecificBuff(int victim, const char[] name, int IndexID = -1)
+int HasSpecificBuff(int victim, const char[] name, int IndexID = -1, int attacker = 0)
 {
 	//doesnt even have abuff...
 	if(!E_AL_StatusEffects[victim])
@@ -426,7 +426,9 @@ int HasSpecificBuff(int victim, const char[] name, int IndexID = -1)
 		}
 		else
 		{
-			if(Apply_StatusEffect.TotalOwners[victim])
+			if(Apply_StatusEffect.TotalOwners[attacker])
+				Return = 3;
+			else if(Apply_StatusEffect.TotalOwners[victim])
 				Return = 2;
 			else
 				Return = 1;
@@ -434,6 +436,7 @@ int HasSpecificBuff(int victim, const char[] name, int IndexID = -1)
 	}
 	if(E_AL_StatusEffects[victim].Length < 1)
 		delete E_AL_StatusEffects[victim];
+
 	return Return;
 }
 stock void RemoveAllBuffs(int victim, bool RemoveGood, bool Everything = false)
@@ -2288,7 +2291,7 @@ void StatusEffects_BuildingAntiRaid()
 void StatusEffects_WidowsWine()
 {
 	StatusEffect data;
-	strcopy(data.BuffName, sizeof(data.BuffName), "Nemal's Teslar Mule");
+	strcopy(data.BuffName, sizeof(data.BuffName), "Teslar Mule");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "४");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
@@ -2406,6 +2409,20 @@ void StatusEffects_MagnesisStrangle()
 	data.OnTakeDamage_PostAttacker	= INVALID_FUNCTION;
 	data.Status_SpeedFunc 		= INVALID_FUNCTION;
 	data.HudDisplay_Func 			= INVALID_FUNCTION;
+	StatusEffect_AddGlobal(data);
+
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Raid Strangle Protection");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	StatusEffect_AddGlobal(data);
 }
 #endif
@@ -5872,7 +5889,6 @@ stock float Status_Effects_GetCustomValue(int victim, int Index)
 }
 
 
-
 void StatusEffects_Modifiers()
 {
 	StatusEffect data;
@@ -6001,6 +6017,20 @@ void StatusEffects_Explainelemental()
 	StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Barracks Building Explain");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), " ");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0;
+	data.SlotPriority				= 0;
+	StatusEffect_AddGlobal(data);
+
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Explain Building Cash");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), " ");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");
 	//-1.0 means unused

@@ -1530,7 +1530,7 @@ static void TinkerRangedSlowHeavyProj(int rarity, TinkerEnum tinker)
 	
 	float DamageLuck = (0.1 * (tinker.Luck[0]));
 	float ProjectileSpeedLuck = (0.1 * (1.0 + (-1.0*(tinker.Luck[1]))));
-	float AttackspeedLuck = (0.1 * (1.0 + (-1.0*(tinker.Luck[1]))));
+	float AttackspeedLuck = (0.1 * (1.0 + (-1.0*(tinker.Luck[2]))));
 
 	switch(rarity)
 	{
@@ -1564,7 +1564,7 @@ static void TinkerRangedFastProj(int rarity, TinkerEnum tinker)
 	
 	float DamageLuck = (0.1 * (1.0 + (-1.0*(tinker.Luck[0]))));
 	float ProjectileSpeedLuck = (0.1 * (tinker.Luck[1]));
-	float AttackspeedLuck = (0.1 * (tinker.Luck[1]));
+	float AttackspeedLuck = (0.1 * (tinker.Luck[2]));
 
 	switch(rarity)
 	{

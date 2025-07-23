@@ -1475,7 +1475,8 @@ public void OnPostThink(int client)
 				Cooldowntocheck = 99.9;
 			if(Cooldowntocheck > 0.0)
 			{
-				Format(buffer2, sizeof(buffer2), "%s:%0.f",npc_classname[4], Cooldowntocheck);
+				//add one second so it itll never show 0 in there, thats stupid.
+				Format(buffer2, sizeof(buffer2), "%s:%1.f",npc_classname[4], Cooldowntocheck);
 			}
 			else
 			{
@@ -1496,7 +1497,7 @@ public void OnPostThink(int client)
 				
 				if(slowdown_amount < 0.0)
 				{
-					Format(buffer2, sizeof(buffer2), "%sWI", buffer2, slowdown_amount);
+					Format(buffer2, sizeof(buffer2), "%s%c%c", buffer2,PerkNames_two_Letter[i_CurrentEquippedPerk[client]][0], PerkNames_two_Letter[i_CurrentEquippedPerk[client]][1]);
 				}
 				else
 				{
