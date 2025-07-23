@@ -1006,8 +1006,8 @@
 	}
 	"Concord Hero Desc"
 	{
-		"en"	"Damage dealt increases by 45%% and all damage taken is reduced by 25%%."
-		"ko"	"피해량이 45%%늘어나며 받는 모든 피해를 25%% 경감합니다."
+		"en"	"Damage dealt increases by 45％ and all damage taken is reduced by 25％."
+		"ko"	"피해량이 45％늘어나며 받는 모든 피해를 25％ 경감합니다."
 	}
 	"True Concord Hero"
 	{
@@ -1016,8 +1016,8 @@
 	}
 	"True Concord Hero Desc"
 	{
-		"en"	"Damage dealt increases by 45%% and all damage taken is reduced by 30%%."
-		"ko"	"피해량이 55%%늘어나며 받는 모든 피해를 30%% 경감합니다."
+		"en"	"Damage dealt increases by 45％ and all damage taken is reduced by 30％."
+		"ko"	"피해량이 55％늘어나며 받는 모든 피해를 30％ 경감합니다."
 	}
 	"Nanomachine"
 	{
@@ -1026,8 +1026,8 @@
 	}
 	"Nanomachine Desc"
 	{
-		"en"	"all damage taken is reduced by 20%%."
-		"ko"	"받는 모든 피해를 20%% 경감합니다."
+		"en"	"all damage taken is reduced by 20％."
+		"ko"	"받는 모든 피해를 20％ 경감합니다."
 	}
 	"Major Steam's Launcher Resistance"
 	{
@@ -1048,6 +1048,61 @@
 	{
 		"en"	"Enemies gain additional effects..."
 		"ko"	"적이 추가적인 효과를 얻습니다..."
+	}
+	"Cybergrind EX-Hard Enemy Buff Desc"
+	{
+		"en"	"Enemies gain additional effects..."
+		"ko"	"적이 추가적인 효과를 얻습니다..."
+	}
+	"Oh No Kill Me"
+	{
+		"en"	"Oh No Kill Me"
+		"ko"	"Oh No Kill Me"
+	}
+	"Oh No Kill Me Desc"
+	{
+		"en"	"All damage taken deals additional {darkblue}''Chaos elemental'' {crimson}damage\nand damage dealt is reduced by 25%."
+		"ko"	"받는 모든 피해가 {darkblue}''카오스 원소'' {crimson}추가 피해를 주며\n주는 피해량이 25％ 감소"
+	}
+	"HAL GAS"
+	{
+		"en"	"H.A.L GAS"
+		"ko"	"H.A.L 가스"
+	}
+	"HAL GAS Desc"
+	{
+		"en"	"Deals True DMG.\n Movement speed reduced by 10％\nDamage reduced by 10％\nHowever, the movement speed reduction only applies to raid bosses by 5％."
+		"ko"	"트루 피해 타입.\n피해량 10％ 감소, 이동 속도 10％ 감소\n단 이속감소는 레이드 보스 대상에겐 5％만 적용됨."
+	}
+	"Subjective Time Dilation"
+	{
+		"en"	"Subjective Time Dilation"
+		"ko"	"시간인지둔화"
+	}
+	"Subjective Time Dilation Desc"
+	{
+		"en"	"Movement speed reduced by 10％\nHowever, the movement speed reduction only applies to raid bosses by 5％."
+		"ko"	"이동 속도 10％ 감소\n단 이속감소는 레이드 보스 대상에겐 5％만 적용됨."
+	}
+	"Slowdown"
+	{
+		"en"	"Slowdown"
+		"ko"	"둔화"
+	}
+	"Slowdown Desc"
+	{
+		"en"	"Movement speed reduced by 15％\nHowever, the movement speed reduction only applies to raid bosses by 5％."
+		"ko"	"이동 속도 15％ 감소\n단 이속감소는 레이드 보스 대상에겐 5％만 적용됨."
+	}
+	"Power Slowdown"
+	{
+		"en"	"Power Slowdown"
+		"ko"	"강한 둔화"
+	}
+	"Power Slowdown Desc"
+	{
+		"en"	"Movement speed reduced by 35％\nHowever, the movement speed reduction only applies to raid bosses by 10％."
+		"ko"	"이동 속도 35％ 감소\n단 이속감소는 레이드 보스 대상에겐 10％만 적용됨."
 	}
 	"Iberia Morale Boost"
 	{
