@@ -4532,8 +4532,8 @@
 	}
 	"Barricade Stabilizer desc"
 	{
-		"en"	"Barricade is mounted, damage taken is reduced by 10％, but when the mounted Barricade also takes damage."
-		"ko"	"바리케이드를 장착한 경우, 받는 피해가 10％ 감소하지만, 장착한 바리케이드도 피해를 입습니다."
+		"en"	"Barricade is mounted, damage taken is reduced by 20％, but when the mounted Barricade also takes damage."
+		"ko"	"바리케이드를 장착한 경우, 받는 피해가 20％ 감소하지만, 장착한 바리케이드도 피해를 입습니다."
 	}
 	"Optimize Magic Casting Desc"
 	{

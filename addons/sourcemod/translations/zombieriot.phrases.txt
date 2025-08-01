@@ -1169,18 +1169,22 @@
 		"pt"		"Rápida ressureição"
 		"nl"		"Snel tot leven brengen"
 		"chi" 		"快速起身"
+		"ko" 		"재생 베리"
 	}
 	"Obsidian Oaf"
 	{
 		"en" 		"Obsidian Oaf"
+		"ko" 		"흑요석 오프 맥주"
 	}
 	"Morning Coffee"
 	{
 		"en" 		"Morning Coffee"
+		"ko" 		"더블샷 커피"
 	}	
 	"Hasty Hops"
 	{
 		"en" 		"Hasty Hops"
+		"ko" 		"맹렬한 야끼런 밀주"
 	}
 	"Marksman Beer"
 	{
@@ -1191,6 +1195,7 @@
 		"pt"		"Tiro morto de Daiquiri"
 		"nl"		"Dood schot Daiquiri"
 		"chi" 		"死亡宣告"
+		"ko" 		"지정사수 에일"
 	}
 	
 	"Teslar Mule"
@@ -1201,6 +1206,7 @@
 		"pt"		"Vinho Viúvo"
 		"nl"		"Wijn van de weduwe"
 		"chi" 		"恶魔领域"
+		"ko" 		"테슬라 뮬"
 	}
 	"Stockpile Stout"
 	{
@@ -1208,6 +1214,12 @@
 		"fr" 		"Recyclage Poiré"
 		"pt"		"Pêra Reciclada"
 		"ru" 		"Переработка пуаре"
+		"ko" 		"비축 흑맥주"
+	}
+	"Energy Drink"
+	{
+		"en" 		"Energy Drink"
+		"ko"		"에너지 음료"
 	}
 
 	"Regene Berry Recieved"
@@ -1216,34 +1228,42 @@
 		"fr" 		"RÉSURRECTION RAPIDE! 2x vitesse de résurrection, taux de soins +15％, 2x soins pour les resucitations"
 		"pt"		"RÁPIDA RESSUREIÇÃO! 2x velocidade de ressureição e cura 15％ a mais e x2 mais vida ao reviver"
 		"ru" 		"РЕАНИМАТОР! 2x скорость оживления и на 15％ быстрее скорость лечения и 2x здоровье при оживлении"
+		"ko"		"재생 베리! 소생 속도 두배 증가및 치료속도 +15％ 증가, 소생 체력 두배 증가"
 	}
 	"Obsidian Oaf Recieved"
 	{
 		"en" 		"Obsidian Oaf! 15％ Damage resistance and +100HP"
+		"ko"		"흑요석 오프 맥주! 모든 피해 +15％ 저항및 최대 체력 +100 증가"
 	}
 	"Morning Coffee Recieved"
 	{
 		"en" 		"Morning Coffee! 17％ Extra attack speed and Building Damage"
+		"ko"		"더블샷 커피! 공속및 구조물 피해량 +17％ 증가"
 	}	
 	"Hasty Hops Recieved"
 	{
 		"en" 		"Hasty Hops! 1.42x Extra reload, switchspeed and Mana regen"
+		"ko"		"맹렬한 야끼런 밀주! 재장전 속도및 무기 전환 속도, 마나 리젠 +42％ 증가"
 	}
 	"Marksman Beer Recieved"
 	{
 		"en" 		"Marksman Beer! 1.2x Weapon accuracy and 1.25x Extra Headshot and backstab damage\n 1.2x Projectile Speed."
+		"ko"		"지정사수 에일! 집탄율 +20％ 및 헤드샷 피해량 +25％\n투사체 속도 +20％ 증가"
 	}
 	"Teslar Mule Recieved"
 	{
 		"en" 		"Teslar Mule! Rechargeable protection that debuffs zombies and blocks 75％ of the damage if activated.\nDebuffed enemies are slowed down heavily and take 35 Percent more damage."
+		"ko"		"테슬라 뮬! 피격시 대상에게 디버프를 걸고 25％의 피해만 받음.\n해당 효과가 적용된 적은 이속감소및 +35％ 피해 취약"
 	}
 	"Stockpile Stout Recieved"
 	{
 		"en" 		"Stockpile Stout! 33％ More ammo from all non shop sources, and 50％ more max armor and armor gain.\nYou gain 2x the Ammo Supplies."
+		"ko"		"비축 흑맥주! 상점을 제외한 얻는 탄약 +33％ 증가\n아머 최대량 +50％ 증가\n보급품 흭득량 두배 증가."
 	}
 	"Energy Drink Recieved"
 	{
 		"en" 		"Energy Drink! Gain a 15％ cooldown reduction for Weapons & Extra Gear!"
+		"ko"		"에너지 음료! 무기및 추가장비의 쿨다운 -15％ 감소"
 	}
 	"Freeze Bomb Activated"
 	{
