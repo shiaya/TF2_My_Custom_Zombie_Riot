@@ -383,20 +383,20 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 			case 13:
 			{
 				enemy.Index = NPC_GetByPlugin("npc_corruptedbarney");
-				enemy.Health = RoundToFloor((5000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
+				enemy.Health = RoundToFloor((2000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
 				enemy.ExtraDamage = (f_FreeplayDamageExtra * 0.5);
 			}
 			case 14:
 			{
 				enemy.Index = NPC_GetByPlugin("npc_whiteflower_boss");
-				enemy.Health = RoundToFloor((10000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
+				enemy.Health = RoundToFloor((7000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
 				enemy.ExtraMeleeRes *= 3.0;
-				enemy.ExtraRangedRes *= 2.0;
+				enemy.ExtraRangedRes *= 3.0;
 			}
 			case 15:
 			{
 				enemy.Index = NPC_GetByPlugin("npc_void_unspeakable");
-				enemy.Health = RoundToFloor((6000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
+				enemy.Health = RoundToFloor((5000000.0 + HealthBonus) / 70.0 * float(Waves_GetRound() * 2) * MultiGlobalHighHealthBoss);
 				enemy.Data = "forth";
 			}
 			case 16:
@@ -480,21 +480,9 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 			}
 		}
 
-		if(Waves_GetRoundScale() > 124)
-			enemy.ExtraDamage *= 1.25;
-
-		if(Waves_GetRoundScale() > 174)
-			enemy.ExtraDamage *= 2.0;
-
 		// Raid health is lower before w101.
 		if(Waves_GetRoundScale() < 101)
 			enemy.Health = RoundToCeil(float(enemy.Health) * 0.75);
-
-		if(Waves_GetRoundScale() > 149)
-			enemy.Health = RoundToCeil(float(enemy.Health) * 1.25);
-
-		if(Waves_GetRoundScale() > 174)
-			enemy.Health = RoundToCeil(float(enemy.Health) * 1.5);
 
 		enemy.Health = RoundToCeil(float(enemy.Health) * HealthMulti);
 		
@@ -781,7 +769,7 @@ void Freeplay_AddEnemy(int postWaves, Enemy enemy, int &count, bool alaxios = fa
 
 	float ExtraHpAdd;
 	ExtraHpAdd = float(postWaves);
-	ExtraHpAdd *= 0.1;
+	ExtraHpAdd *= 0.075;
 	if(ExtraHpAdd <= 1.0)
 	{
 		ExtraHpAdd = 1.0;
@@ -1405,7 +1393,7 @@ void Freeplay_SetupStart(bool extra = false)
 	{
 		FreeplayBuffTimer = 0;
 		CreateTimer(4.0, activatebuffs, _, TIMER_FLAG_NO_MAPCHANGE);
-		int irlnreq = 4;
+		int irlnreq = 1;
 
 		int wrathchance = GetRandomInt(0, 100);
 		if(wrathchance < irlnreq)
