@@ -4657,7 +4657,7 @@
 	}
 	"Flask of Abyssal Hunter Desc"
 	{
-		"en"	"Weapon becomes Abyssal hunter archetype"
+		"en"	"Adds the Seaborn faction"
 	}
 	"Flask of Kazimierz"
 	{
@@ -4665,6 +4665,6 @@
 	}
 	"Flask of Kazimierz Desc"
 	{
-		"en"	"Weapon becomes Kazimierz archetype"
+		"en"	"Adds the Kazimierz faction"
 	}
 }

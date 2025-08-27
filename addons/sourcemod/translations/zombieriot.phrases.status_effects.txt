@@ -137,7 +137,7 @@
 	}
 	"Teslar Mule Desc"
 	{
-		"en"	"Increases Damage Taken by 35％\nSlows NPC'S by 80％, which lowers over time up untill 0％"
+		"en"	"Increases Damage Taken by 30%\nSlows NPC'S by 80％, which lowers over time up untill 0％"
 	}
 	"Cripple"
 	{
@@ -1143,8 +1143,7 @@
 	}
 	"Burn Desc"
 	{
-		"en"	"Deals True DMG.\nHeal 25％ less while on fire, when applying fire again (npc only), tick again for 50％ damage.\n{green}Enemies on fire, give 10％ more hp on kill and gibs."
-		"es"	"Hace daño verdadero.\nLa curacion es un -25％ eficiente al quemarse. Si un NPC te aplica fuego de nuevo, recibes un 50％ de daño de quemadura extra.\n{green}Matar un enemigo en fuego dara +10％ de HP extra."
+		"en"	"Deals True Damage if allies are affected, otherwise ranged.\nHeal 25％ less while on fire, when applying fire again (npc only), tick again for 50％ damage.\n{green}Enemies on fire, give 10％ more hp on kill and gibs."
 	}
 	"Zealot's Random Drinks"
 	{
@@ -1588,5 +1587,77 @@
 	"Paralysis Desc"
 	{
 		"en"	"-50％ attack speed and movement speed"
+	}
+	"Hypodermic Toxin Injection"
+	{
+		"en"	"Hypodermic Toxin Injection"
+	}
+	"Hypodermic Toxin Injection Desc"
+	{
+		"en"	"Increases damage taken by 20％"
+	}
+	"Cellular Breakdown"
+	{
+		"en"	"Cellular Breakdown"
+	}
+	"Cellular Breakdown Desc"
+	{
+		"en"	"Increases damage taken by 20％.\nDecreases attack speed by 20％."
+	}
+	"Molecular Collapse"
+	{
+		"en"	"Molecular Collapse"
+	}
+	"Molecular Collapse Desc"
+	{
+		"en"	"Increases damage taken by 20％.\nDecreases attack speed by 20％.\nDecreases damage by 20％."
+	}
+	"Quantum Entanglement"
+	{
+		"en"	"Quantum Entanglement"
+	}
+	"Quantum Entanglement Desc"
+	{
+		"en"	"Reduces damage taken by 25％.\nIncreases attack speed by 25％.\nIncreases damage by 25％.\nIncreases NPC movement speed by 25％."
+	}
+	"Envenomed"
+	{
+		"en"	"Envenomed"
+	}
+	"Envenomed Desc"
+	{
+		"en"	"Brings your health down to 1, your health partially recovers overtime."
+	}
+	"Energizing Gel"
+	{
+		"en"	"Energizing Gel"
+	}
+	"Energizing Gel Desc"
+	{
+		"en"	"Reduces damage taken by 50％.\nIncreases NPC movement speed by 50％."
+	}
+	"Kinetic Surge"
+	{
+		"en"	"Kinetic Surge"
+	}
+	"Kinetic Surge Desc"
+	{
+		"en"	"Increases everyone's damage by 100％."
+	}
+	"Umbral Grace"
+	{
+		"en"	"Umbral Grace"
+	}
+	"Umbral Grace Desc"
+	{
+		"en"	"Gain 25％ damage reduction, 50％ extra damage.\nYou slowly cure of elemental damage.\n{crimson}but lose 50％ attackspeed/Healrate."
+	}
+	"Kolum's View"
+	{
+		"en"	"Kolum's View"
+	}
+	"Kolum's View Desc"
+	{
+		"en"	"Umbral koulm's have their vision on you."
 	}
 }

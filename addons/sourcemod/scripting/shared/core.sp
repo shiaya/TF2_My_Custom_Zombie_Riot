@@ -442,6 +442,7 @@ float fl_NextThinkTime[MAXENTITIES];
 float fl_NextRunTime[MAXENTITIES];
 float fl_NextMeleeAttack[MAXENTITIES];
 float fl_Speed[MAXENTITIES];
+float fl_GravityMulti[MAXENTITIES];
 int i_Target[MAXENTITIES];
 float fl_GetClosestTargetTime[MAXENTITIES];
 float fl_GetClosestTargetTimeTouch[MAXENTITIES];
@@ -2378,9 +2379,9 @@ public void OnEntityCreated(int entity, const char[] classname)
 		WildingenBuilder[entity] = false;
 		WildingenBuilder2[entity] = false;
 		Armor_Charge[entity] = 0;
+#endif
 		b_IsATrigger[entity] = false;
 		b_IsATriggerHurt[entity] = false;
-#endif
 		i_IsWandWeapon[entity] = false;
 		i_IsWrench[entity] = false;
 		b_CanSeeBuildingValues[entity] = false;
@@ -2400,7 +2401,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 		b_IsEntityAlwaysTranmitted[entity] = false;
 		b_IsEntityNeverTranmitted[entity] = false;
 		b_NoHealthbar[entity] = false;
-
+		
 		//Normal entity render stuff, This should be set to these things on spawn, just to be sure.
 		b_DoNotIgnoreDuringLagCompAlly[entity] = false;
 		f_EntityRenderColour[entity][0] = 1.0;
@@ -2465,11 +2466,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 		i_WeaponForceClass[entity] = 0;
 		b_ProjectileCollideWithPlayerOnly[entity] = false;
 		b_EntityCantBeColoured[entity] = false;
-#if defined RTS
-		TeamNumber[entity] = 0;
-#else
 		TeamNumber[entity] = -1;
-#endif
 		fl_Extra_MeleeArmor[entity] 		= 1.0;
 		fl_Extra_RangedArmor[entity] 		= 1.0;
 		fl_Extra_Speed[entity] 				= 1.0;
@@ -2712,18 +2709,21 @@ public void OnEntityCreated(int entity, const char[] classname)
 			npc.bCantCollidieAlly = true;
 			SDKHook(entity, SDKHook_SpawnPost, Set_Projectile_Collision);
 		//	SDKHook(entity, SDKHook_ShouldCollide, Never_ShouldCollide);
+			Hook_DHook_UpdateTransmitState(entity);
 			b_IsAProjectile[entity] = true;
 			TFProjectile_Rocket_Spawn(entity);
 		}
 #endif
 		else if(!StrContains(classname, "zr_projectile_base"))
 		{
+			SetEntityRenderMode(entity, RENDER_NORMAL); //Make it entirely invis.
 			b_ThisEntityIsAProjectileForUpdateContraints[entity] = true;
 			SDKHook(entity, SDKHook_SpawnPost, ApplyExplosionDhook_Rocket);
 			npc.bCantCollidie = true;
 			npc.bCantCollidieAlly = true;
 			SDKHook(entity, SDKHook_SpawnPost, Set_Projectile_Collision);
 		//	SDKHook(entity, SDKHook_ShouldCollide, Never_ShouldCollide);
+			Hook_DHook_UpdateTransmitState(entity);
 			b_IsAProjectile[entity] = true;
 			
 		}

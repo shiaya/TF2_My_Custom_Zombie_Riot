@@ -1085,6 +1085,11 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 	bool autoCash = view_as<bool>(kv.GetNum("auto_raid_cash"));
 	FakeMaxWaves = kv.GetNum("fakemaxwaves");
 	NoBarneySpawn = view_as<bool>(kv.GetNum("no_barney", 0));
+	kv.GetString("relay_send_start", buffer, sizeof(buffer));
+	if(buffer[0])
+	{
+		ExcuteRelay(buffer);
+	}
 
 	if(NoBarneySpawn)
 	{
@@ -1692,8 +1697,8 @@ public Action Waves_EndVote(Handle timer, float time)
 				Waves_SetDifficultyName(vote.Name);
 				WaveLevel = vote.Level;
 				
-				Format(vote.Name, sizeof(vote.Name), "FireUser%d", highest + 1);
-				ExcuteRelay("zr_waveselected", vote.Name);
+			//	Format(vote.Name, sizeof(vote.Name), "FireUser%d", highest + 1);
+			//	ExcuteRelay("zr_waveselected", vote.Name);
 				
 				BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, vote.Config);
 				KeyValues kv = new KeyValues("Waves");
@@ -2579,6 +2584,14 @@ void Waves_Progress(bool donotAdvanceRound = false)
 
 				if(round.Setup > 59.0)
 				{
+					for (int client = 1; client <= MaxClients; client++)
+					{
+						if(IsValidClient(client))
+						{
+							//saving XP and inventory, nothing else.
+							Database_SaveXpAndItems(client);
+						}
+					}
 					if(PrevRoundMusic > 0)
 					{
 						AlreadyWaitingSet(true);
@@ -3204,6 +3217,8 @@ void DoGlobalMultiScaling()
 
 	float multi = playercount / 4.0;
 	
+	Rogue_Rift_MultiScale(multi);
+	
 	//normal bosses health
 	MultiGlobalHealthBoss = playercount * 0.2;
 
@@ -3243,25 +3258,25 @@ void DoGlobalMultiScaling()
 	MultiGlobalEnemyBoss *= ZRModifs_MaxSpawnWaveModif();
 
 	PlayerCountBuffScaling = 4.5 / playercount;
-	if(PlayerCountBuffScaling > 1.2)
+	if(PlayerCountBuffScaling > 1.0)
 	{
-		PlayerCountBuffScaling = 1.2;
+		PlayerCountBuffScaling = 1.0;
 	}
-	//Shouldnt be lower then 0.1
-	if(PlayerCountBuffScaling < 0.1)
+	//Shouldnt be lower then 0.25
+	if(PlayerCountBuffScaling < 0.25)
 	{
-		PlayerCountBuffScaling = 0.1;
+		PlayerCountBuffScaling = 0.25;
 	}
 
 	PlayerCountBuffAttackspeedScaling = 6.0 / playercount;
-	if(PlayerCountBuffAttackspeedScaling > 1.2)
+	if(PlayerCountBuffAttackspeedScaling > 1.0)
 	{
-		PlayerCountBuffAttackspeedScaling = 1.2;
+		PlayerCountBuffAttackspeedScaling = 1.0;
 	}
-	//Shouldnt be lower then 0.35
-	if(PlayerCountBuffAttackspeedScaling < 0.35)
+	//Shouldnt be lower then 0.5
+	if(PlayerCountBuffAttackspeedScaling < 0.5)
 	{
-		PlayerCountBuffAttackspeedScaling = 0.35;
+		PlayerCountBuffAttackspeedScaling = 0.5;
 	}
 
 	PlayerCountResBuffScaling = (1.0 - (playercount / 48.0)) + 0.1;
@@ -3924,6 +3939,17 @@ void WavesUpdateDifficultyName()
 
 void Waves_ApplyAttribs(int client, StringMap map)	// Store_ApplyAttribs()
 {
+	if(Aperture_ShouldDoLastStand())
+	{
+		if(Aperture_IsBossDead(APERTURE_BOSS_CAT) && Aperture_IsBossDead(APERTURE_BOSS_ARIS))
+		{
+			ApplyStatusEffect(client, client, "Chaos Infliction", 999.0);
+		}
+		else
+		{
+			RemoveSpecificBuff(client, "Chaos Infliction");
+		}
+	}
 	if(ModFuncAlly != INVALID_FUNCTION)
 	{
 		Call_StartFunction(null, ModFuncAlly);
@@ -4264,6 +4290,8 @@ int Waves_AverageLevelGet(int MaxLevelAllow)
 
 void Waves_TrySpawnBarney()
 {
+	if(CvarInfiniteCash.BoolValue)
+		return;
 	if(Rogue_Mode())
 		return;
 	if(Construction_Mode())
