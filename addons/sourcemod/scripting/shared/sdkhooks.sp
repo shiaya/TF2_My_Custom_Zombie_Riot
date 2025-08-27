@@ -655,7 +655,7 @@ public void OnPostThink(int client)
 					if(MaxHealth > 3000.0)
 						MaxHealth = 3000.0;
 						
-					HealEntityGlobal(client, client, MaxHealth / 100.0, 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
+					HealEntityGlobal(client, client, MaxHealth / 100.0, Rogue_Rift_HolyBlessing() ? 1.0 : 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
 					
 					float attrib = Attributes_Get(client, Attrib_BlessingBuff, 1.0);
 					if(f_TimeUntillNormalHeal[client] < GetGameTime())
@@ -664,7 +664,7 @@ public void OnPostThink(int client)
 						if(attrib >= 1.0)
 						{
 							attrib -= 1.0; //1.0 is default
-							HealEntityGlobal(client, client, (MaxHealth * attrib), 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
+							HealEntityGlobal(client, client, (MaxHealth * attrib), Rogue_Rift_HolyBlessing() ? 1.0 : 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
 					//		DefaultRegenArmor += attrib;
 						}
 					//	if(Armor_Charge[client] >= 0)
@@ -1443,15 +1443,15 @@ public void OnPostThink(int client)
 			Format(buffer, sizeof(buffer), "⛛ ", buffer);
 			for(int i=1; i<5; i++)
 			{
-				if(armor >= Armor_Max*(float(i)*0.22))
+				if(armor >= Armor_Max*(float(i)*0.2))
 				{
 					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_FULL);
 				}
-				else if(armor > Armor_Max*((float(i)*0.22) - (1.0/60.0)) || (Armor_Regenerating && ArmorRegenCounter[client] == i))
+				else if(armor > Armor_Max*((float(i)*0.2) - (1.0/15.0)) || (Armor_Regenerating && ArmorRegenCounter[client] == i))
 				{
 					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTFULL);
 				}
-				else if(armor > Armor_Max*((float(i)*0.22) - (1.0/30.0)))
+				else if(armor > Armor_Max*((float(i)*0.2) - (2.0/15.0)))
 				{
 					Format(buffer, sizeof(buffer), "%s%s", buffer, CHAR_PARTEMPTY);
 				}
@@ -2077,6 +2077,17 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 			damage = 0.0;
 			return Plugin_Handled;
 		}
+		if(HasSpecificBuff(victim, "Blessing of Stars"))
+		{
+			HealEntityGlobal(victim, victim, float(ReturnEntityMaxHealth(victim) / 4), 1.0, 1.0, HEAL_ABSOLUTE);
+			TF2_AddCondition(victim, TFCond_UberchargedCanteen, 1.0);
+			TF2_AddCondition(victim, TFCond_MegaHeal, 1.0);
+			SetEntProp(victim, Prop_Data, "m_iHealth", 1);
+			RemoveSpecificBuff(victim, "Blessing of Stars");
+			EmitSoundToAll("misc/halloween/spell_overheal.wav", victim, SNDCHAN_STATIC, 80, _, 0.8);
+			damage = 0.0;
+			return Plugin_Handled;
+		}
 		if(i_HealthBeforeSuit[victim] > 0)
 		{
 			//PrintToConsole(victim, "[ZR] THIS IS DEBUG! IGNORE! Player_OnTakeDamageAlive_DeathCheck 4");
@@ -2183,7 +2194,11 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 				if(!Waves_InSetup())
 					i_AmountDowned[victim]++;
 				
-				SetEntityHealth(victim, 200);
+				if(Rogue_Rift_VialityThing())
+					SetEntityHealth(victim, 300);
+				else
+					SetEntityHealth(victim, 200);
+
 				if(!b_LeftForDead[victim])
 				{
 					int speed = 10;
@@ -2194,6 +2209,7 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 				{
 					dieingstate[victim] = 500;
 				}
+			
 				f_DisableDyingTimer[victim] = 0.0;
 				dieingstate[victim] -= RoundToNearest(Attributes_GetOnPlayer(victim, Attrib_ReviveTimeCut, false,_, 0.0));
 				Vehicle_Exit(victim);
@@ -2205,7 +2221,12 @@ public Action Player_OnTakeDamageAlive_DeathCheck(int victim, int &attacker, int
 				SetEntityCollisionGroup(victim, 1);
 				CClotBody player = view_as<CClotBody>(victim);
 				player.m_bThisEntityIgnored = true;
-				Attributes_SetMulti(victim, 442, 0.85);
+				if(Rogue_Rift_VialityThing())
+					Attributes_SetMulti(victim, 442, 0.85);
+				else
+					Attributes_SetMulti(victim, 442, 0.65);
+
+				Rogue_Rift_FlashVest_StunEnemies(victim);
 
 				TF2_AddCondition(victim, TFCond_SpeedBuffAlly, 0.00001);
 				int entity;

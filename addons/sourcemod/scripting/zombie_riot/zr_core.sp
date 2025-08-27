@@ -2374,10 +2374,13 @@ stock int MaxArmorCalculation(int ArmorLevel = -1, int client, float multiplyier
 		Armor_Max = 1000;
 										
 	else if(ArmorLevel == 200)
-		Armor_Max = 2000;
-										
-	else if(ArmorLevel > 200)	//Over 200!
-		Armor_Max = 2000+RoundToNearest(ArmorLevel*1.5);
+		Armor_Max = 2000;	
+
+	else if(ArmorLevel == 250)
+		Armor_Max = 3000;
+		
+	else if(ArmorLevel > 250)	//Over 250!
+		Armor_Max = 3000+RoundToNearest(ArmorLevel*1.5);
 		
 	else
 		Armor_Max = 200;

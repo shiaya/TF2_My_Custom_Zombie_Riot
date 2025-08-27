@@ -4358,6 +4358,10 @@
 	{
 		"en" "Kit Modernizer V"
 	}
+	"Kit Modernizer VI"
+	{
+		"en" "Kit Modernizer VI"
+	}
 	"Unit Reformator I"
 	{
 		"en" "Unit Reformator I"
