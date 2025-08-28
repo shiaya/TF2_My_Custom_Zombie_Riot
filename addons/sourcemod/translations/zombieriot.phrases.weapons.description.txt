@@ -81,7 +81,7 @@
 	"Crusher"
 	{
 		"en"	"Crusher"
-		ko"		"파쇄자"
+		"ko"		"파쇄자"
 	}
 	"Combatant"
 	{
