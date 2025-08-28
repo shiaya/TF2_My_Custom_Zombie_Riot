@@ -5661,7 +5661,7 @@
 	{
 		"en"	"Christian Brutal Sniper"
 	}
-	"Randomizer"
+	"Randomizer!"
 	{
 		"en"	"Randomizer"
 	}
@@ -5720,5 +5720,13 @@
 	"Jkei Drone"
 	{
 		"en"	"Jkei Drone"
+	}
+	"Reila"
+	{
+		"en" "Reila"
+	}
+	"Reila's Beacon"
+	{
+		"en" "The Construct"
 	}
 }
