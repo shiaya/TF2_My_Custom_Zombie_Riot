@@ -1144,6 +1144,11 @@
 		"nl"		"Niet Genoeg Messen[{1}], je krijgt uw volgende binnen de [{2}] seconden"
 		"chi" 		"没有刀可以使用[{1}]，请等待 [{2}] 秒后刷新！"
 	}
+	"Global Cooldown Bomb"
+	{
+		"#format"	"{1:.f}"
+		"en" 		"All your unique buildings are on a [{1}] second cooldown."
+	}
 	"Too Far Away"
 	{
 		"en" 		"You're too far away, get closer"
@@ -1226,7 +1231,7 @@
 		"ko"		"에너지 음료"
 	}
 
-	"Regene Berry Recieved"
+	"Regene Berry Received"
 	{
 		"en" 		"Regene Berry! 2x Revive speed and 15％ more healing speed and 2x Health on revive"
 		"fr" 		"RÉSURRECTION RAPIDE! 2x vitesse de résurrection, taux de soins +15％, 2x soins pour les resucitations"
@@ -1234,37 +1239,37 @@
 		"ru" 		"РЕАНИМАТОР! 2x скорость оживления и на 15％ быстрее скорость лечения и 2x здоровье при оживлении"
 		"ko"		"재생 베리! 소생 속도 두배 증가및 치료속도 +15％ 증가, 소생 체력 두배 증가"
 	}
-	"Obsidian Oaf Recieved"
+	"Obsidian Oaf Received"
 	{
 		"en" 		"Obsidian Oaf! 15％ Damage resistance and +100HP"
 		"ko"		"흑요석 오프 맥주! 모든 피해 +15％ 저항및 최대 체력 +100 증가"
 	}
-	"Morning Coffee Recieved"
+	"Morning Coffee Received"
 	{
 		"en" 		"Morning Coffee! 17％ Extra attack speed and Building Damage"
 		"ko"		"더블샷 커피! 공속및 구조물 피해량 +17％ 증가"
 	}	
-	"Hasty Hops Recieved"
+	"Hasty Hops Received"
 	{
 		"en" 		"Hasty Hops! 1.42x Extra reload, switchspeed and Mana regen"
 		"ko"		"맹렬한 야끼런 밀주! 재장전 속도및 무기 전환 속도, 마나 리젠 +42％ 증가"
 	}
-	"Marksman Beer Recieved"
+	"Marksman Beer Received"
 	{
 		"en" 		"Marksman Beer! 1.2x Weapon accuracy and 1.25x Extra Headshot and backstab damage\n 1.2x Projectile Speed."
 		"ko"		"지정사수 에일! 집탄율 +20％ 및 헤드샷 피해량 +25％\n투사체 속도 +20％ 증가"
 	}
-	"Teslar Mule Recieved"
+	"Teslar Mule Received"
 	{
 		"en" 		"Teslar Mule! Rechargeable protection that debuffs zombies and blocks 75％ of the damage if activated.\nDebuffed enemies are slowed down heavily and take 30％ more damage."
 		"ko"		"테슬라 뮬! 피격시 대상에게 디버프를 걸고 25％의 피해만 받음.\n해당 효과가 적용된 적은 이속감소및 +30％ 피해 취약"
 	}
-	"Stockpile Stout Recieved"
+	"Stockpile Stout Received"
 	{
 		"en" 		"Stockpile Stout! 33％ More ammo from all non shop sources, and 50％ more max armor and armor gain.\nYou gain 2x the Ammo Supplies."
 		"ko"		"비축 흑맥주! 상점을 제외한 얻는 탄약 +33％ 증가\n아머 최대량 +50％ 증가\n보급품 흭득량 두배 증가."
 	}
-	"Energy Drink Recieved"
+	"Energy Drink Received"
 	{
 		"en" 		"Energy Drink! Gain a 15％ cooldown reduction for Weapons & Extra Gear!"
 		"ko"		"에너지 음료! 무기및 추가장비의 쿨다운 -15％ 감소"
@@ -2034,7 +2039,7 @@
 	}	
 	"Which perk do you desire?"
 	{
-		"en"		"Click on a perk to get it.\nCrouch while clicking to see its description instead."
+		"en"		"Click on a perk to get it.\nCrouch while clicking to see its description instead.\nSelect a perk you already own to get rid of it."
 	}	
 	"Reviving"
 	{
@@ -4125,6 +4130,10 @@
 	{
 		"en"	"Enable Ammobox Count Perma"
 	}
+	"Citizen Cannot Interact"
+	{
+		"en"	"You cannot interact with this rebel."
+	}
 	"Class Vote Citizen Do"
 	{
 		"en"	"The rebel will pick whatever has the most player votes, from the top down."
@@ -4501,5 +4510,13 @@
 	"Plasma Kit Warning"
 	{
 		"en"		"Your body slowly starts to break down...."
+	}
+	"Too many Perks"
+	{
+		"en"		"You have too many perks, get rid of one."
+	}
+	"You removed the current perk"
+	{
+		"en"		"You removed the current perk as you had it before when selecting it."
 	}
 }

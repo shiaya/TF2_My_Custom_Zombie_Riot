@@ -11,7 +11,8 @@ static float f_EntityOutOfNav[MAXPLAYERS];
 static float f_LatestDamageRes[MAXPLAYERS];
 static float f_TimeSinceLastRegenStop[MAXPLAYERS];
 static bool b_GaveMarkForDeath[MAXPLAYERS];
-static float f_RecievedTruedamageHit[MAXPLAYERS];
+static float f_ReceivedTruedamageHit[MAXPLAYERS];
+static char MaxAsignPerkNames[MAXPLAYERS][8];
 
 //With high ping our method to change weapons with a click of a button or whtaever breaks.
 //This will be used as a timer to fix this issue
@@ -36,7 +37,7 @@ void SDKHooks_ClearAll()
 	{
 		i_WhatLevelForHudIsThisClientAt[client] = 2000000000; //two billion
 	}
-	Zero(f_RecievedTruedamageHit);
+	Zero(f_ReceivedTruedamageHit);
 	Zero(f_EntityHazardCheckDelay);
 	Zero(f_EntityOutOfNav);
 	
@@ -356,6 +357,7 @@ public void OnPreThinkPost(int client)
 	}
 	Cvar_clamp_back_speed.FloatValue = f_Client_BackwardsWalkPenalty[client];
 	Cvar_LoostFooting.FloatValue = f_Client_LostFriction[client];
+	sv_gravity.IntValue = i_Client_Gravity[client];
 }
 #endif	// ZR & RPG
 
@@ -476,12 +478,19 @@ public void OnPostThink(int client)
 		Cvar_clamp_back_speed.ReplicateToClient(client, IntToStringDo); //set down
 		ReplicateClient_BackwardsWalk[client] = f_Client_BackwardsWalkPenalty[client];
 	}
-	if(ReplicateClient_LostFooting[client] != ReplicateClient_LostFooting[client])
+	if(ReplicateClient_LostFooting[client] != f_Client_LostFriction[client])
 	{
 		char IntToStringDo[4];
 		FloatToString(f_Client_LostFriction[client], IntToStringDo, sizeof(IntToStringDo));
 		Cvar_LoostFooting.ReplicateToClient(client, IntToStringDo); //set down
 		ReplicateClient_LostFooting[client] = f_Client_LostFriction[client];
+	}
+	if(ReplicateClient_Gravity[client] != i_Client_Gravity[client])
+	{
+		char IntToStringDo[4];
+		IntToString(i_Client_Gravity[client], IntToStringDo, sizeof(IntToStringDo));
+		sv_gravity.ReplicateToClient(client, IntToStringDo); //set down
+		ReplicateClient_Gravity[client] = i_Client_Gravity[client];
 	}
 
 #if defined ZR
@@ -630,11 +639,11 @@ public void OnPostThink(int client)
 		has_mage_weapon[client] = true;	//now force the mana hud even if your not a mage. this only applies to non mages if you got overmana, and the only way you can get overmana without a mage weapon is if you got hit by ruina's debuff.
 	}
 
-	if(f_InBattleDelay[client] < GetGameTime())
+	if(f_TimerStatusEffectsDo[client] < GetGameTime())
 	{
 		//re using NPC value.
 		StatusEffect_TimerCallDo(client);
-		f_InBattleDelay[client] = GetGameTime() + 0.4;
+		f_TimerStatusEffectsDo[client] = GetGameTime() + 0.4;
 	}
 	if(Rogue_CanRegen() && Armor_regen_delay[client] < GameTime)
 	{
@@ -655,6 +664,8 @@ public void OnPostThink(int client)
 					if(MaxHealth > 3000.0)
 						MaxHealth = 3000.0;
 						
+					if(Rogue_Rift_HolyBlessing())
+						MaxHealth *= 2.0;
 					HealEntityGlobal(client, client, MaxHealth / 100.0, Rogue_Rift_HolyBlessing() ? 1.0 : 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
 					
 					float attrib = Attributes_Get(client, Attrib_BlessingBuff, 1.0);
@@ -664,6 +675,8 @@ public void OnPostThink(int client)
 						if(attrib >= 1.0)
 						{
 							attrib -= 1.0; //1.0 is default
+							if(Rogue_Rift_HolyBlessing())
+								MaxHealth *= 0.5;
 							HealEntityGlobal(client, client, (MaxHealth * attrib), Rogue_Rift_HolyBlessing() ? 1.0 : 0.5, 0.0, HEAL_SELFHEAL|HEAL_PASSIVE_NO_NOTIF);	
 					//		DefaultRegenArmor += attrib;
 						}
@@ -725,8 +738,7 @@ public void OnPostThink(int client)
 	{
 		OnlyOneAtATime = true;
 		SetGlobalTransTarget(client);
-		static char buffer[255];
-		buffer[0] = 0;
+		char buffer[255];
 		float HudY = 0.95;
 		float HudX = -1.0;
 	
@@ -1319,6 +1331,13 @@ public void OnPostThink(int client)
 		{
 			switch(Armor_DebuffType[armorEnt])
 			{
+				//necrosis
+				case Element_Necrosis:
+				{
+					red = 255;
+					green = 50;
+					blue = 50;
+				}
 				//chaos
 				case Element_Chaos:
 				{
@@ -1389,8 +1408,8 @@ public void OnPostThink(int client)
 
 		ArmorDisplayClient(client);
 
-		static char buffer[20]; //armor
-		static char buffer2[20];	//perks and stuff
+		static char buffer[24]; //armor
+		static char buffer2[24];	//perks and stuff
 		bool Armor_Regenerating = false;
 		static int ArmorRegenCounter[MAXPLAYERS];
 		if(armorEnt == client && f_ClientArmorRegen[client] > GetGameTime())
@@ -1497,16 +1516,16 @@ public void OnPostThink(int client)
 			//no mount or anything
 			Format(buffer2, sizeof(buffer2), "---");
 		}
-		if(i_CurrentEquippedPerk[client] >= 1)
+		if(i_CurrentEquippedPerk[client] != PERK_NONE)
 		{
 			Format(buffer2, sizeof(buffer2), "%s|", buffer2);
-			if(i_CurrentEquippedPerk[client] == 6)
+			if(i_CurrentEquippedPerk[client] & PERK_TESLAR_MULE)
 			{
 				float slowdown_amount = f_WidowsWineDebuffPlayerCooldown[client] - GameTime;
 				
 				if(slowdown_amount < 0.0)
 				{
-					Format(buffer2, sizeof(buffer2), "%s%c%c", buffer2,PerkNames_two_Letter[i_CurrentEquippedPerk[client]][0], PerkNames_two_Letter[i_CurrentEquippedPerk[client]][1]);
+					Format(buffer2, sizeof(buffer2), "%s%s", buffer2,MaxAsignPerkNames[client]);
 				}
 				else
 				{
@@ -1515,7 +1534,7 @@ public void OnPostThink(int client)
 			}
 			else
 			{
-				Format(buffer2, sizeof(buffer2), "%s%c%c", buffer2, PerkNames_two_Letter[i_CurrentEquippedPerk[client]][0], PerkNames_two_Letter[i_CurrentEquippedPerk[client]][1]);
+				Format(buffer2, sizeof(buffer2), "%s%s", buffer2,MaxAsignPerkNames[client]);
 			}
 		}
 		else
@@ -1534,8 +1553,7 @@ public void OnPostThink(int client)
 		//only for red.
 		if(GetTeam(client) == 2)
 		{
-			static char HudBuffer[256];
-			HudBuffer[0] = 0;
+			char HudBuffer[256];
 			if(!TeutonType[client])
 			{
 				int downsleft;
@@ -1618,6 +1636,8 @@ public void OnPostThinkPost(int client)
 #endif	// ZR & RPG
 		f_UpdateModelIssues[client] = 0.0;
 	}
+	//HARDCODED GRAVITY VALUE.
+	sv_gravity.IntValue = 800;
 }
 #endif	// ZR & RPG
 
@@ -1810,19 +1830,6 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 		}
 	}
 	
-	if(HasSpecificBuff(victim, "Envenomed"))
-	{
-		bool venom = true;
-		if(venom)
-		{
-			venom = false;
-			GetEntProp(victim, Prop_Send, "m_iHealth");
-			SetEntProp(victim, Prop_Data, "m_iHealth", 1);
-			HealEntityGlobal(victim, victim, 250.0, 1.0, 20.0, HEAL_SELFHEAL);
-			RemoveSpecificBuff(victim, "Envenomed");
-			Force_ExplainBuffToClient(victim, "Envenomed");
-		}
-	}
 	if(!CheckInHud() && HasSpecificBuff(victim, "Archo's Posion"))
 	{
 		if(!(damagetype & (DMG_FALL|DMG_OUTOFBOUNDS|DMG_TRUEDAMAGE)))
@@ -1987,9 +1994,9 @@ public Action Player_OnTakeDamage(int victim, int &attacker, int &inflictor, flo
 	{
 		if(!(i_HexCustomDamageTypes[victim] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
 		{
-			if(f_RecievedTruedamageHit[victim] < GetGameTime())
+			if(f_ReceivedTruedamageHit[victim] < GetGameTime())
 			{
-				f_RecievedTruedamageHit[victim] = GetGameTime() + 0.5;
+				f_ReceivedTruedamageHit[victim] = GetGameTime() + 0.5;
 				ClientCommand(victim, "playgamesound player/crit_received%d.wav", (GetURandomInt() % 3) + 1);
 			}
 		}
@@ -3025,6 +3032,10 @@ float ArmorPlayerReduction(int victim)
 		{
 			return 0.9;
 		}
+		case 250:
+		{
+			return 0.88;
+		}
 		default:
 		{
 			return 1.0;
@@ -3484,7 +3495,7 @@ void ManaCalculationsBefore(int client)
 	max_mana[client] = ManaMaxExtra;
 	mana_regen[client] = ManaRegen;
 			
-	if(i_CurrentEquippedPerk[client] == 4)
+	if(i_CurrentEquippedPerk[client] & PERK_HASTY_HOPS)
 	{
 		mana_regen[client] *= 1.35;
 	}
@@ -3580,3 +3591,36 @@ void CorrectClientsideMultiweapon(int client, int Mode)
 	}
 
 }
+
+
+
+#if defined ZR
+//this code is ass
+void UpdatePerkName(int client)
+{
+	char buffer[4];
+	if(i_CurrentEquippedPerk[client] == PERK_NONE)
+	{
+		Format(MaxAsignPerkNames[client], sizeof(MaxAsignPerkNames[]), "%s", PerkNames_two_Letter[0]);
+		return;
+	}
+	if(i_CurrentEquippedPerk[client] & PERK_REGENE)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[1],buffer);
+	if(i_CurrentEquippedPerk[client] & PERK_OBSIDIAN)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[2],buffer);
+	if(i_CurrentEquippedPerk[client] & PERK_MORNING_COFFEE)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[3],buffer);
+	if(i_CurrentEquippedPerk[client] & PERK_HASTY_HOPS)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[4],buffer);
+	if(i_CurrentEquippedPerk[client] & PERK_MARKSMAN_BEER)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[5],buffer);
+	if(i_CurrentEquippedPerk[client] & PERK_TESLAR_MULE)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[6],buffer);
+	if(i_CurrentEquippedPerk[client] & PERK_STOCKPILE_STOUT)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[7],buffer);
+	if(i_CurrentEquippedPerk[client] & PERK_ENERGY_DRINK)
+		Format(buffer, sizeof(buffer), "%s%s", PerkNames_two_Letter[8],buffer);
+
+	Format(MaxAsignPerkNames[client], sizeof(MaxAsignPerkNames[]), "%s",buffer);
+}
+#endif

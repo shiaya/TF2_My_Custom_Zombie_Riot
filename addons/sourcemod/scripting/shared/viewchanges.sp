@@ -212,12 +212,24 @@ void OverridePlayerModel(int client, int index = -1, bool DontShowCosmetics = fa
 	}
 }
 
+#if defined ZR
+
 bool Has_OverridePlayerModel(int client, int index = -1)
 {
 	if(i_PlayerModelOverrideIndexWearable[client] == index)
 		return true;
 	return false;
 }
+
+static void GetTeamOverride(int &team)
+{
+	if(CurrentModifOn() == SECONDARY_MERCS)
+		team = 3;
+	
+	if(Construction_Mode() && (Rogue_HasNamedArtifact("Hold Out Normal") || Rogue_HasNamedArtifact("Hold Out Creep")))
+		team = 3;
+}
+#endif
 
 void ViewChange_PlayerModel(int client)
 {
@@ -313,10 +325,7 @@ void ViewChange_PlayerModel(int client)
 		
 		SetEntProp(entity, Prop_Send, "m_fEffects", 129);
 #if defined ZR
-		if(CurrentModifOn() == SECONDARY_MERCS)
-		{
-			team = 3;
-		}
+		GetTeamOverride(team);
 #endif
 		SetTeam(entity, team);
 		SetEntProp(entity, Prop_Send, "m_nSkin", team-2);
@@ -459,10 +468,7 @@ void ViewChange_Switch(int client, int active, const char[] classname)
 			
 			int team = GetClientTeam(client);
 #if defined ZR
-			if(CurrentModifOn() == SECONDARY_MERCS)
-			{
-				team = 3;
-			}
+			GetTeamOverride(team);
 #endif
 			SetTeam(entity, team);
 			SetEntProp(entity, Prop_Send, "m_nSkin", team-2);
@@ -528,10 +534,7 @@ void ViewChange_Switch(int client, int active, const char[] classname)
 
 				SetEntProp(entity, Prop_Send, "m_fEffects", 129);
 #if defined ZR
-				if(CurrentModifOn() == SECONDARY_MERCS)
-				{
-					team = 3;
-				}
+				GetTeamOverride(team);
 #endif
 				SetTeam(entity, team);
 				SetEntProp(entity, Prop_Send, "m_nSkin", team-2);
