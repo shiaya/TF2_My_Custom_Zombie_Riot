@@ -322,7 +322,7 @@
 	}
 	"Hand of Spark Desc"
 	{
-		"en"	"Patience is key. Plan ahead for the future.\n{green}''Hunter'' weapons gain +10％ damage every second, up to +500％ {yellow}(resets upon dealing damage)"
+		"en"	"Patience is key. Plan ahead for the future.\n{green}''Hunter'' weapons gain +20％ damage every second, up to +500％ {yellow}(resets upon dealing damage)"
 	}
 	"Hand of Buckler"
 	{
@@ -330,7 +330,7 @@
 	}
 	"Hand of Buckler Desc"
 	{
-		"en"	"Drop by drop, bit by bit. It is unstoppable.\n{green}''Hexing Magic'' weapons deal 3％ (1％ against bosses) {yellow}(affected by scaling) and upto 3x base damage only. {green}magic damage based on the enemy's current health"
+		"en"	"Drop by drop, bit by bit. It is unstoppable.\n{green}''Hexing Magic'' weapons deal 3％ (1％ against bosses) {yellow}(affected by scaling) and upto 2x base damage only. {green}magic damage based on the enemy's current health"
 	}
 	"Hand of Undulation"
 	{
@@ -1344,7 +1344,7 @@
 	}
 	"Mazeat Falls Desc"
 	{
-		"en"	"Mazeat was.\n{green}Non-Umbrals enemies have -35％ health and damage and receive +100％ elemental damage"
+		"en"	"Mazeat was.\n{green}Non-Umbrals enemies have -25％ health and damage and receive +100％ elemental damage"
 	}
 	"Finale Encounter Lore"
 	{
@@ -1700,7 +1700,7 @@
 	}
 	"Book of Nature Desc"
 	{
-		"en"	"A book explaining how the Umbrals act, even if basic.\n{green}Umbral Affinity increased by 40, cannot lose Umbral Affinity anymore, ''Umbral Hate'' is ignored, you can gain umbral affinity again."
+		"en"	"A book explaining how the Umbrals act, even if basic.\n{green}Umbral Affinity increased by 20, cannot lose Umbral Affinity anymore, ''Umbral Hate'' is ignored, you can gain umbral affinity again."
 	}
 	"Book of Nature Conclusion"
 	{
