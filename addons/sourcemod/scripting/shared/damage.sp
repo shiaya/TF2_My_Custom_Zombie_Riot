@@ -1658,23 +1658,84 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 			}
 		}
 		if(IsValidClient(attacker) && b_Mana_Infusion_Ammunition[attacker] &&
-		(i_WeaponArchetype[weapon] == 1 || i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3 || i_WeaponArchetype[weapon] == 5))
+		(i_WeaponArchetype[weapon] >= 1 || i_WeaponArchetype[weapon] <= 5))
 		{
 			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
 			{
-				int mana_max = RoundToCeil(400.0*Mana_Regen_Level[attacker]);
-				int mana_cost = RoundToCeil(mana_max*((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.025 : 0.1));
+				int mana_cost;
 				bool IsBoomStick=false;
 				if(i_CustomWeaponEquipLogic[weapon] == WEAPON_BOOMSTICK)
 				{
-					mana_cost = RoundToCeil(mana_max*0.99);
+					mana_cost = RoundToCeil(max_mana[attacker]*0.99);
 					IsBoomStick=true;
+				}
+				else
+				{
+					switch(i_WeaponArchetype[weapon])
+					{
+						case 1:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
+						case 2:mana_cost=RoundToCeil(max_mana[attacker]*0.5);
+						case 3:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
+						case 4:mana_cost=RoundToCeil(max_mana[attacker]*0.025);
+						case 5:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
+						default:mana_cost=RoundToCeil(max_mana[attacker]*0.1);
+					}
 				}
 				if(mana_cost <= Current_Mana[attacker])
 				{
-					Current_Mana[attacker] -=mana_cost;
-					SDKhooks_SetManaRegenDelayTime(attacker, (IsBoomStick ? 3.5 : 2.0));
-					damage+=float(mana_max)*(IsBoomStick ? 0.2 : ((i_WeaponArchetype[weapon] == 2 || i_WeaponArchetype[weapon] == 3) ? 0.1 : 0.15));
+					Current_Mana[attacker]-=mana_cost;
+					float cooldown, multiplier, adddmg;
+					if(IsBoomStick)
+					{
+						cooldown=3.5;
+						multiplier=0.2;
+						adddmg=1.05;
+					}
+					else
+					{
+						switch(i_WeaponArchetype[weapon])
+						{
+							case 1:
+							{
+								cooldown=3.5;
+								multiplier=0.2;
+								adddmg=1.05;
+							}
+							case 2:
+							{
+								cooldown=5.0;
+								multiplier=0.25;
+								adddmg=1.03;
+							}
+							case 3:
+							{
+								cooldown=2.0;
+								multiplier=0.25;
+								adddmg=1.05;
+							}
+							case 4:
+							{
+								cooldown=1.5;
+								multiplier=0.1;
+								adddmg=1.02;
+							}
+							case 5:
+							{
+								cooldown=1.0;
+								multiplier=0.3;
+								adddmg=1.08;
+							}
+							default:
+							{
+								cooldown=1.5;
+								multiplier=0.1;
+								adddmg=1.02;
+							}
+						}
+					}
+					SDKhooks_SetManaRegenDelayTime(attacker, cooldown);
+					damage+=max_mana[attacker]*multiplier;
+					damage *= adddmg;
 					damage *= Attributes_Get(weapon, 410, 1.00);
 				}
 				else damage*=(IsBoomStick ? 0.65 : 0.9);

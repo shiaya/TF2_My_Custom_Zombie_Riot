@@ -2277,7 +2277,7 @@ void M3_Abilities_forBaka(int client)
 		}
 		case 1004:
 		{
-			StimPacks(client);
+			MtreeStimPacks(client);
 		}
 		case 1005:
 		{
@@ -3010,7 +3010,7 @@ public Action Timer_Seeyou_in_HELL_Reload(Handle timer, any userid)
 		return Plugin_Stop;
 }
 
-public void StimPacks(int client)
+public void MtreeStimPacks(int client)
 {
 	if(dieingstate[client] > 0)
 	{
