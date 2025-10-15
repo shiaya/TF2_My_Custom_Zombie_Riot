@@ -1326,7 +1326,10 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 {
 #if defined ZR
 	if(!b_NpcIsTeamkiller[attacker] && GetTeam(attacker) == GetTeam(victim))
+	{
+		i_HasBeenHeadShotted[victim] = false;
 		return;
+	}
 		
 	int AttackerOverride = EntRefToEntIndex(i_NpcOverrideAttacker[attacker]);
 	if(AttackerOverride > 0)
@@ -1486,6 +1489,7 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 	//LogEntryInvicibleTest(victim, attacker, damage, 30);
 		
 	Damageaftercalc = 0.0;
+	i_HasBeenHeadShotted[victim] = false;
 }
 
 stock void GiveRageOnDamage(int client, float damage)

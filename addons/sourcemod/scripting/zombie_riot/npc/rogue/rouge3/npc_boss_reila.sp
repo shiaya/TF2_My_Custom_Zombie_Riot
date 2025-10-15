@@ -67,7 +67,6 @@ void BossReila_OnMapStart_NPC()
 	data.Precache = ClotPrecache;
 	NPCId = NPC_Add(data);
 }
-
 int Boss_ReilaID()
 {
 	return NPCId;
@@ -75,7 +74,7 @@ int Boss_ReilaID()
 static void ClotPrecache()
 {
 	PrecacheSoundCustom("#zombiesurvival/rogue3/reila_battle_ost.mp3");
-	return;
+	NPC_GetByPlugin("reila_beacon_spawner");
 }
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, const char[] data)
 {
@@ -251,7 +250,7 @@ methodmap BossReila < CClotBody
 		{
 			CPrintToChatAll("{pink}Reila{default}: リᒷ╎リ リᒷ╎リ! リ╎ᓵ⍑ℸ ̣ ⋮ᒷℸ ̣⨅ℸ ̣!.");
 		}
-		if(data[0] && !altEnding && !badEnding)
+		if(data[0] && !altEnding && !badEnding && !Rogue_HasNamedArtifact("Ascension Stack"))
 			i_RaidGrantExtra[npc.index] = 1;
 		npc.m_flBossSpawnBeacon = 1.0;
 
@@ -387,7 +386,7 @@ public Action BossReila_OnTakeDamage(int victim, int &attacker, int &inflictor, 
 {
 	BossReila npc = view_as<BossReila>(victim);
 		
-	if(i_RaidGrantExtra[npc.index] == 1 && damage >= float(GetEntProp(npc.index, Prop_Data, "m_iHealth")))
+	if(Rogue_Mode() && damage >= float(GetEntProp(npc.index, Prop_Data, "m_iHealth")))
 	{
 		for(int client=1; client<=MaxClients; client++)
 		{
@@ -409,15 +408,23 @@ public Action BossReila_OnTakeDamage(int victim, int &attacker, int &inflictor, 
 				}
 			}
 		}
-		npc.SetActivity("ACT_MP_STAND_LOSERSTATE");
-		RaidBossActive = 0;
-		npc.m_flDoLoseTalk = GetGameTime() + 3.0;
-		i_RaidGrantExtra[npc.index] = 2;
-		npc.m_bisWalking = false;
-		ApplyStatusEffect(npc.index, npc.index, "Infinite Will", 50.0);
-		CPrintToChatAll("{pink}Reila {snow}Puts her hands up and gives up.");
-		damage = 0.0;
-		return Plugin_Changed;
+		if(i_RaidGrantExtra[npc.index] == 1)
+		{
+			npc.SetActivity("ACT_MP_STAND_LOSERSTATE");
+			RaidBossActive = 0;
+			npc.m_flDoLoseTalk = GetGameTime() + 3.0;
+			i_RaidGrantExtra[npc.index] = 2;
+			npc.m_bisWalking = false;
+			ApplyStatusEffect(npc.index, npc.index, "Infinite Will", 50.0);
+			CPrintToChatAll("{pink}Reila {snow}Puts her hands up and gives up.");
+			damage = 0.0;
+			return Plugin_Changed;
+		}
+		else
+		{
+			damage *= 4.0;
+			return Plugin_Changed;
+		}
 	}
 	if(attacker <= 0)
 		return Plugin_Continue;
@@ -620,7 +627,7 @@ void ReilaSpawnBalls(int iNpc, float vecTarget[3])
 	if(npc.m_flSpawnBallsCD < GetGameTime(npc.index))
 	{
 		npc.m_iBallsLeftToSpawn = 4;
-		npc.m_flSpawnBallsCD = GetGameTime(npc.index) + 25.0;
+		npc.m_flSpawnBallsCD = GetGameTime(npc.index) + 15.0;
 	}
 }
 bool ReilaReflectDamageDo(int iNpc)
@@ -962,6 +969,7 @@ bool Reila_LossAnimation(int iNpc)
 	BossReila npc = view_as<BossReila>(iNpc);
 	if(npc.m_flDoLoseTalk)
 	{
+		GiveProgressDelay(4.0);
 		if(npc.m_flDoLoseTalk < GetGameTime())
 		{
 			switch(i_RaidGrantExtra[npc.index])
@@ -999,7 +1007,7 @@ bool Reila_LossAnimation(int iNpc)
 				}
 			}
 			i_RaidGrantExtra[npc.index]++;
-			npc.m_flDoLoseTalk = GetGameTime() + 2.0;
+			npc.m_flDoLoseTalk = GetGameTime() + 3.0;
 		}
 		return true;
 	}
