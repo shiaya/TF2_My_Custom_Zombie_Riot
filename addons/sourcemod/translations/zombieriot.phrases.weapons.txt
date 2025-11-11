@@ -3829,6 +3829,11 @@
 		"en"	"Hunting Rifle"
 		"ko"	"사냥용 소총"
 	}
+	"Boomerang"
+	{
+		"en"	"Boomerang"
+		"ko"	"부메랑"
+	}
 	
 	"Market Gardener"
 	{
