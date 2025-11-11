@@ -5453,6 +5453,11 @@
 		"ko"	"트루퍼 박격포병"
 		"it"	"Mortaio Trooper"
 	}
+	"Victorian Artillerist"
+	{
+		"en"	"Trooper Artillerist"
+		"ko"	"트루퍼 자주포병"
+	}
 	"Bomb Cart"
 	{
 		"en"	"Trooper  Bombcart"
@@ -5524,6 +5529,11 @@
 		"en"	"Brassbunker Tank"
 		"ko"	"브라스벙커 탱크"
 		"it"	"Serbatoio Brassbunker"
+	}
+	"Victorian Assault Vehicle"
+	{
+		"en"	"Brassbunker Assault Vehicle"
+		"ko"	"브라스벙커 돌격 차량"
 	}
 	"Victoria Factory"
 	{
