@@ -198,6 +198,7 @@ void InitStatusEffects()
 	StatusEffects_BubbleWand1();
 	StatusEffects_BubbleWand2();
 	StatusEffects_Plasm();
+	StatusEffects_Challenger();
 
 	//freeplay last.
 	StatusEffects_Freeplay1();
@@ -4386,7 +4387,8 @@ float AdaptiveMedigun_MeleeFunc(int attacker, int victim, StatusEffect Apply_Mas
 {
 	if(damagetype & (DMG_CLUB)) // if its melee
 	{
-		return 0.85;
+		if(!(damagetype & DMG_TRUEDAMAGE)) //dont block true damage lol
+			return 0.85;
 	}
 	
 	return 1.0;
@@ -4957,6 +4959,20 @@ void StatusEffects_WeaponSpecific_VisualiseOnly()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	StatusEffect_AddGlobal(data);
 
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Nightmareish Sawing");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "N");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
+
 	strcopy(data.BuffName, sizeof(data.BuffName), "Crafted Potion");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "⅋");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
@@ -5068,7 +5084,7 @@ void StatusEffects_WeaponSpecific_VisualiseOnly()
 	OsmosisDebuffIndex = StatusEffect_AddGlobal(data);
 
 	
-	strcopy(data.BuffName, sizeof(data.BuffName), "Vintulum Bomb EMP");
+	strcopy(data.BuffName, sizeof(data.BuffName), "Vuntulum Bomb EMP");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "V");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
@@ -6211,6 +6227,21 @@ void StatusEffects_Plasm()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	StatusEffect_AddGlobal(data);
 
+	
+	strcopy(data.BuffName, sizeof(data.BuffName), "Plasma Heal Prevent");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= false;
+	data.ShouldScaleWithPlayerCount = false;
+	data.ElementalLogic				= true;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
+
 	strcopy(data.BuffName, sizeof(data.BuffName), "Plasmatic Rampage");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "Ϙ");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
@@ -6253,6 +6284,24 @@ void StatusEffects_Plasm()
 	data.SlotPriority				= 2; //if its higher, then the lower version is entirely ignored.
 	StatusEffect_AddGlobal(data);
 }
+
+void StatusEffects_Challenger()
+{
+	StatusEffect data;
+	strcopy(data.BuffName, sizeof(data.BuffName), "Challenger");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "⸸");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
+}
+
 stock void StatusEffects_SetCustomValue(int victim, float NewBuffValue, int Index)
 {
 	if(!E_AL_StatusEffects[victim])

@@ -39,6 +39,7 @@
 #define TFTeam_Spectator 	1
 #define TFTeam_Red 		2
 #define TFTeam_Blue		3
+
 #define TFTeam_Stalkers 		5
 
 #define TF2_GetClientTeam	PleaseUse_GetTeam
@@ -101,9 +102,19 @@ ConVar CvarSkillPoints;
 ConVar CvarRogueSpecialLogic;
 ConVar CvarLeveling;
 ConVar CvarAutoSelectWave;
+ConVar CvarAutoSelectDiff;
+ConVar CvarVoteLimit;
 #endif
 ConVar CvarCustomModels;
 ConVar CvarFileNetworkDisable;
+
+enum
+{
+	FILENETWORK_ENABLED = 0,
+	FILENETWORK_ICONONLY = 1,
+	FILENETWORK_DISABLED = 2,
+
+}
 
 ConVar CvarDisableThink;
 //ConVar CvarMaxBotsForKillfeed;
@@ -175,9 +186,9 @@ bool b_MarkForReload = false; //When you wanna reload the plugin on map change..
 #define COMBINE_CUSTOM_MODEL 		"models/zombie_riot/combine_attachment_police_228.mdl"
 
 //model uses self made IK rigs, to not break the top stuff.
-#define COMBINE_CUSTOM_2_MODEL 		"models/zombie_riot/combine_attachment_police_secondmodel_18.mdl"
+#define COMBINE_CUSTOM_2_MODEL 		"models/zombie_riot/combine_attachment_police_secondmodel_22.mdl"
 
-#define WEAPON_CUSTOM_WEAPONRY_1 	"models/zombie_riot/weapons/custom_weaponry_1_51.mdl"
+#define WEAPON_CUSTOM_WEAPONRY_1 	"models/zombie_riot/weapons/custom_weaponry_1_52.mdl"
 /*
 	1 - sensal scythe
 	2 - scythe_throw
@@ -417,6 +428,64 @@ char g_RobotStepSound[][] = {
 char g_TankStepSound[][] = {
 	"infected_riot/tank/tank_walk_1_fix.mp3",
 };
+
+#if defined BONEZONE_BASE
+
+#define BONEZONE_MODEL		"models/zombie_riot/the_bone_zone/basic_bones.mdl"
+#define BONEZONE_MODEL_BOSS	"models/zombie_riot/the_bone_zone/boss_bones.mdl"
+#define MODEL_SSB   		"models/zombie_riot/the_bone_zone/supreme_spookmaster_bones.mdl"
+#define PARTICLE_SSB_SPAWN	"doomsday_tentpole_vanish01"
+#define SND_TRANSFORM		")vo/halloween_boss/knight_alert.mp3"
+#define PARTICLE_TRANSFORM	"ghost_appearation"
+#define SND_GIB_SKELETON	")misc/halloween/skeleton_break.wav"
+
+char g_BoneZoneBuffDefaultSFX[][] = {
+	"vo/halloween_boo1.mp3",
+	"vo/halloween_boo2.mp3",
+	"vo/halloween_boo3.mp3",
+	"vo/halloween_boo4.mp3",
+	"vo/halloween_boo5.mp3",
+	"vo/halloween_boo6.mp3",
+	"vo/halloween_boo7.mp3"
+};
+
+char g_HHHGrunts[][] = {
+	")vo/halloween_boss/knight_alert01.mp3",
+	")vo/halloween_boss/knight_alert02.mp3"
+};
+
+char g_HHHYells[][] = {
+	")vo/halloween_boss/knight_attack01.mp3",
+	")vo/halloween_boss/knight_attack02.mp3",
+	")vo/halloween_boss/knight_attack03.mp3",
+	")vo/halloween_boss/knight_attack04.mp3",
+};
+
+char g_HHHLaughs[][] = {
+	")vo/halloween_boss/knight_laugh01.mp3",
+	")vo/halloween_boss/knight_laugh02.mp3",
+	")vo/halloween_boss/knight_laugh03.mp3",
+	")vo/halloween_boss/knight_laugh04.mp3",
+};
+
+char g_HHHPain[][] = {
+	")vo/halloween_boss/knight_pain01.mp3",
+	")vo/halloween_boss/knight_pain02.mp3",
+	")vo/halloween_boss/knight_pain03.mp3"
+};
+
+char g_WitchLaughs[][] = {
+	")items/halloween/witch01.wav",
+	")items/halloween/witch02.wav",
+	")items/halloween/witch03.wav"
+};
+
+#define SOUND_HHH_DEATH												")vo/halloween_boss/knight_dying.mp3"
+#define SOUND_DANGER_BIG_GUY_IS_HERE								")mvm/mvm_cpoint_klaxon.wav"
+#define SOUND_DANGER_KILL_THIS_GUY_IMMEDIATELY						")vo/announcer_security_alert.mp3"
+#define PARTICLE_DANGER_BIG_GUY_IS_HERE								"teleportedin_blue"
+
+#endif
 
 float f_ArrowDamage[MAXENTITIES];
 int h_ArrowInflictorRef[MAXENTITIES];
@@ -681,6 +750,10 @@ int OriginalWeapon_AmmoType[MAXENTITIES];
 #include "npccamera.sp"
 #endif
 
+#if defined ZR
+#include "rtscamera.sp"
+#endif
+
 #include "baseboss_lagcompensation.sp"
 #include "configs.sp"
 #include "damage.sp"
@@ -772,6 +845,7 @@ public void OnPluginStart()
 	SDKCall_Setup();
 	ConVar_PluginStart();
 	NPC_PluginStart();
+	NPCStats_PluginStart();
 	SDKHook_PluginStart();
 	OnPluginStart_LagComp();
 	NPC_Base_InitGamedata();
@@ -923,6 +997,10 @@ public void OnPluginEnd()
 	}
 
 	
+#if defined RTS_CAMERA
+	RTSCamera_PluginEnd();
+#endif
+
 #if defined RPG
 	RPG_PluginEnd();
 #endif
@@ -1192,6 +1270,7 @@ public void OnMapEnd()
 	Waves_MapEnd();
 	Spawns_MapEnd();
 	Vehicle_MapEnd();
+	NPC_MapEnd();
 #endif
 
 #if defined RPG
@@ -1545,7 +1624,11 @@ public void OnClientPutInServer(int client)
 	if(ForceNiko)
 		OverridePlayerModel(client, NIKO_2, true);
 	if(!Waves_Started() || Waves_InSetup())
+	{
 		DoGlobalMultiScaling();
+		if(b_AntiLateSpawn_Allow[client])
+			b_HasBeenHereSinceStartOfWave[client] = true;
+	}
 #endif
 	MedigunPutInServerclient(client);
 }
@@ -1728,6 +1811,9 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	if(SkillTree_PlayerRunCmd(client, buttons, vel))
 		return Plugin_Changed;
+	
+	if(BetWar_PlayerRunCmd(client, buttons, vel))
+		return Plugin_Changed;
 #endif
 
 #if defined RPG
@@ -1898,15 +1984,35 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		holding[client] |= IN_SCORE;
 		
 #if defined ZR
-		if(dieingstate[client] == 0 && GetClientTeam(client) == 2)
+		if(GetClientTeam(client) == 2)
 		{
-			if(WaitingInQueue[client])
+			if(dieingstate[client] == 0)
 			{
-				Queue_Menu(client);
+				if(WaitingInQueue[client])
+				{
+					Queue_Menu(client);
+				}
+				else
+				{
+					Store_Menu(client);
+				}
+			}
+		}
+		else
+		{
+			
+			if(LastStoreMenu[client] || AnyMenuOpen[client])
+			{
+				HideMenuInstantly(client);
+				//show a blank page to instantly hide it
+				CancelClientMenu(client);
+				ClientCommand(client, "slot10");
+				ResetStoreMenuLogic(client);
 			}
 			else
 			{
-				Store_Menu(client);
+				c_WeaponUseAbilitiesHud[client][0] = 0;
+				Items_EncyclopediaMenu(client);
 			}
 		}
 #endif
@@ -2524,6 +2630,8 @@ public void OnEntityCreated(int entity, const char[] classname)
 		{
 			b_ThisEntityIgnored[entity] = true;
 			b_ThisEntityIgnored_NoTeam[entity] = true;
+			//stringpool_fix crash.
+			SetEntProp(entity, Prop_Data, "m_bForcePurgeFixedupStrings", true);
 		}
 		else if(!StrContains(classname, "tf_player_manager"))
 		{
@@ -3014,6 +3122,8 @@ public void CheckIfAloneOnServer()
 		if(IsClientInGame(client) && GetClientTeam(client)==2 && !IsFakeClient(client))
 #endif
 		{
+			if(!b_AntiLateSpawn_Allow[client])
+				continue;
 			players += 1;
 #if defined ZR 
 			player_alone = client;
@@ -3026,6 +3136,8 @@ public void CheckIfAloneOnServer()
 	}
 
 #if defined ZR 
+	if(BetWar_Mode())
+		return;
 	if (players < 4 && players > 0)
 	{
 		if (Bob_Exists)
@@ -3109,7 +3221,7 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 	{
 		SDKCall_SetSpeed(client);
 	}
-	else if (condition == TFCond_Taunting && f_PreventMovementClient[client] > GetGameTime())
+	else if (condition == TFCond_Taunting && (BetWar_Mode() || f_PreventMovementClient[client] > GetGameTime()))
 	{
 		TF2_RemoveCondition(client, TFCond_Taunting);
 	}

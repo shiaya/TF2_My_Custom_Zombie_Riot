@@ -140,7 +140,7 @@ void ViewChange_MapStart()
 	Zero(b_AntiSameFrameUpdate);
 
 #if defined ZR
-	TeutonModelIndex = PrecacheModel(COMBINE_CUSTOM_MODEL, true);
+	TeutonModelIndex = PrecacheModel(COMBINE_CUSTOM_2_MODEL, true);
 #endif
 
 	int entity = -1;
@@ -251,6 +251,7 @@ void ViewChange_PlayerModel(int client)
 	int entity = CreateEntityByName("tf_wearable");
 	if(entity != -1)	// playermodel
 	{
+		int SetSkin = team - 2;
 #if defined ZR
 		i_CustomModelOverrideIndex[client] = -1;
 		
@@ -315,7 +316,15 @@ void ViewChange_PlayerModel(int client)
 		else
 		{
 			SetEntProp(entity, Prop_Send, "m_nModelIndex", TeutonModelIndex);
-			SetEntProp(entity, Prop_Send, "m_nBody", 9);
+			if(view_as<bool>(Store_HasNamedItem(client, "Shadow's Letter")))
+			{
+				SetEntProp(entity, Prop_Send, "m_nBody", 16);
+				SetSkin = 1;
+			}
+			else
+			{
+				SetEntProp(entity, Prop_Send, "m_nBody", 1);
+			}
 		}
 #else
 		UpdatePlayerFakeModel(client);
@@ -328,7 +337,7 @@ void ViewChange_PlayerModel(int client)
 		GetTeamOverride(team);
 #endif
 		SetTeam(entity, team);
-		SetEntProp(entity, Prop_Send, "m_nSkin", team-2);
+		SetEntProp(entity, Prop_Send, "m_nSkin", SetSkin);
 		SetEntProp(entity, Prop_Send, "m_usSolidFlags", 4);
 		SetEntityCollisionGroup(entity, 11);
 		SetEntProp(entity, Prop_Send, "m_bValidatedAttachedEntity", 1);
@@ -580,7 +589,15 @@ void ViewChange_Switch(int client, int active, const char[] classname)
 				int ViewmodelPlayerModel = EntRefToEntIndex(i_Viewmodel_PlayerModel[client]);
 				if(IsValidEntity(ViewmodelPlayerModel))
 				{
-					SetEntProp(ViewmodelPlayerModel, Prop_Send, "m_nBody", 9);
+					if(view_as<bool>(Store_HasNamedItem(client, "Shadow's Letter")))
+					{
+						SetEntProp(ViewmodelPlayerModel, Prop_Send, "m_nBody", 16);
+						SetTeam(ViewmodelPlayerModel, 0);
+					}
+					else
+					{
+						SetEntProp(ViewmodelPlayerModel, Prop_Send, "m_nBody", 1);
+					}
 				}
 			}
 #else
@@ -633,6 +650,10 @@ void MedicAdjustModel(int client)
 	if(!IsValidEntity(ViewmodelPlayerModel))
 		return;
 		
+	if(TeutonType[client] != TEUTON_NONE)
+	{
+		return;
+	}
 	if(i_PlayerModelOverrideIndexWearable[client] >= 0)
 	{
 		return;

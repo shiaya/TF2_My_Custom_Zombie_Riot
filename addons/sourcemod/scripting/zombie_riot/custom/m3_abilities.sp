@@ -61,6 +61,16 @@ int MaxRevivesReturn()
 {
 	return i_MaxRevivesAWave;
 }
+
+int MaxRevivesAllowed()
+{
+	int ReviveAllowMax;
+	ReviveAllowMax = RoundToNearest(float(CountPlayersOnRed(0, true)) * 0.2);
+	if(ReviveAllowMax <= 3)
+		ReviveAllowMax = 3;
+
+	return ReviveAllowMax;
+}
 static const char g_ReinforceReadySounds[] = "mvm/mvm_bought_in.wav";
 
 static char gExplosive1;
@@ -860,6 +870,10 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 	{
 		weapon = Purnell_Existant(client);
 	}
+	if(Is_Cheesed_Up(client))
+	{
+		weapon = ReturnWeapon_PlasmaKit(client);
+	}
 	if(IsValidEntity(weapon))
 	{
 		switch(i_CustomWeaponEquipLogic[weapon])
@@ -893,6 +907,15 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 				
 				Base_HealingMaxPoints=RoundToCeil(800.0 * Healing_Amount);
 			}
+			case WEAPON_CHEESY_MELEE:
+			{
+				Healing_Amount=Attributes_Get(weapon, Attrib_PapNumber, 0.0);
+				//it starts at -1.0, so it should go upto 1.0.
+				if(Healing_Amount<1.0)
+					Healing_Amount=1.0;
+
+				Base_HealingMaxPoints=RoundToCeil(7500.0 * Healing_Amount);
+			}
 			default:
 				Base_HealingMaxPoints=RoundToCeil(1900.0 * Healing_Amount);
 		}
@@ -904,8 +927,10 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 		Base_HealingMaxPoints = 3000;
 		
 
+	//make it easier by 10%
+	Base_HealingMaxPoints = RoundToNearest(float(Base_HealingMaxPoints) * 0.9);
 
-	if(autoscale != 0.0) 
+	if(autoscale != 0.0)
 		f_ReinforceTillMax[client] += autoscale;
 	else
 		f_ReinforceTillMax[client] += (float(healthvalue) / float(Base_HealingMaxPoints));
@@ -917,7 +942,7 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 
 		if(!b_ReinforceReady_soundonly[client])
 		{
-			EmitSoundToClient(client, g_ReinforceSounds[GetRandomInt(0, sizeof(g_ReinforceSounds) - 1)], _, _, _, _, 0.8, _, _, _, _, false);
+			EmitSoundToClient(client, g_ReinforceSounds[GetRandomInt(0, sizeof(g_ReinforceSounds) - 1)], _, _, _, _, 0.5, _, _, _, _, false);
 			CPrintToChat(client, "{green}You can now call in reinforcements.");
 			b_ReinforceReady_soundonly[client]=true;
 		}
@@ -968,7 +993,7 @@ public void Reinforce(int client, bool NoCD)
 				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Need Healing Point");
 				return;
 			}
-			if(i_MaxRevivesAWave >= 3)
+			if(i_MaxRevivesAWave >= MaxRevivesAllowed())
 			{
 				ClientCommand(client, "playgamesound items/medshotno1.wav");
 				SetDefaultHudPosition(client);
@@ -985,13 +1010,15 @@ public void Reinforce(int client, bool NoCD)
 		int MaxCashScale = CurrentCash;
 		if(MaxCashScale > 60000)
 			MaxCashScale = 60000;
-			
+		
 		bool DeadPlayer;
 		for(int client_check=1; client_check<=MaxClients; client_check++)
 		{
 			if(!IsValidClient(client_check))
 				continue;
 			if(TeutonType[client_check] == TEUTON_NONE)
+				continue;
+			if(!b_AntiLateSpawn_Allow[client_check])
 				continue;
 			if(client==client_check || GetTeam(client_check) != TFTeam_Red)
 				continue;
@@ -1010,6 +1037,7 @@ public void Reinforce(int client, bool NoCD)
 
 			DeadPlayer=true;
 		}
+
 		if(!DeadPlayer)
 		{
 			ClientCommand(client, "playgamesound items/medshotno1.wav");
@@ -1152,9 +1180,6 @@ public void BuilderMenu(int client)
 									
 		FormatEx(buffer, sizeof(buffer), "%t", "Bring up Class Change Menu");
 		menu.AddItem("-4", buffer);
-
-	//	FormatEx(buffer, sizeof(buffer), "%t", "Display top 5");
-	//	menu.AddItem("-5", buffer);
 		
 									
 		menu.ExitButton = true;
@@ -1964,14 +1989,13 @@ stock int Drop_Prop(int client, float fPos[3], float PropSpeed=1200.0, const cha
 		float Down[3]={90.0,0.0,0.0};
 		DispatchKeyValueVector(PropMove, "origin", fPos);
 		DispatchKeyValueVector(PropMove, "movedir", Down);
+		DispatchKeyValue(PropMove, "targetname", PropNeam_patch);
 		DispatchKeyValue(PropMove, "movedir", "90 0 0");
 		DispatchKeyValue(PropMove, "modelscale", "3");
 		Format(buffer, sizeof(buffer), "%.2f", 5000.0);
 		DispatchKeyValue(PropMove, "movedistance", buffer);
 		Format(buffer, sizeof(buffer), "%.2f", PropSpeed);
 		DispatchKeyValue(PropMove, "speed", buffer);
-		FormatEx(buffer, sizeof(buffer), "%s_Drop_%d", PropNeam_patch, client);
-		DispatchKeyValue(PropMove, "targetname", buffer);
 		DispatchKeyValue(PropMove, "startsound", "none");
 		DispatchKeyValue(PropMove, "stopsound", "none");
 		TeleportEntity(PropMove, fPos, NULL_VECTOR, NULL_VECTOR);
@@ -1982,16 +2006,10 @@ stock int Drop_Prop(int client, float fPos[3], float PropSpeed=1200.0, const cha
 		{
 			DispatchKeyValue(Prop, "model", worldmodel_patch);
 			DispatchKeyValue(Prop, "angles", "-90 0 0");
-			DispatchKeyValue(Prop, "parentname", buffer);
 			DispatchKeyValue(Prop, "solid", "0");
-			FormatEx(buffer, sizeof(buffer), "%s_%d", PropNeam_patch, client);
-			DispatchKeyValue(Prop, "targetname", buffer);
 			TeleportEntity(Prop, fPos, NULL_VECTOR, NULL_VECTOR);
 			DispatchSpawn(Prop);
-			
-			FormatEx(buffer, sizeof(buffer), "%s_Drop_%d", PropNeam_patch, client);
-			SetVariantString(buffer);
-			AcceptEntityInput(Prop, "SetParent");
+			SetParent(PropMove, Prop);
 		}
 		AcceptEntityInput(PropMove, "Open");
 		SetEntPropEnt(PropMove, Prop_Data, "m_hOwnerEntity", client);
@@ -2213,6 +2231,8 @@ stock int GetRandomDeathPlayer(int client)
 		if(TeutonType[client_check] == TEUTON_NONE)
 			continue;
 
+		if(!b_AntiLateSpawn_Allow[client_check])
+			continue;
 		if(client==client_check || GetTeam(client_check) != TFTeam_Red)
 			continue;
 

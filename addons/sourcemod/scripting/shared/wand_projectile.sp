@@ -470,6 +470,10 @@ static void OnDestroy_Proj(CClotBody body)
 	int extra_index = EntRefToEntIndex(iref_PropAppliedToRocket[body.index]);
 	if(IsValidEntity(extra_index))
 		RemoveEntity(extra_index);
+	if(IsValidEntity(f_ArrowTrailParticle[body.index]))
+		RemoveEntity(f_ArrowTrailParticle[body.index]);
+	if(IsValidEntity(i_WandParticle[body.index]))
+		RemoveEntity(i_WandParticle[body.index]);
 
 	iref_PropAppliedToRocket[body.index] = INVALID_ENT_REFERENCE;
 #if defined ZR || defined RPG
@@ -487,7 +491,7 @@ stock int ApplyCustomModelToWandProjectile(int rocket, char[] modelstringname, f
 	int entity = CreateEntityByName("prop_dynamic_override");
 	if(IsValidEntity(entity))
 	{
-		DispatchKeyValue(entity, "targetname", "ApplyCustomModelToWandProjectile");
+		DispatchKeyValue(entity, "targetname", "rpg_fortress");
 		DispatchKeyValue(entity, "model", modelstringname);
 		
 		
