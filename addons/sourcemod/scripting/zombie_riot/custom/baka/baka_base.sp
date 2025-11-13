@@ -26,6 +26,11 @@ void BakaCustomLastMan(int client)
 		CPrintToChatAll("{gold}%N are now alone,however,he won't give up that early...", client);
 		Yakuza_Lastman(12);
 	}
+	if(Sigil_LastMann(client))
+	{
+		CPrintToChatAll("{blue}Diabolus Ex Machina", client);
+		Yakuza_Lastman(13);
+	}
 }
 
 bool BakaStartCustomSoundForLastMan(int client, int WhatSoundPlay)
@@ -38,6 +43,11 @@ bool BakaStartCustomSoundForLastMan(int client, int WhatSoundPlay)
 			EmitCustomToClient(client, "#zombiesurvival/combinehell/escalationP2.mp3", client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
 			SetMusicTimer(client, GetTime() + 195);
 		}
+		case 13:
+		{
+			EmitCustomToClient(client, "#zombiesurvival/expidonsa_waves/wave_45_music_1.mp3", client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0);
+			SetMusicTimer(client, GetTime() + 279);
+		}
 		default:CompleteFailure=true;
 	}
 	return CompleteFailure;
@@ -48,6 +58,7 @@ void BakaStopCustomSoundForLastMan(int client, int WhatSoundPlay)
 	switch(WhatSoundPlay)
 	{
 		case 12:StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/combinehell/escalationP2.mp3", 2.0);
+		case 13:StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/expidonsa_waves/wave_45_music_1.mp3", 2.0);
 	}
 }
 

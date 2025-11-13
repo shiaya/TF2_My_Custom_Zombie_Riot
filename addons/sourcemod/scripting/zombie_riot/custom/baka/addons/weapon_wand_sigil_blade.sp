@@ -92,6 +92,7 @@ public void Wand_Sigil_Blade_MapStart()
 	PrecacheParticleEffect("player_sparkles_red");
   
 	PrecacheModel(SIGIL_CRYSTAL);
+	PrecacheModel("models/zombie_riot/weapons/sigil_blade");
   
 	for (int i = 0; i < (sizeof(Sigil_Melee_Hit_World)); i++) { PrecacheSound(Sigil_Melee_Hit_World[i]); }
 	for (int i = 0; i < (sizeof(Sigil_Charge_Hit_World)); i++) { PrecacheSound(Sigil_Charge_Hit_World[i]); }
@@ -992,7 +993,7 @@ public void GetRotatedVectorV(float vec[3], float axis[3], float radian, float r
 	res[2] = out[2];
 }
 
-/*bool Sigil_LastMann(int client)
+bool Sigil_LastMann(int client)
 {
 	bool SigilTHEME=false;
 	if(h_Sigil_hud[client] != null)
@@ -1001,4 +1002,4 @@ public void GetRotatedVectorV(float vec[3], float axis[3], float radian, float r
 			SigilTHEME=true;
 	}
 	return SigilTHEME;
-}*/
+}
