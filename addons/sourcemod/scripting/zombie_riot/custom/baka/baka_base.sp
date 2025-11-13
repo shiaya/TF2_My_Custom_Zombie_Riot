@@ -23,7 +23,7 @@ void BakaCustomLastMan(int client)
 {
 	if(Wkit_Omega_LastMann(client))
 	{
-		CPrintToChatAll("{darkviolet}%N decides to bring some PAIN.", client);
+		CPrintToChatAll("{gold}%N are now alone,however,he won't give up that early...", client);
 		Yakuza_Lastman(12);
 	}
 }
