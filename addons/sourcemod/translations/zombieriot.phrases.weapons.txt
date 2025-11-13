@@ -4011,27 +4011,32 @@
 		"en"		"Pixel Sword"
 		"ko"		"픽셀 나무 검"
 	}
-	"Stone Age"
+	"Task Stone Age"
 	{
 		"en"		"Stone Age"
 		"ko"		"석기 시대"
 	}
-	"Isn't It Iron Pick"
+	"Task Isn't It Iron Pick"
 	{
 		"en"		"Isn't It Iron Pick"
 		"ko"		"이젠 철 좀 들어라"
 	}
-	"Enchanted Gold Sword"
+	"Task Enchanter"
+	{
+		"en"		"Enchanter"
+		"ko"		"마법 부여자"
+	}
+	"Task Enchanted Gold Sword"
 	{
 		"en"		"Enchanted Gold Sword"
 		"ko"		"인첸드된 금 검"
 	}
-	"Diamonds!"
+	"Task Diamonds!"
 	{
 		"en"		"Diamonds!"
 		"ko"		"다이아몬드다!"
 	}
-	"Cover Me in Debris"
+	"Task Cover Me in Debris"
 	{
 		"en"		"Cover Me in Debris"
 		"ko"		"잔해로 날 감싸줘"
