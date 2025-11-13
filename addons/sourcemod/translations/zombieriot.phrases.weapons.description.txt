@@ -4501,6 +4501,26 @@
 		"en"	"Magic weapon DMG increased by 3.5％"
 		"ko"	"마법무기의 피해량 3.5％ 증가"
 	}
+	"Widemouth Refill Port Desc"
+	{
+		"en"		"You have cleared [Normal] Cyber ​​Grind!\nIncreases ammo/metal/mana obtained from Smmo Boxes by 10％"
+		"ko"		"[보통] 난이도의 사이버 그라인드를 클리어했습니다!\n탄약 박스로부터 얻는 탄약/금속/마나가 10％ 증가합니다"
+	}
+	"Builder's Blueprints Desc"
+	{
+		"en"		"You have cleared [Hard] Cyber ​​Grind!\nReduces building construction cooldown by 1 second"
+		"ko"		"[어려움] 난이도의 사이버 그라인드를 클리어했습니다!\n구조물 설치 쿨다운 1초 감소"
+	}
+	"Sardis Gold Desc"
+	{
+		"en"		"You have cleared [Expert] Cyber ​​Grind!\nStart with extra 20 extra credits."
+		"ko"		"[전문가] 난이도의 사이버 그라인드를 클리어했습니다!\n시작 자금 +20"
+	}
+	"Originium Desc"
+	{
+		"en"		"You have cleared [EX Hard] Cyber ​​Grind!\nStart with extra 30 extra credits."
+		"ko"		"[EX Hard] 난이도의 사이버 그라인드를 클리어했습니다!\n시작 자금 +30"
+	}
 	
 	"Orbital 120MM Desc"
 	{

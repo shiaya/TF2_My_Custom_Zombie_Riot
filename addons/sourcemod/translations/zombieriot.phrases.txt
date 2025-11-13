@@ -5028,8 +5028,14 @@
 	"Pickup Gift Single"
 	{
 		"#format"	"{1:d}"
-		"en"		"{green}You already have everything in this rarity, but where given {1} XP as a compensation!{default}"
-		"ko"		"{green}현 단계의 모든 아이템을 가지고있습니다. 대신 추가 {1} XP 를 보상으로 받았습니다!{default}"
+		"en"		"{crimson}[ZR] {green}You already have everything in this rarity, but where given {1} XP as a compensation!{default}"
+		"ko"		"{crimson}[ZR] {green}현 단계의 모든 아이템을 가지고있습니다. 대신 추가 {1} XP 를 보상으로 받았습니다!{default}"
+	}
+	"Pickup Inventory Gift"
+	{
+		"#format"	"{1:d}"
+		"en"		"{crimson}[ZR]{snow} You have found"
+		"ko"		"{crimson}[ZR]{snow} 아이템을 발견했습니다!"
 	}
 	"Use Only Alive"
 	{
