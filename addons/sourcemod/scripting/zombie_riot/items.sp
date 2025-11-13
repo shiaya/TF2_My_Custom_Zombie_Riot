@@ -70,6 +70,7 @@ void Items_PluginStart()
 	RegAdminCmd("zr_give_item", Items_GiveCmd, ADMFLAG_RCON);
 	RegAdminCmd("zr_give_allitems", Items_GiveAllCmd, ADMFLAG_RCON);
 	RegAdminCmd("zr_remove_allitems", Items_RemoveAllCmd, ADMFLAG_RCON);
+	RegAdminCmd("sm_spawn_gift", CommandSpawnGift, ADMFLAG_RCON);
 }
 
 void Items_SetupConfig()
@@ -715,6 +716,7 @@ void Map_Precache_Zombie_Drops_Gift()
 	PrecacheModel(GIFT_MODEL, true);
 	PrecacheSound(SOUND_BEEP);
 	g_BeamIndex = PrecacheModel("materials/sprites/laserbeam.vmt", true);
+	Map_Precache_Zombie_Drops_InvGift();
 }
 
 void Gift_DropChance(int entity)
@@ -735,7 +737,7 @@ void Gift_DropChance(int entity)
 				ZRGiftRarity rarity = RollRandom(); //Random for each clie
 				if(RND<=50&&!IsPointHazard(VecOrigin)) //Is it valid?
 				{
-					int rarity = RollRandom(); //Random for each clie
+					//int rarity = RollRandom(); //Random for each clie
 					if(!IsPointHazard(VecOrigin)) //Is it valid?
 					{
 						b_ForceSpawnNextTime = false;
@@ -752,7 +754,7 @@ void Gift_DropChance(int entity)
 					{
 						if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) == view_as<int>(TFTeam_Red))
 						{
-							int rarity = RollRandom(); //Random for each clie
+							//int rarity = RollRandom(); //Random for each clie
 							if(!IsPointHazard(VecOrigin)) //Is it valid?
 							{
 								b_ForceSpawnNextTime = false;

@@ -242,11 +242,14 @@ enum
 	WEAPON_SHERRIF = 150,
 	WEAPON_SHERRIF_LEVERACTION = 151,
 	WEAPON_BOOMERANG = 152,
-	WEAPON_CHEESY_SECONDARY = 153
+	WEAPON_CHEESY_SECONDARY = 153,
 	WEAPON_TRUMPET = 1000,
 	WEAPON_MAJORSTEAM_LAUNCHER = 1001,
 	WEAPON_LOCKDOWN = 1002,
-	WEAPON_MINECRAFT_SWORD = 1003
+	WEAPON_MINECRAFT_SWORD = 1003,
+	WEAPON_SIGIL_BLADE = 1004,
+	WEAPON_KIT_OMEGA = 1005,
+	WEAPON_KIT_OMEGA_GAUSS = 1006
 }
 
 enum
@@ -632,6 +635,8 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "custom/baka/weapon_majorsteam_launcher.sp"
 #include "custom/baka/weapon_mostima.sp"
 #include "custom/baka/weapon_minecraft_sword.sp"
+#include "custom/baka/addons/weapon_wand_sigil_blade.sp"
+#include "custom/baka/addons/kit_omega.sp"
 #include "custom/kit_soldine.sp"
 #include "custom/weapon_kritzkrieg.sp"
 #include "custom/wand/weapon_bubble_wand.sp"
@@ -701,6 +706,7 @@ void ZR_PluginStart()
 	RegAdminCmd("sm_afk_knight", Command_AFKKnight, ADMFLAG_ROOT, "BRB GONNA MURDER MY MOM'S DISHES");	//DEBUG
 	RegAdminCmd("sm_spawn_grigori", Command_SpawnGrigori, ADMFLAG_ROOT, "Forcefully summon grigori");	//DEBUG
 	RegAdminCmd("sm_displayhud", CommandDebugHudTest, ADMFLAG_ROOT, "debug stuff");						//DEBUG
+	RegAdminCmd("sm_testlastman", CommandLASTMANTest, ADMFLAG_ROOT, "ISVOLI!!!! FOR THE PEOPLE!!!!!!!!!!");						//DEBUG
 	RegAdminCmd("sm_fake_death_client", Command_FakeDeathCount, ADMFLAG_ROOT, "Fake Death Count"); 	//DEBUG
 	RegAdminCmd("sm_spawn_vehicle", Command_PropVehicle, ADMFLAG_ROOT, "Spawn Vehicle"); 	//DEBUG
 	RegAdminCmd("sm_loadbgmusic", CommandBGTest, ADMFLAG_RCON, "Load a config containing a music field as passive music");
@@ -1420,6 +1426,12 @@ public Action CommandDebugHudTest(int client, int args)
 
 	int Number = GetCmdArgInt(1);
 	Medival_Wave_Difficulty_Riser(Number);
+	return Plugin_Handled;
+}
+
+public Action CommandLASTMANTest(int client, int args)
+{
+	CheckAlivePlayers(_, _, true);
 	return Plugin_Handled;
 }
 
@@ -2219,6 +2231,7 @@ void CheckAlivePlayers(int killed=0, int Hurtviasdkhook = 0, bool TestLastman = 
 							CPrintToChatAll("{darkviolet}%N decides to inject themselves with plasma as a last resort...", client);
 							Yakuza_Lastman(11);
 						}
+						BakaCustomLastMan(client);
 						
 						
 						for(int i=1; i<=MaxClients; i++)

@@ -48,7 +48,7 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 		{
 			i_Current_Pap[client] = RoundToFloor(Attributes_Get(weapon, 122, 0.0));
 			Ms_Weapon_Energy_Max[client]=Attributes_Get(weapon, 41, 2.0);
-			static char name[32];
+			static char name[32], advancement[32];
 			GetClientName(client, name, sizeof(name));
 			switch(i_Current_Pap[client])
 			{
@@ -56,7 +56,8 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 				{
 					if(!Task_I[client])
 					{
-						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Stone Age]");
+						Format(advancement, sizeof(advancement), "[%t]", "Task Stone Age");
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, advancement);
 						Task_I[client]=true;
 					}
 				}
@@ -64,7 +65,8 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 				{
 					if(!Task_II[client])
 					{
-						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Isn't It Iron Pick]");
+						Format(advancement, sizeof(advancement), "[%t]", "Task Isn't It Iron Pick");
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, advancement);
 						Task_II[client]=true;
 					}
 				}
@@ -72,7 +74,8 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 				{
 					if(!Task_III[client])
 					{
-						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Enchanter]");
+						Format(advancement, sizeof(advancement), "[%t]", "Task Enchanter");
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, advancement);
 						Task_III[client]=true;
 					}
 				}
@@ -80,7 +83,8 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 				{
 					if(!Task_IV[client])
 					{
-						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, "[Diamonds!]");
+						Format(advancement, sizeof(advancement), "[%t]", "Task Diamonds!");
+						CPrintToChatAll("%t", "Minecraft Sword Advancement", name, advancement);
 						Task_IV[client]=true;
 					}
 				}
@@ -88,10 +92,11 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 				{
 					if(!Task_V[client])
 					{
-						CPrintToChatAll("%t", "Minecraft Sword Challenge", name, "[Cover Me in Debris]");
-						EmitCustomToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
-						EmitCustomToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
-						EmitCustomToAll("baka/minecraft_challenge_complete.mp3", _, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, 1.0);
+						Format(advancement, sizeof(advancement), "[%t]", "Task Cover Me in Debris");
+						CPrintToChatAll("%t", "Minecraft Sword Challenge", name, advancement);
+						EmitCustomToAll("baka_zr/minecraft_challenge_complete.mp3", _, _, _, _, 1.0);
+						EmitCustomToAll("baka_zr/minecraft_challenge_complete.mp3", _, _, _, _, 1.0);
+						EmitCustomToAll("baka_zr/minecraft_challenge_complete.mp3", _, _, _, _, 1.0);
 						Task_V[client]=true;
 					}
 				}
@@ -115,7 +120,7 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 	}
 }
 
-public Action Timer_MSword(Handle timer, DataPack pack)
+static Action Timer_MSword(Handle timer, DataPack pack)
 {
 	pack.Reset();
 	int client = pack.ReadCell();
@@ -157,7 +162,7 @@ public void MSword_Attack(int client, int weapon, bool &result, int slot)
 	}
 }
 
-public Action Timer_MSword_Attack(Handle timer, DataPack pack)
+static Action Timer_MSword_Attack(Handle timer, DataPack pack)
 {
 	pack.Reset();
 	int client = pack.ReadCell();
@@ -204,7 +209,7 @@ public void MSword_NPCTakeDamage(int attacker, int victim, float &damage, int we
 		NPC_Ignite(victim, attacker, f_Silenced, weapon);
 }
 
-public void Weapon_Sweeping_Edge(DataPack pack)
+static void Weapon_Sweeping_Edge(DataPack pack)
 {
 	pack.Reset();
 	int client = 	GetClientOfUserId(pack.ReadCell());
@@ -302,7 +307,7 @@ public void Weapon_Sweeping_Edge(DataPack pack)
 	delete pack;
 }
 
-public void Sweeping_Edge_DeleteLaserAndParticle(DataPack pack)
+static void Sweeping_Edge_DeleteLaserAndParticle(DataPack pack)
 {
 	pack.Reset();
 	int Projectile = EntRefToEntIndex(pack.ReadCell());
@@ -323,7 +328,7 @@ public void Sweeping_Edge_DeleteLaserAndParticle(DataPack pack)
 	delete pack;
 }
 
-public bool TraceSweeping_Edge(int entity, int filterentity)
+static bool TraceSweeping_Edge(int entity, int filterentity)
 {
 	if(IsValidEnemy(filterentity, entity, true, true)) //Must detect camo.
 	{

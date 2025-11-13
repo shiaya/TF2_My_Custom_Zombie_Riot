@@ -4,6 +4,9 @@ public void TeamBakaCustom_OnMapStart()
 	MajorSteam_Launcher_OnMapStart();
 	LockDown_Wand_MapStart();
 	MSword_OnMapStart();
+	
+	Wand_Sigil_Blade_MapStart();
+	KitOmega_OnMapStart();
 }
 
 public void TeamBakaCustom_Enable(int client, int weapon)
@@ -11,6 +14,41 @@ public void TeamBakaCustom_Enable(int client, int weapon)
 	Enable_MajorSteam_Launcher(client, weapon);
 	LockDown_Enable(client, weapon);
 	MSword_Enable(client, weapon);
+	
+	Enable_Sigil_Blade(client, weapon);
+	Enable_KitOmega(client, weapon);
+}
+
+void BakaCustomLastMan(int client)
+{
+	if(Wkit_Omega_LastMann(client))
+	{
+		CPrintToChatAll("{darkviolet}%N decides to bring some PAIN.", client);
+		Yakuza_Lastman(12);
+	}
+}
+
+bool BakaStartCustomSoundForLastMan(int client, int WhatSoundPlay)
+{
+	bool CompleteFailure;
+	switch(WhatSoundPlay)
+	{
+		case 12:
+		{
+			EmitCustomToClient(client, "#zombiesurvival/combinehell/escalationP2.mp3", client, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+			SetMusicTimer(client, GetTime() + 195);
+		}
+		default:CompleteFailure=true;
+	}
+	return CompleteFailure;
+}
+
+void BakaStopCustomSoundForLastMan(int client, int WhatSoundPlay)
+{
+	switch(WhatSoundPlay)
+	{
+		case 12:StopCustomSound(client, SNDCHAN_STATIC, "#zombiesurvival/combinehell/escalationP2.mp3", 2.0);
+	}
 }
 
 void TeamBakaCustom_WaveEnd()
@@ -35,6 +73,16 @@ public void TeamBakaCustom_NPCTakeDamage(int attacker, int victim, float &damage
 	{
 		case WEAPON_MAJORSTEAM_LAUNCHER:MajorSteam_Launcher_NPCTakeDamage(attacker, victim, damage, weapon, damagetype);
 		case WEAPON_MINECRAFT_SWORD:MSword_NPCTakeDamage(attacker, victim, damage, weapon);
+		case WEAPON_KIT_OMEGA:
+		{
+			if(!CheckInHud())
+				KitOmega_NPCTakeDamage_Melee(attacker, victim, damage, weapon);
+		}
+		case WEAPON_KIT_OMEGA_GAUSS:
+		{
+			if(!CheckInHud())
+				KitOmega_NPCTakeDamage_Gauss(attacker, victim, damage, weapon);
+		}
 	}
 }
 

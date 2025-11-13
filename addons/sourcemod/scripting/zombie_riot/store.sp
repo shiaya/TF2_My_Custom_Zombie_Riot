@@ -6287,7 +6287,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 
 	if(EntityIsAWeapon)
 	{
-		if(b_Shotgun_Slug_Ammo[client] && i_WeaponArchetype[entity] == 1)
+		if(b_Shotgun_Slug_Ammo[client] && i_WeaponArchetype[entity] == Archetype_Charger)
 		{
 			int Pellets = 10;
 			float ExtraPellets=0.0;
@@ -6311,7 +6311,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 				i_WeaponDamageFalloff[entity]=0.99;
 			}
 		}
-		if(b_Shotgun_Mini_Ammo[client] && i_WeaponArchetype[entity] == 1)
+		if(b_Shotgun_Mini_Ammo[client] && i_WeaponArchetype[entity] == Archetype_Charger)
 		{
 			if(!Attributes_Has(entity, 45))
 				Attributes_Set(entity, 45, 1.0);

@@ -2461,7 +2461,7 @@ void OnKillUniqueWeapon(int attacker, int weapon, int victim)
 		if(!Waves_InSetup())
 		{
 			int cash = 1;
-			CashRecievedNonWave[attacker] += cash;
+			CashReceivedNonWave[attacker] += cash;
 			CashSpent[attacker] -= cash;
 		}
 	}

@@ -136,6 +136,84 @@ public Action CommandAimGotEffectsadd(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action CommandSpawnGift(int client, int args)
+{
+	if(args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_spawn_gift <client or -1> <0:Common 1:Uncommon 2:Rare 3:Legend 4:Mythic>");
+		return Plugin_Handled;
+	}
+	if(!IsValidClient(client))
+	{
+		PrintToConsole(client, "Command is in-game only");
+		return Plugin_Handled;
+	}
+	float vecClientEyePos[3], vecClientEyeAng[3];
+	GetClientEyePosition(client, vecClientEyePos);
+	GetClientEyeAngles(client, vecClientEyeAng);
+	//vecClientEyePos[2]-=20.0;
+
+	Handle hTrace;
+	float TargetPos[3];
+	hTrace = TR_TraceRayFilterEx(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, Filter_NoPlayers, client);
+	TR_GetEndPosition(TargetPos, hTrace);
+	delete hTrace;
+	TargetPos[2]+=5.0;
+	
+	char arg[65], arg2[8];
+	int index=0;
+	GetCmdArg(1, arg, sizeof(arg));
+	GetCmdArg(2, arg2, sizeof(arg2));
+	StringToIntEx(arg, index);
+	if(index == -1)
+	{
+		StringToIntEx(arg2, index);
+		Stock_SpawnGift(TargetPos, GIFT_MODEL, 45.0, GetRarity(index)); 
+		return Plugin_Handled;
+	}
+	
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client,
+			target_list,
+			MAXPLAYERS,
+			COMMAND_FILTER_CONNECTED,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
+	{
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+	StringToIntEx(arg2, index);
+	for(int i=0; i<target_count; i++)
+	{
+		Stock_SpawnInvGift(TargetPos, GIFT_MODEL, 45.0, target_count, GetRarity(index));
+	}
+	
+	return Plugin_Handled;
+}
+
+static ZRGiftRarity GetRarity(int rarity)
+{
+	switch(rarity)
+	{
+		case 1:
+			return Uncommon;
+		case 2:
+			return Rare;
+		case 3:
+			return Legend;
+		case 4:
+			return Mythic;
+	}
+	return Common;
+}
+
 static bool KillCommand_TraceNotMe(int entity, int contentsMask, any data)
 {
 	if(entity == data)
@@ -153,7 +231,11 @@ enum struct InvGiftItem
 static ArrayList GiftItems;
 
 static int g_BeamIndex = -1;
-static int i_RarityType[MAXENTITIES];
+
+void Map_Precache_Zombie_Drops_InvGift()
+{
+	g_BeamIndex = PrecacheModel("materials/sprites/laserbeam.vmt", true);
+}
 
 void InvItems_SetupConfig()
 {
@@ -174,14 +256,14 @@ void InvItems_SetupConfig()
 		int index = StringToInt(item.Name);
 
 		item.Name[0] = 0;
-		item.Rarity = Rarity_None;
+		item.Rarity = view_as<int>(None);
 		while(GiftItems.Length < index)
 		{
 			GiftItems.PushArray(item);
 		}
 
 		kv.GetString("name", item.Name, sizeof(item.Name));
-		item.Rarity = kv.GetNum("rarity", Rarity_None);
+		item.Rarity = kv.GetNum("rarity", view_as<int>(None));
 		if(GiftItems.Length == index)
 		{
 			GiftItems.PushArray(item);
@@ -217,11 +299,12 @@ public Action Timer_Detect_Player_Near_InvGift(Handle timer, DataPack pack)
 	int entity = EntRefToEntIndex(pack.ReadCell());
 	int glow = EntRefToEntIndex(pack.ReadCell());
 	int client = GetClientOfUserId(pack.ReadCell());
-	int Rarity = pack.ReadCell();
+	ZRGiftRarity Rarity = pack.ReadCell();
 	if(IsValidEntity(entity) && entity>MaxClients)
 	{
 		if(IsValidClient(client))
 		{
+			int IRarity = view_as<int>(Rarity);
 			float powerup_pos[3];
 			GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", powerup_pos);
 			float client_pos[3];
@@ -230,11 +313,11 @@ public Action Timer_Detect_Player_Near_InvGift(Handle timer, DataPack pack)
 				float AddTime = 2.0;
 				EmitSoundToClient(client, SOUND_BEEP, entity, _, 90, _, 1.0);
 				int color[4];
-				
-				color[0] = RenderColors_RPG[i_RarityType[entity]][0];
-				color[1] = RenderColors_RPG[i_RarityType[entity]][1];
-				color[2] = RenderColors_RPG[i_RarityType[entity]][2];
-				color[3] = RenderColors_RPG[i_RarityType[entity]][3];
+				int ColorGiveRarity = IRarity;
+				color[0] = RenderColors_RPG[ColorGiveRarity][0];
+				color[1] = RenderColors_RPG[ColorGiveRarity][1];
+				color[2] = RenderColors_RPG[ColorGiveRarity][2];
+				color[3] = RenderColors_RPG[ColorGiveRarity][3];
 		
 				TE_SetupBeamRingPoint(powerup_pos, 10.0, 300.0, g_BeamIndex, -1, 0, 30, 1.0, 10.0, 1.0, color, 0, 0);
 	   			TE_SendToClient(client);
@@ -258,7 +341,7 @@ public Action Timer_Detect_Player_Near_InvGift(Handle timer, DataPack pack)
 					int rand = GetURandomInt();
 					int length = GiftItems.Length;
 					int[] items = new int[length];
-					for(int r = i_RarityType[entity]; r >= 0; r--)
+					for(int r = IRarity; r >= 0; r--)
 					{
 						int maxitems;
 						for(int i; i < length; i++)
@@ -284,9 +367,8 @@ public Action Timer_Detect_Player_Near_InvGift(Handle timer, DataPack pack)
 							if(Items_GiveIdItem(client, items[i]))	// Gives item, returns true if newly obtained, false if they already have
 							{
 								static const char Colors[][] = { "default", "green", "blue", "yellow", "darkred" };
-								
 								GiftItems.GetArray(items[i], item);
-								CPrintToChat(client, "{default}You have found {%s}%s{default}!", Colors[r], item.Name);
+								CPrintToChat(client, "%t {%s}\"%t\"{snow}!", "Pickup Inventory Gift", Colors[r], item.Name);
 								r = -1;
 								length = 0;
 								break;
@@ -301,15 +383,15 @@ public Action Timer_Detect_Player_Near_InvGift(Handle timer, DataPack pack)
 						int MultiExtra = 1;
 						switch(Rarity)
 						{
-							case Rarity_Common:
+							case Common:
 								MultiExtra = 1;
-							case Rarity_Uncommon:
+							case Uncommon:
 								MultiExtra = 2;
-							case Rarity_Rare:
+							case Rare:
 								MultiExtra = 5;
-							case Rarity_Legend:
+							case Legend:
 								MultiExtra = 10;
-							case Rarity_Mythic:
+							case Mythic:
 								MultiExtra = 40;
 						}
 						//xp to give?
@@ -345,7 +427,7 @@ public Action Timer_Detect_Player_Near_InvGift(Handle timer, DataPack pack)
 	return Plugin_Continue;
 }
 
-stock void Stock_SpawnInvGift(float position[3], const char[] model, float lifetime, int client, int rarity)
+stock void Stock_SpawnInvGift(float position[3], const char[] model, float lifetime, int client, ZRGiftRarity rarity)
 {
 	int m_iGift = CreateEntityByName("prop_physics_override")
 	if(m_iGift != -1)
@@ -365,16 +447,16 @@ stock void Stock_SpawnInvGift(float position[3], const char[] model, float lifet
 	
 		TeleportEntity(m_iGift, position, NULL_VECTOR, NULL_VECTOR);
 		
-		i_RarityType[m_iGift] = rarity;
+		//i_RarityType[m_iGift] = rarity;
 		
 		int glow = TF2_CreateGlow(m_iGift);
 		
 		int color[4];
-		
-		color[0] = RenderColors_RPG[i_RarityType[m_iGift]][0];
-		color[1] = RenderColors_RPG[i_RarityType[m_iGift]][1];
-		color[2] = RenderColors_RPG[i_RarityType[m_iGift]][2];
-		color[3] = RenderColors_RPG[i_RarityType[m_iGift]][3];
+		int ColorGiveRarity = view_as<int>(rarity);
+		color[0] = RenderColors_RPG[ColorGiveRarity][0];
+		color[1] = RenderColors_RPG[ColorGiveRarity][1];
+		color[2] = RenderColors_RPG[ColorGiveRarity][2];
+		color[3] = RenderColors_RPG[ColorGiveRarity][3];
 		
 		SetVariantColor(view_as<int>(color));
 		AcceptEntityInput(glow, "SetGlowColor");

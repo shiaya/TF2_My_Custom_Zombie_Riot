@@ -1667,7 +1667,7 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 			if(b_Leaders_Belt[attacker])
 				damage *= 0.8;
 		}
-		if(IsValidClient(attacker) && b_Shotgun_Dragonr_Beath_Ammo[attacker] && i_WeaponArchetype[weapon] == 1)
+		if(IsValidClient(attacker) && b_Shotgun_Dragonr_Beath_Ammo[attacker] && i_WeaponArchetype[weapon] == Archetype_Charger)
 		{
 			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
 			{
@@ -1679,7 +1679,7 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 			}
 		}
 		if(IsValidClient(attacker) && b_Mana_Infusion_Ammunition[attacker] &&
-		(i_WeaponArchetype[weapon] >= 1 || i_WeaponArchetype[weapon] <= 5))
+		(i_WeaponArchetype[weapon] >= Archetype_Artillery || i_WeaponArchetype[weapon] <= Archetype_Hunter))
 		{
 			if(!(damagetype & DMG_TRUEDAMAGE) && !(i_HexCustomDamageTypes[attacker] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED))
 			{
@@ -1694,11 +1694,11 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 				{
 					switch(i_WeaponArchetype[weapon])
 					{
-						case 1:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
-						case 2:mana_cost=RoundToCeil(max_mana[attacker]*0.5);
-						case 3:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
-						case 4:mana_cost=RoundToCeil(max_mana[attacker]*0.025);
-						case 5:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
+						case Archetype_Artillery:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
+						case Archetype_Deadeye:mana_cost=RoundToCeil(max_mana[attacker]*0.5);
+						case Archetype_Charger:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
+						case Archetype_Tactician:mana_cost=RoundToCeil(max_mana[attacker]*0.025);
+						case Archetype_Hunter:mana_cost=RoundToCeil(max_mana[attacker]*0.25);
 						default:mana_cost=RoundToCeil(max_mana[attacker]*0.1);
 					}
 				}
