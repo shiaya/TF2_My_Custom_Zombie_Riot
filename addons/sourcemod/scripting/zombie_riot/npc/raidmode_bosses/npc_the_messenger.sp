@@ -1038,12 +1038,11 @@ int TheMessengerSelfDefense(TheMessenger npc, float gameTime, int target, float 
 					else
 						projectile = npc.FireParticleRocket(vecTarget, Proj_Damage, 1000.0, 150.0, "spell_fireball_small_blue", false);
 			
-					SDKUnhook(projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-					int particle = EntRefToEntIndex(i_rocket_particle[projectile]);
+					int particle = EntRefToEntIndex(i_WandParticle[projectile]);
 					CreateTimer(3.5, Timer_RemoveEntity, EntIndexToEntRef(projectile), TIMER_FLAG_NO_MAPCHANGE);
 					CreateTimer(3.5, Timer_RemoveEntity, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
 					
-					SDKHook(projectile, SDKHook_StartTouch, TheMessenger_Rocket_Particle_StartTouch);		
+					WandProjectile_ApplyFunctionToEntity(projectile, TheMessenger_Rocket_Particle_StartTouch);
 					
 				}
 				if(distance > (NORMAL_ENEMY_MELEE_RANGE_FLOAT_SQUARED * 3.5))
@@ -1248,28 +1247,27 @@ public void TheMessenger_Rocket_Particle_StartTouch(int entity, int target)
 
 		if(i_RaidGrantExtra[owner] <= 2)
 		{
-			NPC_Ignite(target, owner,2.5, -1, DamageDeal * 0.1);
+			if(i_NpcInternalId[owner] == NPCId)
+				NPC_Ignite(target, owner,2.5, -1, DamageDeal * 0.1);
+			else
+				NPC_Ignite(target, owner,2.5, -1, DamageDeal * 0.2);
 		}
 		else
 		{
-			int ChaosDamage = 75;
-			if(NpcStats_IsEnemySilenced(owner))
-				ChaosDamage = 65;
+			int ChaosDamage = 100;
 			//above is kahmlstein
 
 			if(i_NpcInternalId[owner] == NPCId)
 			{
 				//This is messenger
 				ChaosDamage = 60;
-				if(NpcStats_IsEnemySilenced(owner))
-					ChaosDamage = 50;
 					
 				ApplyStatusEffect(owner, target, "Near Zero", 3.5);
 			}
 
 			Elemental_AddChaosDamage(target, owner, ChaosDamage, true, true);
 		}
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		if(IsValidEntity(particle))
 		{
 			RemoveEntity(particle);
@@ -1277,7 +1275,7 @@ public void TheMessenger_Rocket_Particle_StartTouch(int entity, int target)
 	}
 	else
 	{
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		//we uhh, missed?
 		if(IsValidEntity(particle))
 		{
@@ -1321,9 +1319,7 @@ void MessengerInitiateGroupAttack(TheMessenger npc)
 			else
 				projectile = npc.FireParticleRocket(vecHit, Proj_Damage, 1000.0, 150.0, "spell_fireball_small_blue", false,_,true, vecHitPart);
 	
-			SDKUnhook(projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-			
-			SDKHook(projectile, SDKHook_StartTouch, TheMessenger_Rocket_Particle_StartTouch);		
+			WandProjectile_ApplyFunctionToEntity(projectile, TheMessenger_Rocket_Particle_StartTouch);		
 			static float ang_Look[3];
 			GetEntPropVector(projectile, Prop_Send, "m_angRotation", ang_Look);
 			Initiate_HomingProjectile(projectile,

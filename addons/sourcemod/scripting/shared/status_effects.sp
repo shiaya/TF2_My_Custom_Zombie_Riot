@@ -57,6 +57,7 @@ enum struct StatusEffect
 		this.OnBuffStarted				= INVALID_FUNCTION;
 		this.OnBuffStoreRefresh			= INVALID_FUNCTION;
 		this.OnBuffEndOrDeleted			= INVALID_FUNCTION;
+		this.HudDisplay_Func			= INVALID_FUNCTION;
 		this.DamageTakenMulti 			= -1.0;
 		this.DamageDealMulti 			= -1.0;
 		this.MovementspeedModif 		= -1.0;
@@ -214,6 +215,7 @@ void InitStatusEffects()
 	StatusEffects_Rogue3();
 	StatusEffects_SkullServants();
 	StatusEffects_GamemodeMadnessSZF();
+	StatusEffects_Raigeki();
 #endif
 }
 
@@ -1017,7 +1019,7 @@ void Force_ExplainBuffToClient(int client, const char[] name, bool IgnoreCooldow
 	ExplainBuffToClient(client, Apply_MasterStatusEffect, false, index, IgnoreCooldown);
 }
 
-bool WasAlreadyExplainedToClient(int client, const char[] name)
+stock bool WasAlreadyExplainedToClient(int client, const char[] name)
 {
 	int index;
 	index = AL_StatusEffects.FindString(name, StatusEffect::BuffName);
@@ -3259,7 +3261,7 @@ static bool CheckBuffIndex(int victim, int buffIndex)
 void StatusEffects_CombineCommander()
 {
 	StatusEffect data;
-	strcopy(data.BuffName, sizeof(data.BuffName), "Combine Command");
+	strcopy(data.BuffName, sizeof(data.BuffName), "Mazeat Command");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "⛠");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
@@ -3581,10 +3583,10 @@ void StatusEffects_SevenHeavySouls()
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "♥");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
 	//-1.0 means unused
-	data.DamageTakenMulti 			= 0.5;
-	data.DamageDealMulti			= 0.5;
+	data.DamageTakenMulti 			= 0.25;
+	data.DamageDealMulti			= 1.0;
 	data.MovementspeedModif			= 1.5;
-	data.AttackspeedBuff			= 0.5;
+	data.AttackspeedBuff			= 0.25;
 	
 	data.Positive 					= true;
 	data.ShouldScaleWithPlayerCount = false; //lol why was it on yes
@@ -5098,6 +5100,21 @@ void StatusEffects_WeaponSpecific_VisualiseOnly()
 	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
 	data.HudDisplay_Func			= VintulumBombHud_Func;
 	OsmosisDebuffIndex = StatusEffect_AddGlobal(data);
+	
+	data.HudDisplay_Func			= INVALID_FUNCTION;
+	strcopy(data.BuffName, sizeof(data.BuffName), "Vuntulum Bomb EMP Death");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "DEAD");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	//-1.0 means unused
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= false;
+	data.ShouldScaleWithPlayerCount = false;
+	data.ElementalLogic				= true;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	OsmosisDebuffIndex = StatusEffect_AddGlobal(data);
 
 	strcopy(data.BuffName, sizeof(data.BuffName), "Hand of Spark");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "HS");
@@ -6494,7 +6511,7 @@ void StatusEffects_Explainelemental()
 	data.Slot						= 0;
 	data.SlotPriority				= 0;
 	StatusEffect_AddGlobal(data);
-	
+
 	strcopy(data.BuffName, sizeof(data.BuffName), "Wrench Building");
 	strcopy(data.HudDisplay, sizeof(data.HudDisplay), " ");
 	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), "");

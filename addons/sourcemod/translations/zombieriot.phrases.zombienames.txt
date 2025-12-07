@@ -1040,7 +1040,7 @@
 	}
 	"Barracks Commander"
 	{
-		"en" 		"Barracks Commander"
+		"en" 		"Mazeat Commander"
 		"ru" 		"Комбайн Командир"
 		"ko"		"배럭스 지휘관"
 		"it"		"Comandante della combinazione"
@@ -4229,10 +4229,7 @@
 	}
 	"Speechless Desc"
 	{
-		"en"	"One of the first expidonsans to try to explore the void.\nEach hit it does gives it a shield.\nFires an expidonsan laser if too far away, that also regens it shield.\nHas extreme speeds even with such power."
-		"ko"	"공허를 탐험하려 한 첫번째 엑스피돈산인들중 한명입니다\n개별 공격마다 쉴드를 얻습니다\n너무 멀어지면 엑스피돈산 레이저를 발사합니다, 레이저 또한 쉴드를 재생성합니다\그런 힘을 가졌음에도 엄청난 속도를 가집니다"
-		"en"	"One of the first expidonsans to try to explore the void.\nEach hit it does gives it a shield.\nFires an expidonsan laser if too far away, that also regens it shield.\nHe ignores the shield cooldown if hitting a barricade, or anything with his laser.\nGains attackspeed as he attacks, lowers when he doesnt."
-		"it"	"Uno dei primi expidonsan a tentare di esplorare il vuoto.\nOgni colpo che subisce gli conferisce uno scudo.\nSe troppo lontano, spara un laser expidonsan che rigenera anche lo scudo.\nIgnora il cooldown dello scudo se colpisce una barricata o qualsiasi altra cosa con il suo laser.\nGuadagna velocità d'attacco mentre attacca, diminuisce quando non lo fa."
+		"en"	"One of the first expidonsans to try to explore the void.\n-Each hit it does gives it a shield.\n-Fires an laser if too far away, that also regens it shield.\n-He ignores the shield cooldown if hitting a barricade, or anything with his laser.\n-Gains attackspeed as he attacks, lowers when he doesnt\n-Slows down the faster he attacks."
 	}
 	"Unspeakable"
 	{
@@ -4855,6 +4852,22 @@
 		"en"		"Protects the lighthouse, If the lighthouse dies, gets stronger, eliminate him before the lighthouse.\nHas bad predictive aiming and summons holy lights like grigori."
 		"ko"		"등대를 보호합니다, 등대가 부숴지면 강해집니다, 그를 등대보다 먼저 처리하세요\n예측 가능한 대상 지정을 가지고 그리고리처럼 신성한 빛을 소환합니다"
 		"it"		"Protegge il faro, se il faro muore, diventa più forte, eliminatelo prima del faro.\nHa una pessima mira predittiva ed evoca luci sacre come Grigori."
+	}
+	"Dr Dam Clone"
+	{
+		"en"		"Dr Dam Clone"
+	}
+	"Dr Dam Clone Desc"
+	{
+		"en"		"A clone of the one who harnessed luck.\n-Does a triple combo attack, 3rd hit deals 2x damage\n-The further away the target is, the more speed he gains.\n-If far enough away, gains massive resistances."
+	}
+	"Dr Dam's Special Delivery"
+	{
+		"en"		"Dr Dam's Special Delivery"
+	}
+	"Dr Dam's Special Delivery Desc"
+	{
+		"en"		"Dr Dam's special delivery! How nice!.\n-Cannot be killed.\n-After some time, deploys a ''Bomb'' that summons a bunch of ''Dr Dam's''."
 	}
 	"Cambino"
 	{

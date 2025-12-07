@@ -243,6 +243,7 @@ public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 			Ammo_Count_Used[client] = 0;
 			Armor_Charge[client] = 0;
 			Building_ResetRewardValues(client);
+			ResetExplainBuffStatus(client);
 		}
 	}
 

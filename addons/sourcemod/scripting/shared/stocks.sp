@@ -2932,14 +2932,19 @@ stock int Target_Hit_Wand_Detection(int owner_projectile, int other_entity)
 #endif	
 	}
 //	else if(IsValidEnemy(owner_projectile, other_entity, true, true))
-	else if(!b_NpcHasDied[other_entity]) //way less cheap, lets see how that goes.
+	if(b_ThisWasAnNpc[other_entity])
 	{
+		if(!b_NpcHasDied[other_entity]) //way less cheap, lets see how that goes.
+		{
 #if defined RPG
-	int owner = GetEntPropEnt(owner_projectile, Prop_Send, "m_hOwnerEntity");
-	if(OnTakeDamageRpgPartyLogic(other_entity, owner, GetGameTime()))
-		return -1;
+			int owner = GetEntPropEnt(owner_projectile, Prop_Send, "m_hOwnerEntity");
+			if(OnTakeDamageRpgPartyLogic(other_entity, owner, GetGameTime()))
+				return -1;
 #endif
-		return other_entity;
+			return other_entity;
+		}
+		else
+			return -1;
 	}
 	return 0;
 }
@@ -3301,7 +3306,7 @@ int inflictor = 0)
 	if(entityToEvaluateFrom < 1)
 	{
 		//something went wrong, evacuate.
-		LogError("something went wrong, entity was : [%i] | Client if any: [%i]",entityToEvaluateFrom, client);
+		LogStackTrace("something went wrong, entity was : [%i] | Client if any: [%i]",entityToEvaluateFrom, client);
 		return;
 	}
 	//I exploded, do custom logic additionally if neccecary.
@@ -5722,7 +5727,7 @@ stock void GetPointFromAngles(float startLoc[3], float angles[3], float distance
 	output = endLoc;
 }
 
-stock void SpawnBeam_Vectors(float StartLoc[3], float EndLoc[3], float beamTiming, int r, int g, int b, int a, int modelIndex, float width=2.0, float endwidth=2.0, int fadelength=1, float amp=15.0, int target = -1)
+stock void SpawnBeam_Vectors(float StartLoc[3], float EndLoc[3], float beamTiming, int r, int g, int b, int a, int modelIndex, float width=2.0, float endwidth=2.0, int fadelength=1, float amp=15.0, int target = -1, int haloIndex = 0)
 {
 	int color[4];
 	color[0] = r;
@@ -5730,7 +5735,7 @@ stock void SpawnBeam_Vectors(float StartLoc[3], float EndLoc[3], float beamTimin
 	color[2] = b;
 	color[3] = a;
 	
-	TE_SetupBeamPoints(StartLoc, EndLoc, modelIndex, 0, 0, 0, beamTiming, width, endwidth, fadelength, amp, color, 0);
+	TE_SetupBeamPoints(StartLoc, EndLoc, modelIndex, haloIndex, 0, 0, beamTiming, width, endwidth, fadelength, amp, color, 0);
 	
 	if (!IsValidClient(target))
 	{

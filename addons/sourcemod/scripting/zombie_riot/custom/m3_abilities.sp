@@ -241,6 +241,10 @@ void M3_AbilitiesWaveEnd()
 	Zero(i_MaxMorhpinesThisRound);
 	i_MaxRevivesAWave = 0;
 	M3_AbilitiesWaveEnd_forBaka();
+	for(int target = 1; target <= MaxClients; target++)
+	{
+		RemoveSpecificBuff(target, "Vuntulum Bomb EMP Death");
+	}
 }
 
 bool MorphineMaxed(int client)
@@ -342,6 +346,12 @@ public void WeakDash(int client)
 				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Burstpack Already Used This Round, Recharging");	
 				return;
 			}
+			if (!Raigeki_OnBurstPack(client))	//Block Burst Pack while charging Raigeki. I intentionally did not copy/paste this to the downed version of Burst Pack, because Raigeki cannot even be charged while downed.
+			{
+				Utility_HUDNotification_Translation(client, "Raigeki Gear Blocked By Charge", true);
+				return;
+			}
+
 			i_BurstpackUsedThisRound[client] += 1;
 			ability_cooldown[client] = GetGameTime() + (60.0 * CooldownReductionAmount(client));
 			WeakDashLogic(client);
@@ -1025,6 +1035,8 @@ public void Reinforce(int client, bool NoCD)
 			if(!b_HasBeenHereSinceStartOfWave[client_check])
 				continue;
 			if(f_PlayerLastKeyDetected[client_check] < GetGameTime())
+				continue;
+			if(HasSpecificBuff(client_check, "Vuntulum Bomb EMP Death"))
 				continue;
 
 			int CashSpendScale = CashSpentTotal[client_check];
@@ -2240,6 +2252,8 @@ stock int GetRandomDeathPlayer(int client)
 			continue;
 
 		if(f_PlayerLastKeyDetected[client_check] < GetGameTime())
+			continue;
+		if(HasSpecificBuff(client_check, "Vuntulum Bomb EMP Death"))
 			continue;
 
 		int CashSpendScale = CashSpentTotal[client_check];
