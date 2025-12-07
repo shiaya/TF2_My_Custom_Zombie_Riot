@@ -1831,7 +1831,7 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 				f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
 			}
 			
-			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,true); //Display crit above head
+			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,Minicrit); //Display crit above head
 		}
 	}
 	if(IsValidEntity(weapon))

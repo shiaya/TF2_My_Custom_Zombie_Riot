@@ -11,7 +11,7 @@ static float KeyofOrdered_duration[MAXPLAYERS];
 static float Passive_delay[MAXPLAYERS];
 static float f3_LastGravitonHitLoc[MAXPLAYERS][3];
 
-static int LaserIndex;
+static int g_Laser;
 
 static const char Energy_Sound[][] = {
 	"weapons/physcannon/energy_sing_flyby1.wav",
@@ -20,12 +20,11 @@ static const char Energy_Sound[][] = {
 
 public void LockDown_Wand_MapStart()
 {
-	if(FileExists("sound/baka_zr/keyofordered_1.mp3", true))
-		PrecacheSound("baka_zr/keyofordered_1.mp3", true);
-	if(FileExists("sound/baka_zr/keyofordered_2.mp3", true))
-		PrecacheSound("baka_zr/keyofordered_2.mp3", true);
 	PrecacheSound("misc/halloween/clock_tick.wav", true);
-	for (int i = 0; i < (sizeof(Energy_Sound));	   i++) { PrecacheSound(Energy_Sound[i]);	   }
+	PrecacheSoundCustom("baka_zr/keyofordered_1.mp3");
+	PrecacheSoundCustom("baka_zr/keyofordered_2.mp3");
+	PrecacheSoundArray(Energy_Sound);
+	g_Laser = PrecacheModel(LASERBEAM);
 
 	Zero(fl_hud_timer);
 	Zero(Key_HitEntities);
@@ -271,14 +270,14 @@ public void LockDown_Wand_Primary_Attack(int client, int weapon, bool crit, int 
 		{
 			float fPos[3], fAng[3];
 			GetAttachment(viewmodelModel, "effect_hand_l", fPos, fAng);
-			TE_SetupBeamPoints(fPos, vec, LaserIndex, 0, 0, 0, 0.25, 2.5, 2.5, 1, 4.0, color, 0);
+			TE_SetupBeamPoints(fPos, vec, g_Laser, 0, 0, 0, 0.25, 2.5, 2.5, 1, 4.0, color, 0);
 			TE_SendToAll();
 		}
 		else
 		{
 			float pos[3];
 			GetClientEyePosition(client, pos);
-			TE_SetupBeamPoints(pos, vec, LaserIndex, 0, 0, 0, 0.25, 2.5, 2.5, 1, 4.0, color, 0);
+			TE_SetupBeamPoints(pos, vec, g_Laser, 0, 0, 0, 0.25, 2.5, 2.5, 1, 4.0, color, 0);
 			TE_SendToAll();
 		}
 		

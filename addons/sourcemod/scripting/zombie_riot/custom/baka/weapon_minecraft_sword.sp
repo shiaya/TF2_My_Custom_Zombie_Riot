@@ -96,7 +96,6 @@ public void MSword_Enable(int client, int weapon) // Enable management, handle w
 						CPrintToChatAll("%t", "Minecraft Sword Challenge", name, advancement);
 						EmitCustomToAll("baka_zr/minecraft_challenge_complete.mp3", _, _, _, _, 1.0);
 						EmitCustomToAll("baka_zr/minecraft_challenge_complete.mp3", _, _, _, _, 1.0);
-						EmitCustomToAll("baka_zr/minecraft_challenge_complete.mp3", _, _, _, _, 1.0);
 						Task_V[client]=true;
 					}
 				}

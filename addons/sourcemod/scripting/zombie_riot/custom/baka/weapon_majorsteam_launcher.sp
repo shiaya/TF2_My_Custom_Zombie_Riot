@@ -73,7 +73,7 @@ void TFProjectile_Rocket_SpawnFrame(int ref)
 
 static void MajorSteam_ProjectileTouch(int entity, int target)
 {
-	if(target > 0 && target < MAXENTITIES)	//did we hit something???
+	if(target > 0 && target < MAXENTITIES)
 	{
 		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
 		if(IsValidEntity(particle))
@@ -90,7 +90,7 @@ public void MajorSteam_Launcher_OnMapStart()
 	Zero(i_MajorSteam_Launcher_Recharging);
 	Zero(i_MajorSteam_Launcher_Perk);
 	Zero(b_MajorSteam_Launcher_Toggle);
-	for (int i = 0; i < (sizeof(g_ResistanceSounds));	   i++) { PrecacheSound(g_ResistanceSounds[i]);	   }
+	PrecacheSoundArray(g_ResistanceSounds);
 }
 
 public void MajorSteam_Launcher_WaveEnd()

@@ -643,8 +643,6 @@ float fl_MatrixReflect[MAXENTITIES];
 #include "custom/baka/weapon_majorsteam_launcher.sp"
 #include "custom/baka/weapon_mostima.sp"
 #include "custom/baka/weapon_minecraft_sword.sp"
-#include "custom/baka/addons/weapon_wand_sigil_blade.sp"
-#include "custom/baka/addons/kit_omega.sp"
 #include "custom/kit_soldine.sp"
 #include "custom/weapon_kritzkrieg.sp"
 #include "custom/wand/weapon_bubble_wand.sp"
