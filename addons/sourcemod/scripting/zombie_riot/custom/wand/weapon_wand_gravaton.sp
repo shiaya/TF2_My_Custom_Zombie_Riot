@@ -332,7 +332,7 @@ public Action Smite_Timer_Gravaton_Wand(Handle Smite_Logic, DataPack data)
 				
 	i_ExplosiveProjectileHexArray[client] = EP_DEALS_PLASMA_DAMAGE;
 	
-	int EnemiesHitMax = (i_Current_Pap[client] + 1);
+	int EnemiesHitMax = (i_Current_Pap[client] + 2);
 	
 	b_gained_charge[client]=false;
 	Explode_Logic_Custom(damage, client, client, weapon, startPosition, Ionrange,_,_,_,EnemiesHitMax);
@@ -397,7 +397,7 @@ public void Gravaton_Wand_Secondary_Attack(int client, int weapon, bool crit, in
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.\n\n[%.1f/%.1f]", fl_gravaton_charges[client], GRAVATON_WAND_GRAVITATION_COLLAPSE_COST);
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough", RoundToFloor(fl_gravaton_charges[client]), RoundToFloor(GRAVATON_WAND_GRAVITATION_COLLAPSE_COST));
 		return; 
 	}
 	int mana_cost = RoundToCeil(Attributes_Get(weapon, 733, 1.0));

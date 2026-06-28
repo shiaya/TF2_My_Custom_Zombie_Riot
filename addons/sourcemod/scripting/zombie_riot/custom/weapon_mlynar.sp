@@ -16,7 +16,6 @@ static float f_MlynarDmgMultiAgressiveClose[MAXPLAYERS] = {1.0, ...};
 static float f_MlynarDmgMultiHurt[MAXPLAYERS] = {1.0, ...};
 static float f_MlynarAbilityActiveTime[MAXPLAYERS];
 static bool b_MlynarResetStats[MAXPLAYERS];
-int HitEntitiesSphereMlynar[MAXENTITIES];
 int i_MlynarMaxDamageGetFromSameEnemy[MAXENTITIES];
 static float f_MlynarHurtDuration[MAXPLAYERS];
 static float f_MlynarReflectCooldown[MAXPLAYERS][MAXENTITIES];
@@ -162,6 +161,7 @@ public void Weapon_MlynarAttack_Internal(DataPack pack)
 		ang2[1] = fixAngle(ang2[1]);
 		
 		float damage = 250.0;
+		damage *= 0.9;
 		
 		damage *= Attributes_Get(weapon, 1, 1.0);
 		damage *= Attributes_Get(weapon, 2, 1.0);
@@ -494,14 +494,13 @@ public bool TraceEntityEnumerator_Mlynar(int entity, int filterentity)
 }
 
 
-float Player_OnTakeDamage_Mlynar(int victim, float &damage, int attacker, int weapon, int pap = 0)
+float Player_OnTakeDamage_Mlynar(int victim, float &damage, int attacker, int weapon, int pap = 0, int damagezrcustom)
 {
+	//dont reflect burn or bleed
+	if(damagezrcustom & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED)
+		return damage;
 	f_MlynarHurtDuration[victim] = GetGameTime() + 1.0;
 	//insert reflect code.
-	if(b_thisNpcIsARaid[attacker])
-	{
-		damage *= 1.15;
-	}
 	if(f_MlynarReflectCooldown[victim][attacker] < GetGameTime())
 	{
 		f_MlynarReflectCooldown[victim][attacker] = GetGameTime() + 0.35;
@@ -524,7 +523,7 @@ float Player_OnTakeDamage_Mlynar(int victim, float &damage, int attacker, int we
 		damageModif *= f_MlynarDmgMultiHurt[victim];
 		if(b_thisNpcIsARaid[attacker])
 		{
-			damageModif *= 2.0;
+			damageModif *= 5.0;
 		}
 
 		if(f_AniSoundSpam[victim] < GetGameTime())

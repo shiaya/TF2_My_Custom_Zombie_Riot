@@ -115,7 +115,7 @@ methodmap FreeplaySigmaller < CClotBody
 				if(GetTeam(entitycount) == GetTeam(npc.index) && IsEntityAlive(entitycount))
 				{
 					HealEntityGlobal(npc.index, entitycount, float(GetEntProp(entitycount, Prop_Data, "m_iMaxHealth")), 1.0, 0.0, HEAL_ABSOLUTE);
-					ApplyStatusEffect(npc.index, entitycount, "Combine Command", 3.5);
+					ApplyStatusEffect(npc.index, entitycount, "Mazeat Command", 3.5);
 					ApplyStatusEffect(npc.index, entitycount, "War Cry", 3.5);
 					ApplyStatusEffect(npc.index, entitycount, "Defensive Backup", 3.5);
 					ApplyStatusEffect(npc.index, entitycount, "Healing Resolve", 3.5);
@@ -268,7 +268,7 @@ public void FreeplaySigmaller_ClotThink(int iNPC)
 			{
 				if(GetTeam(entity) == GetTeam(npc.index))
 				{
-					ApplyStatusEffect(npc.index, entity, "Call To Victoria", 60.0);
+					ApplyStatusEffect(npc.index, entity, "Call To Vesta", 60.0);
 					fl_Extra_Speed[entity] *= 1.02;
 					fl_Extra_MeleeArmor[entity] *= 0.98;
 					fl_Extra_RangedArmor[entity] *= 0.98;

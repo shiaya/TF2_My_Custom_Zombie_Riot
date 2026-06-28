@@ -45,16 +45,6 @@ static char g_RangedReloadSound[][] = {
 
 void AgentThompson_OnMapStart_NPC()
 {
-	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
-	for (int i = 0; i < (sizeof(g_HurtSounds));		i++) { PrecacheSound(g_HurtSounds[i]);		}
-	for (int i = 0; i < (sizeof(g_IdleAlertedSounds)); i++) { PrecacheSound(g_IdleAlertedSounds[i]); }
-	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
-	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
-	for (int i = 0; i < (sizeof(g_RangedAttackSounds));   i++) { PrecacheSound(g_RangedAttackSounds[i]);   }
-	for (int i = 0; i < (sizeof(g_RangedReloadSound));   i++) { PrecacheSound(g_RangedReloadSound[i]);   }
-	PrecacheSound("#zombiesurvival/matrix/furiousangels.mp3");
-	PrecacheSound("weapons/physgun_off.wav");
-	PrecacheModel("models/player/heavy.mdl");
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Agent Thompson");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_agent_thompson");
@@ -63,9 +53,25 @@ void AgentThompson_OnMapStart_NPC()
 	data.Flags = MVM_CLASS_FLAG_MINIBOSS|MVM_CLASS_FLAG_ALWAYSCRIT;
 	data.Category = Type_Matrix;
 	data.Func = ClotSummon;
+	data.Precache = ClotPrecache;
 	NPC_Add(data);
 }
 
+static void ClotPrecache()
+{
+	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
+	for (int i = 0; i < (sizeof(g_HurtSounds));		i++) { PrecacheSound(g_HurtSounds[i]);		}
+	for (int i = 0; i < (sizeof(g_IdleAlertedSounds)); i++) { PrecacheSound(g_IdleAlertedSounds[i]); }
+	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
+	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
+	for (int i = 0; i < (sizeof(g_RangedAttackSounds));   i++) { PrecacheSound(g_RangedAttackSounds[i]);   }
+	for (int i = 0; i < (sizeof(g_RangedReloadSound));   i++) { PrecacheSound(g_RangedReloadSound[i]);   }
+	PrecacheSoundCustom("#zombiesurvival/matrix/furiousangels.mp3");
+	PrecacheSound("weapons/physgun_off.wav");
+	PrecacheModel("models/player/heavy.mdl");
+	
+	Matrix_Shared_CorruptionPrecache();
+}
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 {
@@ -131,6 +137,7 @@ methodmap AgentThompson < CClotBody
 		
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 
 		int iActivity = npc.LookupActivity("ACT_MP_RUN_MELEE");
 		if(iActivity > 0) npc.StartActivity(iActivity);
@@ -197,7 +204,7 @@ methodmap AgentThompson < CClotBody
 		strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/matrix/furiousangels.mp3");
 		music.Time = 161;
 		music.Volume = 1.7;
-		music.Custom = false;
+		music.Custom = true;
 		strcopy(music.Name, sizeof(music.Name), "Furious Angels (Instrumental)");
 		strcopy(music.Artist, sizeof(music.Artist), "Rob Dougan");
 		Music_SetRaidMusic(music);
@@ -246,6 +253,11 @@ methodmap AgentThompson < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int entity, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(entity, "community", message, .messageColor = "darkgreen");
+}
+
 public void AgentThompson_ClotThink(int iNPC)
 {
 	AgentThompson npc = view_as<AgentThompson>(iNPC);
@@ -259,7 +271,7 @@ public void AgentThompson_ClotThink(int iNPC)
 	{
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
 		
-		CPrintToChatAll("{community}톰슨 요원{default}: 넌 이제 자유다.");
+		NPCTalkMessage(npc.index, "You're free, at last.");
 		return;
 	}
 
@@ -270,7 +282,7 @@ public void AgentThompson_ClotThink(int iNPC)
 		{
 			ForcePlayerLoss();
 			RaidBossActive = INVALID_ENT_REFERENCE;
-			CPrintToChatAll("{community}톰슨 요원{forestgreen}: {forestgreen}빨간 약은 시대에 뒤처진 물건이지.");
+			NPCTalkMessage(npc.index, "Redpills are behind the time.");
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			return;
 		}
@@ -347,7 +359,7 @@ static void Thompsons_SelfDefense(AgentThompson npc, float gameTime, int target,
 				npc.DoSwingTrace(swingTrace, npc.m_iTarget, _, _, _, 1, _, HowManyEnemeisAoeMelee);
 				delete swingTrace;
 				bool PlaySound = false;
-				float damage = 35.0;
+				float damage = 28.0;
 				damage *= RaidModeScaling;
 				bool silenced = NpcStats_IsEnemySilenced(npc.index);
 				for(int counter = 1; counter <= HowManyEnemeisAoeMelee; counter++)
@@ -365,10 +377,8 @@ static void Thompsons_SelfDefense(AgentThompson npc, float gameTime, int target,
 							{
 								damage = 1.0;
 							}
-							Elemental_AddCorruptionDamage(targetTrace, npc.index, 15);
 							SDKHooks_TakeDamage(targetTrace, npc.index, npc.index, damage, DMG_CLUB, -1, _, vecHit);
-							//Reduce damage after dealing
-							damage *= 0.92;
+							Elemental_AddCorruptionDamage(targetTrace, npc.index, RoundToNearest(damage * 0.15), true, true);	
 							// On Hit stuff
 							bool Knocked = false;
 							if(!PlaySound)
@@ -488,7 +498,7 @@ static void Thompsons_SelfDefense(AgentThompson npc, float gameTime, int target,
 				npc.AddGesture("ACT_MP_ATTACK_STAND_SECONDARY");
 				KillFeed_SetKillIcon(npc.index, "shotgun_primary");
 
-				float damage = 15.0;
+				float damage = 30.0;
 				damage *= RaidModeScaling;
 
 				FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "dxhr_sniper_rail_blue");
@@ -593,7 +603,6 @@ public void AgentThompson_NPCDeath(int entity)
 		npc.PlayDeathSound();	
 	}
 		
-	Music_SetRaidMusicSimple("vo/null.mp3", 60, false, 0.5);
 	if(IsValidEntity(npc.m_iWearable4))
 		RemoveEntity(npc.m_iWearable4);
 	if(IsValidEntity(npc.m_iWearable3))

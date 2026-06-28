@@ -65,7 +65,13 @@ static void ClotShowInteractHud(ObjectPerkMachine npc, int client)
 	char ButtonDisplay2[255];
 	PlayerHasInteract(client, ButtonDisplay, sizeof(ButtonDisplay));
 	BuildingVialityDisplay(client, npc.index, ButtonDisplay2, sizeof(ButtonDisplay2));
-	PrintCenterText(client, "%s\n%s%t", ButtonDisplay2, ButtonDisplay,"Perkmachine Tooltip");
+	
+	char Display3[255];
+	if(npc.m_iExtraLogic)
+	{
+		FormatEx(Display3, sizeof(Display3), "%T", PerkNames[npc.m_iExtraLogic], client);
+	}
+	PrintCenterText(client, "%s\n%s%t\n%s", ButtonDisplay2, ButtonDisplay, "Perkmachine Tooltip", Display3);
 }
 
 static bool ClotInteract(int client, int weapon, ObjectPerkMachine npc)
@@ -86,36 +92,24 @@ static bool ClotInteract(int client, int weapon, ObjectPerkMachine npc)
 		//littel cooldown
 		KillMostCurrentIDAnnotation(client, i_CurrentIdBeforeAnnoation[client]);
 		f_TutorialUpdateStep[client] = GetGameTime() + 5.0;
-		SetClientTutorialStep(client, 5);
+		SetClientTutorialStep(client, 6);
 		DoTutorialStep(client, false);	
 	}
-	char buffer[32];
+	if(npc.m_iExtraLogic)
+	{
+		GivePerkViaMapForce(client, npc);
+		return true;
+	}
+	char data[4], buffer[32];
 	Menu menu2 = new Menu(Building_ConfirmMountedAction);
 	menu2.SetTitle("%t", "Which perk do you desire?");
-		
-	FormatEx(buffer, sizeof(buffer), "%t", "Castellan's Corvus Stout");
-	menu2.AddItem("-9", buffer);
 
-	FormatEx(buffer, sizeof(buffer), "%t", "Nemal's Teslar Mule");
-	menu2.AddItem("-8", buffer);
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Waldch's Root Beer");
-	menu2.AddItem("-7", buffer);
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Twirl's Ginger Ale");
-	menu2.AddItem("-6", buffer);
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Bob's Banana Juice");
-	menu2.AddItem("-5", buffer);
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Purge's Cerveza Obsidian");
-	menu2.AddItem("-4", buffer);
-	
-	FormatEx(buffer, sizeof(buffer), "%t", "Karlas's Regene Berry");
-	menu2.AddItem("-3", buffer);
-
-	FormatEx(buffer, sizeof(buffer), "%t", "Silvester's Energy Drink");
-	menu2.AddItem("-10", buffer);
+	for(int i = 1; i < 9; i++)
+	{
+		FormatEx(buffer, sizeof(buffer), "%t", PerkNames[i]);
+		IntToString(i, data, sizeof(data));
+		menu2.AddItem(data, buffer);
+	}
 						
 	menu2.Pagination = 0;
 	menu2.ExitButton = true;
@@ -134,124 +128,105 @@ static int Building_ConfirmMountedAction(Menu menu, MenuAction action, int clien
 		}
 		case MenuAction_Cancel:
 		{
-			ResetStoreMenuLogic(client);
+			if(IsValidClient(client))
+				AnyMenuOpen[client] = 0.0;
 		}
 		case MenuAction_Select:
 		{
 			ResetStoreMenuLogic(client);
-			char buffer[24];
+			char buffer[4];
 			menu.GetItem(choice, buffer, sizeof(buffer));
 			int id = StringToInt(buffer);
 
 			if((GetURandomInt() % 4) == 0 && Rogue_HasNamedArtifact("System Malfunction"))
 			{
-				id = GetRandomInt(-10, -4);
+				id = GetRandomInt(1, sizeof(PerkNames) - 1);
 			}
 
-			if(id == -3)
+			int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
+			if(IsValidEntity(entity))
 			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 1);
-				}
-			}
-			else if(id == -4)
-			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 2);
-				}
-			}
-			else if(id == -5)
-			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 3);
-				}
-			}
-			else if(id == -6)
-			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 4);
-				}
-			}
-			else if(id == -7)
-			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 5);
-				}
-			}
-			else if(id == -8)
-			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 6);
-				}
-			}
-			else if(id == -9)
-			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 7);
-				}
-			}
-			else if(id == -10)
-			{
-				int entity = EntRefToEntIndexFast(i_MachineJustClickedOn[client]);
-				if(IsValidEntity(entity))
-				{
-					int owner = -1;
-					owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					Do_Perk_Machine_Logic(owner, client, entity, 8);
-				}
+				int owner = -1;
+				owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+				Do_Perk_Machine_Logic(owner, client, entity, (1 << (id - 1)), id);
 			}
 		}
 	}
 	return 0;
 }
 
-static void Do_Perk_Machine_Logic(int owner, int client, int entity, int what_perk)
+void Do_Perk_Machine_Logic(int owner, int client, int entity, int what_perk, int PrintChatid, bool IsVscriptCall = false)
 {
-	if(owner == -1)
+	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
+	if(owner == -1 && !objstats.m_bNoOwnerRequired)
 		return;
 		
-	if((GetEntityFlags(client) & FL_DUCKING))
+	if(!IsVscriptCall && (GetEntityFlags(client) & FL_DUCKING))
 	{
-		CPrintToChat(client, "{green} %T", PerkNames_Recieved[what_perk], client);
+		CPrintToChat(client, "{green} %T", PerkNames_Received[PrintChatid], client);
 		ObjectPerkMachine npc = view_as<ObjectPerkMachine>(entity);
 		ClotInteract(client, -1, npc);
 		return;
 	}
+
+	int PerksOn = 0;
+	int perklimit = Rogue_ColdWaterActive() ? 2 : 1;
+	bool cooldown = true;
+
+	if(perklimit > 1)
+	{
+		for(int loopCheck = 0; loopCheck < sizeof(PerkNames); loopCheck++)
+		{
+			if(i_CurrentEquippedPerk[client] & (1 << loopCheck))
+			{
+				PerksOn++;
+			}
+		}
+	}
+	if(PerkModeDo == PERK_MODE_ALL_ALLOW)
+	{
+		if(i_CurrentEquippedPerk[client] & what_perk)
+		{
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			return;
+		}
+		i_CurrentEquippedPerk[client] |= what_perk;
+		i_CurrentEquippedPerkPreviously[client] |= what_perk;
+	}
+	else
+	{	
+		if(perklimit > 1 && i_CurrentEquippedPerk[client] & what_perk)
+		{
+			i_CurrentEquippedPerk[client] &= ~what_perk;
+			i_CurrentEquippedPerkPreviously[client] &= ~what_perk;
+			CPrintToChat(client, "{crimson} %T", "You removed the current perk", client);
+			cooldown = false;
+		}
+		else
+		{
+			if(PerksOn >= 2)
+			{
+				ClientCommand(client, "playgamesound items/medshotno1.wav");
+				CPrintToChat(client, "{crimson} %T", "Too many Perks", client);
+				return;
+			}
+			if(perklimit < 2)
+			{
+				i_CurrentEquippedPerk[client] = 0;
+				i_CurrentEquippedPerkPreviously[client] = 0;
+			}
+			i_CurrentEquippedPerk[client] |= what_perk;
+			i_CurrentEquippedPerkPreviously[client] |= what_perk;
+		}
+	}
+	UpdatePerkName(client);
+	
 	TF2_StunPlayer(client, 0.0, 0.0, TF_STUNFLAG_SOUND, 0);
-	ApplyBuildingCollectCooldown(entity, client, 40.0);
-	
-	i_CurrentEquippedPerk[client] = what_perk;
-	i_CurrentEquippedPerkPreviously[client] = what_perk;
-	
-	Building_GiveRewardsUse(client, owner, 25, true, 0.6, true);
+	if(cooldown)
+	{
+		ApplyBuildingCollectCooldown(entity, client, 40.0);
+		Building_GiveRewardsUse(client, owner, 25, true, 0.75, true);
+	}
 
 	float pos[3];
 	float angles[3];
@@ -268,5 +243,13 @@ static void Do_Perk_Machine_Logic(int owner, int client, int entity, int what_pe
 	Store_ApplyAttribs(client);
 	Store_GiveAll(client, GetClientHealth(client));	
 	Barracks_UpdateAllEntityUpgrades(client);
-	CPrintToChat(client, "{green} %T", PerkNames_Recieved[what_perk], client);
+	CPrintToChat(client, "{green} %T", PerkNames_Received[PrintChatid], client);
+}
+
+void GivePerkViaMapForce(int client, ObjectPerkMachine npc)
+{
+	if(npc.m_iExtraLogic)
+	{
+		Do_Perk_Machine_Logic(client, client, npc.index, (1 << (npc.m_iExtraLogic - 1)), npc.m_iExtraLogic);
+	}
 }

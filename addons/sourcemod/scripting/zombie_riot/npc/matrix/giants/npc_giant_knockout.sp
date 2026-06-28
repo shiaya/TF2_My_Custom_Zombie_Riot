@@ -45,14 +45,6 @@ static char g_RangedReloadSound[][] = {
 
 void GiantKnockout_OnMapStart_NPC()
 {
-	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
-	for (int i = 0; i < (sizeof(g_HurtSounds));		i++) { PrecacheSound(g_HurtSounds[i]);		}
-	for (int i = 0; i < (sizeof(g_IdleAlertedSounds)); i++) { PrecacheSound(g_IdleAlertedSounds[i]); }
-	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
-	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
-	for (int i = 0; i < (sizeof(g_RangedAttackSounds));   i++) { PrecacheSound(g_RangedAttackSounds[i]);   }
-	for (int i = 0; i < (sizeof(g_RangedReloadSound));   i++) { PrecacheSound(g_RangedReloadSound[i]);   }
-	PrecacheModel("models/player/heavy.mdl");
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Hijacked Red Pill");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_giant_knockout");
@@ -61,9 +53,22 @@ void GiantKnockout_OnMapStart_NPC()
 	data.Flags = MVM_CLASS_FLAG_MINIBOSS;
 	data.Category = Type_Matrix;
 	data.Func = ClotSummon;
+	data.Precache = ClotPrecache;
 	NPC_Add(data);
 }
 
+static void ClotPrecache()
+{
+	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
+	for (int i = 0; i < (sizeof(g_HurtSounds));		i++) { PrecacheSound(g_HurtSounds[i]);		}
+	for (int i = 0; i < (sizeof(g_IdleAlertedSounds)); i++) { PrecacheSound(g_IdleAlertedSounds[i]); }
+	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
+	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
+	for (int i = 0; i < (sizeof(g_RangedAttackSounds));   i++) { PrecacheSound(g_RangedAttackSounds[i]);   }
+	for (int i = 0; i < (sizeof(g_RangedReloadSound));   i++) { PrecacheSound(g_RangedReloadSound[i]);   }
+	
+	Matrix_Shared_CorruptionPrecache();
+}
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally)
 {
@@ -263,7 +268,7 @@ public void GiantKnockout_ClotThink(int iNPC)
 								{
 									float damageDealt = AgentHealthDamageMulti(npc);
 									if(ShouldNpcDealBonusDamage(target))
-									damageDealt *= 1.5;
+										damageDealt *= 7.5;
 									SDKHooks_TakeDamage(target, npc.index, npc.index, damageDealt, DMG_CLUB, -1, _, vecHit);
 
 									Elemental_AddCorruptionDamage(target, npc.index, npc.index ? 9 : 7);
@@ -328,7 +333,7 @@ public Action GiantKnockout_OnTakeDamage(int victim, int &attacker, int &inflict
 
 static float AgentHealthDamageMulti(CClotBody npc)
 {
-	float damage = 10.0;
+	float damage = 100.0;
 	float maxhealth = float(GetEntProp(npc.index, Prop_Data, "m_iMaxHealth"));
 	float health = float(GetEntProp(npc.index, Prop_Data, "m_iHealth"));
 	float ratio = health / maxhealth;
@@ -338,19 +343,19 @@ static float AgentHealthDamageMulti(CClotBody npc)
 	{
 		damage *= 2.0;
 		if(ShouldNpcDealBonusDamage(target))
-		damage *= 2.5;
+			damage *= 2.5;
 	}
 	if(ratio <= 0.50)
 	{
 		damage *= 2.0;
 		if(ShouldNpcDealBonusDamage(target))
-		damage *= 2.5;
+			damage *= 2.5;
 	}
 	if(ratio <= 0.25)
 	{
 		damage *= 2.0;
 		if(ShouldNpcDealBonusDamage(target))
-		damage *= 2.5;
+			damage *= 2.5;
 	}
 	return (0.0 + damage);
 }

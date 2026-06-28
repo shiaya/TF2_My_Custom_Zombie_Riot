@@ -19,10 +19,6 @@ static const char g_MeleeAttackSounds[][] = {
 	"weapons/batsaber_swing2.wav",
 	"weapons/batsaber_swing3.wav"
 };
-static const char g_LaserLoop[][] = {
-	"zombiesurvival/seaborn/loop_laser.mp3"
-};
-
 static int NPCId;
 
 #define TWIRL_FOLLOWER_ATTACK_RANGE GIANT_ENEMY_MELEE_RANGE_FLOAT_SQUARED * 6.5
@@ -178,7 +174,7 @@ methodmap TwirlFollower < CClotBody
 	public void PlayMagiaOverflowSound() {
 		if(fl_AbilityOrAttack[this.index][4] > GetGameTime())
 			return;
-		EmitCustomToAll(g_LaserLoop[GetRandomInt(0, sizeof(g_LaserLoop) - 1)], this.index, SNDCHAN_STATIC, 75, _, 0.85);
+		EmitCustomToAll(g_RuinaLaserLoop[GetRandomInt(0, sizeof(g_RuinaLaserLoop) - 1)], this.index, SNDCHAN_STATIC, 75, _, 0.85);
 		fl_AbilityOrAttack[this.index][4] = GetGameTime() + 2.25;
 	}
 	property float m_flLaserRecharge
@@ -321,7 +317,7 @@ methodmap TwirlFollower < CClotBody
 	
 	public TwirlFollower(float vecPos[3], float vecAng[3],int ally)
 	{
-		TwirlFollower npc = view_as<TwirlFollower>(CClotBody(vecPos, vecAng, "models/player/medic.mdl", "1.0", "50000", ally, true, true));
+		TwirlFollower npc = view_as<TwirlFollower>(CClotBody(vecPos, vecAng, "models/player/medic.mdl", "1.0", "50000", ally, true, false));
 		
 		npc.m_iChanged_WalkCycle = 1;
 		i_NpcWeight[npc.index] = 4;
@@ -362,6 +358,7 @@ methodmap TwirlFollower < CClotBody
 		float flPos[3], flAng[3];
 		npc.GetAttachment("head", flPos, flAng);	
 		npc.m_iWearable8 = ParticleEffectAt_Parent(flPos, "unusual_invasion_boogaloop_2", npc.index, "head", {0.0,0.0,0.0});
+		NpcColourCosmetic_ViaPaint(npc.m_iWearable4, 16777215);
 		
 		npc.m_fbGunout = true;
 		SetVariantInt(RUINA_WINGS_4);
@@ -386,21 +383,23 @@ methodmap TwirlFollower < CClotBody
 		if(Rogue_Mode())
 		{
 			// Cutscene Here
-			npc.Speech("Thanks bob, ill need your help for this!");
-			npc.SpeechDelay(5.0, "This might actually be serious for once","...");
-			Rogue_SetProgressTime(10.0, false);
-		/*
-			for(int i; i < i_MaxcountNpcTotal; i++)
+			if(Construction_Mode())
 			{
-				int other = EntRefToEntIndexFast(i_ObjectsNpcsTotal[i]);
-				if(other != -1 && i_NpcInternalId[other] == BobTheFirstFollower_ID() && IsEntityAlive(other))
-				{
-					view_as<CClotBody>(other).m_bDissapearOnDeath = true;
-					SmiteNpcToDeath(other);
-					break;
-				}
+				npc.Speech("We need to hold out here.");
+				npc.SpeechDelay(5.0, "The mercs already went into the Curtain.");
+				npc.SpeechDelay(10.0, "Hopefully they can stop this from the inside.");
 			}
-		*/
+			else if(Rogue_Theme() == BlueParadox)
+			{
+				npc.Speech("Thanks bob, ill need your help for this!");
+				npc.SpeechDelay(5.0, "This might actually be serious for once","...");
+				Rogue_SetProgressTime(10.0, false);
+			}
+			else
+			{
+				npc.Speech("i'll acompany you for the rifts.");
+				npc.SpeechDelay(5.0, "I won't stay for long.","...");
+			}
 		}
 		return npc;
 	}
@@ -818,7 +817,7 @@ static Action Magia_Overflow_Tick_Follower(int iNPC)
 		npc.m_flSpeed = fl_npc_basespeed;
 		npc.StartPathing();
 
-		StopCustomSound(npc.index, SNDCHAN_STATIC, g_LaserLoop[GetRandomInt(0, sizeof(g_LaserLoop) - 1)]);
+		StopCustomSound(npc.index, SNDCHAN_STATIC, g_RuinaLaserLoop[GetRandomInt(0, sizeof(g_RuinaLaserLoop) - 1)]);
 
 		SetEntityRenderMode(npc.m_iWearable1, RENDER_NORMAL);
 		SetEntityRenderColor(npc.m_iWearable1, 255, 255, 255, 255);

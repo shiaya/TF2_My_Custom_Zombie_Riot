@@ -235,6 +235,8 @@ methodmap Kahmlstein < CClotBody
 		
 		int iActivity = npc.LookupActivity("ACT_MP_RUN_MELEE");
 		if(iActivity > 0) npc.StartActivity(iActivity);
+		SetVariantInt(4);
+		AcceptEntityInput(npc.index, "SetBodyGroup");
 		
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_GIANT;	
@@ -247,7 +249,10 @@ methodmap Kahmlstein < CClotBody
 			RaidModeScaling = MultiGlobalHealth;
 			if(RaidModeScaling == 1.0) //Dont show scaling if theres none.
 				RaidModeScaling = 0.0;
+			else
+				RaidModeScaling *= 1.5;
 			RaidAllowsBuildings = true;
+			RaidAllowLastman = false;
 		}
 		
 		npc.m_bDissapearOnDeath = true;
@@ -338,6 +343,10 @@ methodmap Kahmlstein < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "blue", message);
+}
 
 static void Internal_ClotThink(int iNPC)
 {
@@ -558,7 +567,7 @@ static void Internal_ClotThink(int iNPC)
 			fl_attack_timeout[npc.index]=GameTime + 0.5;
 			EmitSoundToAll("mvm/mvm_tank_horn.wav");
 			EmitSoundToAll("vo/heavy_domination16.mp3");
-			CPrintToChatAll("{blue}캄르스타인{default}: {crimson}널 박살내주마.");
+			NPCTalkMessage(npc.index, "{crimson}I Will BREAK YOU");
 			fl_kahml_combo_reset_timer[npc.index] = GameTime + 12.5;
 			i_kahml_combo_offest[npc.index]++;
 			if(IsValidEntity(npc.m_iWearable1))
@@ -617,7 +626,7 @@ static void Internal_ClotThink(int iNPC)
 		}
 		if(fl_kahml_nano_reset[npc.index] <= GameTime && !b_kahml_annihilation[npc.index] && !b_kahml_inNANOMACHINESSON[npc.index])
 		{
-			CPrintToChatAll("{blue}캄르스타인{default}: 이러고 있을 시간 없다.");
+			NPCTalkMessage(npc.index, "I don't have time for this.");
 			fl_kahml_main_melee_damage[npc.index] = 20.0 * fl_kahml_galactic_strenght[npc.index];
 			fl_kahml_bulletres[npc.index] = 0.75;
 			fl_kahml_meleeres[npc.index] = 0.9;
@@ -651,7 +660,7 @@ static void Internal_ClotThink(int iNPC)
 			fl_kahml_bulletres[npc.index] = 1.0;
 			fl_kahml_meleeres[npc.index] = 1.0;
 			fl_kahml_melee_speed[npc.index] = 0.4;
-			CPrintToChatAll("{blue}캄르스타인{default}: 잘 살아남았군. 잘 했다.");
+			NPCTalkMessage(npc.index, "You Lived, Good work.");
 			fl_kahml_nano_reset[npc.index] = 120.0 + GameTime;
 			fl_kahml_combo_reset_timer[npc.index] = 60.0 + GameTime;
 			i_kahml_combo_offest[npc.index] = 0;
@@ -785,7 +794,11 @@ static void Internal_ClotThink(int iNPC)
 							
 							float vecHit[3];
 							TR_GetEndPosition(vecHit, swingTrace);
-							
+							float DamageDoExtra = MultiGlobalHealth;
+							if(DamageDoExtra != 1.0)
+							{
+								DamageDoExtra *= 1.5;
+							}
 							if(target > 0) 
 							{
 								if(target <= MaxClients)
@@ -813,16 +826,16 @@ static void Internal_ClotThink(int iNPC)
 										}
 									}
 									fl_kahml_main_melee_damage[npc.index] *= Bonus_damage;
-									SDKHooks_TakeDamage(target, npc.index, npc.index, fl_kahml_main_melee_damage[npc.index] * MultiGlobalHealth, DMG_CLUB, -1, _, vecHit);
+									SDKHooks_TakeDamage(target, npc.index, npc.index, fl_kahml_main_melee_damage[npc.index] * DamageDoExtra, DMG_CLUB, -1, _, vecHit);
 								}
 								else if(ShouldNpcDealBonusDamage(target))
 								{
-									SDKHooks_TakeDamage(target, npc.index, npc.index, 25.0*fl_kahml_main_melee_damage[npc.index] * MultiGlobalHealth, DMG_CLUB, -1, _, vecHit);
+									SDKHooks_TakeDamage(target, npc.index, npc.index, 25.0*fl_kahml_main_melee_damage[npc.index] * DamageDoExtra, DMG_CLUB, -1, _, vecHit);
 								
 								}
 								else
 								{
-									SDKHooks_TakeDamage(target, npc.index, npc.index, fl_kahml_main_melee_damage[npc.index] * MultiGlobalHealth, DMG_CLUB, -1, _, vecHit);
+									SDKHooks_TakeDamage(target, npc.index, npc.index, fl_kahml_main_melee_damage[npc.index] * DamageDoExtra, DMG_CLUB, -1, _, vecHit);
 								}
 								if(IsValidClient(target))
 								{
@@ -929,7 +942,7 @@ static void Internal_NPCDeath(int entity)
 	npc.PlayDeathSound();	
 	float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
 	ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
-	CPrintToChatAll("{blue}캄르스타인{default}: 점점 지겹군. 잘 있어라.");
+	NPCTalkMessage(npc.index, "You're boring me, im leaving.");
 
 	if(npc.index==EntRefToEntIndex(RaidBossActive))
 		RaidBossActive=INVALID_ENT_REFERENCE;

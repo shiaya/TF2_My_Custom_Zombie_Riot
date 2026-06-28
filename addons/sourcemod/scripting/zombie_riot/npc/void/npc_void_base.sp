@@ -7,18 +7,18 @@ static CNavArea NervousLastTouch[MAXENTITIES + 1];
 static int SpreadTicks;
 static float RenderToAll;
 
-bool VoidArea_TouchingNethersea(int entity)
+bool VoidArea_TouchingAbyss(int entity)
 {
 	return NervousTouching[entity] > GetGameTime();
 }
 
-void VoidArea_ClearnNethersea()
+void VoidArea_ClearnAbyss()
 {
 	RenderToAll = 0.0;
 	delete NavList;
 }
 
-void VoidArea_SpawnNethersea(const float pos[3], bool WasWeapon = false)
+void VoidArea_SpawnAbyss(const float pos[3], bool WasWeapon = false)
 {
 	if(!WasWeapon)
 	{
@@ -80,7 +80,7 @@ public Action VoidArea_RenderTimer(Handle timer, DataPack pack)
 	}
 	int SpreadTicksMax = 24;
 
-	if(CurrentRound >= 39)
+	if(CurrentRound[Rounds_Default] >= 39)
 		SpreadTicksMax = 24 * 3;
 
 	if(RaidbossIgnoreBuildingsLogic(0))
@@ -349,7 +349,7 @@ public Action VoidArea_DamageTimer(Handle timer, DataPack pack)
 			{
 				NervousTouching[entity] = NervousTouching[0];
 			//	NervousLastTouch[entity] = NULL_AREA;
-				if(view_as<CClotBody>(entity).m_iBleedType == BLEEDTYPE_VOID)
+				if(view_as<CClotBody>(entity).m_iBleedType == BLEEDTYPE_VOID || GetEntPropFloat(entity, Prop_Data, "m_flElementRes", Element_Void) > 0.4)
 				{
 					VoidWave_ApplyBuff(entity, 1.0);
 				}
@@ -387,10 +387,10 @@ public Action VoidArea_DamageTimer(Handle timer, DataPack pack)
 
 
 //This places a spawnpoint somewhere on the map.
-void Void_PlaceZRSpawnpoint(float SpawnPos[3], int WaveDuration = 2000000000, int SpawnsMax, char[] ParticleToSpawn, int ParticleOffset = 0, bool SpreadVoid = false, int MaxWaves = 2)
+int Void_PlaceZRSpawnpoint(float SpawnPos[3], int WaveDuration = 2000000000, int SpawnsMax = 2000000000, char[] ParticleToSpawn = "", int ParticleOffset = 0, bool SpreadVoid = false, int MaxWaves = 2)
 {
 	if(VIPBuilding_Active())
-		return;
+		return INVALID_ENT_REFERENCE;
 	
 	// info_player_teamspawn
 	int ref = CreateEntityByName("info_player_teamspawn");
@@ -420,6 +420,8 @@ void Void_PlaceZRSpawnpoint(float SpawnPos[3], int WaveDuration = 2000000000, in
 		pack.WriteCell(SpreadVoid);						//Should it spread void?
 		pack.WriteFloat(GetGameTime());						//Spread Void
 	}
+	
+	return ref;
 }
 
 
@@ -482,7 +484,7 @@ public Action Timer_VoidSpawnPoint(Handle timer, DataPack pack)
 			SpreadVoidCooldown = GetGameTime() + 3.0;
 			pack.Position--;
 			pack.WriteFloat(SpreadVoidCooldown, false);
-			VoidArea_SpawnNethersea(SpawnPos);
+			VoidArea_SpawnAbyss(SpawnPos);
 		}
 	}
 
@@ -491,7 +493,7 @@ public Action Timer_VoidSpawnPoint(Handle timer, DataPack pack)
 
 static float VoidGateHurtVoid(int attacker, int victim, float &damage, int weapon)
 {
-	if(view_as<CClotBody>(victim).m_iBleedType == BLEEDTYPE_VOID || (victim <= MaxClients && ClientPossesesVoidBlade(victim)))
+	if((!b_NpcHasDied[victim] && (view_as<CClotBody>(victim).m_iBleedType == BLEEDTYPE_VOID || view_as<CClotBody>(victim).m_iBleedType == BLEEDTYPE_UMBRAL || GetEntPropFloat(victim, Prop_Data, "m_flElementRes", Element_Void) > 0.4)) || (victim <= MaxClients && ClientPossesesVoidBlade(victim)))
 	{
 		damage = 0.0;
 	}

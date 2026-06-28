@@ -17,7 +17,7 @@ enum struct Enemy
 	int Team;
 	int Index;
 	float Credits;
-	char Data[64];
+	char Data[128];
 	float ExtraMeleeRes;
 	float ExtraRangedRes;
 	float ExtraSpeed;
@@ -25,6 +25,7 @@ enum struct Enemy
 	char Spawn[64];
 	float ExtraThinkSpeed;
 	char CustomName[64];
+	int Priority;
 }
 
 enum struct MiniBoss
@@ -67,6 +68,7 @@ enum struct Round
 	MusicEnum music_round_1;
 	MusicEnum music_round_2;
 	MusicEnum music_setup;
+	char GiveNamedArtifact[255];
 	int MusicOutroDuration;
 	char music_round_outro[255];
 	bool music_custom_outro;
@@ -80,14 +82,12 @@ enum struct Round
 	
 	char Skyname[64];
 	bool FogChange;
-	char FogBlend[32];
-	char FogColor1[32];
-	char FogColor2[32];
+	int FogBlend;
+	int FogColor1[4];
+	int FogColor2[4];
 	float FogStart;
 	float FogEnd;
-	float FogDesnity;	
-	
-	bool Override_Music_Setup;
+	float FogDesnity;
 }
 
 enum struct Vote
@@ -102,15 +102,29 @@ enum struct Vote
 	bool Locked;
 }
 
-static ArrayList Enemies;
-static ArrayList Rounds;
+
+enum
+{
+	Rounds_Default = 0,
+	Rounds_Spawner = 1, //just as a test
+
+
+	Rounds_MAX = 64
+}
+
 static ArrayList Voting;
 static ArrayList VotingMods;
 static bool CanReVote;
 static ArrayList MiniBosses;
 static float Cooldown;
+static bool FirstVoteOfGame;
+void Waves_ApplyCooldown(float fl)
+{
+	Cooldown = fl;
+}
 static bool InSetup;
 static int FakeMaxWaves;
+static bool NoBarneySpawn;
 static int WaveLevel;
 static int MapSeed;
 
@@ -119,7 +133,7 @@ static Function ModFuncAlly = INVALID_FUNCTION;
 static Function ModFuncEnemy = INVALID_FUNCTION;
 static Function ModFuncWeapon = INVALID_FUNCTION;
 
-static ConVar CvarSkyName;
+ConVar CvarSkyName;
 static char SkyNameRestore[64];
 
 static StringMap g_AllocPooledStringCache;
@@ -129,7 +143,6 @@ static int VotedFor[MAXPLAYERS];
 static float VoteEndTime;
 static float f_ZombieAntiDelaySpeedUp;
 static int i_ZombieAntiDelaySpeedUp;
-static Handle WaveTimer;
 static float ProgressTimerEndAt;
 static bool ProgressTimerType;
 static bool FirstMapRound;
@@ -143,8 +156,6 @@ static int Freeplay_Info;
 static float MinibossScalingHandle = 1.0;
 static float Freeplay_TimeCash;
 static float Freeplay_CashTimeLeft;
-static float Freeplay_TimeExp;
-static float Freeplay_ExpTimeLeft;
 
 static int RelayCurrentRound = -1;
 static float OverrideScalingManually;
@@ -187,15 +198,19 @@ void Waves_PluginStart()
 	RegAdminCmd("zr_setwave", Waves_SetWaveCmd, ADMFLAG_CHEATS);
 	RegAdminCmd("zr_panzer", Waves_ForcePanzer, ADMFLAG_CHEATS);
 	RegAdminCmd("zr_CurrentEnemyAliveLimits", NpcEnemyAliveLimit, ADMFLAG_CHEATS);
+	RegAdminCmd("zr_skipvote", Waves_SkipVote, ADMFLAG_CHEATS);
 }
 
 bool Waves_InFreeplay()
 {
-	return (!Rogue_Mode() && !Construction_Mode() && Rounds && CurrentRound >= Rounds.Length);
+	return (!Rogue_Mode() && !Construction_Mode() && !Dungeon_Mode() && Rounds[Rounds_Default] && CurrentRound[Rounds_Default] >= Rounds[Rounds_Default].Length);
 }
 
 bool Waves_InSetup()
 {
+	if(Dungeon_Mode())
+		return Dungeon_InSetup();
+	
 	if(Construction_Mode())
 		return Construction_InSetup();
 	
@@ -207,11 +222,15 @@ bool Waves_InSetup()
 
 void Waves_MapStart()
 {
-	delete Rounds;
+	for(int DeleteLoop ; DeleteLoop < sizeof(Rounds); DeleteLoop++)
+	{
+		delete Rounds[DeleteLoop];
+	}
+	FirstVoteOfGame = true;
 	delete g_AllocPooledStringCache;
-	FogEntity = INVALID_ENT_REFERENCE;
 	SkyNameRestore[0] = 0;
 	FakeMaxWaves = 0;
+	NoBarneySpawn = true;
 	Freeplay_Info = 0;
 	FirstMapRound = true;
 	MinibossScalingHandle = 1.0;
@@ -225,8 +244,6 @@ void Waves_MapStart()
 	Waves_UpdateMvMStats();
 	Freeplay_TimeCash = 0.0;
 	Freeplay_CashTimeLeft = 0.0;
-	Freeplay_TimeExp = 0.0;
-	Freeplay_ExpTimeLeft = 0.0;
 }
 
 int Waves_MapSeed()
@@ -236,11 +253,7 @@ int Waves_MapSeed()
 
 void Waves_PlayerSpawn(int client)
 {
-	if(FogEntity != INVALID_ENT_REFERENCE)
-	{
-		SetVariantString("rpg_fortress_envfog");
-		AcceptEntityInput(client, "SetFogController");
-	}
+	ShowCustomFogToClient(client);
 }
 
 float MinibossScalingReturn()
@@ -248,6 +261,10 @@ float MinibossScalingReturn()
 	if(Rogue_Mode())
 		return 1.0;
 	if(Construction_Mode())
+		return 1.0;
+	if(BetWar_Mode())
+		return 1.0;
+	if(Dungeon_Mode())
 		return 1.0;
 
 	return MinibossScalingHandle;
@@ -260,13 +277,21 @@ public Action NpcEnemyAliveLimit(int client, int args)
 
 public Action Waves_ForcePanzer(int client, int args)
 {
-	char arg[20];
-	int index=0;
-	GetCmdArg(1, arg, sizeof(arg));
-	if(StringToIntEx(arg, index) <= 0 || index <= 0)
-		index=-1;
-
-	NPC_SpawnNext(true, true, index); //This will force spawn a panzer.
+	NPC_SpawnNext(true, true); //This will force spawn a panzer.
+	return Plugin_Handled;
+}
+public Action Waves_SkipVote(int client, int args)
+{
+	//carefull as it might break voting, its ONLY for debug
+	if(Rogue_VoteActive())
+	{
+		VoteEndTime = 0.0;
+		CreateTimer(0.1, Rogue_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
+		Rogue_SetProgressTime(0.0, false, true);
+		return Plugin_Handled;
+	}
+	MostRecentVoteCancel++;
+	CreateTimer(0.1, Waves_EndVote, MostRecentVoteCancel, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Handled;
 }
 
@@ -276,27 +301,238 @@ public Action Waves_SetWaveCmd(int client, int args)
 	
 	char buffer[12];
 	GetCmdArgString(buffer, sizeof(buffer));
-	CurrentRound = StringToInt(buffer);
-	RelayCurrentRound = CurrentRound;
-	CurrentWave = -1;
+	CurrentRound[Rounds_Default] = StringToInt(buffer);
+	RelayCurrentRound = CurrentRound[Rounds_Default];
+	CurrentWave[Rounds_Default] = -1;
 	Waves_Progress();
+	NPC_CreateByName("npc_invisible_trigger", -1, {0.0,0.0,0.0}, {0.0,0.0,0.0}, TFTeam_Stalkers);
+	return Plugin_Handled;
+}
+
+public Action Waves_ScaleTestCmd(int client, int args)
+{
+	char buffer[12];
+	GetCmdArg(1, buffer, sizeof(buffer));
+	int m_iPlayer = StringToInt(buffer);
+	GetCmdArg(2, buffer, sizeof(buffer));
+	int m_iRebel = StringToInt(buffer);
+	GetCmdArg(3, buffer, sizeof(buffer));
+	int m_iCount = StringToInt(buffer);
+	GetCmdArg(4, buffer, sizeof(buffer));
+	int m_iHP = StringToInt(buffer);
+	GetCmdArg(5, buffer, sizeof(buffer));
+	float m_iDMG = StringToFloat(buffer);
+	
+	float m_flCalculateOutPut[9];
+	
+	if(!m_iPlayer)
+	{
+		PrintToConsole(client, "Usage: zr_scaletest <Players> [AllyRebels] [EnemyCount] [EnemyHP]  [EnemyDMG]");
+		return Plugin_Handled;
+	}
+	
+	PrintToConsole(client, "=====Start=====");
+	DoMultiScalingTest(m_iPlayer, m_iRebel, m_flCalculateOutPut);
+	PrintToConsole(client, "Nomal Count Multiple: %.1f", m_flCalculateOutPut[4]);
+	PrintToConsole(client, "Nomal HP Multiple: %.1f", m_flCalculateOutPut[3]);
+	
+	PrintToConsole(client, "Boss Count Multiple: %.1f", m_flCalculateOutPut[5]);
+	PrintToConsole(client, "Boss HP Multiple: %.1f", m_flCalculateOutPut[0]);
+	PrintToConsole(client, "Boss High HP Multiple: %.1f", m_flCalculateOutPut[1]);
+	PrintToConsole(client, "Boss Extra DMG Scaling: %.1f", m_flCalculateOutPut[2]);
+	
+	PrintToConsole(client, "Player Buff Scaling: %.1f", m_flCalculateOutPut[6]);
+	PrintToConsole(client, "Player AttackSpeed Scaling: %.1f", m_flCalculateOutPut[7]);
+	PrintToConsole(client, "Player Resistance Scaling: %.1f", m_flCalculateOutPut[8]);
+	
+	if(m_iCount)
+	{
+		PrintToConsole(client, "Nomal Count: %i", RoundToNearest(float(m_iCount) * m_flCalculateOutPut[4]));
+		PrintToConsole(client, "Boss Count: %i", RoundToNearest(float(m_iCount) * m_flCalculateOutPut[5]));
+	}
+	if(m_iHP)
+	{
+		PrintToConsole(client, "Nomal HP: %i", RoundToNearest(float(m_iHP) * m_flCalculateOutPut[3]));
+		int SaveNomalHP = RoundToNearest(float(m_iHP) * m_flCalculateOutPut[1]);
+		PrintToConsole(client, "High Boss HP: %i", SaveNomalHP);
+		int SaveBossHP = RoundToNearest(float(m_iHP) * m_flCalculateOutPut[0]);
+		PrintToConsole(client, "Boss HP: %i", SaveBossHP);
+		
+		float multiBoss=float(SaveNomalHP) * m_flCalculateOutPut[5];
+		float decrease = (float(m_iCount) * m_flCalculateOutPut[4]) / float(m_iCount);
+		if(decrease > 1.0)
+			multiBoss /= decrease;
+		PrintToConsole(client, "1 Nomal More HP: %i", RoundToNearest(float(m_iHP) * multiBoss));
+		
+		multiBoss=float(SaveNomalHP) * m_flCalculateOutPut[5];
+		decrease = (float(m_iCount) * m_flCalculateOutPut[5]) / float(m_iCount);
+		if(decrease > 1.0)
+			multiBoss /= decrease;
+		PrintToConsole(client, "2 Nomal More HP: %i", RoundToNearest(float(m_iHP) * multiBoss));
+		
+		multiBoss=float(SaveBossHP) * m_flCalculateOutPut[5];
+		decrease = (float(m_iCount) * m_flCalculateOutPut[4]) / float(m_iCount);
+		if(decrease > 1.0)
+			multiBoss /= decrease;
+		PrintToConsole(client, "1 Boss More HP: %i", RoundToNearest(float(m_iHP) * multiBoss));
+		
+		multiBoss=float(SaveBossHP) * m_flCalculateOutPut[5];
+		decrease = (float(m_iCount) * m_flCalculateOutPut[5]) / float(m_iCount);
+		if(decrease > 1.0)
+			multiBoss /= decrease;
+		PrintToConsole(client, "2 Boss More HP: %i", RoundToNearest(float(m_iHP) * multiBoss));
+	}
+	if(m_iDMG)
+		PrintToConsole(client, "Boss Extra DMG: %.1f", m_iDMG * (((m_flCalculateOutPut[4] - 1.0) * 0.5) + 1.0));
+	PrintToConsole(client, "=====End=====");
+	return Plugin_Handled;
+}
+
+static void DoMultiScalingTest(int InPutPlayer, int InPutRebel, float OutPut[9])
+{
+	float playercount = float(InPutPlayer)+(float(InPutRebel) * 0.5);
+
+	if(playercount < 2.0)
+		playercount = 2.0;
+	
+	playercount *= 0.88;
+	playercount *= GetScaledPlayerCountMulti(InPutPlayer);
+
+	float multi = playercount / 4.0;
+	
+	//raids or super bosses health
+	float TmpeMultiGlobalHighHealthBoss = playercount * 0.34;
+	//on very low playercounts raids deal less damage anyways, so hp shouldnt go that low.
+	if(TmpeMultiGlobalHighHealthBoss <= 0.8)
+		TmpeMultiGlobalHighHealthBoss = 0.8;
+
+	//for raids, we want to reduce their HP even more, as that many attacking 1 target is very unlikely.
+	TmpeMultiGlobalHighHealthBoss *= GetScaledPlayerCountMulti(InPutPlayer, 0.3);
+
+	//Enemy bosses AMOUNT
+	float cap = zr_maxsbosscaling_untillhp.FloatValue;
+	float BossMulti = playercount * 0.3; 
+	float TmpeMultiGlobalScalingBossExtra, TmpeMultiGlobalEnemyBoss, TmpeMultiGlobalHealth, TmpeMultiGlobalEnemy;
+	if(BossMulti > cap)
+	{
+		TmpeMultiGlobalScalingBossExtra = BossMulti / cap;
+		TmpeMultiGlobalEnemyBoss = cap;
+	}
+	else
+	{
+		TmpeMultiGlobalScalingBossExtra = 1.0;
+		TmpeMultiGlobalEnemyBoss = BossMulti;
+	}
+	
+	//normal bosses health
+	float TmpeMultiGlobalHealthBoss = playercount * 0.2;
+	//Enemy bosses AMOUNT affects HP too, so keeping  this on 1.0 is good.
+	if(TmpeMultiGlobalHealthBoss <= 1.0)
+		TmpeMultiGlobalHealthBoss = 1.0;
+
+	OutPut[2] = TmpeMultiGlobalScalingBossExtra;
+	//scale extra HP higher
+	OutPut[0] = TmpeMultiGlobalHealthBoss * (((TmpeMultiGlobalScalingBossExtra - 1.0) * 0.75) + 1.0);
+
+	//certain maps need this, if they are too big and raids have issues etc.
+	OutPut[1] = TmpeMultiGlobalHighHealthBoss * zr_raidmultihp.FloatValue;
+
+	cap = zr_maxscaling_untillhp.FloatValue;
+
+	if(multi > cap)
+	{
+		TmpeMultiGlobalHealth = multi / cap;
+		TmpeMultiGlobalEnemy = cap;
+	}
+	else
+	{
+		TmpeMultiGlobalHealth = 1.0;
+		TmpeMultiGlobalEnemy = multi;
+	}
+
+	OutPut[3] = TmpeMultiGlobalHealth;
+	OutPut[4] = TmpeMultiGlobalEnemy * ZRModifs_MaxSpawnWaveModif();
+	OutPut[5] = TmpeMultiGlobalEnemyBoss * ZRModifs_MaxSpawnWaveModif();
+
+	float TmpePlayerCountBuffScaling = 4.5 / playercount;
+	if(TmpePlayerCountBuffScaling > 1.0)
+		TmpePlayerCountBuffScaling = 1.0;
+	
+	//Shouldnt be lower then 0.25
+	if(TmpePlayerCountBuffScaling < 0.25)
+		TmpePlayerCountBuffScaling = 0.25;
+	OutPut[6]=TmpePlayerCountBuffScaling;
+
+	float TmpePlayerCountBuffAttackspeedScaling = 6.0 / playercount;
+	if(TmpePlayerCountBuffAttackspeedScaling > 1.0)
+		TmpePlayerCountBuffAttackspeedScaling = 1.0;
+	
+	//Shouldnt be lower then 0.5
+	if(TmpePlayerCountBuffAttackspeedScaling < 0.5)
+		TmpePlayerCountBuffAttackspeedScaling = 0.5;
+	OutPut[7]=TmpePlayerCountBuffAttackspeedScaling;
+
+	float TmpePlayerCountResBuffScaling = (1.0 - (playercount / 48.0)) + 0.1;
+	if(TmpePlayerCountResBuffScaling < 0.75)
+		TmpePlayerCountResBuffScaling = 0.75;
+	OutPut[8]=TmpePlayerCountResBuffScaling;
+}
+
+public Action Waves_AdminsWaveTimeRemainCmd(int client, int args)
+{
+	CPrintToChat(client, "{crimson}[ZR]{snow} WaveTimeOut in T-%.1fs", f_ZombieAntiDelaySpeedUp-GetGameTime());
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsWaveTimeAddCmd(int client, int args)
+{
+	if(args<1)
+	{
+		PrintToConsole(client, "Usage: zr_waveadd <int:Time>");
+		return Plugin_Handled;
+	}
+	char arg[12];
+	GetCmdArg(1, arg, sizeof(arg));
+	float AddTime = float(StringToInt(arg));
+	f_ZombieAntiDelaySpeedUp += AddTime;
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsRaidTimeEndCmd(int client, int args)
+{
+	RaidModeTime=GetGameTime();
+	return Plugin_Handled;
+}
+
+public Action Waves_AdminsRaidTimeAddCmd(int client, int args)
+{
+	if(args<1)
+	{
+		PrintToConsole(client, "Usage: zr_raidadd <int:Time>");
+		return Plugin_Handled;
+	}
+	char arg[12];
+	GetCmdArg(1, arg, sizeof(arg));
+	float AddTime = float(StringToInt(arg));
+
+	RaidModeTime+=AddTime;
 	return Plugin_Handled;
 }
 
 bool Waves_InVote()
 {
-	return (Rogue_Mode() || Construction_Mode() || Voting || VotingMods);
+	return (Rogue_Mode() || Construction_Mode() || Dungeon_Mode() || Voting || VotingMods);
 }
 
 public Action Waves_RevoteCmd(int client, int args)
 {
-	if(Rogue_Mode() || Construction_Mode())
+	if(BetWar_Mode())
+	{
+		BetWar_RevoteCmd(client);
+	}
+	else if(Rogue_Mode() || Construction_Mode() || Dungeon_Mode())
 	{
 		Rogue_RevoteCmd(client);
-	}
-	else if(CyberVote)
-	{
-		RaidMode_RevoteCmd(client);
 	}
 	else if(Voting)
 	{
@@ -313,10 +549,11 @@ public Action Waves_RevoteCmd(int client, int args)
 
 bool Waves_CallVote(int client, int force = 0)
 {
-	if(Rogue_Mode() || Construction_Mode())
+	if(BetWar_Mode())
+		return BetWar_CallVote(client);
+	
+	if(Rogue_Mode() || Construction_Mode() || Dungeon_Mode())
 		return Rogue_CallVote(client);
-	else if(CyberVote)
-		return RaidMode_CallVote(client);
 	
 	if((Voting || VotingMods) && (force || !VotedFor[client]))
 	{
@@ -369,7 +606,7 @@ bool Waves_CallVote(int client, int force = 0)
 						Format(vote.Name, sizeof(vote.Name), "%s (Lv %d)", vote.Name, vote.Level);
 
 					int MenuDo = ITEMDRAW_DISABLED;
-					if(!vote.Level)
+					if(!vote.Level || i == 0)
 						MenuDo = ITEMDRAW_DEFAULT;
 					if(Level[client] >= 1)
 						MenuDo = ITEMDRAW_DEFAULT;
@@ -554,6 +791,19 @@ void Waves_DisplayHintVote()
 
 			PrintHintTextToAll(buffer);
 		}
+		if(!FirstVoteOfGame)
+		{
+			if(count >= total)
+			{
+				if((VoteEndTime - GetGameTime()) > 5.0)
+					VoteEndTime = GetGameTime() + 5.0;
+			}
+			if((VoteEndTime < GetGameTime()))
+			{
+				MostRecentVoteCancel++;
+				CreateTimer(0.1, Waves_EndVote, MostRecentVoteCancel, TIMER_FLAG_NO_MAPCHANGE);
+			}
+		}
 	}
 }
 
@@ -563,6 +813,7 @@ void Waves_MapEnd()
 	delete Voting;
 	delete VotingMods;
 	Zero(VotedFor);
+	strcopy(WhatDifficultySetting_Internal, sizeof(WhatDifficultySetting_Internal), NULL_STRING);
 	Waves_SetDifficultyName(NULL_STRING);
 	UpdateMvMStatsFrame();
 
@@ -580,6 +831,8 @@ void Waves_MapEnd()
 
 void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 {
+	mp_disable_respawn_times.BoolValue = true;
+
 	if(!modifierOnly)
 	{
 		Cooldown = 0.0;
@@ -608,6 +861,30 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 	
 	if(!modifierOnly)
 		StartCash = kv.GetNum("cash", 700);
+	
+	// Dungeon Gamemode
+	if(map && kv.GetNum("dungeon"))
+	{
+		if(!modifierOnly)
+			Dungeon_SetupVote(kv);
+
+		if(kv != map)
+			delete kv;
+		
+		return;
+	}
+
+	// Betting Wars Gamemode
+	if(map && kv.GetNum("bettingwars"))
+	{
+		if(!modifierOnly)
+			BetWar_SetupVote(kv);
+
+		if(kv != map)
+			delete kv;
+		
+		return;
+	}
 
 	// Construction Gamemode
 	if(map && kv.GetNum("construction"))
@@ -637,7 +914,11 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 	{
 		// ZS-Classic Gamemode
 		if(kv.GetNum("classicmode"))
-			Classic_Enable();
+			Classic_Enable(true);
+		else
+		{
+			Classic_Enable(false);
+		}
 	}
 
 	bool autoSelect = CvarAutoSelectWave.BoolValue;	
@@ -657,6 +938,7 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 		}
 
 		Voting = new ArrayList(sizeof(Vote));
+		int limit = CvarVoteLimit.IntValue;
 		
 		if(kv.GotoFirstSubKey())
 		{
@@ -672,7 +954,7 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 				Voting.PushArray(vote);
 
 				// If we're downloading via downloadstable, add every vote option to that
-				if(!autoSelect && !FileNetwork_Enabled())
+				if(!autoSelect && limit < 1 && !FileNetwork_Enabled())
 				{
 					BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, vote.Config);
 					KeyValues wavekv = new KeyValues("Waves");
@@ -680,7 +962,7 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 					bool CacheNpcs = false;
 					if(!FileNetworkLib_Installed())
 						CacheNpcs = true;
-					if(CvarFileNetworkDisable.IntValue > 1)
+					if(CvarFileNetworkDisable.IntValue >= FILENETWORK_ICONONLY)
 						CacheNpcs = true;
 					Waves_CacheWaves(wavekv, CacheNpcs);
 					delete wavekv;
@@ -691,10 +973,37 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 			kv.GoBack();
 		}
 
+		if(limit > 0)
+		{
+			while (Voting.Length > limit)
+			{
+				Voting.Erase(GetURandomInt() % Voting.Length);
+			}
+
+			if(!autoSelect && !FileNetwork_Enabled())
+			{
+				for(int i; i < limit; i++)
+				{
+					Voting.GetArray(i, vote);
+					
+					BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, vote.Config);
+					KeyValues wavekv = new KeyValues("Waves");
+					wavekv.ImportFromFile(buffer);
+					bool CacheNpcs = false;
+					if(!FileNetworkLib_Installed())
+						CacheNpcs = true;
+					if(CvarFileNetworkDisable.IntValue >= FILENETWORK_ICONONLY)
+						CacheNpcs = true;
+					Waves_CacheWaves(wavekv, CacheNpcs);
+					delete wavekv;
+				}
+			}
+		}
+
 		kv.GoBack();
 	}
 
-	if(autoSelect == modifierOnly && kv.JumpToKey("Modifiers"))
+	if(CvarAutoSelectDiff.BoolValue == modifierOnly && kv.JumpToKey("Modifiers"))
 	{
 		if(kv.GotoFirstSubKey())
 		{
@@ -756,10 +1065,11 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 				if(choosen != -1)
 				{
 					VotingMods.GetArray(choosen, vote);
-
+					
 					CPrintToChatAll("{crimson}%t: %s", "Modifier set to", vote.Name);
 					if(vote.Desc[0])
 						PrintToChatAll("%t", vote.Desc);
+					ChatSetupTip();
 					EmitSoundToAll("ui/chime_rd_2base_neg.wav", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0, 70);
 					EmitSoundToAll("ui/chime_rd_2base_pos.wav", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0, 120);
 
@@ -768,6 +1078,8 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 					
 					FormatEx(WhatDifficultySetting, sizeof(WhatDifficultySetting), "%s [%s]", WhatDifficultySetting_Internal, vote.Name);
 					Waves_SetDifficultyName(WhatDifficultySetting);
+
+					strcopy(WhatModifierSetting, sizeof(WhatModifierSetting), vote.Name);
 
 					char funcs[5][64];
 					ExplodeString(vote.Config, ";", funcs, sizeof(funcs), sizeof(funcs[]));
@@ -815,6 +1127,7 @@ void Waves_SetupVote(KeyValues map, bool modifierOnly = false)
 		if(pos > 3)
 			pos = 3;
 		
+		strcopy(WhatDifficultySetting_Internal, sizeof(WhatDifficultySetting_Internal), vote.Name);
 		Waves_SetDifficultyName(vote.Name);
 		WaveLevel = vote.Level;
 		
@@ -854,7 +1167,7 @@ void Waves_SetupMiniBosses(KeyValues map)
 		MiniBosses = null;
 	}
 	
-	if(CvarNoSpecialZombieSpawn.BoolValue || Rogue_Mode() || Construction_Mode())
+	if(CvarNoSpecialZombieSpawn.BoolValue || Rogue_Mode() || Construction_Mode() || Dungeon_Mode())
 		return;
 	
 	KeyValues kv = map;
@@ -922,7 +1235,7 @@ void Waves_SetupMiniBosses(KeyValues map)
 		delete kv;
 }
 
-bool Waves_GetMiniBoss(MiniBoss boss, int RND = -1)
+bool Waves_GetMiniBoss(MiniBoss boss)
 {
 	if(!MiniBosses)
 		return false;
@@ -948,7 +1261,7 @@ bool Waves_GetMiniBoss(MiniBoss boss, int RND = -1)
 	if(length > level)
 		length = level;
 	
-	MiniBosses.GetArray((RND != -1 ? RND : GetURandomInt()) % length, boss);
+	MiniBosses.GetArray(GetURandomInt() % length, boss);
 	return true;
 }
 
@@ -956,9 +1269,15 @@ bool Waves_GetMiniBoss(MiniBoss boss, int RND = -1)
 void Waves_CacheWaves(KeyValues kv, bool npcs)
 {
 	MusicEnum music;
+	music.SetupKv("music_setup", kv);
+	music.SetupKv("music_lastman", kv);
+	music.SetupKv("music_win", kv);
+	music.SetupKv("music_loss", kv);
+	
 	kv.GotoFirstSubKey();
 	do
 	{
+		music.SetupKv("music_1", kv);
 		music.SetupKv("music_1", kv);
 		music.SetupKv("music_2", kv);
 		music.SetupKv("music_setup", kv);
@@ -976,9 +1295,11 @@ void Waves_CacheWaves(KeyValues kv, bool npcs)
 			{
 				if(kv.GetSectionName(music.Path, sizeof(music.Path)) && StrContains(music.Path, "music") != 0)
 				{
+					char DataSave[255];
 					kv.GetString("plugin", music.Path, sizeof(music.Path));
+					kv.GetString("data", DataSave, sizeof(DataSave));
 					if(music.Path[0])
-						NPC_GetByPlugin(music.Path);
+						NPC_GetByPlugin(music.Path,_, DataSave);
 				}
 			} while(kv.GotoNextKey());
 			
@@ -988,92 +1309,154 @@ void Waves_CacheWaves(KeyValues kv, bool npcs)
 	music.Clear();
 }
 
-void Waves_SetupWaves(KeyValues kv, bool start)
+void WavesDeleteSet(int ArrayDo = Rounds_Default)
 {
 	Round round;
-	if(Rounds)
+	Waves_ClearWaves(ArrayDo);
+	if(Rounds[ArrayDo])
 	{
-		int length = Rounds.Length;
+		int length = Rounds[ArrayDo].Length;
 		for(int i; i < length; i++)
 		{
-			Rounds.GetArray(i, round);
-			round.music_round_1.Clear();
-			round.music_round_2.Clear();
+			Rounds[ArrayDo].GetArray(i, round);
 			delete round.Waves;
 		}
-		delete Rounds;
+		delete Rounds[ArrayDo];
 	}
+}
+void Waves_SetupWaves(KeyValues kv, bool start, int ArrayDo = Rounds_Default)
+{
+	Round round;
+	if(Rounds[ArrayDo])
+	{
+		int length = Rounds[ArrayDo].Length;
+		for(int i; i < length; i++)
+		{
+			Rounds[ArrayDo].GetArray(i, round);
+			if(ArrayDo == Rounds_Default)
+			{
+				round.music_round_1.Clear();
+				round.music_round_2.Clear();
+			}
+			delete round.Waves;
+		}
+		delete Rounds[ArrayDo];
+	}
+	DelayContinuneWave[ArrayDo] = 0.0;
 	
-	Rounds = new ArrayList(sizeof(Round));
-	
-	CurrentRound = 0;
-	CurrentWave = -1;
-	RelayCurrentRound = 0;
-	
-	Waves_ClearWaves();
-	Waves_ResetCashGiveWaveEnd();
+	Rounds[ArrayDo] = new ArrayList(sizeof(Round));
 	
 	char buffer[128], plugin[64];
-
-	f_ExtraDropChanceRarity = kv.GetFloat("gift_drop_chance_multiplier", 0.5);
-	i_WaveHasFreeplay = kv.GetNum("do_freeplay", 0);
-	kv.GetString("complete_item", buffer, sizeof(buffer));
-	WaveGiftItem = buffer[0] ? Items_NameToId(buffer) : -1;
-	bool autoCash = view_as<bool>(kv.GetNum("auto_raid_cash"));
-	FakeMaxWaves = kv.GetNum("fakemaxwaves");
-	ResourceRegenMulti = kv.GetFloat("resourceregen", 1.0);
-	Barracks_InstaResearchEverything = view_as<bool>(kv.GetNum("full_research"));
-	StartCash = kv.GetNum("cash", StartCash);
-	OverrideScalingManually = kv.GetFloat("miniboss_scaling", 0.0);
-
-	int objective = GetObjectiveResource();
-	if(objective != -1)
-		SetEntProp(objective, Prop_Send, "m_iChallengeIndex", kv.GetNum("mvmdiff", -1));
-	
-	kv.GetString("author_format", buffer, sizeof(buffer));
-	if(buffer[0])
-		CPrintToChatAll("%t", "Format By", buffer);
-	
-	kv.GetString("author_npcs", buffer, sizeof(buffer));
-	if(buffer[0])
-		CPrintToChatAll("%t", "NPCs By", buffer);
-	
-	kv.GetString("author_raid", buffer, sizeof(buffer));
-	if(buffer[0])
-		CPrintToChatAll("%t", "Raidboss By", buffer);
-	
-	kv.GetString("difficulty", buffer, sizeof(buffer));
-	if(buffer[0])
-		Waves_SetDifficultyName(buffer);
-		
-	round.music_setup.SetupKv("music_setup", kv);
-	
-	if(round.music_setup.Valid())
+	bool autoNPCCash = false;
+	bool defaultCash = false;
+	CurrentRound[ArrayDo] = 0;
+	CurrentWave[ArrayDo] = -1;
+	if(ArrayDo == Rounds_Default)
 	{
-		round.music_setup.CopyTo(MusicSetup1);
-		for(int client=1; client<=MaxClients; client++)
+		RelayCurrentRound = 0;
+		Waves_ClearWaves(ArrayDo);
+		Waves_ResetCashGiveWaveEnd();
+
+		f_ExtraDropChanceRarity = kv.GetFloat("gift_drop_chance_multiplier", 0.5);
+		i_WaveHasFreeplay = kv.GetNum("do_freeplay", 0);
+		kv.GetString("complete_item", buffer, sizeof(buffer));
+		WaveGiftItem = buffer[0] ? Items_NameToId(buffer) : -1;
+		autoNPCCash = view_as<bool>(kv.GetNum("auto_raid_cash"));
+		defaultCash = view_as<bool>(kv.GetNum("auto_wave_cash"));
+		FakeMaxWaves = kv.GetNum("fakemaxwaves");
+		NoBarneySpawn = view_as<bool>(kv.GetNum("no_barney", 0));
+		kv.GetString("relay_send_start", buffer, sizeof(buffer));
+		if(buffer[0])
 		{
-			if(IsClientInGame(client))
+			ExcuteRelay(buffer);
+		}
+		if(NoBarneySpawn)
+		{
+			//delete any rebels that exist to be sure.
+			int INPC = 0;
+			int a;
+			while((INPC = FindEntityByNPC(a)) != -1)
 			{
-				Music_Stop_All(client); //This is actually more expensive then i thought.
-				SetMusicTimer(client, GetTime() + 5);
+				if(IsValidEntity(INPC))
+				{
+					if(INPC != 0 && Citizen_IsIt(INPC))
+					{
+						b_DissapearOnDeath[INPC] = true;
+						b_DoGibThisNpc[INPC] = true;
+						SmiteNpcToDeath(INPC);
+						SmiteNpcToDeath(INPC);
+						SmiteNpcToDeath(INPC);
+						SmiteNpcToDeath(INPC);
+					}
+				}
+			}
+			//Delete any existing rebels to be sure.
+		}
+		ResourceRegenMulti = kv.GetFloat("resourceregen", 1.0);
+		Barracks_InstaResearchEverything = view_as<bool>(kv.GetNum("full_research"));
+		StartCash = kv.GetNum("cash", StartCash);
+		OverrideScalingManually = kv.GetFloat("miniboss_scaling", 0.0);
+		Waves_TrySpawnBarney();
+		int objective = GetObjectiveResource();
+		if(objective != -1)
+			SetEntProp(objective, Prop_Send, "m_iChallengeIndex", kv.GetNum("mvmdiff", -1));
+		
+		kv.GetString("author_format", buffer, sizeof(buffer));
+		if(buffer[0])
+			CPrintToChatAll("%t", "Format By", buffer);
+		
+		kv.GetString("author_npcs", buffer, sizeof(buffer));
+		if(buffer[0])
+			CPrintToChatAll("%t", "NPCs By", buffer);
+		
+		kv.GetString("author_raid", buffer, sizeof(buffer));
+		if(buffer[0])
+			CPrintToChatAll("%t", "Raidboss By", buffer);
+		
+		kv.GetString("difficulty", buffer, sizeof(buffer));
+		if(buffer[0])
+			Waves_SetDifficultyName(buffer);
+		
+		kv.GetString("character_hired_by", buffer, sizeof(buffer));
+		if(buffer[0])
+			strcopy(s_MissionClient, sizeof(s_MissionClient), buffer);
+		else
+			s_MissionClient = DEFAULT_MISSION_CLIENT;
+			
+		round.music_setup.SetupKv("music_setup", kv);
+		
+		if(round.music_setup.Valid())
+		{
+			round.music_setup.CopyTo(MusicSetup1);
+			for(int client=1; client<=MaxClients; client++)
+			{
+				if(IsClientInGame(client))
+				{
+					Music_Stop_All(client); //This is actually more expensive then i thought.
+					SetMusicTimer(client, GetTime() + 5);
+				}
 			}
 		}
+		
+		MusicLastmann.SetupKv("music_lastman", kv);
+		MusicWin.SetupKv("music_win", kv);
+		MusicLoss.SetupKv("music_loss", kv);
+
 	}
+	int waves;
 	
 	Enemy enemy;
 	Wave wave;
 	kv.GotoFirstSubKey();
 	do
 	{
-		round.music_setup.SetupKv("music_setup", kv);
-		round.Override_Music_Setup=view_as<bool>(kv.GetNum("override_music_setup"));
-		if(kv.GetSectionName(buffer, sizeof(buffer)) && StrContains(buffer, "music_setup") != -1)
+		if(kv.GetSectionName(buffer, sizeof(buffer)) && StrContains(buffer, "music_") != -1)
 		{
 			continue;
 		}
+		round.music_setup.SetupKv("override_setup", kv);
 
-		round.Cash = kv.GetNum("cash");
+		round.Cash = kv.GetNum("cash", (defaultCash && waves < sizeof(DefaultWaveCash)) ? DefaultWaveCash[waves] : 0);
 		round.AmmoBoxExtra = kv.GetNum("ammobox_extra");
 		round.Custom_Refresh_Npc_Store = view_as<bool>(kv.GetNum("grigori_refresh_store"));
 		round.medival_difficulty = kv.GetNum("Medieval_research_level");
@@ -1081,10 +1464,11 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 		round.Xp = kv.GetNum("xp");
 		round.Setup = kv.GetFloat("setup");
 		round.NoMiniboss = view_as<bool>(kv.GetNum("no_miniboss"));
-		round.NoBarney = view_as<bool>(kv.GetNum("no_barney"));
 
 		round.music_round_1.SetupKv("music_1", kv);
 		round.music_round_2.SetupKv("music_2", kv);
+
+		kv.GetString("give_rogue_artifact", round.GiveNamedArtifact, sizeof(round.GiveNamedArtifact));
 		
 		kv.GetString("music_track_outro", round.music_round_outro, sizeof(round.music_round_outro));
 		round.MusicOutroDuration = kv.GetNum("music_outro_duration");
@@ -1110,12 +1494,12 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 		round.FogChange = view_as<bool>(kv.GetNum("fogenable"));
 		if(round.FogChange)
 		{
-			kv.GetString("fogblend", round.FogBlend, sizeof(round.FogBlend));
-			kv.GetString("fogcolor", round.FogColor1, sizeof(round.FogColor1));
-			kv.GetString("fogcolor2", round.FogColor2, sizeof(round.FogColor2));
+			kv.GetColor("fogcolor", round.FogColor1[0], round.FogColor1[1], round.FogColor1[2], round.FogColor1[3]);
+			kv.GetColor("fogcolor2", round.FogColor2[0], round.FogColor2[1], round.FogColor2[2], round.FogColor2[3]);
 			round.FogStart = kv.GetFloat("fogstart");
 			round.FogEnd = kv.GetFloat("fogend");
 			round.FogDesnity = kv.GetFloat("fogmaxdensity");
+			round.FogBlend = kv.GetNum("fogblend");
 		}
 
 		int nonBosses;
@@ -1167,11 +1551,23 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 						enemy.ExtraSize = kv.GetFloat("extra_size", 1.0);
 						enemy.ExtraThinkSpeed = kv.GetFloat("extra_thinkspeed", 1.0);
 						wave.DangerLevel = kv.GetNum("danger_level");
+						int PrioLevel = 0;
+						enemy.Priority = 0;
+						if(kv.GetNum("is_boss") > 0)
+						{
+							//if its a boss, it should always have priority no matter what
+							enemy.Priority = 1;
+						}
+						PrioLevel = kv.GetNum("priority", -1);
+						if(PrioLevel >= 0)
+						{
+							//incase you want to override priorities
+							enemy.Priority = PrioLevel;
+						}
 						
 						kv.GetString("data", enemy.Data, sizeof(enemy.Data));
 						kv.GetString("spawn", enemy.Spawn, sizeof(enemy.Spawn));
 						kv.GetString("custom_name", enemy.CustomName, sizeof(enemy.CustomName));
-
 						if(!enemy.Credits)
 							nonBosses++;
 						
@@ -1191,7 +1587,7 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 			kv.GoBack();
 		}
 
-		if(autoCash && nonBosses)
+		if(autoNPCCash && nonBosses)
 		{
 			int length = round.Waves.Length;
 			if(length)
@@ -1216,107 +1612,111 @@ void Waves_SetupWaves(KeyValues kv, bool start)
 			}
 		}
 		
-		Rounds.PushArray(round);
+		Rounds[ArrayDo].PushArray(round);
+		waves++;
 	} while(kv.GotoNextKey());
-
-	int waves = Rounds.Length;
-	if(waves > 58 || waves < 29)
-	{
-		if(waves > 1)	//incase some wavetype has only 1 waves 
-			waves--;	//this makes it scale cleanly on fastmode. since Rounds.Length gets the wave amount PLUS 1. so 40 waves is 41, 60 is 61, etc.
-		//if we are above 40 waves, we dont change it from 1.0, i.e. it cant go lower!
-		MinibossScalingHandle = (40.0 / float(waves));
-		if(MinibossScalingHandle <= 1.0)
-			MinibossScalingHandle = 1.0;
-	}
-	else
-	{
-		MinibossScalingHandle = 1.0;
-	}
-
-	if(OverrideScalingManually != 0.0)
-		MinibossScalingHandle = OverrideScalingManually;
-
-	if(start)
-	{
-		for(int client=1; client<=MaxClients; client++)
-		{
-			if(IsClientInGame(client) && GetClientTeam(client)>1)
-			{
-				Waves_RoundStart();
-				break;
-			}
-		}
-	}
-	else
-	{
-		bool RoundHadCustomMusic = BGMusicSpecial1.Valid();
 	
-		if(MusicString1.Valid())
-			RoundHadCustomMusic = true;
-				
-		if(MusicString2.Valid())
-			RoundHadCustomMusic = true;
-
-		if(RaidMusicSpecial1.Valid())
-			RoundHadCustomMusic = true;
-
-		Rounds.GetArray(0, round);
-
-		if(RoundHadCustomMusic) //only do it when there was actually custom music previously
-		{	
-			bool ReplaceMusic = false;
-			//there was music the previous round, but there is none now.
-			if(!round.music_round_1.Valid() && MusicString1.Valid())
-			{
-				ReplaceMusic = true;
-			}
-			//they are different, cancel out.
-			if(round.music_round_1.Valid())
-			{
-				if(!StrEqual(MusicString1.Path, round.music_round_1.Path))
-				{
-					ReplaceMusic = true;
-				}
-			}
-			if(!round.music_round_2.Valid() && MusicString2.Valid())
-			{
-				ReplaceMusic = true;
-			}
-			//they are different, cancel out.
-			if(round.music_round_2.Valid())
-			{
-				if(!StrEqual(MusicString2.Path, round.music_round_2.Path))
-				{
-					ReplaceMusic = true;
-				}
-			}
-
-			//if it had raid music, replace anyways!
-			if(RaidMusicSpecial1.Valid())
-				ReplaceMusic = true;
-			
-			if(ReplaceMusic)
-			{
-				for(int client=1; client<=MaxClients; client++)
-				{
-					if(IsClientInGame(client))
-					{
-						SetMusicTimer(client, GetTime() + RoundToNearest(round.Setup) + 2); //This is here beacuse of raid music.
-						Music_Stop_All(client);
-					}
-				}	
-			}
+	if(ArrayDo == Rounds_Default)
+	{
+		waves = Rounds[ArrayDo].Length;
+		if(waves > 58 || waves < 29)
+		{
+			if(waves > 1)	//incase some wavetype has only 1 waves 
+				waves--;	//this makes it scale cleanly on fastmode. since Rounds.Length gets the wave amount PLUS 1. so 40 waves is 41, 60 is 61, etc.
+			//if we are above 40 waves, we dont change it from 1.0, i.e. it cant go lower!
+			MinibossScalingHandle = (40.0 / float(waves));
+			if(MinibossScalingHandle <= 1.0)
+				MinibossScalingHandle = 1.0;
+		}
+		else
+		{
+			MinibossScalingHandle = 1.0;
 		}
 
-		//This should nullfy anyways if nothings in it
-		RemoveAllCustomMusic();
+		if(OverrideScalingManually != 0.0)
+			MinibossScalingHandle = OverrideScalingManually;
 
-		round.music_round_1.CopyTo(MusicString1);
-		round.music_round_2.CopyTo(MusicString2);
+		if(start)
+		{
+			for(int client=1; client<=MaxClients; client++)
+			{
+				if(IsClientInGame(client) && GetClientTeam(client)>1)
+				{
+					Waves_RoundStart();
+					break;
+				}
+			}
+		}
+		else
+		{
+			bool RoundHadCustomMusic = BGMusicSpecial1.Valid();
+		
+			if(MusicString1.Valid())
+				RoundHadCustomMusic = true;
+					
+			if(MusicString2.Valid())
+				RoundHadCustomMusic = true;
+
+			if(RaidMusicSpecial1.Valid())
+				RoundHadCustomMusic = true;
+
+			Rounds[ArrayDo].GetArray(0, round);
+
+			if(RoundHadCustomMusic) //only do it when there was actually custom music previously
+			{	
+				bool ReplaceMusic = false;
+				//there was music the previous round, but there is none now.
+				if(!round.music_round_1.Valid() && MusicString1.Valid())
+				{
+					ReplaceMusic = true;
+				}
+				//they are different, cancel out.
+				if(round.music_round_1.Valid())
+				{
+					if(!StrEqual(MusicString1.Path, round.music_round_1.Path))
+					{
+						ReplaceMusic = true;
+					}
+				}
+				if(!round.music_round_2.Valid() && MusicString2.Valid())
+				{
+					ReplaceMusic = true;
+				}
+				//they are different, cancel out.
+				if(round.music_round_2.Valid())
+				{
+					if(!StrEqual(MusicString2.Path, round.music_round_2.Path))
+					{
+						ReplaceMusic = true;
+					}
+				}
+
+				//if it had raid music, replace anyways!
+				if(RaidMusicSpecial1.Valid())
+					ReplaceMusic = true;
+				
+				if(ReplaceMusic)
+				{
+					for(int client=1; client<=MaxClients; client++)
+					{
+						if(IsClientInGame(client))
+						{
+							SetMusicTimer(client, GetTime() + RoundToNearest(round.Setup) + 2); //This is here beacuse of raid music.
+							Music_Stop_All(client);
+						}
+					}	
+				}
+			}
+
+			//This should nullfy anyways if nothings in it
+			RemoveAllCustomMusic();
+
+			round.music_round_1.CopyTo(MusicString1);
+			round.music_round_2.CopyTo(MusicString2);
+		}
+
+		Waves_UpdateMvMStats();
 	}
-
-	Waves_UpdateMvMStats();
 	DoGlobalMultiScaling();
 }
 
@@ -1330,14 +1730,7 @@ void Waves_RoundStart(bool event = false)
 			SkyNameRestore[0] = 0;
 		}
 
-		if(FogEntity != INVALID_ENT_REFERENCE)
-		{
-			int entity = EntRefToEntIndex(FogEntity);
-			if(entity != INVALID_ENT_REFERENCE)
-				RemoveEntity(entity);
-			
-			FogEntity = INVALID_ENT_REFERENCE;
-		}
+		ClearCustomFog(FogType_Wave);
 	}
 	
 	Waves_ClearWaves();
@@ -1347,7 +1740,7 @@ void Waves_RoundStart(bool event = false)
 
 	Kit_Fractal_ResetRound();
 	
-	if(Construction_Mode() || Rogue_Mode())
+	if(Construction_Mode() || Rogue_Mode() || BetWar_Mode() || Dungeon_Mode())
 	{
 		
 	}
@@ -1378,7 +1771,8 @@ void Waves_RoundStart(bool event = false)
 			time = 1.0;
 		
 		VoteEndTime = GetGameTime() + time;
-		CreateTimer(time, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
+		MostRecentVoteCancel++;
+		CreateTimer(time, Waves_EndVote, MostRecentVoteCancel, TIMER_FLAG_NO_MAPCHANGE);
 
 		if(wait < time)
 			wait = time;
@@ -1395,7 +1789,8 @@ void Waves_RoundStart(bool event = false)
 		if(FirstMapRound)
 		{
 			FirstMapRound = false;
-			CreateTimer(zr_waitingtime.FloatValue, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
+			MostRecentVoteCancel++;
+			CreateTimer(zr_waitingtime.FloatValue, Waves_EndVote, MostRecentVoteCancel, TIMER_FLAG_NO_MAPCHANGE);
 			Waves_SetReadyStatus(2);
 			//Stop music.
 		}
@@ -1420,8 +1815,16 @@ void Waves_RoundStart(bool event = false)
 	}
 	if(CvarInfiniteCash.BoolValue)
 		CurrentCash = 999999;
-
-	if(Construction_Mode())
+	
+	if(Dungeon_Mode())
+	{
+		Dungeon_StartSetup();
+	}
+	else if(BetWar_Mode())
+	{
+		BetWar_StartSetup();
+	}
+	else if(Construction_Mode())
 	{
 		Construction_StartSetup();
 	}
@@ -1431,21 +1834,26 @@ void Waves_RoundStart(bool event = false)
 	}
 
 	Waves_UpdateMvMStats();
+	
+	VScriptEvent vevent = new VScriptEvent("ZR_StartSetup");
+	if(vevent)
+	{
+		vevent.Fire();
+	}
 }
 
 void Waves_RoundEnd()
 {
-	Cooldown = 0.0;
+	Cooldown = GetGameTime();
 	InSetup = true;
 //	InFreeplay = false;
-	CurrentRound = 0;
+	CurrentRound[Rounds_Default] = 0;
 	RelayCurrentRound = 0;
-	CurrentWave = -1;
+	CurrentWave[Rounds_Default] = -1;
 	Medival_Difficulty_Level = 0.0; //make sure to set it to 0 othrerwise waves will become impossible
-	Medival_Difficulty_Level_NotMath = 0;
 
-	if(Rogue_Mode() || Construction_Mode())
-		delete Rounds;
+	if(Rogue_Mode() || Construction_Mode() || Dungeon_Mode())
+		delete Rounds[Rounds_Default];
 }
 
 public Action Waves_RoundStartTimer(Handle timer)
@@ -1474,12 +1882,15 @@ public Action Waves_RoundStartTimer(Handle timer)
 public Action Waves_AllowVoting(Handle timer)
 {
 	Waves_SetReadyStatus(1);
-	SPrintToChatAll("이제 준비(F4)를 할 수 있습니다.");
+	SPrintToChatAll("You may now ready up.");
 	return Plugin_Continue;
 }
 
-public Action Waves_EndVote(Handle timer, float time)
+public Action Waves_EndVote(Handle timer, int WhatWasMyCancel)
 {
+	if(WhatWasMyCancel != MostRecentVoteCancel)
+		return Plugin_Continue;
+
 	ArrayList list = Voting ? Voting : VotingMods;
 	if(list)
 	{
@@ -1542,7 +1953,8 @@ public Action Waves_EndVote(Handle timer, float time)
 					Zero(VotedFor);
 					CanReVote = false;
 					VoteEndTime = GetGameTime() + 30.0;
-					CreateTimer(30.0, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
+					MostRecentVoteCancel++;
+					CreateTimer(30.0, Waves_EndVote, MostRecentVoteCancel, TIMER_FLAG_NO_MAPCHANGE);
 					PrintHintTextToAll("Vote for the top %d options!", list.Length);
 					SPrintToChatAll("Vote for the top %d options!", list.Length);
 					Waves_SetReadyStatus(2);
@@ -1602,11 +2014,12 @@ public Action Waves_EndVote(Handle timer, float time)
 				if(highest > 3)
 					highest = 3;
 				
+				strcopy(WhatDifficultySetting_Internal, sizeof(WhatDifficultySetting_Internal), vote.Name);
 				Waves_SetDifficultyName(vote.Name);
 				WaveLevel = vote.Level;
 				
-				Format(vote.Name, sizeof(vote.Name), "FireUser%d", highest + 1);
-				ExcuteRelay("zr_waveselected", vote.Name);
+			//	Format(vote.Name, sizeof(vote.Name), "FireUser%d", highest + 1);
+			//	ExcuteRelay("zr_waveselected", vote.Name);
 				
 				BuildPath(Path_SM, buffer, sizeof(buffer), CONFIG_CFG, vote.Config);
 				KeyValues kv = new KeyValues("Waves");
@@ -1622,7 +2035,8 @@ public Action Waves_EndVote(Handle timer, float time)
 					Zero(VotedFor);
 					VoteEndTime = GetGameTime() + duration;
 					CreateTimer(1.0, Waves_VoteDisplayTimer, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-					CreateTimer(duration, Waves_EndVote, _, TIMER_FLAG_NO_MAPCHANGE);
+					MostRecentVoteCancel++;
+					CreateTimer(duration, Waves_EndVote, MostRecentVoteCancel, TIMER_FLAG_NO_MAPCHANGE);
 
 					PrintHintTextToAll("Vote for the wave modifier!");
 					SPrintToChatAll("Vote for the wave modifier!");
@@ -1640,8 +2054,12 @@ public Action Waves_EndVote(Handle timer, float time)
 				CPrintToChatAll("{crimson}%t: %s", "Modifier set to", vote.Name);
 				if(vote.Desc[0])
 					PrintToChatAll("%t", vote.Desc);
+
+				ChatSetupTip();
 				EmitSoundToAll("ui/chime_rd_2base_neg.wav", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0, 70);
 				EmitSoundToAll("ui/chime_rd_2base_pos.wav", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.0, 120);
+				
+				strcopy(WhatModifierSetting, sizeof(WhatModifierSetting), vote.Name);
 				
 				if(highest > 0)
 				{
@@ -1704,52 +2122,66 @@ public Action Waves_EndVote(Handle timer, float time)
 	return Plugin_Continue;
 }
 
-void Waves_ClearWaves()
+void Waves_ClearWaves(int WaveWhich = Rounds_Default)
 {
-	delete Enemies;
-	Enemies = new ArrayList(sizeof(Enemy));
+	delete Enemies[WaveWhich][0];
+	delete Enemies[WaveWhich][1];
+	delete Enemies[WaveWhich][2];
 }
 
-void Waves_Progress(bool donotAdvanceRound = false)
+bool Waves_Progress(bool donotAdvanceRound = false,
+ int WaveWhich = Rounds_Default, bool ForceAdvance = false)
 {
 	/*PrintCenterTextAll("Waves_Progress %d | %d | %d | %d | %d", InSetup ? 0 : 1,
 		Rounds ? 1 : 0,
 		CvarNoRoundStart.BoolValue ? 0 : 1,
 		GameRules_GetRoundState() == RoundState_BetweenRounds ? 0 : 1,
 		Cooldown > GetGameTime() ? 0 : 1);*/
-	
-	if(InSetup || !Rounds || CvarNoRoundStart.BoolValue || GameRules_GetRoundState() == RoundState_BetweenRounds || Cooldown > GetGameTime())
-		return;
 
-	Cooldown = GetGameTime();
-	ProgressTimerEndAt = 0.0;
-	delete WaveTimer;
+	if(!ForceAdvance)
+	{
+		if(WaveWhich == Rounds_Default)
+			if(InSetup || CvarNoRoundStart.BoolValue || GameRules_GetRoundState() == RoundState_BetweenRounds || Cooldown > GetGameTime() || BetWar_Mode())
+				return false;
+	}
+	if(!Rounds[WaveWhich])
+		return false;
+		
+	if(WaveWhich == Rounds_Default)
+	{
+		Cooldown = GetGameTime();
+		ProgressTimerEndAt = 0.0;
+		delete WaveTimer;
+	}
 	
 	Round round;
 	Wave wave;
-	int length = Rounds.Length-1;
+	int length = Rounds[WaveWhich].Length-1;
 	bool panzer_spawn = false;
 	bool panzer_sound = false;
-	bool subgame = (Rogue_Mode() || Construction_Mode());
+	bool subgame = (Rogue_Mode() || Construction_Mode() || Dungeon_Mode());
 	static int panzer_chance;
-	bool GiveAmmoSupplies = true;
+	bool GiveAmmoSupplies = !Dungeon_Mode();
 
-	if(CurrentRound < length)
+	if(CurrentRound[WaveWhich] < length || ForceAdvance)
 	{
-		Rounds.GetArray(CurrentRound, round);
-		if(++CurrentWave < round.Waves.Length)
+		Rounds[WaveWhich].GetArray(CurrentRound[WaveWhich], round);
+		if(++CurrentWave[WaveWhich] < round.Waves.Length && !ForceAdvance)
 		{
-			f_FreeplayDamageExtra = 1.0;
-			round.Waves.GetArray(CurrentWave, wave);
+			if(WaveWhich == Rounds_Default)
+				f_FreeplayDamageExtra = 1.0;
 
-			if(!CurrentWave)
+			round.Waves.GetArray(CurrentWave[WaveWhich], wave);
+
+			if(!CurrentWave[WaveWhich] && WaveWhich == Rounds_Default)
 			{
 				Rogue_TriggerFunction(Artifact::FuncWaveStart);
 
 				if(Classic_Mode())
+				{
 					Classic_NewRoundStart(round.Cash);
+				}	
 			}
-
 			if(wave.RelayName[0])
 				ExcuteRelay(wave.RelayName, wave.RelayFire);
 			
@@ -1758,40 +2190,51 @@ void Waves_Progress(bool donotAdvanceRound = false)
 			int Is_a_boss = wave.EnemyData.Is_Boss;
 			bool ScaleWithHpMore = wave.Count == 0;
 
-			float WaitingTimeGive = wave.EnemyData.WaitingTimeGive;
-			if(!LastMann && WaitingTimeGive > 0.0)
+			if(WaveWhich == Rounds_Default)
 			{
-				SPrintToChatAll("준비 시간 %.1f 초 드립니다.",WaitingTimeGive);
-				GiveProgressDelay(WaitingTimeGive);
-				f_DelaySpawnsForVariousReasons = GetGameTime() + WaitingTimeGive;
-				SpawnTimer(WaitingTimeGive);
-			}
-			
-			if(Is_a_boss >= 2)
-			{
-				if(Is_a_boss == 2)
+				float WaitingTimeGive = wave.EnemyData.WaitingTimeGive;
+				if(!LastMann && WaitingTimeGive > 0.0)
 				{
-					if(LastMann)
-					{
-						SPrintToChatAll("레이드 보스 등장 전까지 45 초 남았습니다... 준비하십시오");
-						GiveProgressDelay(45.0);
-						f_DelaySpawnsForVariousReasons = GetGameTime() + 45.0;
-						SpawnTimer(45.0);
-					}
-					else if(WaitingTimeGive <= 0.0)
-					{
-						SPrintToChatAll("레이드 보스 등장 전까지 30 초 남았습니다... 준비하십시오.");
-						GiveProgressDelay(30.0);
-						f_DelaySpawnsForVariousReasons = GetGameTime() + 30.0;
-						SpawnTimer(30.0);
-					}
-					Citizen_SetupStart();
+					SPrintToChatAll("You were given extra %.1f seconds to prepare.",WaitingTimeGive);
+					GiveProgressDelay(WaitingTimeGive);
+					f_DelaySpawnsForVariousReasons = GetGameTime() + WaitingTimeGive;
+					SpawnTimer(WaitingTimeGive);
 				}
-				Music_EndLastmann();
-				RespawnCheckCitizen();
-				ReviveAll(true);
-				CheckAlivePlayers();
-				WaveEndLogicExtra();
+				
+				if(Is_a_boss >= 2)
+				{
+					if(Is_a_boss == 2)
+					{
+						if(LastMann && !b_IsAloneOnServer)
+						{
+							SPrintToChatAll("You were given extra 45 seconds to prepare for the raidboss... Get ready.");
+							GiveProgressDelay(45.0);
+							f_DelaySpawnsForVariousReasons = GetGameTime() + 45.0;
+							SpawnTimer(45.0);
+						}
+						else if(WaitingTimeGive <= 0.0)
+						{
+							SPrintToChatAll("You were given extra 30 seconds to prepare for the raidboss... Get ready.");
+							GiveProgressDelay(30.0);
+							f_DelaySpawnsForVariousReasons = GetGameTime() + 30.0;
+							SpawnTimer(30.0);
+						}
+						Citizen_SetupStart();
+					}
+					Music_EndLastmann();
+					RespawnCheckCitizen();
+					//if its setboss 4, itll force respawn everyone.
+					/*
+					if(Is_a_boss == 4)
+						ReviveAll(_,_,true);
+					else
+						ReviveAll(true);
+					*/
+					ReviveAll(_,_,true, ForceAdvance);
+
+					CheckAlivePlayers();
+					WaveEndLogicExtra();
+				}
 			}
 			
 			int count = wave.Count;
@@ -1856,6 +2299,8 @@ void Waves_Progress(bool donotAdvanceRound = false)
 					// Increase boss health
 					multiBoss *= MultiGlobalEnemyBoss;
 
+					//Give extra damage to bosses that scale like this, but only half as much.
+					wave.EnemyData.ExtraDamage = wave.EnemyData.ExtraDamage * (((MultiGlobalScalingBossExtra - 1.0) * 0.5) + 1.0);
 					// Decrease for every boss spawned
 					float decrease = float(count) / float(wave.Count);
 					if(decrease > 1.0)
@@ -1870,28 +2315,35 @@ void Waves_Progress(bool donotAdvanceRound = false)
 		
 			for(int i; i<count; i++)
 			{
-				Waves_AddNextEnemy(wave.EnemyData, view_as<bool>(wave.EnemyData.ignore_max_cap));
+				Waves_AddNextEnemy(wave.EnemyData, view_as<bool>(wave.EnemyData.ignore_max_cap), _,WaveWhich);
 			}
 			
 			if(wave.Delay > 0.0)
 			{
 				float delay = wave.Delay * (1.0 + (MultiGlobalEnemy * 0.4));
-				WaveTimer = CreateTimer(delay, Waves_ProgressTimer);
-				ProgressTimerType = CurrentWave == (round.Waves.Length - 1);
+				if(WaveWhich == Rounds_Default)
+				{
+					WaveTimer = CreateTimer(delay, Waves_ProgressTimer);
+					ProgressTimerType = CurrentWave[WaveWhich] == (round.Waves.Length - 1);
+					if(delay > 9.0)
+						ProgressTimerEndAt = GetGameTime() + delay;
+				}
 				
-				if(delay > 9.0)
-					ProgressTimerEndAt = GetGameTime() + delay;
+
+				//only used for waves from spawners
+				DelayContinuneWave[WaveWhich] = GetGameTime() + delay;
 			}
 		}
 		else if(donotAdvanceRound)
 		{
-			CurrentWave = round.Waves.Length - 1;
+			CurrentWave[WaveWhich] = round.Waves.Length - 1;
 			GiveAmmoSupplies = false;
 		}
 		else
 		{
 			int PrevRoundMusic = 0;
-			WaveEndLogicExtra();
+			if(WaveWhich == Rounds_Default)
+				WaveEndLogicExtra();
 
 			if(!Classic_Mode())
 			{
@@ -1911,27 +2363,46 @@ void Waves_Progress(bool donotAdvanceRound = false)
 					}
 				}
 			}
+			if(Classic_Mode())
+			{
+				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+				{
+					int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
+					if(IsValidEntity(entity) && GetTeam(entity) != TFTeam_Red)
+					{
+						FreezeNpcInTime(entity, 3.0, true);
+					}
+				}
+			}
 			
-			Citizen_WaveStart();
-			ExcuteRelay("zr_wavedone");
-			Waves_ResetCashGiveWaveEnd();
-			CurrentRound++;
-			CurrentWave = -1;
-			//This ensures no invalid spawn happens.
-			Spawners_Timer();
-			if(CurrentRound != length)
+			if(WaveWhich == Rounds_Default)
+			{
+				Citizen_WaveStart();
+				ExcuteRelay("zr_wavedone");
+				Waves_ResetCashGiveWaveEnd();
+				
+			}
+			CurrentRound[WaveWhich]++;
+			CurrentWave[WaveWhich] = -1;
+			if(WaveWhich == Rounds_Default)
+			{
+				//Dungeon_WaveEnd(CurrentRound[WaveWhich] == length);
+				//This ensures no invalid spawn happens.
+				Spawners_Timer();
+			}
+			if(CurrentRound[WaveWhich] != length && WaveWhich == Rounds_Default)
 			{
 				char ExecuteRelayThings[64];
 
 				// 60 Wave Scaling
-				int ScalingDoWavesDone = CurrentRound;
+				int ScalingDoWavesDone = CurrentRound[WaveWhich];
 				if(OverrideScalingManually != 0.0)
 				{
-					ScalingDoWavesDone = RoundToFloor(float(CurrentRound) * OverrideScalingManually);
+					ScalingDoWavesDone = RoundToFloor(float(CurrentRound[WaveWhich]) * OverrideScalingManually);
 				}
 				else if(length < 59)
 				{
-					ScalingDoWavesDone = RoundToFloor(float(CurrentRound) * (60.001 / float(length - 1)));
+					ScalingDoWavesDone = RoundToFloor(float(CurrentRound[WaveWhich]) * (60.001 / float(length - 1)));
 				}
 				
 				for(; RelayCurrentRound < ScalingDoWavesDone ; RelayCurrentRound++)
@@ -1942,45 +2413,52 @@ void Waves_Progress(bool donotAdvanceRound = false)
 				}
 
 				// No Scaling
-				FormatEx(ExecuteRelayThings, sizeof(ExecuteRelayThings), "zr_waveend_%d", CurrentRound);
+				FormatEx(ExecuteRelayThings, sizeof(ExecuteRelayThings), "zr_waveend_%d", CurrentRound[WaveWhich]);
 				ExcuteRelay(ExecuteRelayThings);
 			}
 
 			bool wasEmptyWave = !round.Waves.Length;
 			
-			if(!wasEmptyWave)
-				Native_OnWaveEnd();
-
-			RequestFrames(StopMapMusicAll, 60);
-			
-			Waves_ClearWaves();
-
-			bool music_stop = false;
-			//Do we stop the music ?
-			//If theres an outro track, play it here.
-			if(round.music_round_outro[0])
+			if(WaveWhich == Rounds_Default)
 			{
-				music_stop = true;
-				if(round.music_custom_outro)
-				{
-					EmitCustomToAll(round.music_round_outro, _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.45);
-				}
-				else
-				{
-					EmitSoundToAll(round.music_round_outro, _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 0.73);
-					EmitSoundToAll(round.music_round_outro, _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 0.73);
-				}
+				if(!wasEmptyWave)
+					Native_OnWaveEnd();
+
+				RequestFrames(StopMapMusicAll, 60);
+
 			}
-			PrevRoundMusic = round.MusicOutroDuration;
+			
+			Waves_ClearWaves(WaveWhich);
+			bool music_stop = false;
 
-			//If there was a music outro, was duration did it have? Set the music timer delay here.
-			if(PrevRoundMusic > 0)
+			if(WaveWhich == Rounds_Default)
 			{
-				for(int client = 1; client <= MaxClients; client++)
+				//Do we stop the music ?
+				//If theres an outro track, play it here.
+				if(round.music_round_outro[0])
 				{
-					if(IsClientInGame(client) && !b_IsPlayerABot[client])
+					music_stop = true;
+					if(round.music_custom_outro)
 					{
-						SetMusicTimer(client, GetTime() + round.MusicOutroDuration); //This is here beacuse of raid music.
+						EmitCustomToAll(round.music_round_outro, _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 1.45);
+					}
+					else
+					{
+						EmitSoundToAll(round.music_round_outro, _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 0.73);
+						EmitSoundToAll(round.music_round_outro, _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 0.73);
+					}
+				}
+				PrevRoundMusic = round.MusicOutroDuration;
+
+				//If there was a music outro, was duration did it have? Set the music timer delay here.
+				if(PrevRoundMusic > 0)
+				{
+					for(int client = 1; client <= MaxClients; client++)
+					{
+						if(IsClientInGame(client) && !b_IsPlayerABot[client])
+						{
+							SetMusicTimer(client, GetTime() + round.MusicOutroDuration); //This is here beacuse of raid music.
+						}
 					}
 				}
 			}
@@ -2001,17 +2479,20 @@ void Waves_Progress(bool donotAdvanceRound = false)
 			}
 			//Did we beforehand stop the music, due to playing an outtro track?
 			//if yes, remove it here.
-			for(int client = 1; client <= MaxClients; client++)
+			if(WaveWhich == Rounds_Default)
 			{
-				if(IsClientInGame(client) && !b_IsPlayerABot[client])
+				for(int client = 1; client <= MaxClients; client++)
 				{
-					if(music_stop)
+					if(IsClientInGame(client) && !b_IsPlayerABot[client])
 					{
-						Music_Stop_All(client);
+						if(music_stop)
+						{
+							Music_Stop_All(client);
+						}
 					}
 				}
 			}
-			if(round.music_setup.Valid()&&round.Override_Music_Setup)
+			if(round.music_setup.Valid())
 			{
 				round.music_setup.CopyTo(MusicSetup1);
 				for(int client=1; client<=MaxClients; client++)
@@ -2053,7 +2534,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 			}
 			
 			// Above is the round that just ended
-			Rounds.GetArray(CurrentRound, round);
+			Rounds[WaveWhich].GetArray(CurrentRound[WaveWhich], round);
 			// Below is the new round
 			
 			if(round.MapSetupRelay)
@@ -2066,119 +2547,65 @@ void Waves_Progress(bool donotAdvanceRound = false)
 			
 			if(round.Skyname[0])
 				Waves_SetSkyName(round.Skyname);
+				
+			if(round.GiveNamedArtifact[0])
+				Rogue_GiveNamedArtifact(round.GiveNamedArtifact);
 
 			if(round.FogChange)
-			{
-				if(FogEntity != INVALID_ENT_REFERENCE)
-				{
-					int entity = EntRefToEntIndex(FogEntity);
-					if(entity > MaxClients)
-						RemoveEntity(entity);
-					
-					FogEntity = INVALID_ENT_REFERENCE;
-				}
-				
-				int entity = CreateEntityByName("env_fog_controller");
-				if(entity != -1)
-				{
-					DispatchKeyValue(entity, "fogblend", round.FogBlend);
-					DispatchKeyValue(entity, "fogcolor", round.FogColor1);
-					DispatchKeyValue(entity, "fogcolor2", round.FogColor2);
-					DispatchKeyValueFloat(entity, "fogstart", round.FogStart);
-					DispatchKeyValueFloat(entity, "fogend", round.FogEnd);
-					DispatchKeyValueFloat(entity, "fogmaxdensity", round.FogDesnity);
-
-					DispatchKeyValue(entity, "targetname", "rpg_fortress_envfog");
-					DispatchKeyValue(entity, "fogenable", "1");
-					DispatchKeyValue(entity, "spawnflags", "1");
-					DispatchSpawn(entity);
-					AcceptEntityInput(entity, "TurnOn");
-
-					FogEntity = EntIndexToEntRef(entity);
-
-					for(int client = 1; client <= MaxClients; client++)
-					{
-						if(IsClientInGame(client))
-						{
-							SetVariantString("rpg_fortress_envfog");
-							AcceptEntityInput(client, "SetFogController");
-						}
-					}
-				}
-			}
+				SetCustomFog(FogType_Wave, round.FogColor1, round.FogColor2, round.FogStart, round.FogEnd, round.FogDesnity, round.FogBlend, true);
 			
 			//Loop through all the still alive enemies that are indexed!
-			int Zombies_alive_still = 0;
-
-			for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+			if(WaveWhich == Rounds_Default)
 			{
-				int npc_index = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
-				if (IsValidEntity(npc_index))
+				int Zombies_alive_still = 0;
+
+				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
 				{
-					if(!b_NpcHasDied[npc_index])
+					int npc_index = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
+					if (IsValidEntity(npc_index))
 					{
-						if(GetTeam(npc_index) != TFTeam_Red)
+						if(!b_NpcHasDied[npc_index])
 						{
-							Zombies_alive_still += 1;
+							if(GetTeam(npc_index) != TFTeam_Red)
+							{
+								Zombies_alive_still += 1;
+							}
 						}
 					}
 				}
-			}
-			Zombies_Currently_Still_Ongoing = 0;
-			Zombies_Currently_Still_Ongoing = Zombies_alive_still;
-			
-			/*
-			if(!subgame && CurrentRound >= RoundToNearest(12.0 * (1.0 / MinibossScalingReturn())))
-			{
-				int count;
-				int i = MaxClients + 1;
-				while((i = FindEntityByClassname(i, "zr_base_npc")) != -1)
+				Zombies_Currently_Still_Ongoing = 0;
+				Zombies_Currently_Still_Ongoing = Zombies_alive_still;
+
+				if(CurrentRound[WaveWhich] == (RoundToNearest(7.0 * (1.0 / MinibossScalingReturn()))) && !round.NoMiniboss)
 				{
-					if(!b_NpcHasDied[i])
-					{
-						if(Citizen_IsIt(i))
-							count++;
-					}
-				}
-			}
-			// ?????? Old code, we dont know what it does.
-			*/
-			//always increase chance of miniboss.
-			if(!subgame && ((!Classic_Mode() && CurrentRound == 4) || (Classic_Mode() && CurrentRound == 1)) && !round.NoBarney)
-			{
-				Citizen_SpawnAtPoint("b");
-				Citizen_SpawnAtPoint();
-				CPrintToChatAll("{gray}바니 칼훈: {default}이봐! 좀 늦었지만 이제 도착했어! 친구도 데려왔지!");
-			}
-			else if(CurrentRound == (RoundToNearest(8.0 * (1.0 / MinibossScalingReturn()))) && !round.NoMiniboss)
-			{
-				panzer_spawn = true;
-				panzer_sound = true;
-				panzer_chance = 10;
-			}
-			else if((CurrentRound > RoundToNearest(8.0 * (1.0 / MinibossScalingReturn())) && round.Setup <= 30.0 && !round.NoMiniboss))
-			{
-				bool chance = (panzer_chance == 10 ? false : !GetRandomInt(0, panzer_chance));
-				if(panzer_chance != 10)
-					Modifier_MiniBossSpawn(chance);
-				
-				panzer_spawn = chance;
-				panzer_sound = chance;
-				panzer_chance--;
-				if(panzer_spawn)
-				{
+					panzer_spawn = true;
+					panzer_sound = true;
 					panzer_chance = 10;
+				}
+				else if((CurrentRound[WaveWhich] > RoundToNearest(7.0 * (1.0 / MinibossScalingReturn())) && round.Setup <= 30.0 && !round.NoMiniboss))
+				{
+					bool chance = (panzer_chance == 10 ? false : !GetRandomInt(0, panzer_chance));
+					if(panzer_chance != 10)
+						Modifier_MiniBossSpawn(chance);
+					
+					panzer_spawn = chance;
+					panzer_sound = chance;
+					panzer_chance--;
+					if(panzer_spawn)
+					{
+						panzer_chance = 10;
+					}
+					else
+					{
+						Flagellant_MiniBossChance(panzer_chance);
+					}
 				}
 				else
 				{
-					Flagellant_MiniBossChance(panzer_chance);
+					panzer_chance--;
+					panzer_spawn = false;
+					panzer_sound = false;
 				}
-			}
-			else
-			{
-				panzer_chance--;
-				panzer_spawn = false;
-				panzer_sound = false;
 			}
 
 			if(subgame) //disable
@@ -2209,6 +2636,7 @@ void Waves_Progress(bool donotAdvanceRound = false)
 				}
 			}
 			//if(!wasEmptyWave)
+			if(WaveWhich == Rounds_Default)
 			{
 				for(int client=1; client<=MaxClients; client++)
 				{
@@ -2262,13 +2690,20 @@ void Waves_Progress(bool donotAdvanceRound = false)
 						}
 					}
 				}
-				
-				Music_EndLastmann();
-				RespawnCheckCitizen();
-				ReviveAll();
-				CheckAlivePlayers();
+				bool RespawnPeople = true;
+				if(ZR_Get_Modifier() == /*PREFIX_ONESTAND*/ 7 && !b_IsAloneOnServer)
+					if(round.Setup < 1.0)
+						RespawnPeople = false;
+						
+				if(RespawnPeople)
+				{
+					Music_EndLastmann();
+					RespawnCheckCitizen();
+					ReviveAll(_,_,_,ForceAdvance,round.Setup >= 1.0);
+					CheckAlivePlayers();
+				}
+				BlockOtherRaidMusic = false;
 			}
-			BlockOtherRaidMusic = false;
 			if(round.AmmoBoxExtra)
 			{
 				Ammo_Count_Ready += round.AmmoBoxExtra;	
@@ -2284,360 +2719,434 @@ void Waves_Progress(bool donotAdvanceRound = false)
 			}
 			
 			//MUSIC LOGIC
-			bool RoundHadCustomMusic = BGMusicSpecial1.Valid();
-			if(MusicString1.Valid())
-				RoundHadCustomMusic = true;	
-			if(MusicString2.Valid())
-				RoundHadCustomMusic = true;
-			if(RaidMusicSpecial1.Valid())
-				RoundHadCustomMusic = true;
-
-			//we previously had custom music, what do we do ?
-			if(RoundHadCustomMusic)
-			{	
-				bool ReplaceMusic = false;
-				if(!round.music_round_1.Valid() && MusicString1.Valid())
-				{
-					ReplaceMusic = true;
-				}
-				if(round.music_round_1.Valid())
-				{
-					if(!StrEqual(MusicString1.Path, round.music_round_1.Path))
-					{
-						ReplaceMusic = true;
-					}
-				}
-				//there was music the previous round, but there is none now.
-				if(!round.music_round_2.Valid() && MusicString2.Valid())
-				{
-					ReplaceMusic = true;
-				}
-				//they are different, cancel out.
-				if(round.music_round_2.Valid())
-				{
-					if(!StrEqual(MusicString2.Path, round.music_round_2.Path))
-					{
-						ReplaceMusic = true;
-					}
-				}
-
-				//if it had raid music, replace anyways.
+			if(WaveWhich == Rounds_Default)
+			{
+				bool RoundHadCustomMusic = BGMusicSpecial1.Valid();
+				if(MusicString1.Valid())
+					RoundHadCustomMusic = true;	
+				if(MusicString2.Valid())
+					RoundHadCustomMusic = true;
 				if(RaidMusicSpecial1.Valid())
-					ReplaceMusic = true;
-				
-				if(ReplaceMusic)
-				{
-					for(int client=1; client<=MaxClients; client++)
-					{
-						if(IsClientInGame(client))
-						{
-							SetMusicTimer(client, GetTime() + RoundToNearest(round.Setup) + 2); //This is here beacuse of raid music.
-							Music_Stop_All(client);
-						}
-					}	
-				}
-			}
+					RoundHadCustomMusic = true;
 
-			//This should nullfy anyways if nothings in it
-			RemoveAllCustomMusic();
-
-			round.music_round_1.CopyTo(MusicString1);
-			round.music_round_2.CopyTo(MusicString2);
-			
-			if(round.Setup > 1.0 && PrevRoundMusic <= 0)
-			{
-				if(round.Setup > 59.0)
-				{
-					for(int client=1; client<=MaxClients; client++)
+				//we previously had custom music, what do we do ?
+				if(RoundHadCustomMusic)
+				{	
+					bool ReplaceMusic = false;
+					if(!round.music_round_1.Valid() && MusicString1.Valid())
 					{
-						if(IsClientInGame(client))
+						ReplaceMusic = true;
+					}
+					if(round.music_round_1.Valid())
+					{
+						if(!StrEqual(MusicString1.Path, round.music_round_1.Path))
 						{
-							//a little delay.
-							SetMusicTimer(client, GetTime() + 1);
+							ReplaceMusic = true;
 						}
 					}
-				}
-				else if(MusicString1.Valid() || MusicString2.Valid())
-				{
-					for(int client=1; client<=MaxClients; client++)
+					//there was music the previous round, but there is none now.
+					if(!round.music_round_2.Valid() && MusicString2.Valid())
 					{
-						if(IsClientInGame(client))
+						ReplaceMusic = true;
+					}
+					//they are different, cancel out.
+					if(round.music_round_2.Valid())
+					{
+						if(!StrEqual(MusicString2.Path, round.music_round_2.Path))
 						{
-							SetMusicTimer(client, GetTime() + RoundToNearest(round.Setup));
+							ReplaceMusic = true;
 						}
 					}
-				}
-				else
-				{
-					//Reset and stop music?
-					for(int client=1; client<=MaxClients; client++)
-					{
-						if(IsClientInGame(client))
-						{
-							SetMusicTimer(client, GetTime() + 1); //This is here beacuse of raid music.
-							Music_Stop_All(client);
-						}
-					}
-				}
-			}
 
-			SteamWorks_UpdateGameTitle();
-			
-			if(CurrentRound == length)
-			{
-				refreshNPCStore = true;
-				InSetup = true;
-				ExcuteRelay("zr_setuptime");
-				ExcuteRelay("zr_victory");
-				
-				if(!subgame)
-				{
-					Cooldown = GetGameTime() + 30.0;
+					//if it had raid music, replace anyways.
+					if(RaidMusicSpecial1.Valid())
+						ReplaceMusic = true;
 					
-					SpawnTimer(30.0);
-					CreateTimer(30.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
-				}
-				RequestFrames(StopMapMusicAll, 60);
-				
-				int total = 0;
-				int[] players = new int[MaxClients];
-				for(int i=1; i<=MaxClients; i++)
-				{
-					if(IsClientInGame(i) && !IsFakeClient(i))
+					if(ReplaceMusic)
 					{
-						if(!Construction_Mode() || Construction_FinalBattle())
-							Music_Stop_All(i);
-
-						if(!subgame)
+						for(int client=1; client<=MaxClients; client++)
 						{
-							SendConVarValue(i, sv_cheats, "1");
+							if(IsClientInGame(client))
+							{
+								SetMusicTimer(client, GetTime() + RoundToNearest(round.Setup) + 2); //This is here beacuse of raid music.
+								Music_Stop_All(client);
+							}
+						}	
+					}
+				}
+
+				//This should nullfy anyways if nothings in it
+				RemoveAllCustomMusic();
+
+				round.music_round_1.CopyTo(MusicString1);
+				round.music_round_2.CopyTo(MusicString2);
+				
+				if(round.Setup > 1.0 && PrevRoundMusic <= 0)
+				{
+					if(round.Setup > 59.0)
+					{
+						for(int client=1; client<=MaxClients; client++)
+						{
+							if(IsClientInGame(client))
+							{
+								//a little delay.
+								SetMusicTimer(client, GetTime() + 1);
+							}
+						}
+					}
+					else if(MusicString1.Valid() || MusicString2.Valid())
+					{
+						for(int client=1; client<=MaxClients; client++)
+						{
+							if(IsClientInGame(client))
+							{
+								SetMusicTimer(client, GetTime() + RoundToNearest(round.Setup));
+							}
+						}
+					}
+					else
+					{
+						//Reset and stop music?
+						for(int client=1; client<=MaxClients; client++)
+						{
+							if(IsClientInGame(client))
+							{
+								SetMusicTimer(client, GetTime() + 1); //This is here beacuse of raid music.
+								Music_Stop_All(client);
+							}
+						}
+					}
+				}
+
+				SteamWorks_UpdateGameTitle();
+				if(CurrentRound[WaveWhich] == length)
+				{
+					refreshNPCStore = true;
+					InSetup = true;
+					ExcuteRelay("zr_setuptime");
+					ExcuteRelay("zr_victory");
+					
+					if(!subgame)
+					{
+						Cooldown = GetGameTime() + 30.0;
+						
+						SpawnTimer(30.0);
+						CreateTimer(30.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+					}
+					RequestFrames(StopMapMusicAll, 60);
+					
+					int total = 0;
+					int[] players = new int[MaxClients];
+					for(int i=1; i<=MaxClients; i++)
+					{
+						if(IsClientInGame(i) && !IsFakeClient(i))
+						{
+							if(!Construction_Mode() || Construction_FinalBattle())
+							{
+								if(!Dungeon_Mode() || Dungeon_FinalBattle())
+									Music_Stop_All(i);
+							}
+
+							if(!subgame)
+							{
+								SendConVarValue(i, sv_cheats, "1");
+							}
+							
+							players[total++] = i;
+
+							if(WaveGiftItem != -1 && PlayerPoints[i] > 500)
+							{
+								if(Items_GiveIdItem(i, WaveGiftItem))
+									CPrintToChat(i,"{default}You have found {yellow}%s{default}!", Items_GetNameOfId(WaveGiftItem));
+							}
+						}
+					}
+
+					if(!subgame || Construction_FinalBattle() || Dungeon_FinalBattle())
+					{
+						if(i_WaveHasFreeplay < 2)
+						{
+							ResetReplications();
+							cvarTimeScale.SetFloat(0.1);
+							CreateTimer(0.5, SetTimeBack);
+							if(!Music_Disabled())
+								EmitCustomToAll("#zombiesurvival/music_win_1.mp3", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
+
+							RemoveAllCustomMusic(true);
 						}
 						
-						players[total++] = i;
-
-						if(WaveGiftItem != -1 && PlayerPoints[i] > 500)
+						if(i_WaveHasFreeplay > 0)
 						{
-							if(Items_GiveIdItem(i, WaveGiftItem))
-								CPrintToChat(i,"{default}You have found {yellow}%s{default}!", Items_GetNameOfId(WaveGiftItem));
-						}
-					}
-				}
-
-				if(!subgame || Construction_FinalBattle())
-				{
-					ResetReplications();
-					cvarTimeScale.SetFloat(0.1);
-					CreateTimer(0.5, SetTimeBack);
-					if(!Music_Disabled())
-						EmitCustomToAll("#zombiesurvival/music_win_1.mp3", _, SNDCHAN_STATIC, SNDLEVEL_NONE, _, 2.0);
-					
-
-					if(i_WaveHasFreeplay > 0)
-					{
-						if(i_WaveHasFreeplay == 1)
-						{
-							Menu menu = new Menu(Waves_FreeplayVote);
-							menu.SetTitle("%t","Victory Menu 2");
-							menu.AddItem("", "Yes");
-							menu.AddItem("", "No");
-							menu.ExitButton = false;
-							menu.DisplayVote(players, total, 30);
+							FreeplayTimeLimit = GetGameTime() + 3607.5; // one hour and 7.5 extra seconds because of setup time smh
+							
+							if(i_WaveHasFreeplay == 1)
+							{
+								Menu menu = new Menu(Waves_FreeplayVote);
+								menu.SetTitle("%t","Victory Menu 2");
+								menu.AddItem("", "Yes");
+								menu.AddItem("", "No");
+								menu.ExitButton = false;
+								menu.DisplayVote(players, total, 30);
+							}
+							else if(i_WaveHasFreeplay == 2)
+							{
+								for (int client = 1; client <= MaxClients; client++)
+								{
+									if(IsValidClient(client) && GetClientTeam(client) == 2)
+									{
+										SetHudTextParams(-1.0, -1.0, 7.5, 0, 255, 255, 255);
+										SetGlobalTransTarget(client);
+										ShowSyncHudText(client, SyncHud_Notifaction, "%t", "freeplay_start_1");
+									}
+								}
+								Freeplay_Info = 1;
+								CreateTimer(7.5, Freeplay_HudInfoTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+							}
 						}
 						else
 						{
-							for (int client = 1; client <= MaxClients; client++)
-							{
-								if(IsValidClient(client) && GetClientTeam(client) == 2)
-								{
-									SetHudTextParams(-1.0, -1.0, 7.5, 0, 255, 255, 255);
-									SetGlobalTransTarget(client);
-									ShowSyncHudText(client, SyncHud_Notifaction, "%t", "freeplay_start_1");
-								}
-							}
-							Freeplay_Info = 1;
-							CreateTimer(7.5, Freeplay_HudInfoTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+							ConVar roundtime = FindConVar("mp_bonusroundtime");
+							float last = roundtime.FloatValue;
+							roundtime.FloatValue = 20.0;
+
+							ForcePlayerWin();
+
+							roundtime.FloatValue = last;
 						}
 					}
 					else
 					{
-						ConVar roundtime = FindConVar("mp_bonusroundtime");
-						float last = roundtime.FloatValue;
-						roundtime.FloatValue = 20.0;
-
-						ForcePlayerWin();
-
-						roundtime.FloatValue = last;
+						RemoveAllCustomMusic();
 					}
-					
-					RemoveAllCustomMusic(true);
+
+					if(subgame)
+					{
+						ClearCustomFog(FogType_Wave);
+
+						if(Dungeon_Mode())
+						{
+							Dungeon_BattleVictory();
+						}
+						else if(Construction_Mode())
+						{
+							Construction_BattleVictory();
+						}
+						else if(Rogue_Mode())
+						{
+							Rogue_BattleVictory();
+						}
+					}
+
+					Citizen_SetupStart();
 				}
-				else
+				else if(round.Setup > 0.0)
 				{
-					RemoveAllCustomMusic();
-				}
+					refreshNPCStore = true;
+					InSetup = true;
+					ExcuteRelay("zr_setuptime");
 
-				if(subgame)
-				{
-					if(Construction_Mode())
+					if(round.Setup > 59.0)
 					{
-						Construction_BattleVictory();
-					}
-					else if(Rogue_Mode())
-					{
-						Rogue_BattleVictory();
-					}
-				}
-
-				Citizen_SetupStart();
-			}
-			else if(round.Setup > 0.0)
-			{
-				refreshNPCStore = true;
-				InSetup = true;
-				ExcuteRelay("zr_setuptime");
-
-				if(round.Setup > 59.0)
-				{
-					if(PrevRoundMusic > 0)
-					{
-						AlreadyWaitingSet(true);
-					}
-					if(EnableSilentMode)
-					{
-						Waves_SetReadyStatus(2);
-						//wait a minimum of 30 seconds when theres too many players.
-						SPrintToChatAll("30 초간은 준비할 수 없습니다.");
-						CreateTimer(30.0, Waves_AllowVoting, _, TIMER_FLAG_NO_MAPCHANGE);
+						for (int client = 1; client <= MaxClients; client++)
+						{
+							if(IsValidClient(client))
+							{
+								//saving XP and inventory, nothing else.
+								Database_SaveXpAndItems(client);
+							}
+						}
+						if(PrevRoundMusic > 0)
+						{
+							AlreadyWaitingSet(true);
+						}
+						if(EnableSilentMode)
+						{
+							Waves_SetReadyStatus(2);
+							//wait a minimum of 30 seconds when theres too many players.
+							SPrintToChatAll("You cannot ready up for 30 seconds.");
+							CreateTimer(30.0, Waves_AllowVoting, _, TIMER_FLAG_NO_MAPCHANGE);
+						}
+						else
+							Waves_SetReadyStatus(1);
 					}
 					else
-						Waves_SetReadyStatus(1);
+					{
+						Cooldown = GetGameTime() + round.Setup;
+
+						SpawnTimer(round.Setup);
+						CreateTimer(round.Setup, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+					}
+					RequestFrames(StopMapMusicAll, 60);
+
+					Citizen_SetupStart();
+				}
+				else if(wasLastMann && !Rogue_Mode() && round.Waves.Length)
+				{
+					char buffer[128];
+					zr_tagblacklist.GetString(buffer, sizeof(buffer));
+					if(StrContains(buffer, "fools26", false) != -1)
+					{
+
+						Cooldown = GetGameTime() + 5.0;
+
+						SpawnTimer(5.0);
+						CreateTimer(5.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+
+						SPrintToChatAll("You were given extra 5 seconds to prepare...");
+					}
+					else
+					{
+						Cooldown = GetGameTime() + 45.0;
+
+						SpawnTimer(45.0);
+						CreateTimer(45.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+
+						SPrintToChatAll("You were given extra 45 seconds to prepare...");
+					}
+					
+				}
+				else if(GiveBreakForPlayers && !Rogue_Mode() && round.Waves.Length)
+				{					
+					char buffer[128];
+					zr_tagblacklist.GetString(buffer, sizeof(buffer));
+					if(StrContains(buffer, "fools26", false) != -1)
+					{
+
+						Cooldown = GetGameTime() + 5.0;
+
+						SpawnTimer(5.0);
+						CreateTimer(5.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+
+						SPrintToChatAll("You were given extra 5 seconds to prepare, as most of your team died......");
+					}
+					else
+					{
+						Cooldown = GetGameTime() + 30.0;
+	
+						SpawnTimer(30.0);
+						CreateTimer(30.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+						
+						SPrintToChatAll("You were given extra 30 seconds to prepare, as most of your team died......");
+						
+					}
 				}
 				else
 				{
-					Cooldown = GetGameTime() + round.Setup;
+					Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
+					if(refreshNPCStore)
+						Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
 
-					SpawnTimer(round.Setup);
-					CreateTimer(round.Setup, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+					
+					NPC_SpawnNext(panzer_spawn, panzer_sound);
+					return true;
 				}
-				RequestFrames(StopMapMusicAll, 60);
 
-				Citizen_SetupStart();
-			}
-			else if(wasLastMann && !Rogue_Mode() && round.Waves.Length)
-			{
-				Cooldown = GetGameTime() + 45.0;
-
-				SpawnTimer(45.0);
-				CreateTimer(45.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
-				
-				SPrintToChatAll("준비 시간 45 초 드립니다...");
-			}
-			else if(GiveBreakForPlayers && !Rogue_Mode() && round.Waves.Length)
-			{
-				Cooldown = GetGameTime() + 30.0;
-
-				SpawnTimer(30.0);
-				CreateTimer(30.0, Waves_RoundStartTimer, _, TIMER_FLAG_NO_MAPCHANGE);
-				
-				SPrintToChatAll("많은 팀원이 사망했으므로, 준비 시간 30 초 드립니다...");
-			}
-			else
-			{
 				Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
+				
 				if(refreshNPCStore)
 					Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-
-				
-				NPC_SpawnNext(panzer_spawn, panzer_sound, -1);
-				return;
 			}
-
-			Store_RandomizeNPCStore(ZR_STORE_WAVEPASSED);
-			
-			if(refreshNPCStore)
-				Store_RandomizeNPCStore(ZR_STORE_DEFAULT_SALE);
-			
+			else if(CurrentRound[WaveWhich] == length)
+			{
+				//wave done, delete.
+				if(Rounds[WaveWhich])
+					delete Rounds[WaveWhich];
+			}
 		}
 	}
 	else if(subgame)
 	{
 		SPrintToChatAll("FREEPLAY OCCURED, BAD CFG, REPORT BUG");
-		CurrentRound = 0;
+		CurrentRound[WaveWhich] = 0;
 		RelayCurrentRound = 0;
-		CurrentWave = -1;
+		CurrentWave[WaveWhich] = -1;
 	}
 	else
 	{
 		bool EarlyReturn = false;
 		//We are in freeplay, past normal waves.
-		if(i_WaveHasFreeplay == 2)
+		if(i_WaveHasFreeplay)
 			EarlyReturn = Waves_NextFreeplayCall(donotAdvanceRound);
 //		else if(i_WaveHasFreeplay == 1)
 //			//EarlyReturn = Waves_NextSpecialWave();
 		else
-			SPrintToChatAll("웨이브가 알 수 없는 이유로 고장남. 빨리 리포트할 것.");
+			SPrintToChatAll("wave somehow failed, report this.");
 
 		if(EarlyReturn)
 		{
-			return;
+			return false;
 		}
 	}
-	if(CurrentRound == 0 && !subgame)
+	bool subWave = true;
+	if(WaveWhich == Rounds_Default)
 	{
-		if(StartCash < 1500)
+		if(CurrentRound[WaveWhich] == 0 && !subgame)
 		{
-			for(int client=1; client<=MaxClients; client++)
+			if(StartCash < 1500)
 			{
-				GrantCreditsBack(client);
+				for(int client=1; client<=MaxClients; client++)
+				{
+					GrantCreditsBack(client);
+				}
 			}
+			
+			Ammo_Count_Ready = 8;
 		}
 		
-		Ammo_Count_Ready = 8;
+		if(Construction_Mode())	// In Construction: Base raids must be dealt with
+			subWave = Construction_FinalBattle();
+		/*
+		if(Dungeon_Mode())
+			subWave = !Dungeon_FinalBattle();
+		*/	
+		if(subWave)
+			WaveStart_SubWaveStart();
 	}
 
-	if(!Construction_Mode() || Construction_FinalBattle())	// In Construction: Base raids must be dealt with
-		WaveStart_SubWaveStart();
-	
-	if(CurrentWave == 0 && GiveAmmoSupplies)
+	if(WaveWhich == Rounds_Default)
 	{
-		Renable_Powerups();
-		CheckIfAloneOnServer();
-		Ammo_Count_Ready += 1;
-
-		if(!Construction_Mode())
+		if(CurrentWave[WaveWhich] == 0 && GiveAmmoSupplies)
 		{
-			for (int target = 1; target <= MaxClients; target++)
+			Renable_Powerups();
+			CheckIfAloneOnServer();
+			Ammo_Count_Ready += 1;
+
+			if(!Construction_Mode() && !Dungeon_Mode())
 			{
-				if(i_CurrentEquippedPerk[target] == 7) 
+				for (int target = 1; target <= MaxClients; target++)
 				{
-					Ammo_Count_Used[target] -= 1;
+					if(i_CurrentEquippedPerk[target] & PERK_STOCKPILE_STOUT) 
+					{
+						Ammo_Count_Used[target] -= 1;
+					}
 				}
 			}
 		}
-	}
-	else if (Gave_Ammo_Supply > 2 && GiveAmmoSupplies)
-	{
-		Ammo_Count_Ready += 1;
-		Gave_Ammo_Supply = 0;
-
-		if(!Construction_Mode())
+		else if (Gave_Ammo_Supply > 2 && GiveAmmoSupplies)
 		{
-			for (int target = 1; target <= MaxClients; target++)
+			Ammo_Count_Ready += 1;
+			Gave_Ammo_Supply = 0;
+
+			if(!Construction_Mode() && !Dungeon_Mode())
 			{
-				if(i_CurrentEquippedPerk[target] == 7)
+				for (int target = 1; target <= MaxClients; target++)
 				{
-					Ammo_Count_Used[target] -= 1;
+					if(i_CurrentEquippedPerk[target] & PERK_STOCKPILE_STOUT) 
+					{
+						Ammo_Count_Used[target] -= 1;
+					}
 				}
 			}
+		}	
+		else if(GiveAmmoSupplies)
+		{
+			Gave_Ammo_Supply += 1;	
 		}
-	}	
-	else if(GiveAmmoSupplies)
-	{
-		Gave_Ammo_Supply += 1;	
+	//	PrintToChatAll("Wave: %d - %d", CurrentRound+1, CurrentWave+1);
 	}
-//	PrintToChatAll("Wave: %d - %d", CurrentRound+1, CurrentWave+1);
 
 	Waves_UpdateMvMStats();
+	return false;
 }
 
 static Action Freeplay_HudInfoTimer(Handle timer)
@@ -2685,7 +3194,6 @@ static Action Freeplay_HudInfoTimer(Handle timer)
 					ShowSyncHudText(client, SyncHud_Notifaction, "%t", "freeplay_start_4");
 				}
 			}
-			FreeplayTimeLimit = GetGameTime() + 3607.5; // one hour and 7.5 extra seconds because of setup time smh
 			CPrintToChatAll("{yellow}IMPORTANT: The faster you beat waves, the more cash AND experience you'll get!");
 			CreateTimer(0.1, Freeplay_ExtraCashTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 			Freeplay_Info = 0;
@@ -2710,19 +3218,9 @@ static Action Freeplay_ExtraCashTimer(Handle timer)
 	{
 		if(Freeplay_TimeCash > 0.0)
 		{
-			Freeplay_TimeCash -= 7.5;
+			Freeplay_TimeCash -= 3.5;
 			if(Freeplay_TimeCash < 0.0)
 				Freeplay_TimeCash = 0.0;
-		}
-	}
-
-	if(Freeplay_ExpTimeLeft < GetGameTime())
-	{
-		if(Freeplay_TimeExp > 0.0)
-		{
-			Freeplay_TimeExp -= 2.5;
-			if(Freeplay_TimeExp < 0.0)
-				Freeplay_TimeExp = 0.0;
 		}
 	}
 
@@ -2742,18 +3240,6 @@ void Freeplay_SetRemainingCash(float amount)
 	Freeplay_TimeCash = amount;
 }
 
-void Freeplay_SetExpTime(float duration)
-{
-	Freeplay_ExpTimeLeft = duration;
-}
-float Freeplay_GetRemainingExp()
-{
-	return Freeplay_TimeExp;
-}
-void Freeplay_SetRemainingExp(float amount)
-{
-	Freeplay_TimeExp = amount;
-}
 
 public void Medival_Wave_Difficulty_Riser(int difficulty)
 {
@@ -2768,7 +3254,6 @@ public void Medival_Wave_Difficulty_Riser(int difficulty)
 	//invert the number and then just set the difficulty medival level to the % amount of damage resistance.
 	//This means that you can go upto 100% dmg res but if youre retarded enough to do this then you might aswell have an unplayable experience.
 	
-	Medival_Difficulty_Level_NotMath = difficulty;
 	Medival_Difficulty_Level = difficulty_math; //More armor and damage taken.
 }
 
@@ -2791,93 +3276,129 @@ public int Waves_FreeplayVote(Menu menu, MenuAction action, int item, int param2
 	return 0;
 }
 
-bool Waves_IsEmpty()
+bool Waves_IsEmpty(int WhichCheck = Rounds_Default)
 {
-	if(!Enemies || !Enemies.Length)
+	if((!Enemies[WhichCheck][0] || !Enemies[WhichCheck][0].Length)
+	 && (!Enemies[WhichCheck][1] || !Enemies[WhichCheck][1].Length)
+	  && (!Enemies[WhichCheck][2] || !Enemies[WhichCheck][2].Length))
 		return true;
 	
 	return false;
 }
 
-bool Waves_GetNextEnemy(Enemy enemy)
+bool Waves_GetNextEnemy(Enemy enemy, int WhichCheck = Rounds_Default)
 {
-	if(!Enemies)
-		return false;
-	
-	int length = Enemies.Length;
-	if(!length)
-		return false;
-	
-	Enemies.GetArray(length - 1, enemy);
-	Enemies.Erase(length - 1);
-	return true;
-}
-
-void Waves_AddNextEnemy(const Enemy enemy, bool random = false)
-{
-	if(Enemies)
+	for(int i = sizeof(Enemies[]) - 1; i >= 0; i--)
 	{
-		if(random)
-		{
-			int index = Enemies.Length;
-			if(index > 1)
-			{
-				index = GetURandomInt() % index;
-
-				Enemies.ShiftUp(index);
-				Enemies.SetArray(index, enemy);
-				return;
-			}
-		}
+		if(!Enemies[WhichCheck][i])
+			continue;
 		
-		Enemies.PushArray(enemy);
+		int length = Enemies[WhichCheck][i].Length;
+		if(!length)
+			continue;
+		
+		Enemies[WhichCheck][i].GetArray(length - 1, enemy);
+		Enemies[WhichCheck][i].Erase(length - 1);
+		return true;
 	}
+
+	return false;
 }
 
-void Waves_ClearWave()
+void Waves_AddNextEnemy(const Enemy enemy, bool random = false, int prio = -1, int WaveWhich = Rounds_Default)
 {
-	if(Rounds && CurrentRound >= 0 && CurrentRound < Rounds.Length)
+	int slot = prio;
+	if(slot < 0)
+	{
+		slot = enemy.Priority;
+		if(slot < 0)
+			slot = 0;
+	}
+
+	if(slot >= sizeof(Enemies[]))
+		slot = sizeof(Enemies[]) - 1;
+	
+	if(!Enemies[WaveWhich][slot])
+		Enemies[WaveWhich][slot] = new ArrayList(sizeof(Enemy));
+	
+	if(random)
+	{
+		int index = Enemies[WaveWhich][slot].Length;
+		if(index > 1)
+		{
+			index = GetURandomInt() % index;
+
+			Enemies[WaveWhich][slot].ShiftUp(index);
+			Enemies[WaveWhich][slot].SetArray(index, enemy);
+			return;
+		}
+	}
+	
+	Enemies[WaveWhich][slot].PushArray(enemy);
+}
+
+void Waves_ClearWave(int WaveWhich = Rounds_Default)
+{
+	if(Rounds[Rounds_Default] && CurrentRound[WaveWhich] >= 0 && CurrentRound[WaveWhich] < Rounds[WaveWhich].Length)
 	{
 		Round round;
-		Rounds.GetArray(CurrentRound, round);
-		CurrentWave = round.Waves.Length;
+		Rounds[WaveWhich].GetArray(CurrentRound[WaveWhich], round);
+		CurrentWave[WaveWhich] = round.Waves.Length;
 	}
 	else
 	{
-		CurrentWave = -1;
+		CurrentWave[WaveWhich] = -1;
 	}
 }
 
-void Waves_ClearWaveCurrentSpawningEnemies()
+void Waves_ClearWaveCurrentSpawningEnemies(int WaveWhich = Rounds_Default)
 {
-	if(Enemies)
-		Zombies_Currently_Still_Ongoing -= Enemies.Length;
+	if(Enemies[WaveWhich][0])
+		Zombies_Currently_Still_Ongoing -= Enemies[WaveWhich][0].Length;
 	
-	Waves_ClearWaves();
+	if(Enemies[WaveWhich][1])
+		Zombies_Currently_Still_Ongoing -= Enemies[WaveWhich][1].Length;
+	
+	if(Enemies[WaveWhich][2])
+		Zombies_Currently_Still_Ongoing -= Enemies[WaveWhich][2].Length;
+	
+	Waves_ClearWaves(WaveWhich);
 }
 
 bool Waves_Started()
 {
+	if(Dungeon_Mode())
+		return Dungeon_Started();
+	
+	if(BetWar_Mode())
+		return BetWar_Started();
+	
 	if(Construction_Mode())
 		return Construction_Started();
 	
 	if(Rogue_Mode())
 		return Rogue_Started();
 	
-	return (CurrentRound || CurrentWave != -1);
+	return (CurrentRound[Rounds_Default] || CurrentWave[Rounds_Default] != -1);
 }
 
 int Waves_GetRoundScale()
 {
+	if(Dungeon_Mode())
+		return Dungeon_GetRound();
+	
 	if(Construction_Mode())
 		return Construction_GetRound();
 	
 	if(Rogue_Mode())
 		return Rogue_GetRound();
 	
+	if(BetWar_Mode())
+		return 1;
+
 	if(Waves_InFreeplay())
 	{
-		int RoundGive = CurrentRound;
+		int RoundGive = CurrentRound[Rounds_Default];
 		if(RoundGive < 40)
 		{
 			RoundGive = 40; //should atleast always be treated as round 40.
@@ -2885,12 +3406,25 @@ int Waves_GetRoundScale()
 		return RoundGive;
 	}
 
-	return CurrentRound;
+	return CurrentRound[Rounds_Default];
 }
 
 int Waves_GetMaxRound(bool real = false)
 {
-	return (!real && FakeMaxWaves) ? FakeMaxWaves : (Rounds.Length-1);
+	if(!Rounds[Rounds_Default])
+		return 0;
+	
+	return (!real && FakeMaxWaves) ? FakeMaxWaves : (Rounds[Rounds_Default].Length-1);
+}
+
+stock int Waves_GetMaxSubRound()
+{
+	if(!Rounds[Rounds_Default] || CurrentRound[Rounds_Default] < 0 || CurrentRound[Rounds_Default] >= Rounds[Rounds_Default].Length)
+		return 0;
+	
+	static Round round;
+	Rounds[Rounds_Default].GetArray(CurrentRound[Rounds_Default], round);
+	return round.Waves.Length;
 }
 
 float GetWaveSetupCooldown()
@@ -2938,8 +3472,10 @@ void Waves_SetSkyName(const char[] skyname = "", int client = 0)
 
 void WaveEndLogicExtra()
 {
-	SeaFounder_ClearnNethersea();
-	VoidArea_ClearnNethersea();
+	if(PapModeDo != PAP_MODE_BUILDING_ONLY)
+		SeaFounder_ClearnAbyss();
+	
+	VoidArea_ClearnAbyss();
 	FallenWarriorGetRandomSeedEachWave();
 	ResetAbilitiesWaveEnd();
 	for(int client; client <= MaxClients; client++)
@@ -2947,17 +3483,12 @@ void WaveEndLogicExtra()
 		if(IsValidClient(client))
 		{
 			b_BobsCuringHand_Revived[client] += GetRandomInt(1,2);
-
-			/*
-			if(Items_HasNamedItem(client, "Bob's Curing Hand"))
+			if(Rogue_Theme() == ReilaRift)
 			{
-				b_BobsCuringHand[client] = true;
+				//give 2x the shit
+				b_BobsCuringHand_Revived[client] += GetRandomInt(1,2);
+				b_BobsCuringHand_Revived[client] += GetRandomInt(1,2);
 			}
-			else
-			{
-				b_BobsCuringHand[client] = false;
-			}
-			*/
 		}
 	}
 }
@@ -2978,7 +3509,7 @@ void ResetAbilitiesWaveEnd()
 
 void WaveStart_SubWaveStart(float time = 0.0)
 {
-//	f_ZombieAntiDelaySpeedUp = Cooldown + 600.0;
+//	f_ZombieAntiDelaySpeedUp = Cooldown + 600.0;s
 	if(time == 0.0)
 		f_ZombieAntiDelaySpeedUp = Cooldown + 420.0;
 	else
@@ -2989,7 +3520,7 @@ void WaveStart_SubWaveStart(float time = 0.0)
 
 void Zombie_Delay_Warning()
 {
-	if(!Waves_Started() || InSetup || Classic_Mode() || Construction_InSetup())
+	if(!Waves_Started() || InSetup || Classic_Mode() || Construction_InSetup() || Dungeon_InSetup())
 		return;
 
 	switch(i_ZombieAntiDelaySpeedUp)
@@ -2999,7 +3530,7 @@ void Zombie_Delay_Warning()
 			if(f_ZombieAntiDelaySpeedUp < GetGameTime())
 			{
 				i_ZombieAntiDelaySpeedUp = 1;
-				CPrintToChatAll("{crimson}적들이 불안해하고 있습니다...");
+				CPrintToChatAll("{crimson}Enemies grow restless...");
 			}
 		}
 		case 1:
@@ -3007,7 +3538,7 @@ void Zombie_Delay_Warning()
 			if(f_ZombieAntiDelaySpeedUp + 15.0 < GetGameTime())
 			{
 				i_ZombieAntiDelaySpeedUp = 2;
-				CPrintToChatAll("{crimson}적들이 점점 짜증내며 속도를 올리고 있습니다...");
+				CPrintToChatAll("{crimson}Enemies grow annoyed and go faster...");
 			}
 		}
 		case 2:
@@ -3015,7 +3546,7 @@ void Zombie_Delay_Warning()
 			if(f_ZombieAntiDelaySpeedUp + 35.0 < GetGameTime())
 			{
 				i_ZombieAntiDelaySpeedUp = 3;
-				CPrintToChatAll("{crimson}적들이 화를 내고 있어, 이동 속도가 더욱 증가하고 있습니다...");
+				CPrintToChatAll("{crimson}Enemies grow furious and become even faster...");
 			}
 		}
 		case 3:
@@ -3023,7 +3554,7 @@ void Zombie_Delay_Warning()
 			if(f_ZombieAntiDelaySpeedUp + 55.0 < GetGameTime())
 			{
 				i_ZombieAntiDelaySpeedUp = 4;
-				CPrintToChatAll("{crimson}적들이 분노하여 이동 속도가 매우 빨라졌습니다...");
+				CPrintToChatAll("{crimson}Enemies become pissed off and gain super speed...");
 			}
 		}
 		case 4:
@@ -3031,7 +3562,7 @@ void Zombie_Delay_Warning()
 			if(f_ZombieAntiDelaySpeedUp + 75.0 < GetGameTime())
 			{
 				i_ZombieAntiDelaySpeedUp = 5;
-				CPrintToChatAll("{crimson}적들이 완전히 격노하여 대상을 순식간에 쫒아갑니다...");
+				CPrintToChatAll("{crimson}Enemies become infuriated and will reach you...");
 			}
 		}
 		case 5:
@@ -3039,11 +3570,21 @@ void Zombie_Delay_Warning()
 			if(f_ZombieAntiDelaySpeedUp + 100.0 < GetGameTime())
 			{
 				i_ZombieAntiDelaySpeedUp = 6;
-				CPrintToChatAll("{crimson}죽어라.");
+				CPrintToChatAll("{crimson}Die.");
 				
 				if(Construction_Mode())
 					ForcePlayerLoss();
 				
+				if(Dungeon_Mode())
+					Dungeon_AntiStalled();
+			}
+		}
+		case 6:
+		{
+			if(f_ZombieAntiDelaySpeedUp + 400.0 < GetGameTime())
+			{
+				i_ZombieAntiDelaySpeedUp = 7;
+				CPrintToChatAll("{crimson}You are probably abusing something, perish, go my uber swordsmen.");
 				if(!Rogue_Mode())
 					AntiDelaySpawnEnemies(999999999, 5, true);
 			}
@@ -3116,7 +3657,7 @@ void DoGlobalMultiScaling()
 		playercount = 2.0;
 	
 	int PlayersIngame = RoundToNearest(ZRStocks_PlayerScalingDynamic(0.0,true, true));
-
+	
 	if(PlayersIngame >= 19.0)
 		EnableSilentMode = true;
 	else
@@ -3125,21 +3666,58 @@ void DoGlobalMultiScaling()
 	playercount *= 0.88;
 	playercount *= GetScaledPlayerCountMulti(PlayersIngame);
 
+	//We want to reduce scaling for several gamemodes if its above a certain player counts
+	//this is due to buildings not really scaling past 14 players, or the gameplay being very hectic, this is just to circumvent it a lil
+	if(Dungeon_Mode() || Rogue_Mode())
+		playercount *= GetScaledPlayerCountMulti(PlayersIngame, 0.125);
+
 	float multi = playercount / 4.0;
 	
-	//normal bosses health
-	MultiGlobalHealthBoss = playercount * 0.2;
+	Rogue_Rift_MultiScale(multi);
 	
 	//raids or super bosses health
 	MultiGlobalHighHealthBoss = playercount * 0.34;
+	if(MultiGlobalHighHealthBoss <= 0.8)
+	{
+		//on very low playercounts raids deal less damage anyways, so hp shouldnt go that low.
+		MultiGlobalHighHealthBoss = 0.8;
+	}
+
+	//for raids, we want to reduce their HP even more, as that many attacking 1 target is very unlikely.
+	MultiGlobalHighHealthBoss *= GetScaledPlayerCountMulti(PlayersIngame, 0.3);
 
 	//Enemy bosses AMOUNT
-	MultiGlobalEnemyBoss = playercount * 0.3; 
+	float cap = zr_maxsbosscaling_untillhp.FloatValue;
+	float BossMulti = playercount * 0.3; 
+
+	if(BossMulti > cap)
+	{
+		MultiGlobalScalingBossExtra = BossMulti / cap;
+		MultiGlobalEnemyBoss = cap;
+	}
+	else
+	{
+		MultiGlobalScalingBossExtra = 1.0;
+		MultiGlobalEnemyBoss = BossMulti;
+	}
+	
+	//normal bosses health
+	MultiGlobalHealthBoss = playercount * 0.2;
+
+	if(MultiGlobalHealthBoss <= 1.0)
+	{
+		//Enemy bosses AMOUNT affects HP too, so keeping  this on 1.0 is good.
+		MultiGlobalHealthBoss = 1.0;
+	}
+
+	//scale extra HP higher
+	MultiGlobalHealthBoss *= (((MultiGlobalScalingBossExtra - 1.0) * 0.75) + 1.0);
 
 	//certain maps need this, if they are too big and raids have issues etc.
 	MultiGlobalHighHealthBoss *= zr_raidmultihp.FloatValue;
 
-	float cap = zr_maxscaling_untillhp.FloatValue;
+
+	cap = zr_maxscaling_untillhp.FloatValue;
 
 	if(multi > cap)
 	{
@@ -3151,29 +3729,30 @@ void DoGlobalMultiScaling()
 		MultiGlobalHealth = 1.0;
 		MultiGlobalEnemy = multi;
 	}
+
 	MultiGlobalEnemy *= ZRModifs_MaxSpawnWaveModif();
 	MultiGlobalEnemyBoss *= ZRModifs_MaxSpawnWaveModif();
 
 	PlayerCountBuffScaling = 4.5 / playercount;
-	if(PlayerCountBuffScaling > 1.2)
+	if(PlayerCountBuffScaling > 1.0)
 	{
-		PlayerCountBuffScaling = 1.2;
+		PlayerCountBuffScaling = 1.0;
 	}
-	//Shouldnt be lower then 0.1
-	if(PlayerCountBuffScaling < 0.1)
+	//Shouldnt be lower then 0.25
+	if(PlayerCountBuffScaling < 0.25)
 	{
-		PlayerCountBuffScaling = 0.1;
+		PlayerCountBuffScaling = 0.25;
 	}
 
 	PlayerCountBuffAttackspeedScaling = 6.0 / playercount;
-	if(PlayerCountBuffAttackspeedScaling > 1.2)
+	if(PlayerCountBuffAttackspeedScaling > 1.0)
 	{
-		PlayerCountBuffAttackspeedScaling = 1.2;
+		PlayerCountBuffAttackspeedScaling = 1.0;
 	}
-	//Shouldnt be lower then 0.35
-	if(PlayerCountBuffAttackspeedScaling < 0.35)
+	//Shouldnt be lower then 0.5
+	if(PlayerCountBuffAttackspeedScaling < 0.5)
 	{
-		PlayerCountBuffAttackspeedScaling = 0.35;
+		PlayerCountBuffAttackspeedScaling = 0.5;
 	}
 
 	PlayerCountResBuffScaling = (1.0 - (playercount / 48.0)) + 0.1;
@@ -3188,20 +3767,20 @@ void DoGlobalMultiScaling()
 // Controls how quickly the scaling multiplier drops off.
 // Lower values = slower decay, players beyond SCALE_PLAYERCOUNT_CUTOFF contribute much more to scaling, much longer
 // Higher valeus = faster decay, players beyond SCALE_PLAYERCOUNT_CUTOFF contribute much less to scaling, much sooner
-#define SCALE_DROP_RATE             0.04
+#define SCALE_DROP_RATE             0.043
 // Lowest possible multiplier for high player counts.
 // Once scaling settles, each player contributes at least 80% of a player, never lower.
 // This only really matters for very high playercounts even beyond 40, simply a safeguard so it can't go into insanity.
-#define SCALE_MIN_MUTIPLIER         0.8
+#define SCALE_MIN_MUTIPLIER         0.75
 
 // Returns the effective players for scaling
-float GetScaledPlayerCountMulti(int players)
+float GetScaledPlayerCountMulti(int players, float MultiLessen = 1.0)
 {
     if (players <= SCALE_PLAYERCOUNT_CUTOFF)
         return 1.0;
     
     float excess = float(players - SCALE_PLAYERCOUNT_CUTOFF);
-    float multiplier = 1.0 - (1.0 - SCALE_MIN_MUTIPLIER) * (1.0 - Exponential(-SCALE_DROP_RATE * excess));
+    float multiplier = 1.0 - (1.0 - SCALE_MIN_MUTIPLIER) * (1.0 - Exponential(-(SCALE_DROP_RATE * MultiLessen) * excess));
 
     return multiplier;
 }
@@ -3249,6 +3828,12 @@ static void UpdateMvMStatsFrame()
 
 	UpdateFramed = false;
 
+	if(Dungeon_UpdateMvMStats())
+		return;
+
+	if(BetWar_UpdateMvMStats())
+		return;
+
 	if(Construction_UpdateMvMStats())
 		return;
 
@@ -3258,11 +3843,11 @@ static void UpdateMvMStatsFrame()
 	float cashLeft, totalCash;
 
 	int activecount, totalcount;
-	int id[24];
-	int count[24];
-	int flags[24];
-	bool active[24];
-	static char icon[24][32];
+	int id[48];
+	int count[48];
+	int flags[48];
+	bool active[48];
+	static char icon[48][32];
 
 	if(Classic_Mode() && ProgressTimerEndAt)
 	{
@@ -3278,13 +3863,13 @@ static void UpdateMvMStatsFrame()
 	}
 	
 	NPCData data;
-	int maxwaves = Rounds ? (Rounds.Length - 1) : 0;
-	bool freeplay = !(maxwaves && CurrentRound >= 0 && CurrentRound < maxwaves);
+	int maxwaves = Rounds[Rounds_Default] ? (Rounds[Rounds_Default].Length - 1) : 0;
+	bool freeplay = !(maxwaves && CurrentRound[Rounds_Default] >= 0 && CurrentRound[Rounds_Default] < maxwaves);
 	if(!freeplay)
 	{
 		Round round;
-		Rounds.GetArray(CurrentRound, round);
-		if(!InSetup && !Classic_Mode() && CurrentRound != (maxwaves - 1))
+		Rounds[Rounds_Default].GetArray(CurrentRound[Rounds_Default], round);
+		if(!InSetup && !Classic_Mode() && CurrentRound[Rounds_Default] != (maxwaves - 1))
 		{
 			cashLeft += float(round.Cash);
 			totalCash += float(round.Cash);
@@ -3326,7 +3911,7 @@ static void UpdateMvMStatsFrame()
 				totalcount += num;
 				totalCash += cash;
 				
-				if(a > CurrentWave)
+				if(a > CurrentWave[Rounds_Default])
 				{
 					cashLeft += cash;
 					activecount += num;
@@ -3384,14 +3969,16 @@ static void UpdateMvMStatsFrame()
 			}
 		}
 	}
-
-	if(Enemies)
+	
+	for(int i = sizeof(Enemies[]) - 1; i >= 0; i--)
 	{
+		if(!Enemies[Rounds_Default][i])
+			continue;
 		static Enemy enemy;
-		int length = Enemies.Length;
+		int length = Enemies[Rounds_Default][i].Length;
 		for(int a; a < length; a++)
 		{
-			Enemies.GetArray(a, enemy);
+			Enemies[Rounds_Default][i].GetArray(a, enemy);
 			cashLeft += enemy.Credits;
 			activecount++;
 
@@ -3506,20 +4093,54 @@ static void UpdateMvMStatsFrame()
 		if(FakeMaxWaves)
 			maxwaves = FakeMaxWaves;
 
-		SetEntProp(objective, Prop_Send, "m_nMannVsMachineWaveCount", CurrentRound + 1);
-		SetEntProp(objective, Prop_Send, "m_nMannVsMachineMaxWaveCount", CurrentRound < maxwaves ? maxwaves : 0);
+		SetEntProp(objective, Prop_Send, "m_nMannVsMachineWaveCount", CurrentRound[Rounds_Default] + 1);
+		SetEntProp(objective, Prop_Send, "m_nMannVsMachineMaxWaveCount", CurrentRound[Rounds_Default] < maxwaves ? maxwaves : 0);
 
-		for(int i; i < sizeof(id); i++)
+		static int maxCount;
+		if(!maxCount)
 		{
-			if(id[i])
+			int size1, size2;
+			WaveSizeLimit(objective, size1, size2);
+			maxCount = size1 + size2;
+		}
+
+		a = 0;
+		for(int b; b < maxCount; )
+		{
+			// Out of enemies, blank out rest
+			if(a >= sizeof(id))
 			{
-				//PrintToChatAll("ID: %d Count: %d Flags: %d On: %d", id[i], count[i], flags[i], active[i]);
-				Waves_SetWaveClass(objective, i, count[i], icon[i], flags[i], active[i]);
+				Waves_SetWaveClass(objective, b);
+				b++;
+				continue;
 			}
-			else
+
+			// No enemy slotted here
+			if(!id[a] || !count[a])
 			{
-				Waves_SetWaveClass(objective, i);
+				a++;
+				continue;
 			}
+
+			// Rest of enemies to fill the meter
+			if(b == (maxCount - 1))
+			{
+				int leftovers = count[a];
+
+				for(a++; a < sizeof(id); a++)
+				{
+					if(id[a])
+						leftovers += count[a];
+				}
+
+				Waves_SetWaveClass(objective, b, leftovers, "unknown", MVM_CLASS_FLAG_NORMAL, false);
+				break;
+			}
+			
+			// Add enemy here
+			Waves_SetWaveClass(objective, b, count[a], icon[a], flags[a], active[a]);
+			a++;
+			b++;
 		}
 	}
 
@@ -3670,10 +4291,12 @@ void Waves_SetReadyStatus(int status, bool stopmusic = true)
 					Music_Stop_All(client);
 				}
 			}	
+			FirstVoteOfGame = false;
 			AlreadySetWaiting = false;
 		}
 		case 1:	// Ready Up
 		{
+			ChatSetupTip();
 			GameRules_SetProp("m_bInWaitingForPlayers", true);
 			GameRules_SetProp("m_bInSetup", true);
 			GameRules_SetProp("m_iRoundState", RoundState_BetweenRounds);
@@ -3737,7 +4360,7 @@ void Waves_SetReadyStatus(int status, bool stopmusic = true)
 	}
 }
 
-void Waves_SetWaveClass(int objective, int index, int count = 0, const char[] icon = "", int flags = 0, bool active = false)
+static void WaveSizeLimit(int objective, int &asize1 = 0, int &asize2 = 0, int &aname1 = 0, int &aname2 = 0)
 {
 	static int size1, size2, name1, name2;
 
@@ -3752,6 +4375,19 @@ void Waves_SetWaveClass(int objective, int index, int count = 0, const char[] ic
 	
 	if(!name2)
 		name2 = GetEntSendPropOffs(objective, "m_iszMannVsMachineWaveClassNames2", true);
+	
+	asize1 = size1;
+	asize2 = size2;
+	aname1 = name1;
+	aname2 = name2;
+}
+
+void Waves_SetWaveClass(int objective, int index, int count = 0, const char[] icon = "", int flags = 0, bool active = false)
+{
+	static int size1, size2, name1, name2;
+
+	if(!size1)
+		WaveSizeLimit(objective, size1, size2, name1, name2);
 
 	if(index < size1)
 	{
@@ -3815,7 +4451,7 @@ static Address AllocPooledString(const char[] value) {
 
 void Waves_SetDifficultyName(const char[] name)
 {
-	strcopy(WhatDifficultySetting_Internal, sizeof(WhatDifficultySetting_Internal), name);
+//	strcopy(WhatDifficultySetting_Internal, sizeof(WhatDifficultySetting_Internal), name);
 	strcopy(WhatDifficultySetting, sizeof(WhatDifficultySetting), name);
 	WavesUpdateDifficultyName();
 	SteamWorks_UpdateGameTitle();
@@ -3836,6 +4472,17 @@ void WavesUpdateDifficultyName()
 
 void Waves_ApplyAttribs(int client, StringMap map)	// Store_ApplyAttribs()
 {
+	if(Aperture_ShouldDoLastStand())
+	{
+		if(Aperture_IsBossDead(APERTURE_BOSS_CAT) && Aperture_IsBossDead(APERTURE_BOSS_ARIS))
+		{
+			ApplyStatusEffect(client, client, "Chaos Infliction", 999.0);
+		}
+		else
+		{
+			RemoveSpecificBuff(client, "Chaos Infliction");
+		}
+	}
 	if(ModFuncAlly != INVALID_FUNCTION)
 	{
 		Call_StartFunction(null, ModFuncAlly);
@@ -3874,29 +4521,28 @@ void Waves_EnemySpawned(int entity)
 		Call_PushCell(entity);
 		Call_Finish();
 	}
-	if(!b_thisNpcIsARaid[entity] && XenoExtraLogic(true))
+	if(!b_thisNpcIsARaid[entity] && !b_thisNpcIsAMiniboss[entity] && XenoExtraLogic(true))
 	{
 		ApplyStatusEffect(entity, entity, "Xeno's Territory", 99999.0);
 	}
-	if(!b_thisNpcIsARaid[entity] && FishExtraLogic(true))
+	if(!b_thisNpcIsARaid[entity] && !b_thisNpcIsAMiniboss[entity] && FishExtraLogic(true))
 	{
 		ApplyStatusEffect(entity, entity, "Corrupted Godly Power", 99999.0);
 	}
 }
-
 bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 {
-	int length = Rounds.Length - 1;
+	int length = Rounds[Rounds_Default].Length - 1;
 	Round round;
-	Rounds.GetArray(length, round);
-	if(++CurrentWave < 8)
+	Rounds[Rounds_Default].GetArray(length, round);
+	if(++CurrentWave[Rounds_Default] < 8)
 	{
 		DoGlobalMultiScaling();
 
-		int postWaves = CurrentRound - length;
+		int postWaves = CurrentRound[Rounds_Default] - length;
 		f_FreeplayDamageExtra = 1.0 + (postWaves / 45.0);
 
-		Rounds.GetArray(length, round);
+		Rounds[Rounds_Default].GetArray(length, round);
 		length = round.Waves.Length;
 
 		Wave wave;
@@ -3967,39 +4613,39 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 
 		if(Freeplay_ShouldMiniBoss())
 		{
-			NPC_SpawnNext(true, true, -1);
+			NPC_SpawnNext(true, true);
 		}
 		else
 		{
-			NPC_SpawnNext(false, false, -1);
+			NPC_SpawnNext(false, false);
 		}
 		
-		CurrentWave = 9;
+		CurrentWave[Rounds_Default] = 9;
 	}
 	else if(donotAdvanceRound)
 	{
-		CurrentWave = 9;
+		CurrentWave[Rounds_Default] = 9;
 	}
 	else
 	{
 		if(FreeplayTimeLimit < GetGameTime())
 		{
-			CPrintToChatAll("{gold}코쉬{white}: 1 시간 정도는 살아남은것 같네. 흐음...");
-			CPrintToChatAll("{gold}코쉬{white}: 너희가 버틴 웨이브는... : {green}%i!",CurrentRound+1);
-			if(CurrentRound+1 < 100)
+			CPrintToChatAll("{gold}Koshi{white}: looks like you survived for an hour, hm...");
+			CPrintToChatAll("{gold}Koshi{white}: You got as far as wave {green}%i!",CurrentRound[Rounds_Default]+1);
+			if(CurrentRound[Rounds_Default]+1 < 100)
 			{
-				CPrintToChatAll("{gold}코쉬{white}: 봐봐, 더 오래 버틸 수 있었잖아! 그러니까 밍기적대지도 말고, 빨리 빨리 진행하라구!");
-				CPrintToChatAll("{lightcyan}제이나{white}: 끝난거 맞죠? 이제 집에 갈 수 있겠네요, {lightblue}네말{white}이 절 기다리고 있을거에요.");
+				CPrintToChatAll("{gold}Koshi{white}: See if you can go higher next time, dont be so lazy and stop stalling!");
+				CPrintToChatAll("{lightcyan}Zeina{white}: Finally done? I can go back home now, {lightblue}Nemal's {white}waiting on me.");
 			}
-			else if(CurrentRound+1 >= 100 && CurrentRound+1 < 150)
+			else if(CurrentRound[Rounds_Default]+1 >= 100 && CurrentRound[Rounds_Default]+1 < 150)
 			{
-				CPrintToChatAll("{gold}코쉬{white}: 대단한 기록이었어. 그치만... {orange}더 오래 버틸 수 있을지도.");
-				CPrintToChatAll("{lightcyan}제이나{white}: 여기서 더 오래...? 진심으로 하시는 소리세요!?");
+				CPrintToChatAll("{gold}Koshi{white}: Quite a great record, i'd say... But you could go {orange}further next time.");
+				CPrintToChatAll("{lightcyan}Zeina{white}: Further!? Are you insane!?!?");
 			}
 			else
 			{
-				CPrintToChatAll("{gold}코쉬{white}: 정말... {crimson}멋져! {white}너무 멋지고 완벽한 훈련이야!");
-				CPrintToChatAll("{lightcyan}제이나{white}: {red}...당신, 지금 괜찮은거 맞으시죠, {gold}코쉬?");
+				CPrintToChatAll("{gold}Koshi{white}: That... was {crimson}MARVELOUS! {white}Truly a spectacular training!");
+				CPrintToChatAll("{lightcyan}Zeina{white}: {red}...sometimes i really question your mental health, {gold}Koshi.");
 			}
 				
 
@@ -4069,8 +4715,8 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 		
 		Citizen_WaveStart();
 		ExcuteRelay("zr_wavedone");
-		CurrentRound++;
-		CurrentWave = -1;
+		CurrentRound[Rounds_Default]++;
+		CurrentWave[Rounds_Default] = -1;
 		//This ensures no invalid spawn happens.
 		Spawners_Timer();
 
@@ -4093,7 +4739,7 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 		
 		CheckAlivePlayers();
 
-		if((CurrentRound % 5) == 4)
+		if((CurrentRound[Rounds_Default] % 5) == 4)
 		{
 			Freeplay_SetupStart(true);
 			float time = Freeplay_SetupValues();
@@ -4112,7 +4758,7 @@ bool Waves_NextFreeplayCall(bool donotAdvanceRound)
 			RequestFrames(StopMapMusicAll, 60);
 			
 			Citizen_SetupStart();
-			if(CurrentRound+1 == 200)
+			if(CurrentRound[Rounds_Default]+1 == 200)
 			{
 				for (int client = 1; client <= MaxClients; client++)
 				{
@@ -4174,6 +4820,45 @@ int Waves_AverageLevelGet(int MaxLevelAllow)
 	return (LevelObtained / ClientsGot);
 }
 
+void Waves_TrySpawnBarney()
+{
+	if(CvarInfiniteCash.BoolValue)
+		return;
+	if(Rogue_Mode())
+		return;
+	if(Construction_Mode())
+		return;
+	if(NoBarneySpawn)
+		return;
+	if(BetWar_Mode())
+		return;
+		
+	//check for barney.
+	int a, entity;
+	while((entity = FindEntityByNPC(a)) != -1)
+	{
+		if(b_NpcHasDied[entity])
+			continue;
+		if(!Citizen_IsIt(entity))
+			continue;
+		Citizen npc = view_as<Citizen>(entity);
+		if(npc.m_bHero)
+			return;
+		//we have a barney or alyx
+	}
+	Citizen_SpawnAtPoint("b");
+	if(Dungeon_Mode())
+	{
+		CPrintToChatAll("{gray}Barney{default}: Hey buddy, looks like you need a hand!");
+		return;
+	}
+	Citizen_SpawnAtPoint(_);
+	CPrintToChatAll("{gray}Barney{default}: Talk to my friend here if you want him to do anything in specific.");
+}
 
+ArrayList Waves_GetRoundsArrayList()
+{
+	return Rounds[Rounds_Default];
+}
 
 #include "modifiers.sp"

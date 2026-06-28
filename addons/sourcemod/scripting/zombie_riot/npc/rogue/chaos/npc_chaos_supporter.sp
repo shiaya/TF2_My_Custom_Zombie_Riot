@@ -125,6 +125,7 @@ methodmap ChaosSupporter < CClotBody
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
 		npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+		Elemental_AddChaosDamage(npc.index, npc.index, 1, false);
 
 		func_NPCDeath[npc.index] = view_as<Function>(ChaosSupporter_NPCDeath);
 		func_NPCOnTakeDamage[npc.index] = view_as<Function>(ChaosSupporter_OnTakeDamage);
@@ -145,8 +146,8 @@ methodmap ChaosSupporter < CClotBody
 		
 		SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
 		
-		SetEntityRenderColor(npc.index, 125, 125, 125, 255);
-		SetEntityRenderColor(npc.m_iWearable1, 125, 125, 125, 255);
+		SetEntityRenderColor(npc.index, 150, 150, 150, 255);
+		SetEntityRenderColor(npc.m_iWearable1, 150, 150, 150, 255);
 		
 		float flPos[3], flAng[3];
 				
@@ -194,9 +195,9 @@ public void ChaosSupporter_ClotThink(int iNPC)
 	{
 		float ProjectileLoc[3];
 		GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", ProjectileLoc);
-		ExpidonsaGroupHeal(npc.index, 200.0, 99, 2500.0 * fl_Extra_Damage[npc.index], 1.0, true,Expidonsa_DontHealSameIndex);
+		ExpidonsaGroupHeal(npc.index, 300.0, 99, 2500.0 * fl_Extra_Damage[npc.index], 1.0, true,Expidonsa_DontHealSameIndex);
 		npc.m_flChaosSupporterHeal = GetGameTime(npc.index) + 1.3;
-		spawnRing_Vectors(ProjectileLoc, 1.0, 0.0, 0.0, 10.0, "materials/sprites/laserbeam.vmt", 0, 125, 0, 200, 1, 0.3, 5.0, 8.0, 3, 200.0 * 2.0);	
+		spawnRing_Vectors(ProjectileLoc, 1.0, 0.0, 0.0, 10.0, "materials/sprites/laserbeam.vmt", 0, 125, 0, 200, 1, 0.3, 5.0, 8.0, 3, 300.0 * 2.0);	
 		npc.PlayHealSound();
 	}
 	

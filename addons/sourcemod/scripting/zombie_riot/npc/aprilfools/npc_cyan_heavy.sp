@@ -100,6 +100,8 @@ methodmap CyanHeavy < CClotBody
 		i_NpcWeight[npc.index] = 2;
 		npc.SetActivity("ACT_MP_RUN_MELEE");
 		KillFeed_SetKillIcon(npc.index, "fists");
+		SetVariantInt(3);
+		AcceptEntityInput(npc.index, "SetBodyGroup");
 		
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_NORMAL;
@@ -114,6 +116,7 @@ methodmap CyanHeavy < CClotBody
 		npc.m_flSpeed = 330.0;
 		npc.m_bThisEntityIgnored = true;
 		npc.m_bScalesWithWaves = true;
+		b_NpcUnableToDie[npc.index] = true;
 		npc.m_flGetClosestTargetTime = 0.0;
 		npc.m_flNextMeleeAttack = 0.0;
 		npc.m_flAttackHappens = 0.0;

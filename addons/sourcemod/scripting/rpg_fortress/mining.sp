@@ -127,10 +127,10 @@ enum struct MineEnum
 			{
 				DispatchKeyValue(entity, "targetname", "rpg_fortress");
 				DispatchKeyValue(entity, "model", this.Model);
-				DispatchKeyValueFloat(entity, "modelscale", this.Scale);
 				DispatchKeyValue(entity, "solid", "6");
 				SetEntPropFloat(entity, Prop_Send, "m_fadeMinDist", MIN_FADE_DISTANCE);
-				SetEntPropFloat(entity, Prop_Send, "m_fadeMaxDist", MAX_FADE_DISTANCE);				
+				SetEntPropFloat(entity, Prop_Send, "m_fadeMaxDist", MAX_FADE_DISTANCE);		
+				SetEntPropFloat(entity, Prop_Send, "m_flModelScale", this.Scale);		
 				DispatchSpawn(entity);
 				TeleportEntity(entity, this.Pos, this.Ang, NULL_VECTOR, true);
 
@@ -311,7 +311,7 @@ bool Mining_Interact(int client, int entity, int weapon)
 	return false;
 }
 
-public void Mining_PickaxeM1(int client, int weapon, const char[] classname, bool &result)
+public void Mining_PickaxeM1(int client, int weapon, bool crit, int slot)
 {
 	float ApplyCooldown =  0.8 * Attributes_Get(weapon, 6, 1.0);
 	Ability_Apply_Cooldown(client, 1,ApplyCooldown);

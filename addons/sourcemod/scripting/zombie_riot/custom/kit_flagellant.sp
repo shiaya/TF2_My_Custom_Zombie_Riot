@@ -35,7 +35,7 @@ static int ParticleRef[MAXPLAYERS] = {-1, ...};
 static Handle EffectTimer[MAXPLAYERS];
 static bool Precached = false;
 
-#define FLAGGELANT_BASE_HEAL 40.0
+#define FLAGGELANT_BASE_HEAL 80.0
 #define FLAGGELANT_GLOBAL_HP_NERF 0.8
 void Flagellant_MapStart()
 {
@@ -163,7 +163,7 @@ public Action Flagellant_EffectTimer(Handle timer, int client)
 							ParticleRef[client] = EntIndexToEntRef(entity);
 						}
 					}
-					ApplyRapidSuturing(client);
+				//	ApplyRapidSuturing(client);
 					ApplyStatusEffect(client, client, "Thick Blood", 0.6);
 					
 					if(LastMann)
@@ -436,7 +436,11 @@ public Action Flagellant_MoreFinishTimer(Handle timer, DataPack pack)
 				HealedAllyRand[2] += GetRandomFloat(-10.0, 10.0);
 				TE_Particle("healthgained_red", HealedAllyRand, NULL_VECTOR, NULL_VECTOR, _, _, _, _, _, _, _, _, _, _, 0.0);	
 			}
-			HealEntityGlobal(client, client, float(healing), _, 4.0, _);
+			//wound fatigue is applied and we want this skill to heal just fine
+			if(HasSpecificBuff(client, "Wound Fatigue"))
+				healing /= 2;
+			HealEntityGlobal(client, client, float(healing), _, 4.0, HEAL_FLAG_AM);
+			ApplyStatusEffect(client, client, "Wound Fatigue", 10.0);
 		}
 	}
 	return Plugin_Stop;
@@ -498,29 +502,20 @@ public void Weapon_FlagellantHealing_M1(int client, int weapon, bool crit, int s
 		
 		if(health < maxhealth)
 		{
-			float multi = Attributes_Get(weapon, 2, 1.0);
+			float multi = Attributes_Get(weapon, 122, 1.0);
 			multi *= Attributes_GetOnWeapon(client, weapon, 8, true);
-			
-			float base = FLAGGELANT_BASE_HEAL + (HealLevel[client] * 7.5);
-			float cost = 1.0 - (HealLevel[client] * 0.1);
-
-			base *= FLAGGELANT_GLOBAL_HP_NERF;
-			cost *= FLAGGELANT_GLOBAL_HP_NERF;
-
-			float healing = base * multi;
-			float injured = float(maxhealth - health);
-			if(healing > injured)
-				healing = injured;
-			
-			float healthLost = healing / (1.0 + (multi / 10.0)) * cost;
-			float healerHP = float(GetClientHealth(client) - 1);
-			if(healthLost > healerHP)
+			if(LastMann)
 			{
-				healing *= healerHP / healthLost;
-				healthLost = healerHP;
+				multi *= 0.25;
+				//he heals himself twice, nerf alot.
 			}
+			
+			float base = FLAGGELANT_BASE_HEAL;
+			base *= FLAGGELANT_GLOBAL_HP_NERF;
+			float healing = base * multi;
 
-			if(healing > 0.0 && healthLost > 0.0)
+
+			if(healing > 0.0)
 			{
 				int BeamIndex = ConnectWithBeam(client, target, 100, 250, 100, 3.0, 3.0, 1.35, "sprites/laserbeam.vmt");
 				SetEntityRenderFx(BeamIndex, RENDERFX_FADE_SLOW);
@@ -528,7 +523,11 @@ public void Weapon_FlagellantHealing_M1(int client, int weapon, bool crit, int s
 				CreateTimer(2.0, Timer_RemoveEntity, EntIndexToEntRef(BeamIndex), TIMER_FLAG_NO_MAPCHANGE);
 				
 				HealEntityGlobal(client, target, healing, 1.0, 2.0, _);
-				HealEntityGlobal(client, client, healthLost, 1.0, 2.0, _);
+				if(HasSpecificBuff(client, "Wound Fatigue"))
+					healing *= 0.5;
+				HealEntityGlobal(client, client, healing, 1.0, 2.0, HEAL_FLAG_AM);
+				ApplyStatusEffect(client, client, "Wound Fatigue", 10.0);
+				
 				MoreMoreHits[client] += 10;
 				float HealedAlly[3];
 				GetEntPropVector(target, Prop_Data, "m_vecAbsOrigin", HealedAlly);
@@ -548,16 +547,7 @@ public void Weapon_FlagellantHealing_M1(int client, int weapon, bool crit, int s
 				if(target <= MaxClients)
 					ClientCommand(target, "playgamesound items/smallmedkit1.wav");
 				
-				float cooldown = (healing / multi) / 15.0;
-				cooldown *= 2.0;
-				if(cooldown < 8.0)
-				{
-					cooldown = 8.0;
-				}
-				else if(cooldown > 15.0)
-				{
-					cooldown = 15.0;
-				}
+				float cooldown = 10.0;
 
 				Ability_Apply_Cooldown(client, slot, cooldown);
 				
@@ -624,12 +614,12 @@ public void Weapon_FlagellantDamage_M1(int client, int weapon, bool crit, int sl
 		TriggerSelfDamage(client, 0.025);
 		
 		int secondary = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-		float multi = Attributes_Get(weapon, 2, 1.0);
+		float multi = Attributes_Get(weapon, 122, 1.0);
 		multi *= Attributes_GetOnWeapon(client, weapon, 8, true);
 
 		int flags = i_ExplosiveProjectileHexArray[client];
 		i_ExplosiveProjectileHexArray[client] = EP_DEALS_PLASMA_DAMAGE|EP_GIBS_REGARDLESS;
-		Explode_Logic_Custom(600.0 * multi, client, client, secondary, pos, _, _, _, false, 3, false, _, Flagellant_AcidHitPost);
+		Explode_Logic_Custom(600.0 * multi, client, client, secondary, pos, _, _, _, false, 4, false, _, Flagellant_AcidHitPost);
 		pos[2] += 5.0;
 		ParticleEffectAt(pos, "bombinomicon_burningdebris", 0.5);
 
@@ -705,17 +695,23 @@ public void Weapon_FlagellantHealing_M2(int client, int weapon, bool crit, int s
 		}
 	}
 
-	if(target > 0 && Elemental_GoingCritical(target))
-		validAlly = false;
+//	if(target > 0 && Elemental_GoingCritical(target))
+//		validAlly = false;
 
 	if(validAlly)
 	{
 		int healing = RoundToFloor(maxhealth * (HealLevel[client] > 1 ? 0.35 : 0.25));
+		if(LastMann)
+			healing /= 2;
 		healing = RoundToNearest(float(healing) * FLAGGELANT_GLOBAL_HP_NERF);
 		TriggerDeathDoor(client, healing);
 		if(healing > 0)
 		{
-			HealEntityGlobal(client, client, float(healing), 1.0, 2.0, _);
+			if(HasSpecificBuff(client, "Wound Fatigue"))
+				healing /= 2;
+			HealEntityGlobal(client, client, float(healing), 1.0, 2.0, HEAL_FLAG_AM);
+			ApplyStatusEffect(client, client, "Wound Fatigue", 10.0);
+			
 			float HealedAlly[3];
 			GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", HealedAlly);
 			HealedAlly[2] += 70.0;
@@ -742,7 +738,9 @@ public void Weapon_FlagellantHealing_M2(int client, int weapon, bool crit, int s
 		HealedAlly[2] += 10.0;
 		ParticleEffectAt(HealedAlly, "powerup_supernova_explode_red_spikes", 0.5);
 
-		Elemental_AddChaosDamage(target, client, 10, _, true);
+	//	if(!(i_CurrentEquippedPerk[target] & PERK_LOVER) && !(i_CurrentEquippedPerk[client] & PERK_LOVER))
+		//	Elemental_AddChaosDamage(target, client, 10, _, true);
+
 		ApplyStatusEffect(client, target, "Flagellants Punishment", 10.0);
 
 		if(target > MaxClients)
@@ -831,7 +829,11 @@ public void Weapon_FlagellantDamage_M2(int client, int weapon, bool crit, int sl
 		TriggerDeathDoor(client, healing);
 		if(healing > 0)
 		{
-			HealEntityGlobal(client, client, float(healing), 1.0, 1.0, _);
+			if(HasSpecificBuff(client, "Wound Fatigue"))
+				healing /= 2;
+			HealEntityGlobal(client, client, float(healing), 1.0, 1.0, HEAL_FLAG_AM);
+			ApplyStatusEffect(client, client, "Wound Fatigue", 10.0);
+
 			float HealedAlly[3];
 			GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", HealedAlly);
 			HealedAlly[2] += 70.0;
@@ -847,7 +849,7 @@ public void Weapon_FlagellantDamage_M2(int client, int weapon, bool crit, int sl
 		}
 		
 		int secondary = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-		float multi = Attributes_Get(weapon, 2, 1.0);
+		float multi = Attributes_Get(weapon, 122, 1.0);
 		multi *= Attributes_GetOnWeapon(client, weapon, 8, true);
 		if(HealLevel[client] > 1)
 			multi *= 1.2;
@@ -885,6 +887,9 @@ public void Weapon_FlagellantDamage_M2(int client, int weapon, bool crit, int sl
 
 static void TriggerSelfDamage(int client, float multi)
 {
+	if(i_CurrentEquippedPerk[client] & PERK_LOVER)
+		return;
+	
 	int armor = Armor_Charge[client];
 	int maxhealth = SDKCall_GetMaxHealth(client);
 	Armor_Charge[client] = 0;
@@ -909,7 +914,7 @@ static void TriggerDeathDoor(int client, int &healing)
 		int entity, i;
 		while(TF2U_GetWearable(client, entity, i))
 		{
-			if(entity == EntRefToEntIndex(Armor_Wearable[client]) || i_WeaponVMTExtraSetting[entity] != -1)
+			if(i_WeaponVMTExtraSetting[entity] != -1)
 				continue;
 
 			SetEntityRenderMode(entity, RENDER_NORMAL);
@@ -928,6 +933,7 @@ static void TriggerDeathDoor(int client, int &healing)
 		healing -= health;
 		SetEntityHealth(client, health);
 		ClientCommand(client, "playgamesound misc/halloween/strongman_bell_01.wav");
+		Rogue_TriggerFunction(Artifact::FuncRevive, client);
 
 		int round = Waves_GetRoundScale();
 		bool raid = RaidbossIgnoreBuildingsLogic(1);
@@ -948,7 +954,7 @@ static void TriggerDeathDoor(int client, int &healing)
 	}
 }
 
-int GetClientPointVisiblePlayersNPCs(int iClient, float flDistance, float vecEndOrigin[3], bool enemy)
+int GetClientPointVisiblePlayersNPCs(int iClient, float flDistance, float vecEndOrigin[3], bool enemy, bool prioritizeAlliedPlayers = false)
 {
 	float vecOrigin[3], vecAngles[3];
 	GetClientEyePosition(iClient, vecOrigin);
@@ -956,9 +962,32 @@ int GetClientPointVisiblePlayersNPCs(int iClient, float flDistance, float vecEnd
 	
 	Handle hTrace;
 	if(enemy)
+	{
 		hTrace = TR_TraceRayFilterEx(vecOrigin, vecAngles, ( MASK_SOLID | CONTENTS_SOLID ), RayType_Infinite, Trace_ClientOrNPCEnemy, iClient);
+	}
 	else
-		hTrace = TR_TraceRayFilterEx(vecOrigin, vecAngles, ( MASK_SOLID | CONTENTS_SOLID ), RayType_Infinite, Trace_ClientOrNPCAlly, iClient);
+	{
+		if (prioritizeAlliedPlayers)
+		{
+			// Only look for players because NPCs might be getting in the way
+			hTrace = TR_TraceRayFilterEx(vecOrigin, vecAngles, ( MASK_SOLID | CONTENTS_SOLID ), RayType_Infinite, Trace_ClientAlly, iClient);
+			TR_GetEndPosition(vecEndOrigin, hTrace);
+			
+			int iHit = TR_GetEntityIndex(hTrace);
+			if (0 < iHit <= MaxClients && GetVectorDistance(vecOrigin, vecEndOrigin, true) < (flDistance * flDistance))
+			{
+				delete hTrace;
+				return iHit;
+			}
+			
+			// Couldn't find a player, just check for NPCs now
+			hTrace = TR_TraceRayFilterEx(vecOrigin, vecAngles, ( MASK_SOLID | CONTENTS_SOLID ), RayType_Infinite, Trace_NPCAlly, iClient);
+		}
+		else
+		{
+			hTrace = TR_TraceRayFilterEx(vecOrigin, vecAngles, ( MASK_SOLID | CONTENTS_SOLID ), RayType_Infinite, Trace_ClientOrNPCAlly, iClient);
+		}
+	}
 	
 	TR_GetEndPosition(vecEndOrigin, hTrace);
 	
@@ -1002,6 +1031,34 @@ public bool Trace_ClientOrNPCAlly(int entity, int mask, any data)
 		if(IsValidAlly(data, entity))
 			return true;
 	}
+	
+	if(!b_NpcHasDied[entity])
+	{
+		if(IsValidAlly(data, entity))
+			return true;
+	}
+	
+	return false;
+}
+
+public bool Trace_ClientAlly(int entity, int mask, any data)
+{
+	if(entity == data)
+		return false;
+	
+	if(entity <= MaxClients)
+	{
+		if(IsValidAlly(data, entity))
+			return true;
+	}
+	
+	return false;
+}
+
+public bool Trace_NPCAlly(int entity, int mask, any data)
+{
+	if(entity == data)
+		return false;
 	
 	if(!b_NpcHasDied[entity])
 	{

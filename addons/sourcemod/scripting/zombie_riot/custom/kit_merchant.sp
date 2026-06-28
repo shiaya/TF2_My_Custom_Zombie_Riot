@@ -207,6 +207,7 @@ public void Weapon_MerchantSecondary_R(int client, int weapon, bool crit, int sl
 		MerchantEnd(client);
 
 	Menu menu = new Menu(MerchantMenuH);
+	AnyMenuOpen[client] = 1.0;
 
 	menu.SetTitle("Select Merchant Style:\n ");
 
@@ -224,35 +225,35 @@ public void Weapon_MerchantSecondary_R(int client, int weapon, bool crit, int sl
 		}
 		case 0:
 		{
-			menu.AddItem("0", "생선 가게");
-			menu.AddItem("-1", "무술가 (개선 필요)", ITEMDRAW_DISABLED);
-			menu.AddItem("-1", "수사관 (개선 필요)", ITEMDRAW_DISABLED);
-			menu.AddItem("-1", "와인 상인 (개선 필요)", ITEMDRAW_DISABLED);
+			menu.AddItem("0", "Fish Market");
+			menu.AddItem("-1", "Martial Artist (Upgrade Needed)", ITEMDRAW_DISABLED);
+			menu.AddItem("-1", "The Investigator (Upgrade Needed)", ITEMDRAW_DISABLED);
+			menu.AddItem("-1", "Wine Market (Upgrade Needed)", ITEMDRAW_DISABLED);
 		}
 		case 1:
 		{
-			menu.AddItem("0", "생선 가게 (시본 대항)");
-			menu.AddItem("1", "무술가 (후퇴)");
-			menu.AddItem("-1", "수사관 (개선 필요)", ITEMDRAW_DISABLED);
-			menu.AddItem("-1", "와인 상인 (개선 필요)", ITEMDRAW_DISABLED);
+			menu.AddItem("0", "Fish Market (Anti-Dweller)");
+			menu.AddItem("1", "Martial Artist (Retreats)");
+			menu.AddItem("-1", "The Investigator (Upgrade Needed)", ITEMDRAW_DISABLED);
+			menu.AddItem("-1", "Wine Market (Upgrade Needed)", ITEMDRAW_DISABLED);
 		}
 		case 2:
 		{
-			menu.AddItem("0", "생선 가게 (시본 대항)");
-			menu.AddItem("1", "무술가 (후퇴, 기절)");
-			menu.AddItem("2", "수사관 (공속 훔치기)");
-			menu.AddItem("-1", "와인 상인 (개선 필요)", ITEMDRAW_DISABLED);
+			menu.AddItem("0", "Fish Market (Anti-Dweller)");
+			menu.AddItem("1", "Martial Artist (Retreats, Stuns)");
+			menu.AddItem("2", "The Investigator (Steal Attack Speed)");
+			menu.AddItem("-1", "Wine Market (Upgrade Needed)", ITEMDRAW_DISABLED);
 		}
 		case 69:
 		{
-			menu.AddItem("4", "그릴 마스터 (마시쩡)");
+			menu.AddItem("4", "Grill Master (Tasty)");
 		}
 		default:
 		{
-			menu.AddItem("0", "생선 가게 (시본 대항)");
-			menu.AddItem("1", "무술가 (후퇴, 기절)");
-			menu.AddItem("2", "수사관 (공속 훔치기, 기절 면역)");
-			menu.AddItem("3", "와인 상인 (원거리 공격, 자가 부활)");
+			menu.AddItem("0", "Fish Market (Anti-Dweller)");
+			menu.AddItem("1", "Martial Artist (Retreats, Stuns)");
+			menu.AddItem("2", "The Investigator (Steal Attack Speed, Anti-Stun)");
+			menu.AddItem("3", "Wine Market (Ranged Guns, Self Revive)");
 		}
 	}
 
@@ -266,9 +267,12 @@ static int MerchantMenuH(Menu menu, MenuAction action, int client, int choice)
 		case MenuAction_End:
 		{
 			delete menu;
+			if(IsValidClient(client))
+				AnyMenuOpen[client] = 0.0;
 		}
 		case MenuAction_Select:
 		{
+			AnyMenuOpen[client] = 0.0;
 			char buffer[4];
 			menu.GetItem(choice, buffer, sizeof(buffer));
 
@@ -280,34 +284,34 @@ static int MerchantMenuH(Menu menu, MenuAction action, int client, int choice)
 					//fish market
 					if(MerchantLevel[client] > 2)
 					{
-						CPrintToChat(client, "{green}생선 가게!{default}: 적중한 적에게 침묵 부여!\n앉아서 M2 키를 누르면 적중시 체력 회복. 주변의 체력이 낮은 아군 또는 자신을 최우선으로 치유시킴");
+						CPrintToChat(client, "{green}Fish market!{default}: Silence enemies on hit!\nCrouch on M2 to instead gain heal on hit, will heal lowest HP ally near you, or you if youre the lowest HP!");
 					}
 					else
 					{
-						CPrintToChat(client, "{green}생선 가게!{default}: 적중한 적에게 침묵 부여!");
+						CPrintToChat(client, "{green}Fish market!{default}: Silence enemies on hit!");
 					}
 				}
 				case 1:
 				{
 					if(MerchantLevel[client] > 1)
-						CPrintToChat(client, "{green}무술가!{default}: 체력이 낮으면, 이동 속도과 체력 획득. 대신 버프가 제거됨.\n4초간 공격하지 않을시, 다음 공격이 기절 부여\n발동할 때마다 무작위 버프 획득:\n근접 저항력\n공격 속도\n적중시 디버프 부여.");
+						CPrintToChat(client, "{green}Martial Artist!{default}: If low on health, gain speed, HP, but deactivates buff.\nIf you dont attack for 4 seconds, your next attack stuns\nGain a random effect when activating:\nHeavy melee resistance\nExtra Attackspeed\nEach attack debuffs enemy.");
 					else
-						CPrintToChat(client, "{green}무술가!{default}: 체력이 낮으면, 이동 속도과 체력 획득. 대신 버프가 제거됨.\n4초간 공격하지 않을시, 다음 공격이 기절 부여");
+						CPrintToChat(client, "{green}Martial Artist!{default}: If low on health, gain speed, HP, but deactivates buff.\nIf you dont attack for 4 seconds, your next attack stuns");
 				}
 				case 2:
 				{
 					if(MerchantLevel[client] > 2)
-						CPrintToChat(client, "{green}수사관!{default}: 둔화 면역+모든 저항력 증가!\n적중한 적에게 폭약 부착\n적에게 피해를 받으면, 대상에게 디버프 부여 및 공속+.\n가벼운 적들을 밀침.\n둔화 또는 기절 효과를 받으면, 대신 대상을 기절시킴");	
+						CPrintToChat(client, "{green}The Investigator!{default}: Gain overall resistances and immunity to slows!\nImplant bombs onto hit enemies\nIf hurt by enemy, debuff them and gain attackspeed.\nKnockback all light enemies slightly.\nIf slowed or stunned, stun them instead!");	
 					else
-						CPrintToChat(client, "{green}수사관!{default}: 근접 저항력 증가!\n적중한 적에게 폭약 부착\n적에게 피해를 받으면, 대상에게 디버프 부여 및 공속+.\n무게가 가벼운 적들을 밀침.");	
+						CPrintToChat(client, "{green}The Investigator!{default}: Gain melee resistances!\nImplant bombs onto hit enemies\nIf hurt by enemy, debuff them and gain attackspeed.\nKnockback all light enemies slightly.");	
 				}
 				case 3:
 				{
-					CPrintToChat(client, "{green}와인 상인!{default}: 죽으면 금속을 소모하여 자가 부활.\n지속 시간 동안 주 무기 획득!\n충성심과 관대함: 치유 가능한 석궁\n사치와 방탕: 강력한 산탄총.");
+					CPrintToChat(client, "{green}Wine market!{default}: Revive if you would have died at a cost of metal.\nGain weapons on activation in your primary slot!\nLoyalty and Generosity: Healing crossbow\nLavish and Prodigal: Strong heavy shotgun.");
 				}
 				case 4:
 				{
-					CPrintToChat(client, "{green}그릴 준비 완료.");
+					CPrintToChat(client, "{green}Get ready to grill.");
 				}
 			}
 		}
@@ -324,8 +328,8 @@ void Merchant_NPCTakeDamage(int victim, int attacker, float &damage, int weapon)
 	{
 		case Merchant_Jaye:
 		{
-			// Jaye: Bonus Damage vs Seaborn
-			if(i_BleedType[victim] == BLEEDTYPE_SEABORN)
+			// Jaye: Bonus Damage vs Dweller
+			if(i_BleedType[victim] == BLEEDTYPE_DWELLER)
 			{
 				switch(MerchantLevel[attacker])
 				{
@@ -593,7 +597,7 @@ void Merchant_NPCTakeDamagePost(int attacker, float damage, int weapon)
 					color[2] = 0;
 					color[3] = 255;
 					float amp = 0.3;
-					TE_SetupBeamPoints(VicLoc, VicLoc2, IreneReturnLaserSprite(), 0, 0, 0, 0.15, 1.0, 1.2, 1, amp, color, 0);
+					TE_SetupBeamPoints(VicLoc, VicLoc2, AmphiReturnLaserSprite(), 0, 0, 0, 0.15, 1.0, 1.2, 1, amp, color, 0);
 					TE_SendToAll();
 				}
 			}
@@ -734,15 +738,15 @@ static void MerchantStart(int client, int slot)
 			{
 				case Nothing_Debuff:
 				{
-					CPrintToChat(client, "{green}Martial Artist, You recieved Debuff on hit!{default}");
+					CPrintToChat(client, "{green}Martial Artist, You received Debuff on hit!{default}");
 				}
 				case Nothing_Damage:
 				{
-					CPrintToChat(client, "{green}Martial Artist, You recieved Attackspeed!{default}");
+					CPrintToChat(client, "{green}Martial Artist, You received Attackspeed!{default}");
 				}
 				case Nothing_Res:
 				{
-					CPrintToChat(client, "{green}Martial Artist, You recieved Heavy Melee Resistance!{default}");
+					CPrintToChat(client, "{green}Martial Artist, You received Heavy Melee Resistance!{default}");
 				}
 			}
 					

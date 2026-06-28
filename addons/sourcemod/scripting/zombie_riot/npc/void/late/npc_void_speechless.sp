@@ -163,9 +163,12 @@ methodmap VoidSpeechless < CClotBody
 			RaidBossActive = EntIndexToEntRef(npc.index);
 			RaidModeTime = GetGameTime(npc.index) + 9000.0;
 			RaidAllowsBuildings = true;
+			RaidAllowLastman = false;
 			RaidModeScaling = MultiGlobalHealth;
 			if(RaidModeScaling == 1.0) //Dont show scaling if theres none.
 				RaidModeScaling = 0.0;
+			else
+				RaidModeScaling *= 1.5;
 		}
 
 		npc.m_iHealthBar = 1;
@@ -175,19 +178,19 @@ methodmap VoidSpeechless < CClotBody
 			{
 				case 0:
 				{
-					CPrintToChatAll("{violet}침묵하는 자{default}: 제발 죽여줘... 이 놈들은 면역자조차도 강제로 조종할 수 있어...");
+					NPCTalkMessage(npc.index, "It controlls us, it knows our immunity to chaos, kill us...");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{violet}침묵하는 자{default}: 제발 도와줘..");
+					NPCTalkMessage(npc.index, "Help me..");
 				}
 				case 2:
 				{
-					CPrintToChatAll("{violet}침묵하는 자{default}: {blue}센살{default}에게 전해.. 보호막은 여기선 아무 짝에도 쓸모 없어...");
+					NPCTalkMessage(npc.index, "Tell {blue}Sensal{default}.. his shields are useless...");
 				}
 				case 3:
 				{
-					CPrintToChatAll("{violet}침묵하는 자{default}: 내 몸이 멋대로 움직인다...");
+					NPCTalkMessage(npc.index, "I cannot controll my body...");
 				}
 			}
 		}
@@ -200,7 +203,6 @@ methodmap VoidSpeechless < CClotBody
 		SetEntityRenderColor(npc.m_iWearable1, 255, 255, 255, 7);
 		npc.m_flAttackspeedIncrease = 1.0;
 		npc.StartPathing();
-		npc.m_flSpeed = 330.0;
 		
 		
 		int skin = 1;
@@ -221,6 +223,11 @@ methodmap VoidSpeechless < CClotBody
 		
 		return npc;
 	}
+}
+
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "violet", message);
 }
 
 public void VoidSpeechless_ClotThink(int iNPC)
@@ -383,7 +390,12 @@ void VoidSpeechlessSelfDefense(VoidSpeechless npc, float gameTime, int target, f
 					{
 						damageDealt *= 10.0;
 					}
-					damageDealt *= MultiGlobalHealth; //Incase too many enemies, boost damage.
+					float DamageDoExtra = MultiGlobalHealth;
+					if(DamageDoExtra != 1.0)
+					{
+						DamageDoExtra *= 1.5;
+					}
+					damageDealt *= DamageDoExtra; //Incase too many enemies, boost damage.
 
 
 
@@ -570,7 +582,12 @@ void VoidSpeechlessInitiateLaserAttack_DamagePart(DataPack pack)
 			if(ShouldNpcDealBonusDamage(victim))
 				damage *= 3.0;
 
-			damage *= MultiGlobalHealth; //Incase too many enemies, boost damage.
+			float DamageDoExtra = MultiGlobalHealth;
+			if(DamageDoExtra != 1.0)
+			{
+				DamageDoExtra *= 1.5;
+			}
+			damage *= DamageDoExtra; //Incase too many enemies, boost damage.
 
 			SDKHooks_TakeDamage(victim, entity, entity, damage, DMG_PLASMA, -1, NULL_VECTOR, playerPos);	// 2048 is DMG_NOGIB?
 			Elemental_AddVoidDamage(victim, entity, 200, true, true);
@@ -609,11 +626,10 @@ void ExpidonsanExplorerLifeLoss(VoidSpeechless npc)
 		ApplyStatusEffect(npc.index, npc.index, "Anti-Waves", 99999.0);
 		ApplyStatusEffect(npc.index, npc.index, "Expidonsan Anger", 99999.0);
 		ApplyStatusEffect(npc.index, npc.index, "Zilius Prime Technology", 99999.0);
-		npc.m_flSpeed = 330.0;
 		if(i_RaidGrantExtra[npc.index] == 1)
 		{
-			CPrintToChatAll("{violet}침묵하는 자{default}: 질리우스의 말이 맞았어... 정말로...\n{purple}저것이 엑스피돈사인의 몸을 완전히 지배하고 있습니다.");
-			CPrintToChatAll("{violet}잊혀진 엑스피돈사 슈트가 자체 프로토콜을 발동해 공허를 몰아내고 있습니다. 그의 자가 치유 능력이 사라지고 있습니다.");
+			NPCTalkMessage(npc.index, "Zilius was right... Im sorry...\n{purple}It takes full controll of The expidonsans body.");
+			CPrintToChatAll("{violet}The forgotten expidonsans suit activates its protocolls and repells the void as much as it can, as such, blocks all healing from itself.");
 		}
 		if(IsValidEntity(npc.m_iWearable3))
 			RemoveEntity(npc.m_iWearable3);
@@ -631,4 +647,6 @@ void ExpidonsanExplorerScaleAttackspeed(VoidSpeechless npc, float Addition)
 
 	if(npc.m_flAttackspeedIncrease >= 1.0)
 		npc.m_flAttackspeedIncrease = 1.0;
+		
+	npc.m_flSpeed = 330.0 * npc.m_flAttackspeedIncrease;
 }

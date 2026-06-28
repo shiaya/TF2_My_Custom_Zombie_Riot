@@ -259,7 +259,7 @@ static void BlitzHud(int client, float GameTime, int wep)
 	PrintHintText(client, HUDText);
 	
 }
-public void Blitzkrieg_Kit_Primary_Reload(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Reload(int client, int weapon, bool crit, int slot)
 {
 	float GameTime = GetGameTime();
 
@@ -343,42 +343,42 @@ public void Blitzkrieg_Kit_Primary_Reload(int client, int weapon, const char[] c
 
 	ClipSaveSingle(client, weapon);
 }
-public void Blitzkrieg_Kit_Switch_Mode(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Switch_Mode(int client, int weapon, bool crit, int slot)
 {
 	if(i_patten_type[client])
 		i_patten_type[client]=0;
 	else
 		i_patten_type[client]=1;
 }
-public void Blitzkrieg_Kit_Primary_Fire_1(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_1(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.1, 1, 19.0, 2.0);
 }
-public void Blitzkrieg_Kit_Primary_Fire_2(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_2(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.175, 2, 19.0, 1.0);
 }
-public void Blitzkrieg_Kit_Primary_Fire_3(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_3(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.2, 3, 19.0, 0.66);
 }
-public void Blitzkrieg_Kit_Primary_Fire_4(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_4(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.275, 4, 19.0, 0.5);
 }
-public void Blitzkrieg_Kit_Primary_Fire_5(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_5(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.325, 5, 12.0, 0.4);
 }
-public void Blitzkrieg_Kit_Primary_Fire_6(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_6(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.35, 6, 12.0, 0.33);
 }
-public void Blitzkrieg_Kit_Primary_Fire_7(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_7(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.375, 7, 10.0, 0.285);
 }
-public void Blitzkrieg_Kit_Primary_Fire_8(int client, int weapon, const char[] classname, bool &result)
+public void Blitzkrieg_Kit_Primary_Fire_8(int client, int weapon, bool crit, int slot)
 {
 	Blitzkrieg_Kit_Rocket(client, weapon, 0.4, 8, 10.0, 0.285);
 }
@@ -438,7 +438,7 @@ static void Blitzkrieg_Kit_Rocket(int client, int weapon, float efficiency, int 
 
 	switch(i_patten_type[client])
 	{
-		case 0:
+		case 0:	//alpha
 		{
 			int type=3;
 			for(int i=0 ; i<spread ; i++)
@@ -459,7 +459,7 @@ static void Blitzkrieg_Kit_Rocket(int client, int weapon, float efficiency, int 
 					type=3;
 			}
 		}
-		case 1:
+		case 1:	//beta
 		{
 			int type=3;
 			Handle swingTrace;
@@ -547,11 +547,29 @@ static void Add_One_Ammo(int entity)
 
 static void Blitzkrieg_Kit_Rocket_Fire(int client, float speed, float damage, int weapon, float fAng[3], float fPos[3])
 {
-	int projectile = Wand_Projectile_Spawn(client, speed, 30.0, damage, WEAPON_KIT_BLITZKRIEG_CORE, weapon, "", fAng, false , fPos);
+	int projectile = Wand_Projectile_Spawn(client, speed, 30.0, damage, WEAPON_KIT_BLITZKRIEG_CORE, weapon, "raygun_projectile_red_trail", fAng, false , fPos);
 
-	ApplyCustomModelToWandProjectile(projectile, BLITZKRIEG_KIT_ROCKET_MODEL, 1.0, "");
+	int particle = EntRefToEntIndex(i_WandParticle[projectile]);
+	if(IsValidEntity(particle))
+	{
+		i_OwnerEntityEnvLaser[particle] = EntIndexToEntRef(client);
+		SDKHook(particle, SDKHook_SetTransmit, TransmitToOwnerOnly);
+	}
+	ApplyCustomModelToWandProjectile(projectile, BLITZKRIEG_KIT_ROCKET_MODEL, 1.0, "", _ , true);
 }
 
+public Action TransmitToOwnerOnly(int entity, int client)
+{
+	if(client > 0 && client <= MaxClients)
+	{
+		int owner = EntRefToEntIndex(i_OwnerEntityEnvLaser[entity]);
+		if(owner == client)
+		{
+			return Plugin_Continue;
+		}
+	}
+	return Plugin_Stop;
+}
 
 public void Blitzkrieg_Kit_Rocket_StartTouch(int entity, int target)
 {
@@ -665,7 +683,7 @@ static void Blitzkrieg_Kit_ion_trace(int client, int patern, int weapon)
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.\n[%i/%i]", RoundToFloor(fl_ion_charge[client]), RoundToFloor(BLITZKREIG_KIT_ION_COST_CHARGE));
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough", RoundToFloor(fl_ion_charge[client]), RoundToFloor(BLITZKREIG_KIT_ION_COST_CHARGE));
 		return;
 	}
 	float GameTime = GetGameTime();
@@ -720,7 +738,6 @@ static float fl_ion_chargeup[MAXPLAYERS+1];
 static float fl_ion_loc[MAXPLAYERS+1][3];
 static float fl_ion_throttle[MAXPLAYERS+1];
 static float fl_ion_damage[MAXPLAYERS+1];
-
 public void Blitzkrieg_Kit_IOC_Invoke(int client, float vecTarget[3], float ion_damage)	//Ion cannon from above
 {
 
@@ -866,7 +883,7 @@ void Blitzkrieg_Kit_ModifyMeleeDmg(int client, float &damage)
 	}
 }
 
-void Blitzkrieg_Kit_OnHitEffect(int client)
+void Blitzkrieg_Kit_OnHitEffect(int client, int target)
 {
 	float GameTime = GetGameTime();
 
@@ -881,8 +898,21 @@ void Blitzkrieg_Kit_OnHitEffect(int client)
 		else
 		*/
 		{
-			fl_ion_timer_recharge[client] -=BLITZKRIEG_KIT_RELOAD_COOLDOWN_REDUCTION;
-			fl_primary_reloading[client] -= BLITZKRIEG_KIT_RELOAD_COOLDOWN_REDUCTION;	//Reduce the cooldowns by a bit if you hit something!
+			if (b_thisNpcIsARaid[target])	//during raids make the CD reduction higher
+			{
+				fl_ion_timer_recharge[client] -=BLITZKRIEG_KIT_RELOAD_COOLDOWN_REDUCTION*4.0;
+				fl_primary_reloading[client] -= BLITZKRIEG_KIT_RELOAD_COOLDOWN_REDUCTION*4.0;	//Reduce the cooldowns by a bit if you hit something!
+			}
+			else
+			{
+				fl_ion_timer_recharge[client] -=BLITZKRIEG_KIT_RELOAD_COOLDOWN_REDUCTION;
+				fl_primary_reloading[client] -= BLITZKRIEG_KIT_RELOAD_COOLDOWN_REDUCTION;	//Reduce the cooldowns by a bit if you hit something!
+
+				//during normal rounds make the melee deal KB
+
+				DisplayCritAboveNpc(target, client, true);
+				SensalCauseKnockback(client, target, 0.27, false);	//make them take KB but no stun
+			}
 		}
 	}
 }

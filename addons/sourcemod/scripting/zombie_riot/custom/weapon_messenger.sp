@@ -111,8 +111,7 @@ public void Weapon_Messenger(int client, int weapon, bool crit)
 	speed *= Attributes_Get(weapon, 475, 1.0);
 		
 	float time = 2.0; //Because of Particle Spam.
-	bool result = false;
-	Weapon_Auto_Shotgun(client, weapon, "", result);
+	Weapon_Auto_Shotgun(client, weapon, false, -1);
 
 	if(Change[client] == true)
 	{
@@ -182,6 +181,10 @@ public void Gun_MessengerTouch(int entity, int target)
 			if(Change[owner] == false)
 			{
 				NPC_Ignite(target, owner, 3.0, weapon);
+			}
+			else if(pap > 2)
+			{
+				ApplyStatusEffect(owner, target, "Near Zero", 1.0);
 			}
 			else if(pap > 1)
 			{

@@ -48,10 +48,17 @@ void NPC_PluginStart()
 }
 
 #if defined ZR
-public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
+bool NPC_SpawnNext(bool panzer,
+ bool panzer_warning,
+  int WaveWhich = Rounds_Default,
+   float vecPos[3] = {0.0,0.0,0.0},
+    int& NpcForward = -1,
+     bool IgnoreNpcLimit = false)
 {
+	//vecPos will allow you to override any spawners that exist, so it will only spawn from this location
+	//this is only used for the const2_spawner npc.
 	float GameTime = GetGameTime();
-	if(f_DelaySpawnsForVariousReasons > GameTime)
+	if(WaveWhich == Rounds_Default && f_DelaySpawnsForVariousReasons > GameTime)
 	{
 		return false;
 	}
@@ -63,75 +70,77 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 		panzer = false;
 		panzer_warning = false;
 	}
-	
-	if(GlobalCheckDelayAntiLagPlayerScale < GameTime)
+	if(WaveWhich == Rounds_Default)
 	{
-		AllowSpecialSpawns = false;
-		GlobalCheckDelayAntiLagPlayerScale = GameTime + 3.0;//only check every 5 seconds.
-		PlayersAliveScaling = 0;
-		GlobalIntencity = 0;
-		PlayersInGame = 0;
-		
-		limit = 8; //Minimum should be 8! Do not scale with waves, makes it boring early on.
-		limit = RoundToNearest(float(limit) * MaxEnemyMulti());
-		
-		float ScalingEnemies = ZRStocks_PlayerScalingDynamic(_,true);
-		//above 14, dont spawn more, it just is not worth the extra lag it gives.
-		
-		//max is 14 players.
-		if(ScalingEnemies >= 14.0)
-			ScalingEnemies = 14.0;
-
-		ScalingEnemies *= zr_multi_scaling.FloatValue;
-
-		float f_limit = Pow(1.115, ScalingEnemies);
-
-		f_limit *= float(limit);
-
-		//Minimum limit
-		if(f_limit <= 8.0)
+		if(GlobalCheckDelayAntiLagPlayerScale < GameTime)
 		{
-			f_limit = 8.0;
-		}
-		
-		for(int client=1; client<=MaxClients; client++)
-		{
-			if(!b_IsPlayerABot[client] && IsClientInGame(client) && GetClientTeam(client)==2 && TeutonType[client] != TEUTON_WAITING && b_HasBeenHereSinceStartOfWave[client])
-			{
-				if(TeutonType[client] == TEUTON_DEAD || dieingstate[client] > 0)
-				{
-					GlobalIntencity += 1;
-				}
-				PlayersInGame += 1;
-
-				if(Level[client] > 9)
-					AllowSpecialSpawns = true;
-			}
-		}
-		if(PlayersInGame < 2)
-		{
-			PlayersInGame = 3;
-		}
-		
-		//This is here to fix the issue of it always playing the zombie instead of human music when 2 people are in.
-		//even if both are alive.
-
-		PlayersAliveScaling = RoundToNearest(f_limit);
-		
-		if(RoundToNearest(f_limit) >= MaxNpcEnemyAllowed())
-			f_limit = float(MaxNpcEnemyAllowed());
+			AllowSpecialSpawns = false;
+			GlobalCheckDelayAntiLagPlayerScale = GameTime + 3.0;//only check every 5 seconds.
+			PlayersAliveScaling = 0;
+			GlobalIntencity = 0;
+			PlayersInGame = 0;
 			
-		
-		if(PlayersAliveScaling >= MaxNpcEnemyAllowed())
-			PlayersAliveScaling = MaxNpcEnemyAllowed();
+			limit = 8; //Minimum should be 8! Do not scale with waves, makes it boring early on.
+			limit = RoundToNearest(float(limit) * MaxEnemyMulti());
+			
+			float ScalingEnemies = ZRStocks_PlayerScalingDynamic(_,true);
+			//above 14, dont spawn more, it just is not worth the extra lag it gives.
+			
+			//max is 14 players.
+			if(ScalingEnemies >= 14.0 || BetWar_Mode())
+				ScalingEnemies = 14.0;
 
-		LimitNpcs = RoundToNearest(f_limit);
+			ScalingEnemies *= zr_multi_scaling.FloatValue;
+
+			float f_limit = Pow(1.115, ScalingEnemies);
+
+			f_limit *= float(limit);
+
+			//Minimum limit
+			if(f_limit <= 8.0)
+			{
+				f_limit = 8.0;
+			}
+			
+			for(int client=1; client<=MaxClients; client++)
+			{
+				if(!b_IsPlayerABot[client] && IsClientInGame(client) && GetClientTeam(client)==2 && TeutonType[client] != TEUTON_WAITING && WasHereSinceStartOfWave(client))
+				{
+					if(TeutonType[client] == TEUTON_DEAD || dieingstate[client] > 0)
+					{
+						GlobalIntencity += 1;
+					}
+					PlayersInGame += 1;
+
+					if(Level[client] > 9)
+						AllowSpecialSpawns = true;
+				}
+			}
+			if(PlayersInGame < 2)
+			{
+				PlayersInGame = 3;
+			}
+			
+			//This is here to fix the issue of it always playing the zombie instead of human music when 2 people are in.
+			//even if both are alive.
+
+			PlayersAliveScaling = RoundToNearest(f_limit);
+			
+			if(RoundToNearest(f_limit) >= MaxNpcEnemyAllowed())
+				f_limit = float(MaxNpcEnemyAllowed());
+				
+			
+			if(PlayersAliveScaling >= MaxNpcEnemyAllowed())
+				PlayersAliveScaling = MaxNpcEnemyAllowed();
+
+			LimitNpcs = RoundToNearest(f_limit);
+		}
+		if(!b_GameOnGoing) //no spawn if the round is over
+		{
+			return false;
+		}
 	}
 	
-	if(!b_GameOnGoing) //no spawn if the round is over
-	{
-		return false;
-	}
 	
 	if(!AllowSpecialSpawns)
 	{
@@ -139,54 +148,58 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 		panzer_warning = false;
 	}
 	
-	if(!panzer)
+	if(WaveWhich == Rounds_Default)
 	{
-		bool CheckOutline = true;
-		if(f_DelayGiveOutlineNpc > GetGameTime())
+		if(!panzer)
 		{
-			CheckOutline = false;
-		}
-		else
-		{
-			f_DelayGiveOutlineNpc = GetGameTime() + 0.5;
-		}
-		if(CheckOutline)
-		{
-			for(int entitycount_again_2; entitycount_again_2<i_MaxcountNpcTotal; entitycount_again_2++) //Check for npcs
+			bool CheckOutline = true;
+			if(f_DelayGiveOutlineNpc > GetGameTime())
 			{
-				int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount_again_2]);
-				if(IsValidEntity(entity))
+				CheckOutline = false;
+			}
+			else
+			{
+				f_DelayGiveOutlineNpc = GetGameTime() + 0.5;
+			}
+			if(CheckOutline)
+			{
+				for(int entitycount_again_2; entitycount_again_2<i_MaxcountNpcTotal; entitycount_again_2++) //Check for npcs
 				{
-					if(GetTeam(entity) != TFTeam_Red)
+					int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount_again_2]);
+					if(IsValidEntity(entity))
 					{
-						CClotBody npcstats = view_as<CClotBody>(entity);
-						if(!npcstats.m_bThisNpcIsABoss && !b_thisNpcHasAnOutline[entity])
+						if(GetTeam(entity) != TFTeam_Red)
 						{
-							if(Zombies_Currently_Still_Ongoing <= 3 && Zombies_Currently_Still_Ongoing > 0)
-								GiveNpcOutLineLastOrBoss(entity, true);
-							else
-								GiveNpcOutLineLastOrBoss(entity, false);
+							CClotBody npcstats = view_as<CClotBody>(entity);
+							if(!npcstats.m_bThisNpcIsABoss && !b_thisNpcHasAnOutline[entity])
+							{
+								if(Zombies_Currently_Still_Ongoing <= 3 && Zombies_Currently_Still_Ongoing > 0)
+									GiveNpcOutLineLastOrBoss(entity, true);
+								else
+									GiveNpcOutLineLastOrBoss(entity, false);
+							}
 						}
 					}
 				}
 			}
 		}
-		//emercency stop. 
-		if((EnemyNpcAlive - EnemyNpcAliveStatic) >= MaxEnemiesAllowedSpawnNext())
+
+		if(!Spawns_CanSpawnNext())
 		{
 			return false;
 		}
 	}
-
-	if(!Spawns_CanSpawnNext())
+	//emercency stop. 
+	if(!IgnoreNpcLimit)
 	{
-		return false;
+	 	if((EnemyNpcAlive - EnemyNpcAliveStatic) >= MaxEnemiesAllowedSpawnNext())
+			return false;
 	}
-	
+
 	float pos[3], ang[3];
 
 	MiniBoss boss;
-	if(panzer && Waves_GetMiniBoss(boss, RND))
+	if(panzer && Waves_GetMiniBoss(boss) && WaveWhich == Rounds_Default)
 	{
 		bool isBoss = false;
 		int deathforcepowerup = boss.Powerup;
@@ -243,8 +256,12 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 		{
 			deathforcepowerup = 0;
 		}
+
+		char name[16];
+		if(Spawns_NameExists("miniboss"))
+			strcopy(name, sizeof(name), "miniboss");
 		
-		if(Spawns_GetNextPos(pos, ang, _, boss.Delay + 2.0))
+		if(Spawns_GetNextPos(pos, ang, name, boss.Delay + 2.0))
 		{
 			DataPack pack;
 			CreateDataTimer(boss.Delay, Timer_Delay_BossSpawn, pack, TIMER_FLAG_NO_MAPCHANGE);
@@ -269,10 +286,31 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 	else
 	{
 		static Enemy enemy;
-		if(Waves_GetNextEnemy(enemy))
+		if(Waves_GetNextEnemy(enemy, WaveWhich))
 		{
 			int SpawnSettingsSee = 0;
-			if(Spawns_GetNextPos(pos, ang, enemy.Spawn,_,SpawnSettingsSee))
+			bool result;
+
+			if(enemy.Spawn[0])
+			{
+				if(ExplodeStringFloat(enemy.Spawn, " ", pos, sizeof(pos)) == 3)
+					result = true;
+			}
+
+			if(AreVectorsEqual(vecPos, view_as<float>({0.0,0.0,0.0})))
+			{
+				if(!result)
+					result = Spawns_GetNextPos(pos, ang, enemy.Spawn,_,SpawnSettingsSee);
+			}
+			else
+			{
+				pos = vecPos;
+				result = true;
+				SpawnSettingsSee = 3;
+				//no spawnprotection from spawners?
+			}
+
+			if(result)
 			{
 				if(enemy.Is_Boss >= 2)
 				{
@@ -293,7 +331,7 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 					}
 					else if(enemy.Is_Outlined == 2)
 					{
-						b_NoHealthbar[entity_Spawner] = true;
+						b_NoHealthbar[entity_Spawner] = 1;
 					}
 					
 					if(enemy.Is_Immune_To_Nuke)
@@ -314,23 +352,17 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 					
 					CClotBody npcstats = view_as<CClotBody>(entity_Spawner);
 					
-					npcstats.m_bStaticNPC = enemy.Is_Static;
+					if(enemy.Is_Static)
+						npcstats.m_bStaticNPC = enemy.Is_Static;
 					if(enemy.Is_Static && enemy.Team != TFTeam_Red)
 						AddNpcToAliveList(entity_Spawner, 1);
-					/*
-					if(!npcstats.m_bStaticNPC)
-					{
-						if(enemy.Is_Static && enemy.Team != TFTeam_Red)
-						{
-							npcstats.m_bStaticNPC = enemy.Is_Static;
-							AddNpcToAliveList(entity_Spawner, 1);
-						}
-					}
-					*/
+
+
 					//if its an ally and NOT static, itll teleport to a player!
 					if(enemy.Team == TFTeam_Red && !enemy.Is_Static)
 					{
 						TeleportNpcToRandomPlayer(entity_Spawner);
+						RemoveSpawnProtectionLogic(entity_Spawner, true);
 					}
 					
 					if(enemy.Is_Boss > 0)
@@ -361,12 +393,12 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 					}
 					
 
-					fl_Extra_MeleeArmor[entity_Spawner] 	= enemy.ExtraMeleeRes;
-					fl_Extra_RangedArmor[entity_Spawner] 	= enemy.ExtraRangedRes;
-					fl_Extra_Speed[entity_Spawner] 			= enemy.ExtraSpeed;
-					fl_Extra_Damage[entity_Spawner] 		= enemy.ExtraDamage;
+					fl_Extra_MeleeArmor[entity_Spawner] 	*= enemy.ExtraMeleeRes;
+					fl_Extra_RangedArmor[entity_Spawner] 	*= enemy.ExtraRangedRes;
+					fl_Extra_Speed[entity_Spawner] 			*= enemy.ExtraSpeed;
+					fl_Extra_Damage[entity_Spawner] 		*= enemy.ExtraDamage;
 					if(enemy.ExtraThinkSpeed != 0.0 && enemy.ExtraThinkSpeed != 1.0)
-						f_AttackSpeedNpcIncrease[entity_Spawner]	= enemy.ExtraThinkSpeed;
+						f_AttackSpeedNpcIncrease[entity_Spawner]	*= enemy.ExtraThinkSpeed;
 						
 					if(enemy.ExtraSize != 1.0)
 					{
@@ -383,10 +415,14 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 						GiveNpcOutLineLastOrBoss(entity_Spawner, false);
 					}
 
-					if(zr_spawnprotectiontime.FloatValue > 0.0 && SpawnSettingsSee != 1 && i_npcspawnprotection[entity_Spawner] == 0)
+					if(!i_NpcIsABuilding[entity_Spawner] && !DisableSpawnProtection &&
+					 zr_spawnprotectiontime.FloatValue > 0.0 &&
+					  SpawnSettingsSee != 1 &&
+					  SpawnSettingsSee != 3 &&
+					   i_npcspawnprotection[entity_Spawner] == NPC_SPAWNPROT_INIT)
 					{
-				
-						i_npcspawnprotection[entity_Spawner] = 1;
+						
+						i_npcspawnprotection[entity_Spawner] = NPC_SPAWNPROT_ON;
 						
 						/*
 						CClotBody npc = view_as<CClotBody>(entity_Spawner);
@@ -409,21 +445,43 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 						//i put this here instead of in waves.sp as some NPCS dont have an HP defined in the config, resulting in no HP gain.
 						ScalingMultiplyEnemyHpGlobalScale(entity_Spawner);
 					}
-					if(GetTeam(entity_Spawner) == 2)
-					{
-						Rogue_AllySpawned(entity_Spawner);
-						Waves_AllySpawned(entity_Spawner);
-					}
-					else
-					{
-						Rogue_EnemySpawned(entity_Spawner);
-						Waves_EnemySpawned(entity_Spawner);
+					NPC_PostSetup(entity_Spawner);
+					if(GetTeam(entity_Spawner) == 3)
 						Classic_EnemySpawned(entity_Spawner);
-						Construction_EnemySpawned(entity_Spawner);
+					
+					if(SpawnSettingsSee == 3)
+					{
+						//a second of protection
+						ApplyStatusEffect(entity_Spawner, entity_Spawner, "Unstoppable Force", 0.5);
 					}
 
 					if(Waves_InFreeplay())
+					{
+						TeleportDiversioToRandLocation(entity_Spawner,_,2000.0,1000.0);
 						Freeplay_SpawnEnemy(entity_Spawner);
+					}
+					if(!InZRMap() || Waves_InFreeplay())
+					{
+						TeleportDiversioToRandLocation(entity_Spawner,_,2000.0,1000.0);
+					}
+
+					NpcForward = entity_Spawner;
+					
+					for(int targ; targ<i_MaxcountNpcTotal; targ++)
+					{
+						int DeathNoticer = EntRefToEntIndexFast(i_ObjectsNpcsTotal[targ]);
+						if(IsValidEntity(DeathNoticer) && !b_NpcHasDied[DeathNoticer])
+						{
+							Function func = func_NPCSpawnForward[DeathNoticer];
+							if(func && func != INVALID_FUNCTION)
+							{
+								Call_StartFunction(null, func);
+								Call_PushCell(DeathNoticer);
+								Call_PushCell(NpcForward);
+								Call_Finish();
+							}
+						}
+					}
 
 					return true;
 				}
@@ -435,29 +493,48 @@ public bool NPC_SpawnNext(bool panzer, bool panzer_warning, int RND)
 
 			Waves_UpdateMvMStats();
 		}
-		else if((EnemyNpcAlive - EnemyNpcAliveStatic) <= 0)
+		else 
 		{
-			bool donotprogress = false;
-			if(f_DelayNextWaveStartAdvancingDeathNpc > GetGameTime())
+			if(WaveWhich == Rounds_Default)
 			{
-				donotprogress = true;
-				if(EnemyNpcAliveStatic >= 1)
+				if((EnemyNpcAlive - EnemyNpcAliveStatic) <= 0)
 				{
-					donotprogress = false;
+					bool donotprogress = false;
+					if(f_DelayNextWaveStartAdvancingDeathNpc > GetGameTime())
+					{
+						donotprogress = true;
+						/*
+						if(EnemyNpcAliveStatic >= 1)
+						{
+							donotprogress = false;
+						}
+						*/
+					}
+					else
+					{
+						/*
+						if(EnemyNpcAliveStatic >= 1)
+						{
+							donotprogress = false;
+						}
+						*/
+					}
+					if(f_DelayNextWaveStartAdvancing < GetGameTime())
+					{
+						Waves_Progress(donotprogress, WaveWhich);
+					}
 				}
+				return true;
 			}
 			else
 			{
-				if(EnemyNpcAliveStatic >= 1)
+				//for now just skip
+				if(DelayContinuneWave[WaveWhich] < GetGameTime())
 				{
-					donotprogress = false;
+					Waves_Progress(false, WaveWhich);
 				}
+				return false;
 			}
-			if(f_DelayNextWaveStartAdvancing < GetGameTime())
-			{
-				Waves_Progress(donotprogress);
-			}
-			return true;
 			//we reached limit. stop trying.
 		}
 	}
@@ -478,13 +555,46 @@ public Action Remove_Spawn_Protection(Handle timer, int ref)
 stock void RemoveSpawnProtectionLogic(int entity, bool force)
 {
 #if defined ZR
-	if(Rogue_Theme() == 1 && !force)
+	bool KeepProtection = false;
+	if(!force)
 	{
-		if(f_DomeInsideTest[entity] > GetGameTime())
+		if(Rogue_Theme() == 1)
 		{
-			CreateTimer(0.1, Remove_Spawn_Protection, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
-			return;
+			if(f_DomeInsideTest[entity] > GetGameTime())
+			{
+				KeepProtection = true;
+			}
 		}
+		float PosNpc[3];
+		GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", PosNpc);
+		if(!KeepProtection)
+		{
+			if(IsPointOutsideMap(PosNpc))
+			{
+				KeepProtection = true;
+			}
+		}
+		if(!KeepProtection)
+		{
+			if(i_InHurtZone[entity])
+				KeepProtection = true;
+		}
+		if(!KeepProtection)
+		{
+			static float minn[3], maxx[3];
+			GetEntPropVector(entity, Prop_Send, "m_vecMins", minn);
+			GetEntPropVector(entity, Prop_Send, "m_vecMaxs", maxx);
+			if(IsBoxHazard(PosNpc, minn, maxx))
+				KeepProtection = true;
+		}
+	}
+
+
+	if(KeepProtection)
+	{
+		//npc is in some type of out of bounds spot probably, keep them safe.
+		CreateTimer(0.1, Remove_Spawn_Protection, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+		return;
 	}
 #endif	// ZR
 	
@@ -493,7 +603,7 @@ stock void RemoveSpawnProtectionLogic(int entity, bool force)
 	if(IsValidEntity(npc.m_iSpawnProtectionEntity))
 		RemoveEntity(npc.m_iSpawnProtectionEntity);
 	//-1 means none, and dont apply anymore.
-	i_npcspawnprotection[entity] = -1;
+	i_npcspawnprotection[entity] = NPC_SPAWNPROT_OFF;
 }
 
 #if defined ZR
@@ -535,19 +645,16 @@ public Action Timer_Delay_BossSpawn(Handle timer, DataPack pack)
 		
 		b_NpcForcepowerupspawn[entity] = forcepowerup;
 
-		if(GetTeam(entity) == 2)
-		{
-			Rogue_AllySpawned(entity);
-			Waves_AllySpawned(entity);
-		}
-		else
-		{
-			Rogue_EnemySpawned(entity);
-			Waves_EnemySpawned(entity);
-			Construction_EnemySpawned(entity);
-		}
+		NPC_PostSetup(entity);
 		if(Waves_InFreeplay())
 			Freeplay_SpawnEnemy(entity);
+		if(PapModeDo == PAP_MODE_BUILDING_ONLY)
+		{
+			//miniboss nerf
+			SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 0.5));
+			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 0.5));
+			fl_Extra_Damage[entity] 			*= 0.65;
+		}
 	}
 
 	return Plugin_Stop;
@@ -704,7 +811,15 @@ public Action NPC_TimerIgnite(Handle timer, int ref)
 			//Burn damage should pierce any resistances because its too hard to keep track off, and its not common.
 			if(i_IsABuilding[entity]) //if enemy was a building, deal 5x damage.
 				value *= 5.0;
-			SDKHooks_TakeDamage(entity, attacker, attacker, value, DMG_TRUEDAMAGE | DMG_PREVENT_PHYSICS_FORCE, weapon, {0.0,0.0,0.0}, pos, false, (ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED | ZR_DAMAGE_IGNORE_DEATH_PENALTY ));
+				
+			int DamageTypes = DMG_TRUEDAMAGE | DMG_PREVENT_PHYSICS_FORCE;
+
+			if(GetTeam(entity) != TFTeam_Red)
+			{
+				DamageTypes &= ~DMG_TRUEDAMAGE;
+				DamageTypes |= DMG_BULLET;
+			}
+			SDKHooks_TakeDamage(entity, attacker, attacker, value, DamageTypes, weapon, {0.0,0.0,0.0}, pos, false, (ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED | ZR_DAMAGE_IGNORE_DEATH_PENALTY ));
 			
 			//Setting burn dmg to slash cus i want it to work with melee!!!
 			//Also yes this means burn and bleed are basically the same, excluding that burn doesnt stack.
@@ -790,7 +905,7 @@ public Action NPC_TraceAttack(int victim, int& attacker, int& inflictor, float& 
 				{
 					float chargerPos[3];
 					GetEntPropVector(victim, Prop_Data, "m_vecAbsOrigin", chargerPos);
-					if(b_BoundingBoxVariant[victim] == 1)
+					if(b_BoundingBoxVariant[victim] == BBV_Giant)
 					{
 						chargerPos[2] += 120.0;
 					}
@@ -835,9 +950,13 @@ public Action NPC_TraceAttack(int victim, int& attacker, int& inflictor, float& 
 					i_HasBeenHeadShotted[victim] = true; //shouldnt count as an actual headshot!
 				}
 
-				if(i_CurrentEquippedPerk[attacker] == 5) //I guesswe can make it stack.
+				if(i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER) //I guesswe can make it stack.
 				{
 					damage *= 1.25;
+				}
+				if(i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER_X) //I guesswe can make it stack.
+				{
+					damage *= 1.35;
 				}
 				
 				int pitch = GetRandomInt(90, 110);
@@ -869,7 +988,7 @@ public Action NPC_TraceAttack(int victim, int& attacker, int& inflictor, float& 
 					float damage_save = 50.0;
 					damage_save *= Attributes_Get(weapon, 2, 1.0);
 					int BombsToInject = i_ArsenalBombImplanter[weapon];
-					if(i_CurrentEquippedPerk[attacker] == 5) //I guesswe can make it stack.
+					if((i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER) || (i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER_X)) //I guesswe can make it stack.
 					{
 						BombsToInject += 1;
 					}
@@ -1112,7 +1231,7 @@ public Action NPC_OnTakeDamage(int victim, int &attacker, int &inflictor, float 
 			return Plugin_Changed;
 		}
 	}
-	if(HasSpecificBuff(victim, "Archo's Posion"))
+	if(!CheckInHud() && HasSpecificBuff(victim, "Archo's Posion"))
 	{
 		if(!(damagetype & (DMG_FALL|DMG_OUTOFBOUNDS|DMG_TRUEDAMAGE)))
 		{
@@ -1244,6 +1363,9 @@ public Action NPC_OnTakeDamage(int victim, int &attacker, int &inflictor, float 
 	{
 		npcBase.m_bGib = false;
 	}
+	//force gibbing.
+	if(HasSpecificBuff(victim, "Warped Elemental End"))
+		npcBase.m_bGib = true;
 #endif
 	//LogEntryInvicibleTest(victim, attacker, damage, 24);
 	
@@ -1261,7 +1383,9 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 {
 #if defined ZR
 	if(!b_NpcIsTeamkiller[attacker] && GetTeam(attacker) == GetTeam(victim))
+	{
 		return;
+	}
 		
 	int AttackerOverride = EntRefToEntIndex(i_NpcOverrideAttacker[attacker]);
 	if(AttackerOverride > 0)
@@ -1277,9 +1401,9 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 		SetEntProp(victim, Prop_Data, "m_iHealth", health);
 	}
 #if defined ZR
-	if((Damageaftercalc > 0.0 || IsInvuln(victim, true) || (weapon > -1 && i_ArsenalBombImplanter[weapon] > 0)) && !b_DoNotDisplayHurtHud[victim]) //make sure to still show it if they are invinceable!
+	if((Damageaftercalc >= 0.0 || IsInvuln(victim, true) || (weapon > -1 && i_ArsenalBombImplanter[weapon] > 0)) && !b_DoNotDisplayHurtHud[victim]) //make sure to still show it if they are invinceable!
 #else
-	if((Damageaftercalc > 0.0 || IsInvuln(victim, true)) && !b_DoNotDisplayHurtHud[victim]) //make sure to still show it if they are invinceable!
+	if((Damageaftercalc >= 0.0 || IsInvuln(victim, true)) && !b_DoNotDisplayHurtHud[victim]) //make sure to still show it if they are invinceable!
 #endif
 	{
 #if !defined RTS
@@ -1348,7 +1472,23 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 	while(health <= 0 && npcBase.m_iHealthBar >= 1)
 	{
 		//has health bars!
-		health += ReturnEntityMaxHealth(victim);
+		bool cancelDamage = false;
+		Function func = func_NPCLostHealthBar[victim];
+		if(func && func != INVALID_FUNCTION)
+		{
+			Call_StartFunction(null, func);
+			Call_PushCell(victim);
+			Call_PushCell(npcBase.m_iHealthBar - 1);
+			Call_Finish(cancelDamage);
+		}
+		if(cancelDamage)
+		{
+			health = ReturnEntityMaxHealth(victim);
+		}
+		else
+		{
+			health += ReturnEntityMaxHealth(victim);
+		}
 		SetEntProp(victim, Prop_Data, "m_iHealth", health);
 		npcBase.m_iHealthBar--;
 	}
@@ -1398,6 +1538,16 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 	health = GetEntProp(victim, Prop_Data, "m_iHealth");
 	
 	//LogEntryInvicibleTest(victim, attacker, damage, 29);
+	
+	if(SlayNpc && HasSpecificBuff(victim, "Blessing of Stars"))
+	{
+		HealEntityGlobal(victim, victim, float(ReturnEntityMaxHealth(victim) / 4), 1.0, 1.0, HEAL_ABSOLUTE);
+		SetEntProp(victim, Prop_Data, "m_iHealth", 1);
+		ApplyStatusEffect(victim, victim, "Unstoppable Force", 1.0);
+		RemoveSpecificBuff(victim, "Blessing of Stars");
+		EmitSoundToAll("misc/halloween/spell_overheal.wav", victim, SNDCHAN_STATIC, 80, _, 0.8);
+		SlayNpc = false;
+	}
 	if(SlayNpc && !HasSpecificBuff(victim, "Infinite Will"))
 	{
 		CBaseCombatCharacter_EventKilledLocal(victim, attacker, inflictor, Damageaftercalc, damagetype, weapon, damageForce, damagePosition);
@@ -1411,6 +1561,7 @@ public void NPC_OnTakeDamage_Post(int victim, int attacker, int inflictor, float
 	//LogEntryInvicibleTest(victim, attacker, damage, 30);
 		
 	Damageaftercalc = 0.0;
+	i_HasBeenHeadShotted[victim] = false;
 }
 
 stock void GiveRageOnDamage(int client, float damage)
@@ -1476,7 +1627,7 @@ void OnTakeDamageBleedNpc(int victim, int &attacker, int &inflictor, float &dama
 					TE_BloodSprite(damagePosition, { 0.0, 0.0, 0.0 }, 125, 255, 125, 255, 32);
 					TE_SendToAllInRange(damagePosition, RangeType_Visibility);
 				}
-				else if (npcBase.m_iBleedType == BLEEDTYPE_SEABORN)
+				else if (npcBase.m_iBleedType == BLEEDTYPE_DWELLER)
 				{
 					//If you cant find any good blood effect, use this one and just recolour it.
 					TE_BloodSprite(damagePosition, { 0.0, 0.0, 0.0 }, 65, 65, 255, 255, 32);
@@ -1486,6 +1637,17 @@ void OnTakeDamageBleedNpc(int victim, int &attacker, int &inflictor, float &dama
 				{
 					//If you cant find any good blood effect, use this one and just recolour it.
 					TE_BloodSprite(damagePosition, { 0.0, 0.0, 0.0 }, 200, 0, 200, 255, 32);
+					TE_SendToAllInRange(damagePosition, RangeType_Visibility);
+				}
+				else if (npcBase.m_iBleedType == BLEEDTYPE_UMBRAL)
+				{
+					//If you cant find any good blood effect, use this one and just recolour it.
+					TE_BloodSprite(damagePosition, { 0.0, 0.0, 0.0 }, 200, 200, 200, 255, 32);
+					TE_SendToAllInRange(damagePosition, RangeType_Visibility);
+				}
+				else if (npcBase.m_iBleedType == BLEEDTYPE_PORTAL)
+				{
+					TE_ParticleInt(g_particleImpactPortal, damagePosition);
 					TE_SendToAllInRange(damagePosition, RangeType_Visibility);
 				}
 			}
@@ -1586,6 +1748,12 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 	if(!c_NpcName[victim][0])
 		return true;
 
+	if(b_NoHealthbar[victim] == 2)
+	{
+		//hide entirely.
+		return true;
+	}
+
 #if defined ZR
 	bool raidboss_active = false;
 	int raid_entity = EntRefToEntIndex(RaidBossActive);
@@ -1639,9 +1807,9 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 	else
 	{
 #if defined RPG
-		if(i_npcspawnprotection[victim] != 1 || !OnTakeDamageRpgPartyLogic(victim, attacker, GetGameTime()))
+		if(i_npcspawnprotection[victim] != NPC_SPAWNPROT_ON || !OnTakeDamageRpgPartyLogic(victim, attacker, GetGameTime()))
 #else
-		if(i_npcspawnprotection[victim] != 1)
+		if(i_npcspawnprotection[victim] != NPC_SPAWNPROT_ON)
 #endif
 		{
 			DisplayRGBHealthValue(Health, MaxHealth, red, green,blue);
@@ -1659,6 +1827,13 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 		green = 255;
 		blue = 0;
 	}
+	CClotBody npc = view_as<CClotBody>(victim);
+	if(npc.m_iHealthBar > 50000)
+	{
+		red = 0;
+		green = 255;
+		blue = 0;
+	}
 
 	static char Debuff_Adder_left[128], Debuff_Adder_right[128], Debuff_Adder[128];
 	EntityBuffHudShow(victim, attacker, Debuff_Adder_left, Debuff_Adder_right, sizeof(Debuff_Adder));
@@ -1668,7 +1843,6 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 	float GameTime = GetGameTime();
 #endif
 	
-	CClotBody npc = view_as<CClotBody>(victim);
 	
 	int weapon = GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon");
 	bool armor_added = false;
@@ -1865,7 +2039,7 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 		HudOffset += f_HurtHudOffsetX[attacker];
 #endif	// ZR
 
-		SetHudTextParams(HudY, HudOffset, 1.0, red, green, blue, 255, 0, 0.01, 0.01);
+		SetHudTextParams(HudY, HudOffset, 0.5, red, green, blue, 255, 0, 0.01, 0.01);
 		static char ExtraHudHurt[255];
 		
 #if defined ZR
@@ -1903,22 +2077,29 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 			Format(c_MaxHealth, sizeof(c_MaxHealth), "???");
 			Format(c_Health, sizeof(c_Health), "???");
 		}
+		if(npc.m_iHealthBar > 50000)
+		{
+			Format(c_MaxHealth, sizeof(c_MaxHealth), "∞");
+			Format(c_Health, sizeof(c_Health), "∞");
+		}
 		
 #if defined RPG
 		Format(ExtraHudHurt, sizeof(ExtraHudHurt), "Level %d", Level[victim]);
 		RPGSpawns_UpdateHealthNpc(victim);
 		Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s\n%s\n%s / %s",ExtraHudHurt,c_NpcName[victim], c_Health, c_MaxHealth);
 #else
+		char NamePrefix[255];
+		StatusEffects_PrefixName(victim, attacker, NamePrefix, sizeof(NamePrefix));
 		if(!b_NameNoTranslation[npc.index])
 		{
-			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%t\n%s / %s",c_NpcName[victim], c_Health, c_MaxHealth);
+			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s%t\n%s / %s",NamePrefix,c_NpcName[victim], c_Health, c_MaxHealth);
 		}
 		else
 		{
-			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s\n%s / %s",c_NpcName[victim], c_Health, c_MaxHealth);
+			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s%s\n%s / %s",NamePrefix,c_NpcName[victim], c_Health, c_MaxHealth);
 		}
 		CClotBody npcstats = view_as<CClotBody>(victim);
-		if(b_ThisWasAnNpc[victim] && npcstats.m_iHealthBar > 0)
+		if(b_ThisWasAnNpc[victim] && npcstats.m_iHealthBar > 0 && npcstats.m_iHealthBar < 50000)
 			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s x%i",ExtraHudHurt, npcstats.m_iHealthBar + 1);
 #endif
 		
@@ -1963,7 +2144,7 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 		HudOffset += f_HurtHudOffsetX[attacker];
 			
 		SetGlobalTransTarget(attacker);
-		SetHudTextParams(HudY, HudOffset, 1.0, red, green, blue, 255, 0, 0.01, 0.01);
+		SetHudTextParams(HudY, HudOffset, 0.5, red, green, blue, 255, 0, 0.01, 0.01);
 		//todo: better showcase of timer.
 		static char ExtraHudHurt[168];
 
@@ -2018,18 +2199,25 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 			Format(c_MaxHealth, sizeof(c_MaxHealth), "???");
 			Format(c_Health, sizeof(c_Health), "???");
 		}
+		if(npc.m_iHealthBar > 50000)
+		{
+			Format(c_MaxHealth, sizeof(c_MaxHealth), "∞");
+			Format(c_Health, sizeof(c_Health), "∞");
+		}
 		
+		char NamePrefix[255];
+		StatusEffects_PrefixName(victim, attacker, NamePrefix, sizeof(NamePrefix));
 		if(!b_NameNoTranslation[victim])
 		{
-			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s\n%t\n%s / %s",ExtraHudHurt,c_NpcName[victim], c_Health, c_MaxHealth);
+			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s\n%s%t\n%s / %s",ExtraHudHurt,NamePrefix,c_NpcName[victim], c_Health, c_MaxHealth);
 		}
 		else
 		{
-			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s\n%s\n%s / %s",ExtraHudHurt,c_NpcName[victim], c_Health, c_MaxHealth);
+			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s\n%s%s\n%s / %s",ExtraHudHurt,NamePrefix,c_NpcName[victim], c_Health, c_MaxHealth);
 		}
 		
 		CClotBody npcstats = view_as<CClotBody>(victim);
-		if(b_ThisWasAnNpc[victim] && npcstats.m_iHealthBar > 0)
+		if(b_ThisWasAnNpc[victim] && npcstats.m_iHealthBar > 0 && npcstats.m_iHealthBar < 50000)
 			Format(ExtraHudHurt, sizeof(ExtraHudHurt), "%s x%i",ExtraHudHurt, npcstats.m_iHealthBar + 1);
 
 		//add debuff
@@ -2076,16 +2264,16 @@ stock bool Calculate_And_Display_HP_Hud(int attacker, bool ToAlternative = false
 #if !defined RTS
 stock void ResetDamageHud(int client)
 {
-	SetHudTextParams(-1.0, 0.05, 1.0, 0, 0, 0, 255, 0, 0.01, 0.01);
+	SetHudTextParams(-1.0, 0.05, 0.5, 0, 0, 0, 255, 0, 0.01, 0.01);
 	ShowSyncHudText(client, SyncHud, "");
 }
 
 stock void Calculate_And_Display_hp(int attacker, int victim, float damage, bool ignore, bool DontForward = false, bool ResetClientCooldown = false, bool RaidHudForce = false)
 {
+	if(b_ThisEntityIgnored[victim])
+		return;
 	if(attacker <= MaxClients)
 	{
-		b_DisplayDamageHud[attacker][0] = true;
-
 		//If a raid hud update happens, it should prefer to update it incase you attack something in the same frame or whaatever.
 		if(RaidHudForce)
 		{
@@ -2094,7 +2282,9 @@ stock void Calculate_And_Display_hp(int attacker, int victim, float damage, bool
 		}
 		else
 		{
+			b_DisplayDamageHud[attacker][0] = true;
 			i_HudVictimToDisplay[attacker] = EntIndexToEntRef(victim);
+			f_RepeatShowHudFor[attacker] = GetGameTime() + 2.0;
 		}
 
 		float GameTime = GetGameTime();
@@ -2115,6 +2305,7 @@ stock void Calculate_And_Display_hp(int attacker, int victim, float damage, bool
 					damageCalc += Health;
 				}
 				Damage_dealt_in_total[attacker] += damageCalc;
+				Damage_dealt_in_total[attacker] += f_ArmorDamageDeltHud[attacker];
 			}
 			if(GameTime > f_damageAddedTogetherGametime[attacker])
 			{
@@ -2126,12 +2317,14 @@ stock void Calculate_And_Display_hp(int attacker, int victim, float damage, bool
 			if(!ignore) //Cannot be a just show function
 			{
 				f_damageAddedTogether[attacker] += damage;
+				f_damageAddedTogether[attacker] += f_ArmorDamageDeltHud[attacker];
 			}
 			if(damage > 0.0)
 			{
 				f_damageAddedTogetherGametime[attacker] = GameTime + 0.6;
 			}
 		}
+		f_ArmorDamageDeltHud[attacker] = 0.0;
 	}
 	if(DontForward)
 		return;
@@ -2271,8 +2464,12 @@ void NPC_DeadEffects(int entity)
 	{
 		
 #if defined ZR		
-		DropPowerupChance(entity);
-		Gift_DropChance(entity);
+		CClotBody npc = view_as<CClotBody>(entity);
+		if(!npc.b_BlockDropChances)
+		{
+			DropPowerupChance(entity);
+			Gift_DropChance(entity);
+		}
 #endif
 		
 		int WeaponLastHit = EntRefToEntIndex(LastHitWeaponRef[entity]);
@@ -2295,10 +2492,36 @@ void NPC_DeadEffects(int entity)
 #endif
 
 			Attributes_OnKill(entity, client, WeaponLastHit);
+			Npc_WeaponOnKillDo(entity, client, WeaponLastHit);
 		}
 	}
 }
+void Npc_WeaponOnKillDo(int entity, int client, int weapon)
+{
+	if(!IsValidEntity(weapon))
+		return;
 
+	if(EntityFuncOnKill[weapon] && EntityFuncOnKill[weapon]!=INVALID_FUNCTION)
+	{
+		Call_StartFunction(null, EntityFuncOnKill[weapon]);
+		Call_PushCell(entity);
+		Call_PushCell(client);
+		Call_PushCell(weapon);
+		Call_Finish();
+	}
+}
+/*
+	Usage:
+	CFG:
+	"func_onkill"	"KillEffectDoWeapon"
+
+	Plugin:
+	public void KillEffectDoWeapon(int victim, int killer, int weapon)
+	{
+
+	}
+
+*/
 #if defined ZR
 stock void CleanAllAppliedEffects_BombImplanter(int entity, bool do_boom = false)
 {
@@ -2396,6 +2619,10 @@ void OnKillUniqueWeapon(int attacker, int weapon, int victim)
 		case WEAPON_CASTLEBREAKER:
 		{
 			CastleBreakerCashOnKill(attacker);
+		}
+		case WEAPON_RAIGEKI:
+		{
+			Raigeki_OnKill(attacker, victim);
 		}
 	}
 }
@@ -2496,6 +2723,14 @@ int MaxEnemiesAllowedSpawnNext(int ExtraRules = 0)
 	if(KamikazeEventHappening())
 	{
 		maxenemies /= 2;
+	}
+	if(Dungeon_Mode())
+	{
+		if(Dungeon_AttackType() < 2)
+		{
+			//if its not a base attack reduce spawns by 25%
+			maxenemies = RoundToCeil(float(maxenemies) * 0.75);
+		}
 	}
 	switch(ExtraRules)
 	{
@@ -2610,3 +2845,158 @@ stock int StrLenMB(const char[] str)
 	return count;
 }  
 */
+
+#if defined ZR
+void PrintNPCMessageWithPrefixes(int entity, const char[] npcColor, const char[] message, bool messageIsTranslated = false, const char[] customName = "", const char[] messageColor = "default", bool customNameIsTranslated = false)
+{
+	if (c_NpcName[entity][0] == '\0')
+	{
+		// This NPC has no name! It might have not been fully initialized yet, try again until it has a name
+		DataPack pack = new DataPack();
+		RequestFrame(PrintNPCMessageWithPrefixes_Delay, pack);
+		pack.WriteCell(EntIndexToEntRef(entity));
+		pack.WriteString(npcColor);
+		pack.WriteString(message);
+		pack.WriteCell(messageIsTranslated);
+		pack.WriteString(customName);
+		pack.WriteString(messageColor);
+		pack.WriteCell(customNameIsTranslated);
+		
+		return;
+	}
+	
+	bool checkedForPrefixes;
+	int loudnessScore;
+	char finalNpcColor[32], finalMessageColor[32];
+	char finalName[256], finalMessage[256];
+	
+	// Only copy the message once if it's not translated
+	if (!messageIsTranslated)
+		strcopy(finalMessage, sizeof(finalMessage), message);
+	
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsClientInGame(client) || IsFakeClient(client))
+			continue;
+		
+		char prefix[255];
+		StatusEffects_PrefixName(entity, client, prefix, sizeof(prefix));
+		
+		// On the first valid client, check for prefixes and modify the message based on them
+		if (!checkedForPrefixes)
+		{
+			bool hasPrefix = prefix[0] != '\0';
+			if (hasPrefix)
+			{
+				
+				if (HasSpecificBuff(entity, "Verde")) // verd e
+					finalNpcColor = "forestgreen";
+				else if (HasSpecificBuff(entity, "Ragebaiter Prefix")) // To match the rest of ragebaiter text
+					finalNpcColor = "crimson";
+				
+				if (HasSpecificBuff(entity, "Loud Prefix"))
+					loudnessScore++;
+				
+				if (HasSpecificBuff(entity, "Quiet Prefix"))
+					loudnessScore--;
+			}
+			
+			if (finalNpcColor[0] == '\0')
+				FormatEx(finalNpcColor, sizeof(finalNpcColor), "{%s}", npcColor);
+			else
+				Format(finalNpcColor, sizeof(finalNpcColor), "{%s}", finalNpcColor);
+			
+			// Sometimes colors are defined with {}, sometimes without... get rid of dupes to accommodate for everything
+			ReplaceString(finalNpcColor, sizeof(finalNpcColor), "{{", "{");
+			ReplaceString(finalNpcColor, sizeof(finalNpcColor), "}}", "}");
+			
+			if (finalMessageColor[0] == '\0')
+				FormatEx(finalMessageColor, sizeof(finalMessageColor), "{%s}", messageColor);
+			else
+				Format(finalMessageColor, sizeof(finalMessageColor), "{%s}", finalMessageColor);
+			
+			// Sometimes colors are defined with {}, sometimes without... get rid of dupes to accommodate for everything
+			ReplaceString(finalMessageColor, sizeof(finalMessageColor), "{{", "{");
+			ReplaceString(finalMessageColor, sizeof(finalMessageColor), "}}", "}");
+				
+			if (!messageIsTranslated)
+			{
+				if (loudnessScore > 0)
+					StringToUpper(finalMessage);
+				else if (loudnessScore < 0)
+					finalMessage = "";
+			}
+			
+			checkedForPrefixes = true;
+		}
+		
+		if (messageIsTranslated && loudnessScore >= 0)
+		{
+			// Do some things per-client if the message is translated
+			FormatEx(finalMessage, sizeof(finalMessage), "%T", message, client);
+			
+			if (loudnessScore > 0)
+				StringToUpper(finalMessage);
+		}
+		
+		bool isCustomName = customName[0] != '\0';
+		if (isCustomName)
+		{
+			if (customNameIsTranslated)
+				FormatEx(finalName, sizeof(finalName), "%T", customName, client);
+			else
+				strcopy(finalName, sizeof(finalName), customName);
+		}
+		else
+		{
+			if (!b_NameNoTranslation[entity])
+				FormatEx(finalName, sizeof(finalName), "%T", c_NpcName[entity], client);
+			else
+				strcopy(finalName, sizeof(finalName), c_NpcName[entity]);
+		}
+		
+		char fullText[512];
+		FormatEx(fullText, sizeof(fullText), "%s%s%s%s: %s", finalNpcColor, prefix, finalName, finalMessageColor, finalMessage);
+		
+		if (strlen(fullText) > 250)
+		{
+			// Some translations or way too many prefixes might make messages overflow. Split them!
+			char splitName[256], splitMessage[256];
+			FormatEx(splitName, sizeof(splitName), "%s%s%s%s:", finalNpcColor, prefix, finalName, finalMessageColor);
+			FormatEx(splitMessage, sizeof(splitMessage), "%s%s", finalMessageColor, finalMessage);
+			
+			CPrintToChat(client, splitName);
+			CPrintToChat(client, splitMessage);
+		}
+		else
+		{
+			CPrintToChat(client, fullText);
+		}
+	}
+}
+
+void PrintNPCMessageWithPrefixes_Delay(DataPack pack)
+{
+	pack.Reset();
+	
+	int entity = EntRefToEntIndex(pack.ReadCell());
+	if (entity == INVALID_ENT_REFERENCE || b_NpcHasDied[entity])
+	{
+		delete pack;
+		return;
+	}
+	
+	char message[255], npcColor[32], messageColor[32], customName[255];
+	
+	pack.ReadString(npcColor, sizeof(npcColor));
+	pack.ReadString(message, sizeof(message));
+	bool messageIsTranslated = pack.ReadCell();
+	pack.ReadString(customName, sizeof(customName));
+	pack.ReadString(messageColor, sizeof(messageColor));
+	bool customNameIsTranslated = pack.ReadCell();
+	
+	delete pack;
+	
+	PrintNPCMessageWithPrefixes(entity, npcColor, message, messageIsTranslated, customName, messageColor, customNameIsTranslated);
+}
+#endif

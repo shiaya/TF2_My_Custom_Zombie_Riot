@@ -12,7 +12,7 @@ void AlliedLeperVisualiserAbility_OnMapStart_NPC()
 	strcopy(data.Icon, sizeof(data.Icon), "");
 	data.IconCustom = false;
 	data.Flags = 0;
-	data.Category = Type_Ally;
+	data.Category = Type_Hidden;
 	data.Func = ClotSummon;
 	NPC_Add(data);
 }
@@ -57,7 +57,7 @@ methodmap AlliedLeperVisualiserAbility < CClotBody
 
 		while(TF2U_GetWearable(client, entity, i, "tf_wearable"))
 		{
-			if(entity == EntRefToEntIndex(Armor_Wearable[client]) || i_WeaponVMTExtraSetting[entity] != -1)
+			if(i_WeaponVMTExtraSetting[entity] != -1)
 				continue;
 
 			if(EntRefToEntIndex(i_Viewmodel_PlayerModel[client]) != entity || (i_CustomModelOverrideIndex[client] < BARNEY || !b_HideCosmeticsPlayer[client]))

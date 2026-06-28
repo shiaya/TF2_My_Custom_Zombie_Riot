@@ -217,7 +217,7 @@ public void Weapon_Wand_Beam_Alt_Pap_M2(int client, int weapon, bool crit)
 			ClientCommand(client, "playgamesound items/medshotno1.wav");
 			SetDefaultHudPosition(client);
 			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.");
+			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough", (i_cannon_charge[client]), (BEAM_WAND_CANNON_ABILITY_COST));
 			return;
 		}
 	}
@@ -243,7 +243,7 @@ public void Weapon_Wand_Beam_Alt_Pap_M2(int client, int weapon, bool crit)
 			ClientCommand(client, "playgamesound items/medshotno1.wav");
 			SetDefaultHudPosition(client);
 			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.");
+			ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough", RoundToFloor(fl_beam_overdrive_charge[client]), RoundToFloor(fl_beam_overdrive_cost[i_weapon_pap_tier[client]]));
 			return;
 		}
 	}
@@ -767,11 +767,11 @@ static void Beam_Wand_pap_Hud(int client, bool type, int duration)
 			}
 			else if(i_cannon_charge[client]<BEAM_WAND_CANNON_ABILITY_COST)
 			{
-				PrintHintText(client,"Paricle Cannon | Charge: [%i%/%i]", i_cannon_charge[client], BEAM_WAND_CANNON_ABILITY_COST);
+				PrintHintText(client,"Particle Cannon | Charge: [%i%/%i]", i_cannon_charge[client], BEAM_WAND_CANNON_ABILITY_COST);
 			}
 			else
 			{
-				PrintHintText(client,"Paricle Cannon | Charge: [FULL!]");
+				PrintHintText(client,"Particle Cannon | Charge: [FULL!]");
 			}
 		}
 		else

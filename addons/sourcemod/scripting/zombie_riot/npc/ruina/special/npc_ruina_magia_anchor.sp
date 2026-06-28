@@ -268,6 +268,7 @@ methodmap Magia_Anchor < CClotBody
 
 			RaidBossActive = EntIndexToEntRef(npc.index);
 			RaidAllowsBuildings = true;
+			RaidAllowLastman = false;
 
 			RaidModeScaling = 0.0;
 		
@@ -525,18 +526,19 @@ static void Raid_Spwaning_Logic(Magia_Anchor npc)
 		"npc_ruina_astrianious",
 		"npc_ruina_dronianis"
 	};
+
 	static int npc_health[] = {
-		100000,	//"npc_ruina_magianius",
-		150000,	//"npc_ruina_loonarionus"
-		200000,	//"npc_ruina_heliarionus"
-		150000,	//"npc_ruina_euranionis",
-		300000,	//"npc_ruina_draconia",
-		150000,	//"npc_ruina_malianius",
-		200000,	//"npc_ruina_lazurus",
-		150000,	//"npc_ruina_aetherianus"
-		300000,	//"npc_ruina_rulianius",
-		150000,	//"npc_ruina_astrianious"
-		300000	//"npc_ruina_dronianis"
+		50000,	//"npc_ruina_magianius",
+		75000,	//"npc_ruina_loonarionus"
+		100000,	//"npc_ruina_heliarionus"
+		75000,	//"npc_ruina_euranionis",
+		150000,	//"npc_ruina_draconia",
+		75000,	//"npc_ruina_malianius",
+		100000,	//"npc_ruina_lazurus",
+		75000,	//"npc_ruina_aetherianus"
+		150000,	//"npc_ruina_rulianius",
+		75000,	//"npc_ruina_astrianious"
+		150000	//"npc_ruina_dronianis"
 	};
 
 	Spawn_Anchor_NPC(npc.index, npc_names[i_current_cycle[npc.index]], npc_health[i_current_cycle[npc.index]], 1, true);
@@ -723,7 +725,7 @@ static void Spawn_Anchor_NPC(int iNPC, char[] plugin_name, int health = 0, int c
 	}
 	else
 	{
-		int postWaves = CurrentRound - Waves_GetMaxRound();
+		int postWaves = CurrentRound[Rounds_Default] - Waves_GetMaxRound();
 		Freeplay_AddEnemy(postWaves, enemy, count);
 		if(count > 0)
 		{
@@ -909,7 +911,7 @@ static bool Charging(Magia_Anchor npc)
 				{
 					if(!i_ObjectsSpawners[i] || !IsValidEntity(i_ObjectsSpawners[i]))
 					{
-						Spawns_AddToArray(npc.index, true);
+						Spawns_AddToArray(EntIndexToEntRef(npc.index), true);
 						i_ObjectsSpawners[i] = EntIndexToEntRef(npc.index);
 						break;
 					}

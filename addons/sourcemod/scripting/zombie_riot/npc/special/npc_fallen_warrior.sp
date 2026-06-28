@@ -79,6 +79,7 @@ int GetRandomSeedFallenWarrior()
 	return GetRandomSeedEachWave;
 }
 
+static int NPCId;
 
 void FallenWarrior_OnMapStart()
 {
@@ -95,16 +96,20 @@ void FallenWarrior_OnMapStart()
 	PrecacheModel(COMBINE_CUSTOM_MODEL);
 	PrecacheModel("models/player/soldier.mdl");
 	NPCData data;
-	strcopy(data.Name, sizeof(data.Name), "Fallen Warrior");
+	strcopy(data.Name, sizeof(data.Name), "Guln the Fallen One");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_fallen_warrior");
-	strcopy(data.Icon, sizeof(data.Icon), "demoknight_samurai");
-	data.IconCustom = false;
+	strcopy(data.Icon, sizeof(data.Icon), "mb_guln");
+	data.IconCustom = true;
 	data.Flags = 0;
 	data.Category = Type_Special;
 	data.Func = ClotSummon;
-	NPC_Add(data);
+	NPCId = NPC_Add(data);
 }
 
+stock int FallenWarrior_ID()
+{
+	return NPCId;
+}
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team)
 {
@@ -189,6 +194,7 @@ methodmap FallenWarrior < CClotBody
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
 		npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+		Elemental_AddChaosDamage(npc.index, npc.index, 1, false);
 
 		SetEntityRenderColor(npc.index, 255, 100, 100, 255);
 		for(int client_clear=1; client_clear<=MaxClients; client_clear++)
@@ -214,7 +220,7 @@ methodmap FallenWarrior < CClotBody
 		
 		int skin = 1;
 		float size = 1.2;
-		SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
+	//	SetEntProp(npc.index, Prop_Send, "m_nSkin", skin);
 
 		npc.m_iWearable1 = npc.EquipItem("head", "models/workshop/player/items/demo/hwn2022_nightbane_brim/hwn2022_nightbane_brim.mdl", "", 2, 1.3);
 
@@ -228,7 +234,7 @@ methodmap FallenWarrior < CClotBody
 
 		npc.m_iWearable6 = npc.EquipItem("head", "models/workshop/player/items/soldier/bak_caped_crusader/bak_caped_crusader.mdl", "", 2, size);
 
-		SetEntProp(npc.index, Prop_Send, "m_nSkin", 1);
+	//	SetEntProp(npc.index, Prop_Send, "m_nSkin", 1);
 
 
 		SetEntityRenderColor(npc.m_iWearable1, 175, 100, 100, 255);
@@ -254,6 +260,7 @@ methodmap FallenWarrior < CClotBody
 		}
 		npc.m_bDissapearOnDeath = true;
 
+		b_thisNpcIsAMiniboss[npc.index] = true;
 		float wave = float(Waves_GetRoundScale()+1);
 		wave *= 0.133333;
 		npc.m_flWaveScale = wave;
@@ -264,6 +271,11 @@ methodmap FallenWarrior < CClotBody
 		Citizen_MiniBossSpawn();
 		return npc;
 	}
+}
+
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "crimson", message, .customName = "Guln");
 }
 
 public void FallenWarrior_ClotThink(int iNPC)
@@ -338,7 +350,7 @@ public void FallenWarrior_ClotThink(int iNPC)
 				i_fallen_eyeparticle[npc.index] = EntIndexToEntRef(ParticleEffectAt_Parent(flPos, "unusual_psychic_eye_white_glow", npc.index, "head", {0.0,5.0,-15.0}));
 				i_fallen_bodyparticle[npc.index] = EntIndexToEntRef(ParticleEffectAt_Parent(flPos, "env_snow_light_001", npc.index, "m_vecAbsOrigin", {50.0,-200.0,0.0}));
 
-				CPrintToChatAll("{crimson}귄{default}: 너희라면 {white}배풍등{default} 그 년을 막을 수 있겠지! 그리고 그렇게 되면...");
+				NPCTalkMessage(npc.index, "You must stop {white}Whiteflower{default}! Once and for all...");
 			}
 		}
 	}
@@ -495,7 +507,7 @@ public void FallenWarrior_NPCDeath(int entity)
 
 	if(GetTeam(entity) == TFTeam_Red)
 	{
-		CPrintToChatAll("{crimson}귄{default}: 그리고... 이게... 이 {crimson}혼돈{default}... 너희라면 뭘 해야할지 알겠지...");
+		NPCTalkMessage(npc.index, "And if it comes to this... this {crimson}Chaos{default}... you know what to do...");
 	}
 	else
 	{
@@ -503,19 +515,19 @@ public void FallenWarrior_NPCDeath(int entity)
 		{
 			case 1:
 			{
-				CPrintToChatAll("{crimson}귄{default}: 고맙... 다...");
+				NPCTalkMessage(npc.index, "Thank... you...");
 			}
 			case 2:
 			{
-				CPrintToChatAll("{crimson}귄{default}: 이 기분...");
+				NPCTalkMessage(npc.index, "This feeling...");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{crimson}귄{default}: 밥... 내 친구...");
+				NPCTalkMessage(npc.index, "Bob... My friend...");
 			}
 			case 4:
 			{
-				CPrintToChatAll("{crimson}귄{default}: 반드시... 그 여자를... 막아...");
+				NPCTalkMessage(npc.index, "Must... stop...");
 			}
 		}
 	}

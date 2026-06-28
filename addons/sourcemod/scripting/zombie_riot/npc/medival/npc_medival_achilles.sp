@@ -203,6 +203,7 @@ methodmap MedivalAchilles < CClotBody
 		npc.m_iWearable1 = npc.EquipItem("partyhat", "models/player/items/soldier/soldier_spartan.mdl");
 		SetVariantString("1.2");
 		AcceptEntityInput(npc.m_iWearable1, "SetModelScale");
+		NpcColourCosmetic_ViaPaint(npc.m_iWearable1, 1644825);
 
 		npc.m_iWearable2 = npc.EquipItem("partyhat", "models/workshop/weapons/c_models/c_persian_shield/c_persian_shield.mdl");
 		SetVariantString("1.0");
@@ -280,12 +281,7 @@ public void MedivalAchilles_ClotThink(int iNPC)
 					
 					float vecHit[3];
 					TR_GetEndPosition(vecHit, swingTrace);
-					float damage = 125.0;
-
-					if(Medival_Difficulty_Level_NotMath >= 3)
-					{
-						damage = 150.0;
-					}
+					float damage = 135.0;
 
 					if(ShouldNpcDealBonusDamage(target))
 					{
@@ -606,11 +602,11 @@ public Action Smite_Timer_achilles(Handle Smite_Logic, DataPack pack)
 		if(IsValidEntity(prop2))
 		{
 			DispatchKeyValue(prop2, "model", "models/props_junk/harpoon002a.mdl");
-			DispatchKeyValue(prop2, "modelscale", "2.00");
 			DispatchKeyValue(prop2, "StartDisabled", "false");
 			DispatchKeyValue(prop2, "Solid", "0");
 			SetEntProp(prop2, Prop_Data, "m_nSolidType", 0);
 			DispatchSpawn(prop2);
+			SetEntPropFloat(prop2, Prop_Send, "m_flModelScale", 2.0);
 			SetEntityCollisionGroup(prop2, 1);
 			AcceptEntityInput(prop2, "DisableShadow");
 			AcceptEntityInput(prop2, "DisableCollision");

@@ -1,6 +1,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+//this is only ever saved per game anyways.
 #define DATABASE_LOCAL		"zr_local"
 #define DATATABLE_MAIN		"zr_timestamp"
 #define DATATABLE_AMMO		"zr_ammo"
@@ -20,6 +21,11 @@ static bool Cached[MAXPLAYERS];
 void Database_PluginStart()
 {
 	char error[512];
+	char DelteThisFile[256];
+	
+	Format(DelteThisFile, sizeof(DelteThisFile), "addons/sourcemod/data/sqlite/%s.sq3", DATABASE_LOCAL);
+	DeleteFile(DelteThisFile);
+	//clear out the database that we dont need saved from before!
 
 	Database db = SQLite_UseDatabase(DATABASE_LOCAL, error, sizeof(error));
 	Database_LocalConnected(db, error);
@@ -254,7 +260,8 @@ public void Database_GlobalClientSetup(Database db, int userid, int numQueries, 
 			tr.AddQuery(buffer);
 		}
 
-		Tutorial_ClientSetup(client, tutorial);
+		if(!BetWar_Mode())
+			Tutorial_ClientSetup(client, tutorial);
 		
 		if(results[2].FetchRow())
 		{
@@ -277,7 +284,7 @@ public void Database_GlobalClientSetup(Database db, int userid, int numQueries, 
 			b_HudHitMarker[client] = view_as<bool>(results[2].FetchInt(12));
 			thirdperson[client] = view_as<bool>(results[2].FetchInt(13));
 			f_ZombieVolumeSetting[client] = results[2].FetchFloat(14);
-			b_TauntSpeedIncrease[client] = view_as<bool>(results[2].FetchFloat(15));
+			b_BackwardsWalkNotif[client] = view_as<bool>(results[2].FetchFloat(15));
 			f_Data_InBattleHudDisableDelay[client] = results[2].FetchFloat(16);
 
 			int music = results[2].FetchInt(17);
@@ -339,6 +346,9 @@ public void Loadout_DatabaseLoadFavorite(int client)
 	if(!Loadouts[client])
 		return;
 
+	if(BetWar_Mode())
+		return;
+		
 	int LengthIAm = Loadouts[client].Length;
 	char BufferString[255];
 	for(int i; i < LengthIAm; i++)
@@ -362,6 +372,47 @@ public void MapChooser_OnPreMapEnd()
 	}
 }
 
+void Database_SaveXpAndItems(int client)
+{
+	if(Cached[client])
+	{
+		int id = GetSteamAccountID(client);
+		if(id)
+		{
+			Transaction tr = new Transaction();
+			
+			char buffer[512];
+			FormatEx(buffer, sizeof(buffer), "UPDATE " ... DATATABLE_MISC ... " SET "
+			... "xp = %d, "
+			... "streak = %d, "
+			... "scrap = %d "
+			... "WHERE steamid = %d;",
+			XP[client],
+			PlayStreak[client],
+			Scrap[client],
+			id);
+			tr.AddQuery(buffer);
+			
+			bool newEntry;
+			int level, flags;
+			for(int i; Items_GetNextItem(client, i, level, flags, newEntry); i++)
+			{
+				if(newEntry)
+				{
+					Global.Format(buffer, sizeof(buffer), "INSERT INTO " ... DATATABLE_GIFTITEM ... " (steamid, level, flags) VALUES ('%d', '%d', '%d')", id, level, flags);
+				}
+				else
+				{
+					Global.Format(buffer, sizeof(buffer), "UPDATE " ... DATATABLE_GIFTITEM ... " SET flags = %d WHERE steamid = %d AND level = %d;", flags, id, level);
+				}
+
+				tr.AddQuery(buffer);
+			}
+
+			Global.Execute(tr, Database_Success, Database_Fail, DBPrio_High);
+		}
+	}
+}
 void DataBase_ClientDisconnect(int client)
 {
 	if(Cached[client])
@@ -421,7 +472,7 @@ void DataBase_ClientDisconnect(int client)
 				b_HudHitMarker[client],
 				thirdperson[client],
 				f_ZombieVolumeSetting[client],
-				b_TauntSpeedIncrease[client],
+				b_BackwardsWalkNotif[client],
 				f_Data_InBattleHudDisableDelay[client],
 				view_as<int>(view_as<int>(b_IgnoreMapMusic[client]) + (b_DisableDynamicMusic[client] ? 2 : 0) + (b_EnableRightSideAmmoboxCount[client] ? 4 : 0) + (b_EnableCountedDowns[client] ? 8 : 0) + (b_EnableClutterSetting[client] ? 16 : 0) + (b_EnableNumeralArmor[client] ? 32 : 0) + (b_InteractWithReload[client] ? 64 : 0) + (b_DisableSetupMusic[client] ? 128 : 0) + (b_DisableStatusEffectHints[client] ? 256 : 0) + (b_LastManDisable[client] ? 512 : 0) + (b_DisplayDamageHudSettingInvert[client] ? 1024 : 0)),
 				id);
@@ -459,7 +510,7 @@ void DataBase_ClientDisconnect(int client)
 				b_HudHitMarker[client],
 				thirdperson[client],
 				f_ZombieVolumeSetting[client],
-				b_TauntSpeedIncrease[client],
+				b_BackwardsWalkNotif[client],
 				f_Data_InBattleHudDisableDelay[client],
 				view_as<int>(b_IgnoreMapMusic[client]) + (b_DisableDynamicMusic[client] ? 2 : 0),
 				id);				
@@ -467,23 +518,36 @@ void DataBase_ClientDisconnect(int client)
 
 			tr.AddQuery(buffer);
 
-			Global.Format(buffer, sizeof(buffer), "DELETE FROM " ... DATATABLE_GIFTITEM ... " WHERE steamid = %d;", id);
-			tr.AddQuery(buffer);
-			
+			bool newEntry;
 			int level, flags;
-			for(int i; Items_GetNextItem(client, i, level, flags); i++)
+			for(int i; Items_GetNextItem(client, i, level, flags, newEntry); i++)
 			{
-				Global.Format(buffer, sizeof(buffer), "INSERT INTO " ... DATATABLE_GIFTITEM ... " (steamid, level, flags) VALUES ('%d', '%d', '%d')", id, level, flags);
+				if(newEntry)
+				{
+					Global.Format(buffer, sizeof(buffer), "INSERT INTO " ... DATATABLE_GIFTITEM ... " (steamid, level, flags) VALUES ('%d', '%d', '%d')", id, level, flags);
+				}
+				else
+				{
+					Global.Format(buffer, sizeof(buffer), "UPDATE " ... DATATABLE_GIFTITEM ... " SET flags = %d WHERE steamid = %d AND level = %d;", flags, id, level);
+				}
+
 				tr.AddQuery(buffer);
 			}
-
-			Global.Format(buffer, sizeof(buffer), "DELETE FROM " ... DATATABLE_SKILLTREE ... " WHERE steamid = %d;", id);
-			tr.AddQuery(buffer);
 			
+			int LoopCountGet;
 			char name[32];
-			for(int i; SkillTree_GetNext(client, i, name, flags); i++)
+			for(int i; SkillTree_GetNext(client, i, name, flags, newEntry); i++)
 			{
-				Global.Format(buffer, sizeof(buffer), "INSERT INTO " ... DATATABLE_SKILLTREE ... " (steamid, name, flags) VALUES ('%d', '%s', '%d')", id, name, flags);
+				LoopCountGet++;
+				if(newEntry)
+				{
+					Global.Format(buffer, sizeof(buffer), "INSERT INTO " ... DATATABLE_SKILLTREE ... " (steamid, name, flags) VALUES ('%d', '%s', '%d')", id, name, flags);
+				}
+				else
+				{
+					Global.Format(buffer, sizeof(buffer), "UPDATE " ... DATATABLE_SKILLTREE ... " SET flags = %d WHERE steamid = %d AND name = '%s';", flags, id, name);
+				}
+				
 				tr.AddQuery(buffer);
 			}
 
@@ -495,6 +559,18 @@ void DataBase_ClientDisconnect(int client)
 	}
 
 	delete Loadouts[client];
+}
+
+void Database_ResetSkillTree(int client)
+{
+	Transaction tr = new Transaction();
+
+	int id = GetSteamAccountID(client);
+	char buffer[256];
+	Global.Format(buffer, sizeof(buffer), "DELETE FROM " ... DATATABLE_SKILLTREE ... " WHERE steamid = %d;", id);
+	tr.AddQuery(buffer);
+
+	Global.Execute(tr, Database_Success, Database_Fail, DBPrio_High);
 }
 
 void Database_SaveLoadout(int client, const char[] name)
@@ -625,7 +701,7 @@ static void Database_LocalConnected(Database db, const char[] error)
 		... "spent INTEGER NOT NULL DEFAULT 0, "
 		... "total INTEGER NOT NULL DEFAULT 0, "
 		... "ammo INTEGER NOT NULL DEFAULT 0, "
-		... "leftfordead FLOAT NOT NULL DEFAULT 0.0);");
+		... "cashspendloadout INTEGER NOT NULL DEFAULT 0);");
 		
 		tr.AddQuery("CREATE TABLE IF NOT EXISTS " ... DATATABLE_AMMO ... " ("
 		... "steamid INTEGER NOT NULL, "
@@ -731,7 +807,7 @@ public void Database_LocalGamedata(Database db, int userid, int numQueries, DBRe
 	}
 }
 
-void Database_SaveGameData(int client)
+void Database_SaveGameData(int client, DBPriority prio)
 {
 	if(Local && CurrentGame != -1)
 	{
@@ -774,7 +850,7 @@ void Database_SaveGameData(int client)
 			... "spent = %d, "
 			... "total = %d, "
 			... "ammo = %d, "
-			... "cashspendloadout = %d"
+			... "cashspendloadout = %d "
 			... "WHERE steamid = %d;",
 			CurrentGame,
 			CashSpent[client],
@@ -786,7 +862,7 @@ void Database_SaveGameData(int client)
 
 			tr.AddQuery(buffer);
 			
-			Local.Execute(tr, Database_Success, Database_Fail, DBPrio_High);
+			Local.Execute(tr, Database_Success, Database_Fail, prio);
 		}
 	}
 }

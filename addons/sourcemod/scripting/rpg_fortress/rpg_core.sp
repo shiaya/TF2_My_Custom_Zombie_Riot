@@ -155,10 +155,10 @@ Cookie HudSettingsExtra_Cookies;
 */
 #include "custom/weapon_coin_flip.sp"
 #include "custom/transform_expidonsan.sp"
-#include "custom/transform_iberian.sp"
+#include "custom/transform_alminan.sp"
 #include "custom/transform_merc_human.sp"
 #include "custom/transform_ruianian.sp"
-#include "custom/transform_seaborn.sp"
+#include "custom/transform_dweller.sp"
 
 void RPG_PluginStart()
 {
@@ -249,10 +249,10 @@ void RPG_MapStart()
 	Wand_Map_Precache();
 	
 	Transform_Expidonsa_MapStart();
-	Transform_Iberian_MapStart();
+	Transform_Alminan_MapStart();
 	Transform_MercHuman_MapStart();
 	Transform_Ruianian_MapStart();
-	Transform_Seaborn_MapStart();
+	Transform_Dweller_MapStart();
 
 	SamuraiSword_Map_Precache();
 	GroundSlam_Map_Precache();
@@ -793,7 +793,7 @@ void RPGCore_ResourceReduction(int client, int amount, bool isformdrain = false)
 	{
 		Current_Mana[client] = 0;
 		bool CancelDeform = false;
-		if(form.Func_FormEnergyRunOutLogic != INVALID_FUNCTION)
+		if(form.Func_FormEnergyRunOutLogic != INVALID_FUNCTION && form.Func_FormEnergyRunOutLogic != view_as<Function>(0))
 		{
 			Call_StartFunction(null, form.Func_FormEnergyRunOutLogic);
 			Call_PushCell(client);
@@ -919,7 +919,7 @@ bool RPGCore_ClientAllowedToTargetNpc(int victim, int attacker)
 		}
 	}
 	//if someone attacked them while in a party, then allow.
-	if(!EnemyWasAttackedBefore && i_npcspawnprotection[victim] != -1 && i_NpcIsUnderSpawnProtectionInfluence[victim] > 0)
+	if(!EnemyWasAttackedBefore && i_npcspawnprotection[victim] != NPC_SPAWNPROT_OFF && i_NpcIsUnderSpawnProtectionInfluence[victim] > 0)
 	{
 		if(!RPGSpawns_GivePrioLevel(Level[victim], Level[attacker]))
 		{
@@ -1034,6 +1034,7 @@ void RpgCore_OnKillGiveMastery(int client, int MaxHealth)
 			MasteryAdd += GetRandomFloat(0.2, 0.3);
 		}
 		MasteryAdd += GetRandomFloat(0.11, 0.13);
+		MasteryAdd *= 2.0;
 		int totalInt = Stats_Intelligence(client);
 		if(totalInt >= 6000)
 		{
@@ -1130,4 +1131,16 @@ void RPG_FlatRes(int victim, int attacker, int weapon, float &damage)
 	{
 		damage = damageMinimum;
 	}
+}
+public bool Dungeon_Mode()
+{
+	return false;
+}
+int Dungeon_GetEntityZone(int entity, bool forceReset = false)
+{
+	return 0;
+}
+public bool Const2_IgnoreBuilding_FindTraget(int entity)
+{
+	return false;
 }

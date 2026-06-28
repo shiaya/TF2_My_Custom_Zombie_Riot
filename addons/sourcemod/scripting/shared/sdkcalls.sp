@@ -3,6 +3,7 @@
 
 static Handle SDKEquipWearable;
 static Handle SDKGetMaxHealth;
+Handle g_hSDKStartTouch;
 //static Handle g_hStudio_FindAttachment;
 
 static Handle g_hSetAbsOrigin;
@@ -47,7 +48,16 @@ void SDKCall_Setup()
 	SDKGetMaxHealth = EndPrepSDKCall();
 	if(!SDKGetMaxHealth)
 		LogError("[Gamedata] Could not find GetMaxHealth");
-		
+
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "StartTouch");
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	g_hSDKStartTouch = EndPrepSDKCall();
+	if(g_hSDKStartTouch == INVALID_HANDLE)
+	{
+		LogMessage("Failed to create call: StartTouch!");
+	}
+
 	delete gamedata;
 	
 	gamedata = LoadGameConfigFile("zombie_riot");
@@ -70,6 +80,7 @@ void SDKCall_Setup()
 	PrepSDKCall_SetFromConf(gamedata, SDKConf_Signature, "CBasePlayer::SnapEyeAngles");
 	PrepSDKCall_AddParameter(SDKType_QAngle, SDKPass_ByRef);
 	if ((g_hSnapEyeAngles = EndPrepSDKCall()) == null) SetFailState("Failed to create SDKCall for CBasePlayer::SnapEyeAngles!");
+	
 
 
 		
@@ -246,7 +257,7 @@ void SDKCall_SetAbsOrigin(int index, float AbsOrigin[3])
 		SDKCall(g_hSetAbsOrigin, index, AbsOrigin);
 	}
 }
-/*
+
 void SDKCall_SetAbsAngle(int index, float AbsAngle[3])
 {
 	if(g_hSetAbsAngle)
@@ -254,7 +265,7 @@ void SDKCall_SetAbsAngle(int index, float AbsAngle[3])
 		SDKCall(g_hSetAbsAngle, index, AbsAngle);
 	}
 }
-*/
+
 
 #if defined ZR || defined RPG
 stock void SDKCall_RecalculatePlayerBodygroups(int index)
@@ -347,12 +358,23 @@ void UpdateBlockedNavmesh()
 {
 //	sv_cheats.IntValue = 1;
 	//this updates the nav.
-	ServerCommand("sv_cheats 1; nav_load ; sv_cheats 0");
+	Recalculate_NavBlockers();
 //	sv_cheats.IntValue = 0;
 	
 	//This broke and is probably inlined, above is a way easier method.
 //	SDKCall(g_hSDKUpdateBlocked);
 }	
+
+void Recalculate_NavBlockers()
+{
+	int entity = CreateEntityByName("tf_point_nav_interface");
+
+	if (!IsValidEntity(entity))
+		return;
+	AcceptEntityInput(  entity, "RecomputeBlockers" );
+
+	CreateTimer(3.0, Timer_RemoveEntity, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+}
 /*
 stock int SpawnBotCustom()
 {
@@ -511,5 +533,12 @@ void SDKCall_RemoveImmediate(int entity)
 	if (g_SDKCallRemoveImmediate)
 	{
 		SDKCall(g_SDKCallRemoveImmediate, entity);
+	}
+}
+void SDKCall_StartTouch(int entity, int target)
+{
+	if (g_hSDKStartTouch)
+	{
+		SDKCall(g_hSDKStartTouch, entity, target);
 	}
 }

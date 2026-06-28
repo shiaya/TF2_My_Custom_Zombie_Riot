@@ -452,11 +452,11 @@ public void Passanger_Cooldown_Logic(int client, int weapon)
 			b_PassangerExtraCharge[client] = true;
 			float ClientPos[3];
 			WorldSpaceCenter(client, ClientPos);
-			TR_EnumerateEntitiesSphere(ClientPos, 100.0, PARTITION_NON_STATIC_EDICTS, TraceEntityEnumerator_Passanger, client);
+			TR_EnumerateEntitiesSphere(ClientPos, 300.0, PARTITION_NON_STATIC_EDICTS, TraceEntityEnumerator_Passanger, client);
 
 			if(b_PassangerExtraCharge[client])
 			{
-				f_PassangerAbilityCooldownRegen[client] -= 0.2;
+				f_PassangerAbilityCooldownRegen[client] -= 0.1;
 			}
 			if(b_PassangerExtraCharge[client])
 			{
@@ -584,7 +584,7 @@ public void Weapon_Passanger_LightningArea(int client, int weapon, bool crit, in
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.");		
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough None");		
 	}
 	f_PassangerHudDelay[client] = 0.0;
 	Passanger_Cooldown_Logic(client, weapon);
@@ -680,6 +680,7 @@ void Passanger_Activate_Storm(int client, int weapon, float lightningpos[3])
 	float damage = 150.0;
 	damage *= Attributes_Get(weapon, 410, 1.0); //massive damage!
 	damage *= 0.5;
+	damage *= 0.7;
 
 
 	FakeClientCommand(client, "voicemenu 0 2"); //Go go go! Cause them to point!
@@ -746,7 +747,7 @@ public Action TimerPassangerAbility(Handle timer, DataPack pack)
 			RandomTargetLocation_Elevated = RandomTargetLocation;
 			RandomTargetLocation_Elevated[2] += 1000.0;// We wantthe big laser to come from the holy skies.
 
-		//	EmitSoundToAll(IRENE_KICKUP_1, target, _, 75, _, 0.60);
+		//	EmitSoundToAll(AMPHI_KICKUP_1, target, _, 75, _, 0.60);
 			
 			DataPack pack_boom = new DataPack();
 			pack_boom.WriteFloat(RandomTargetLocation[0]);

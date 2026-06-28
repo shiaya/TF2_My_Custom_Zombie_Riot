@@ -249,28 +249,30 @@ static void ClotThink(int iNPC)
 		float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
 		float flDistanceToTarget = GetVectorDistance(vecTarget, VecSelfNpc, true);
 
-		int iPitch = npc.LookupPoseParameter("body_pitch");
-		if(iPitch < 0)
-			return;		
-
-		//Body pitch
-		float v[3], ang[3];
 		float SelfVec[3]; WorldSpaceCenter(npc.index, SelfVec);
-		if(!IsValidEntity(EntRefToEntIndex(i_laz_entity[npc.index])))
-			SubtractVectors(SelfVec, vecTarget, v); 
-		else
+		int iPitch = npc.LookupPoseParameter("body_pitch");
+		if(iPitch >= 0)
 		{
-			float Proj_Vec[3];
-			GetEntPropVector(EntRefToEntIndex(i_laz_entity[npc.index]), Prop_Data, "m_vecAbsOrigin", Proj_Vec);
-			SubtractVectors(SelfVec, Proj_Vec, v); 
-			npc.FaceTowards(Proj_Vec, 20000.0);
-		}
-		NormalizeVector(v, v);
-		GetVectorAngles(v, ang); 
-								
-		float flPitch = npc.GetPoseParameter(iPitch);
-								
-		npc.SetPoseParameter(iPitch, ApproachAngle(ang[0], flPitch, 10.0));
+
+			//Body pitch
+			float v[3], ang[3];
+			if(!IsValidEntity(EntRefToEntIndex(i_laz_entity[npc.index])))
+				SubtractVectors(SelfVec, vecTarget, v); 
+			else
+			{
+				float Proj_Vec[3];
+				GetEntPropVector(EntRefToEntIndex(i_laz_entity[npc.index]), Prop_Data, "m_vecAbsOrigin", Proj_Vec);
+				SubtractVectors(SelfVec, Proj_Vec, v); 
+				npc.FaceTowards(Proj_Vec, 20000.0);
+			}
+			NormalizeVector(v, v);
+			GetVectorAngles(v, ang); 
+									
+			float flPitch = npc.GetPoseParameter(iPitch);
+									
+			npc.SetPoseParameter(iPitch, ApproachAngle(ang[0], flPitch, 10.0));
+			
+		}	
 
 		if(flDistanceToTarget < (500.0*500.0))
 		{
@@ -383,7 +385,7 @@ static void ClotThink(int iNPC)
 
 						int beam = ConnectWithBeamClient(npc.m_iWearable6, Proj, r, g, b, f_start, f_end, amp, LASERBEAM);
 						CreateTimer(Laser_Time, Timer_RemoveEntity, EntIndexToEntRef(beam), TIMER_FLAG_NO_MAPCHANGE);
-						i_rocket_particle[Proj] = EntIndexToEntRef(beam);
+						i_WandParticle[Proj] = EntIndexToEntRef(beam);
 					}
 				}
 			}

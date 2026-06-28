@@ -50,15 +50,7 @@ static int i_Grab_Twin_ID;
 static int i_Got_My_Twin[MAXENTITIES];
 void Twin1_OnMapStart_NPC()
 {
-	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
-	for (int i = 0; i < (sizeof(g_HurtSounds));		i++) { PrecacheSound(g_HurtSounds[i]);		}
-	for (int i = 0; i < (sizeof(g_IdleAlertedSounds)); i++) { PrecacheSound(g_IdleAlertedSounds[i]); }
-	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
-	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
-	for (int i = 0; i < (sizeof(g_RangedAttackSounds));   i++) { PrecacheSound(g_RangedAttackSounds[i]);   }
-	for (int i = 0; i < (sizeof(g_RangedReloadSound));   i++) { PrecacheSound(g_RangedReloadSound[i]);   }
-	PrecacheModel("models/player/scout.mdl");
-	PrecacheSound("#zombiesurvival/matrix/doubletrouble.mp3");
+
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Twin No.");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_twins");
@@ -67,8 +59,25 @@ void Twin1_OnMapStart_NPC()
 	data.Flags = 0;
 	data.Category = Type_Matrix;
 	data.Func = ClotSummon;
+	data.Precache = ClotPrecache;
 	i_Grab_Twin_ID = NPC_Add(data);
 }
+
+static void ClotPrecache()
+{
+	for (int i = 0; i < (sizeof(g_DeathSounds));	   i++) { PrecacheSound(g_DeathSounds[i]);	   }
+	for (int i = 0; i < (sizeof(g_HurtSounds));		i++) { PrecacheSound(g_HurtSounds[i]);		}
+	for (int i = 0; i < (sizeof(g_IdleAlertedSounds)); i++) { PrecacheSound(g_IdleAlertedSounds[i]); }
+	for (int i = 0; i < (sizeof(g_MeleeAttackSounds)); i++) { PrecacheSound(g_MeleeAttackSounds[i]); }
+	for (int i = 0; i < (sizeof(g_MeleeHitSounds)); i++) { PrecacheSound(g_MeleeHitSounds[i]); }
+	for (int i = 0; i < (sizeof(g_RangedAttackSounds));   i++) { PrecacheSound(g_RangedAttackSounds[i]);   }
+	for (int i = 0; i < (sizeof(g_RangedReloadSound));   i++) { PrecacheSound(g_RangedReloadSound[i]);   }
+	PrecacheModel("models/player/scout.mdl");
+	PrecacheSoundCustom("#zombiesurvival/matrix/doubletrouble.mp3");
+	
+	Matrix_Shared_CorruptionPrecache();
+}
+
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 {
@@ -222,7 +231,7 @@ methodmap Matrix_Twins < CClotBody
 			strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/matrix/doubletrouble.mp3");
 			music.Time = 114;
 			music.Volume = 1.0;
-			music.Custom = false;
+			music.Custom = true;
 			strcopy(music.Name, sizeof(music.Name), "Double Trouble");
 			strcopy(music.Artist, sizeof(music.Artist), "Don Davis");
 			Music_SetRaidMusic(music);
@@ -244,7 +253,7 @@ methodmap Matrix_Twins < CClotBody
 
 		if(whatami)
 		{
-			CPrintToChatAll("{forestgreen}%s{default}: What am I supposed to be.", "Twin No. ");
+			NPCTalkMessage(npc.index, "What am I supposed to be.");
 		}
 		
 		FormatEx(c_NpcName[npc.index], sizeof(c_NpcName[]), "%s %i", "Twin No.", number);
@@ -281,6 +290,11 @@ methodmap Matrix_Twins < CClotBody
 		
 		return npc;
 	}
+}
+
+static void NPCTalkMessage(int entity, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(entity, "forestgreen", message);
 }
 
 public void Matrix_Twins_ClotThink(int iNPC)
@@ -486,10 +500,8 @@ static int Matrix_Twins_SelfDefense(Matrix_Twins npc, float gameTime, int target
 							{
 								damage = 1.0;
 							}
-							Elemental_AddCorruptionDamage(targetTrace, npc.index, 50);
 							SDKHooks_TakeDamage(targetTrace, npc.index, npc.index, damage, DMG_CLUB, -1, _, vecHit);
-							//Reduce damage after dealing
-							damage *= 0.92;
+							Elemental_AddCorruptionDamage(targetTrace, npc.index, RoundToNearest(damage * 0.15), true, true);		
 							// On Hit stuff
 							bool Knocked = false;
 							if(!PlaySound)
@@ -585,7 +597,7 @@ static int Matrix_Twins_SelfDefense(Matrix_Twins npc, float gameTime, int target
 				npc.AddGesture("ACT_MP_ATTACK_STAND_SECONDARY");
 				KillFeed_SetKillIcon(npc.index, "enforcer");
 
-				float damage = 15.0;
+				float damage = 30.0;
 				damage *= RaidModeScaling;
 
 				FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "dxhr_sniper_rail_blue");
@@ -716,7 +728,10 @@ static void Matrix_Twins_Apply_Healing(Matrix_Twins npc, float gameTime)
 
 static void Matrix_Twins_healspeak(Matrix_Twins npc)
 {
-	CPrintToChatAll("{forestgreen}%s{default}: %s", NpcStats_ReturnNpcName(npc.index), npc.b_Twin_On ? "내 치유의 렌즈 능력이 준비되었다." : "내 자가 재생 능력이 준비되었다.");
+	if (npc.b_Twin_On)
+		NPCTalkMessage(npc.index, "My Healing Glasses are now Ready.");
+	else
+		NPCTalkMessage(npc.index, "My Self Regeneration is now Ready.");
 }
 
 static void Matrix_Twins_Reset_Healing(Matrix_Twins npc, float gameTime)
@@ -783,6 +798,7 @@ static void RaidPrepare(Matrix_Twins npc)
 
 	RaidBossActive = EntIndexToEntRef(npc.index);
 	RaidAllowsBuildings = false;
+	RaidAllowLastman = true;
 	RaidModeTime = GetGameTime(npc.index) + 200.0;
 	
 	b_thisNpcIsARaid[npc.index] = true;

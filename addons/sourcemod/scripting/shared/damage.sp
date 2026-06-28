@@ -7,11 +7,7 @@
 #define DMG_MEDIGUN_LOW 1.25
 #define DMG_WIDOWS_WINE 1.35
 
-float BarbariansMindNotif[MAXPLAYERS];
-void DamageModifMapStart()
-{
-	Zero(BarbariansMindNotif);
-}
+
 
 stock bool Damage_Modifiy(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
@@ -24,28 +20,6 @@ stock bool Damage_Modifiy(int victim, int &attacker, int &inflictor, float &dama
 	
 	if(Damage_AnyVictim(victim, attacker, inflictor, damage, damagetype, weapon))
 		return true;
-
-	//LogEntryInvicibleTest(victim, attacker, damage, 6);
-	if(victim <= MaxClients)
-	{
-#if !defined RTS
-		if(Damage_PlayerVictim(victim, attacker, inflictor, damage, damagetype, weapon, damagePosition))
-			return true;
-		//LogEntryInvicibleTest(victim, attacker, damage, 7);
-#endif
-	}
-	else if(b_ThisWasAnNpc[victim])
-	{
-		if(Damage_NPCVictim(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom))
-			return true;
-		//LogEntryInvicibleTest(victim, attacker, damage, 8);
-	}
-	else if(i_IsABuilding[victim])
-	{
-		if(Damage_BuildingVictim(victim, attacker, inflictor, damage, damagetype, weapon))
-			return true;
-		//LogEntryInvicibleTest(victim, attacker, damage, 9);
-	}
 
 	if(attacker >= 0)
 	{
@@ -74,12 +48,59 @@ stock bool Damage_Modifiy(int victim, int &attacker, int &inflictor, float &dama
 			//LogEntryInvicibleTest(victim, attacker, damage, 16);
 		}
 	}
-	Damage_AnyVictimPost(victim, damage, damagetype);
+	
+	//LogEntryInvicibleTest(victim, attacker, damage, 6);
+	if(victim <= MaxClients)
+	{
+#if !defined RTS
+		if(Damage_PlayerVictim(victim, attacker, inflictor, damage, damagetype, weapon, damagePosition))
+			return true;
+		//LogEntryInvicibleTest(victim, attacker, damage, 7);
+#endif
+	}
+	else if(b_ThisWasAnNpc[victim])
+	{
+		if(Damage_NPCVictim(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom))
+			return true;
+		//LogEntryInvicibleTest(victim, attacker, damage, 8);
+	}
+	else if(i_IsABuilding[victim])
+	{
+		if(Damage_BuildingVictim(victim, attacker, inflictor, damage, damagetype, weapon))
+			return true;
+		//LogEntryInvicibleTest(victim, attacker, damage, 9);
+	}
+	Damage_AnyVictimPost(victim, attacker, inflictor, damage, damagetype, weapon, damagePosition);
 	return false;
 }
 
-stock void Damage_AnyVictimPost(int victim, float &damage, int &damagetype)
+stock void Damage_AnyVictimPost(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damagePosition[3])
 {
+	if(victim <= MaxClients)
+	{
+		int Victim_weapon = GetEntPropEnt(victim, Prop_Send, "m_hActiveWeapon");
+		if(IsValidEntity(Victim_weapon))
+		{
+			if(EntityFuncTakeDamage[Victim_weapon][2] && EntityFuncTakeDamage[Victim_weapon][2] != INVALID_FUNCTION)
+			{
+				Call_StartFunction(null, EntityFuncTakeDamage[Victim_weapon][2]);
+				Call_PushCell(victim);
+				Call_PushCell(attacker);
+				Call_PushCell(inflictor);
+				Call_PushFloat(damage);
+				Call_PushCell(damagetype);
+				Call_PushCell(weapon);
+				Call_PushCell(Victim_weapon);
+				Call_PushArray(damagePosition, sizeof(damagePosition));
+				Call_PushCell(i_HexCustomDamageTypes[victim]);
+				Call_Finish();
+			}
+		}
+	}
+	//the hud shouzldnt check this.
+	if(CheckInHud())
+		return;
+
 	if(!HasSpecificBuff(victim, "Expert's Mind"))
 		return;
 
@@ -114,8 +135,78 @@ stock bool Damage_AnyVictim(int victim, int &attacker, int &inflictor, float &da
 			{
 				damage *= 0.75;
 			}
+			//Hardcode cus lazy
+
+			if(Rogue_Theme() == ReilaRift)
+			{
+				switch(Rogue_GetFloor())
+				{
+					case 4:
+					{
+						if(Rogue_GetStage() == 0)
+						{
+							if(!Rogue_HasNamedArtifact("Map around the Castle"))
+							{
+								//dont give buff if under rift of fractured
+								damage *= 0.9;
+							}
+						}
+					}
+					case 1:
+					{
+						if(Rogue_GetStage() == 1)
+						{
+							damage *= 0.9;
+						}
+					}
+					default:
+					{
+						if(Rogue_GetStage() == 0)
+						{
+							damage *= 0.9;
+						}
+					}
+				}
+			}
+		}
+		else if (GetTeam(attacker) == TFTeam_Red)
+		{
+			//Hardcode cus lazy
+			if(Rogue_Theme() == ReilaRift)
+			{
+				switch(Rogue_GetFloor())
+				{
+					case 4:
+					{
+						if(Rogue_GetStage() == 0)
+						{
+							if(!Rogue_HasNamedArtifact("Map around the Castle"))
+							{
+								//dont give buff if under rift of fractured as the first stage is forced
+								damage *= 1.15;
+							}
+						}
+					}
+					case 1:
+					{
+						if(Rogue_GetStage() == 1)
+						{
+							damage *= 1.15;
+						}
+					}
+					default:
+					{
+						if(Rogue_GetStage() == 0)
+						{
+							damage *= 1.15;
+						}
+					}
+				}
+			}
 		}
 	}
+	if(!CheckInHud())
+		Rogue_TakeDamage(victim, attacker, inflictor, damage, damagetype, weapon);
 #endif
 	if(!CheckInHud() && !b_NpcIsTeamkiller[attacker])
 	{
@@ -162,6 +253,29 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 	if(!CheckInHud())
 		HudDamageIndicator(victim,damagetype, false);
 #if defined ZR
+
+	if(attacker <= MaxClients && attacker > 0 && attacker != 0)
+	{
+		if(victim <= MaxClients && victim > 0 && victim != 0)
+		{
+			//in PVP scenarios, we nerf damage by 10x
+			damage *= 0.35;
+			switch(Armor_Level[victim])
+			{
+				case 50:
+					damage *= 0.75;
+
+				case 100:
+					damage *= 0.45;
+
+				case 150:
+					damage *= 0.2;
+
+				case 200:
+					damage *= 0.1;
+			}
+		}
+	}
 	if(VIPBuilding_Active())
 		return true;
 	
@@ -175,22 +289,31 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 		if(!CheckInHud())
 			OnTakeDamage_ProvokedAnger(Victim_weapon);
 
-		damage = Player_OnTakeDamage_Equipped_Weapon_Logic(victim, attacker, inflictor, damage, damagetype, weapon, Victim_weapon, damagePosition);
+		damage = Player_OnTakeDamage_Equipped_Weapon_Logic(victim, attacker, inflictor, damage, damagetype, weapon, Victim_weapon, damagePosition, i_HexCustomDamageTypes[victim]);
 	}
 	
 	if(OnTakeDamage_ShieldLogic(victim, damagetype))
 		return true;
 
 	if(!CheckInHud())
+	{
 		if(RaidbossIgnoreBuildingsLogic(1) && i_HealthBeforeSuit[victim] > 0)
-			damage *= 3.0;	//when a raid is alive, make quantum armor 8x as bad at tanking.
+		{
+			if(!(i_HexCustomDamageTypes[victim] & ZR_ELEMENTAL_QUANTUM))
+				damage *= 3.0;	//when a raid is alive, make quantum armor bad at tanking
+		}
+	}
 	
 	if(!CheckInHud())
 	{
 		// Reduce damage taken as new players in extreme difficulties
-		if(Level[victim] < 10 && Database_IsCached(victim))
+		if(Level[victim] >= 0 && Level[victim] <= 10 && Database_IsCached(victim))
 		{
 			int rank = Waves_GetLevel();
+			if(rank < 5)
+				rank = 5;
+			if(rank > 100)
+				rank = 100;
 			if(rank > Level[victim])
 			{
 				// Up to 50 level difference for 50% res
@@ -209,43 +332,40 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 
 	if(!CheckInHud())
 	{
-		switch(i_CurrentEquippedPerk[victim])
+		if(i_CurrentEquippedPerk[victim] & PERK_TESLAR_MULE)
 		{
-			case 6:
+			int flHealth = GetEntProp(victim, Prop_Send, "m_iHealth");
+			int flMaxHealth = SDKCall_GetMaxHealth(victim);
+		
+			if((damage > float(flMaxHealth / 20) || flHealth < flMaxHealth / 5 || damage > 25.0) && f_WidowsWineDebuffPlayerCooldown[victim] < GameTime) //either too much dmg, or your health is too low.
 			{
-				int flHealth = GetEntProp(victim, Prop_Send, "m_iHealth");
-				int flMaxHealth = SDKCall_GetMaxHealth(victim);
-			
-				if((damage > float(flMaxHealth / 20) || flHealth < flMaxHealth / 5 || damage > 25.0) && f_WidowsWineDebuffPlayerCooldown[victim] < GameTime) //either too much dmg, or your health is too low.
-				{
-					f_WidowsWineDebuffPlayerCooldown[victim] = GameTime + 20.0;
-					
-					float vecVictim[3]; WorldSpaceCenter(victim, vecVictim);
-					
-					ParticleEffectAt(vecVictim, "peejar_impact_cloud_milk", 0.5);
-					
-					EmitSoundToAll("weapons/jar_explode.wav", victim, SNDCHAN_AUTO, 80, _, 1.0);
+				f_WidowsWineDebuffPlayerCooldown[victim] = GameTime + 20.0;
+				
+				float vecVictim[3]; WorldSpaceCenter(victim, vecVictim);
+				
+				ParticleEffectAt(vecVictim, "peejar_impact_cloud_milk", 0.5);
+				
+				EmitSoundToAll("weapons/jar_explode.wav", victim, SNDCHAN_AUTO, 80, _, 1.0);
 
-					if(!(damagetype & DMG_TRUEDAMAGE))
-						damage *= 0.25;
-						
-					for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+				if(!(damagetype & DMG_TRUEDAMAGE))
+					damage *= 0.25;
+					
+				for(int entitycount; entitycount<i_MaxcountNpcTotal; entitycount++)
+				{
+					int baseboss_index = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
+					if (IsValidEntity(baseboss_index))
 					{
-						int baseboss_index = EntRefToEntIndexFast(i_ObjectsNpcsTotal[entitycount]);
-						if (IsValidEntity(baseboss_index))
+						if(!b_NpcHasDied[baseboss_index])
 						{
-							if(!b_NpcHasDied[baseboss_index])
+							if (GetTeam(victim)!=GetTeam(baseboss_index)) 
 							{
-								if (GetTeam(victim)!=GetTeam(baseboss_index)) 
+								float vecTarget[3]; WorldSpaceCenter(baseboss_index, vecTarget);
+								
+								float flDistanceToTarget = GetVectorDistance(vecVictim, vecTarget, true);
+								if(flDistanceToTarget < 90000)
 								{
-									float vecTarget[3]; WorldSpaceCenter(baseboss_index, vecTarget);
-									
-									float flDistanceToTarget = GetVectorDistance(vecVictim, vecTarget, true);
-									if(flDistanceToTarget < 90000)
-									{
-										ParticleEffectAt(vecTarget, "peejar_impact_cloud_milk", 0.5);
-										ApplyStatusEffect(victim, baseboss_index, "Nemal's Teslar Mule", FL_WIDOWS_WINE_DURATION);
-									}
+									ParticleEffectAt(vecTarget, "peejar_impact_cloud_milk", 0.5);
+									ApplyStatusEffect(victim, baseboss_index, "Teslar Mule", FL_WIDOWS_WINE_DURATION);
 								}
 							}
 						}
@@ -254,8 +374,14 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 			}
 		}
 	}
-
+	
+#if defined ZR || defined NOG
+	//true damage does NOT Ignore this.
+	VausMagicaShieldLogicNpcOnTakeDamage(attacker, victim, damage,damagetype, i_HexCustomDamageTypes[victim], weapon);
+#endif
 	OnTakeDamageResistanceBuffs(victim, attacker, inflictor, damage, damagetype, weapon);
+	if(!CheckInHud())
+		Attributes_HitTaken(victim, attacker, damage);
 
 	int vehicle = Vehicle_Driver(victim);
 
@@ -265,6 +391,11 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 		if(vehicle != -1)
 			armorEnt = vehicle;
 		
+		float ArmorDmgRes = ZR_ARMOR_DAMAGE_REDUCTION;
+		if(f_LivingArmorPenalty[victim] > GetGameTime() || (Attributes_Get(victim, Attrib_Armor_AliveMode, 0.0) != 0.0))
+		{
+			ArmorDmgRes = ZR_LIVING_ARMOR_DAMAGE_REDUCTION;
+		}
 		if(CheckInHud())
 		{
 			if(vehicle != -1 && Armor_Charge[armorEnt] > 0)
@@ -276,7 +407,7 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 		{
 			if(Armor_Charge[armorEnt] > 0)
 			{
-				int dmg_through_armour = RoundToCeil(damage * ZR_ARMOR_DAMAGE_REDUCTION_INVRERTED);
+				int dmg_through_armour = RoundToCeil(damage * (1.0 - ArmorDmgRes));
 				switch(GetRandomInt(1,3))
 				{
 					case 1:
@@ -288,12 +419,12 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 					case 3:
 						EmitSoundToClient(victim, "physics/metal/metal_box_impact_bullet3.wav", victim, SNDCHAN_STATIC, 60, _, 0.25, GetRandomInt(95,105));
 				}						
-				if(RoundToCeil(damage * ZR_ARMOR_DAMAGE_REDUCTION) >= Armor_Charge[armorEnt])
+				if(RoundToCeil(damage * ArmorDmgRes) >= Armor_Charge[armorEnt])
 				{
-					int damage_recieved_after_calc;
-					damage_recieved_after_calc = RoundToCeil(damage) - Armor_Charge[armorEnt];
+					int damage_received_after_calc;
+					damage_received_after_calc = RoundToCeil(damage) - Armor_Charge[armorEnt];
 					Armor_Charge[armorEnt] = 0;
-					damage = float(damage_recieved_after_calc);
+					damage = float(damage_received_after_calc);
 
 					//armor is broken!
 					if(f_Armor_BreakSoundDelay[victim] < GetGameTime())
@@ -313,7 +444,7 @@ stock bool Damage_PlayerVictim(int victim, int &attacker, int &inflictor, float 
 				}
 				else
 				{
-					Armor_Charge[armorEnt] -= RoundToCeil(damage * ZR_ARMOR_DAMAGE_REDUCTION);
+					Armor_Charge[armorEnt] -= RoundToCeil(damage * ArmorDmgRes);
 					damage = 0.0;
 					damage += float(dmg_through_armour);
 				}
@@ -376,8 +507,33 @@ stock bool Damage_NPCVictim(int victim, int &attacker, int &inflictor, float &da
 	view_as<CClotBody>(victim).m_bGib = false;
 	float GameTime = GetGameTime();
 	
+	if (HasSpecificBuff(victim, "Challenger"))
+	{
+		if (attacker == view_as<CClotBody>(victim).m_iTarget)
+			damage *= 2.0;
+		else
+			damage *= 0.5;
+	}
+
 #if defined ZR
 
+	if(BetWar_Mode())
+	{
+		if(!CheckInHud() && (damagetype & DMG_CLUB))
+		{
+			float vecVictim[3]; WorldSpaceCenter(victim,vecVictim);
+			float VecAttacker[3]; WorldSpaceCenter(attacker, VecAttacker);
+			
+			float flDistanceToTarget = GetVectorDistance(vecVictim, VecAttacker, true);
+			if(flDistanceToTarget < (150.0 * 150.0))
+			{
+				//knockback
+				Custom_Knockback(attacker, victim, 350.0);
+				//little immunity!
+				ApplyStatusEffect(victim, victim, "Solid Stance", 0.5);	
+			}
+		}
+	}
 	if(Rogue_Mode() && GetTeam(victim) != TFTeam_Red)
 	{
 		if(!CheckInHud())
@@ -573,49 +729,71 @@ stock bool Damage_NPCVictim(int victim, int &attacker, int &inflictor, float &da
 void NpcArmorExtra(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
 	CClotBody npc = view_as<CClotBody>(victim);
-	if(npc.m_flArmorCount > 0.0)
+	if(npc.m_flArmorCount <= 0.0)
+		return;
+	if(!CheckInHud())
 	{
-		if(!CheckInHud())
+		if(damagetype & DMG_CLUB)
 		{
-			if(damagetype & DMG_CLUB)
+			float SubtractBy = ((damage * ((npc.m_flArmorProtect - 1.0) * -1.0)) * 1.35);
+			npc.m_flArmorCount -= SubtractBy;
+			
+			//armored enemies get more damage.
+			int DisplayCritSoundTo;
+			if(attacker <= MaxClients)
 			{
-				npc.m_flArmorCount -= ((damage * ((npc.m_flArmorProtect - 1.0) * -1.0)) * 1.35);
-				//armored enemies get more damage.
-				int DisplayCritSoundTo;
-				if(attacker <= MaxClients)
-					DisplayCritSoundTo = attacker;
-				else if(inflictor <= MaxClients)
-					DisplayCritSoundTo = inflictor;
-					
-				if(DisplayCritSoundTo > 0 && DisplayCritSoundTo <= MaxClients)
-				{
-					bool PlaySound = false;
-					if(f_MinicritSoundDelay[DisplayCritSoundTo] < GetGameTime())
-					{
-						PlaySound = true;
-						f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
-					}
-					
-					DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,true); //Display crit above head
-				}
-
+				DisplayCritSoundTo = attacker;
+				f_ArmorDamageDeltHud[attacker] += SubtractBy;
 			}
-			else
+			else if(inflictor <= MaxClients)
 			{
-				npc.m_flArmorCount -= (damage * ((npc.m_flArmorProtect - 1.0) * -1.0));
+				DisplayCritSoundTo = inflictor;
+				f_ArmorDamageDeltHud[inflictor] += SubtractBy;
+			}
+				
+			if(DisplayCritSoundTo > 0 && DisplayCritSoundTo <= MaxClients)
+			{
+				bool PlaySound = false;
+				if(f_MinicritSoundDelay[DisplayCritSoundTo] < GetGameTime())
+				{
+					PlaySound = true;
+					f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
+				}
+				
+				DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,true); //Display crit above head
+			}
+
+		}
+		else
+		{
+			float SubtractBy = ((damage * ((npc.m_flArmorProtect - 1.0) * -1.0)));
+			npc.m_flArmorCount -= SubtractBy;
+			if(attacker <= MaxClients)
+			{
+				f_ArmorDamageDeltHud[attacker] += SubtractBy;
+			}
+			else if(inflictor <= MaxClients)
+			{
+				f_ArmorDamageDeltHud[inflictor] += SubtractBy;
 			}
 		}
-		damage *= npc.m_flArmorProtect; //negate damage
-		if(!CheckInHud())
-		{
-			if(npc.m_iArmorType == 0)
-				npc.PlayHurtArmorSound();
+	}
+	damage *= npc.m_flArmorProtect; //negate damage
+	if(!CheckInHud())
+	{
+		if(npc.m_iArmorType == 0)
+			npc.PlayHurtArmorSound();
 
-			if(npc.m_flArmorCount <= 0.0) //over damage, add as damage.
+		if(npc.m_flArmorCount <= 0.0) //over damage, add as damage.
+		{
+			//let melee be really good against armor and stuff to reward them.
+			damage -= npc.m_flArmorCount;
+			if(attacker <= MaxClients)
 			{
-				//let melee be really good against armor and stuff to reward them.
-				damage -= npc.m_flArmorCount;
+				f_ArmorDamageDeltHud[attacker] += npc.m_flArmorCount;
 			}
+			else if(inflictor <= MaxClients)
+				f_ArmorDamageDeltHud[inflictor] += npc.m_flArmorCount;
 		}
 	}
 }
@@ -625,7 +803,19 @@ stock bool Damage_BuildingVictim(int victim, int &attacker, int &inflictor, floa
 #if defined ZR || defined RPG
 	OnTakeDamageResistanceBuffs(victim, attacker, inflictor, damage, damagetype, weapon);
 #endif
-
+#if defined ZR
+	switch(ZR_Get_Modifier())
+	{
+		case OLD_TIMES:
+		{
+			damage *= 1.25;
+		}
+		case NOSTALGICA:
+		{
+			damage *= 1.75;
+		}
+	}
+#endif
 	if(b_ThisEntityIgnored[victim])
 	{
 		//True damage ignores this.
@@ -728,9 +918,13 @@ stock bool Damage_NPCAttacker(int &attacker,float &damage, int &damagetype)
 #if defined ZR
 	if(!(damagetype & (DMG_CLUB|DMG_TRUEDAMAGE))) //if its not melee damage
 	{
-		if(i_CurrentEquippedPerk[attacker] == 5)
+		if(i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER)
 		{
 			damage *= 1.25;
+		}
+		if(i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER_X)
+		{
+			damage *= 1.35;
 		}
 	}
 #endif	//zr
@@ -747,8 +941,23 @@ stock bool Damage_BuildingAttacker(int &attacker, float &damage)
 }
 
 #if defined ZR
-static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, int equipped_weapon, float damagePosition[3])
+static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, int equipped_weapon, float damagePosition[3], int zr_custom_damage)
 {
+	if(EntityFuncTakeDamage[equipped_weapon][1] && EntityFuncTakeDamage[equipped_weapon][1] != INVALID_FUNCTION)
+	{
+		Call_StartFunction(null, EntityFuncTakeDamage[equipped_weapon][1]);
+		Call_PushCell(victim);
+		Call_PushCellRef(attacker);
+		Call_PushCellRef(inflictor);
+		Call_PushFloatRef(damage);
+		Call_PushCellRef(damagetype);
+		Call_PushCellRef(weapon);
+		Call_PushCell(equipped_weapon);
+		Call_PushArray(damagePosition, sizeof(damagePosition));
+		Call_PushCell(zr_custom_damage);
+		Call_Finish();
+		return damage;
+	}
 	switch(i_CustomWeaponEquipLogic[equipped_weapon])
 	{
 		case WEAPON_ARK: // weapon_ark
@@ -771,17 +980,17 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 		case WEAPON_MLYNAR: // weapon_ark
 		{
 			if(!CheckInHud())
-				Player_OnTakeDamage_Mlynar(victim, damage, attacker, equipped_weapon);
+				Player_OnTakeDamage_Mlynar(victim, damage, attacker, equipped_weapon,0,zr_custom_damage);
 		}
 		case WEAPON_MLYNAR_PAP: // weapon_ark
 		{
 			if(!CheckInHud())
-				Player_OnTakeDamage_Mlynar(victim, damage, attacker, equipped_weapon, 1);
+				Player_OnTakeDamage_Mlynar(victim, damage, attacker, equipped_weapon, 1,zr_custom_damage);
 		}
 		case WEAPON_MLYNAR_PAP_2: // weapon_ark
 		{
 			if(!CheckInHud())
-				Player_OnTakeDamage_Mlynar(victim, damage, attacker, equipped_weapon, 2);
+				Player_OnTakeDamage_Mlynar(victim, damage, attacker, equipped_weapon, 2, zr_custom_damage);
 		}
 		case WEAPON_OCEAN, WEAPON_OCEAN_PAP, WEAPON_SPECTER, WEAPON_ULPIANUS, WEAPON_SKADI:
 		{
@@ -854,6 +1063,10 @@ static float Player_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attacker
 				if(!CheckInHud())
 					Player_OnTakeDamage_Magnesis(victim, damage, attacker);
 		}
+		case WEAPON_RAIGEKI:
+		{
+			return Player_OnTakeDamage_Raigeki(victim, damage, attacker);
+		}
 		case WEAPON_YAKUZA:
 		{
 			Yakuza_SelfTakeDamage(victim, attacker, damage, damagetype, equipped_weapon);
@@ -920,10 +1133,7 @@ static bool OnTakeDamageAbsolutes(int victim, int &attacker, int &inflictor, flo
 	{
 		f_TimeUntillNormalHeal[victim] = GameTime + 4.0;
 		i_HasBeenBackstabbed[victim] = false;
-		if(f_TraceAttackWasTriggeredSameFrame[victim] != GameTime)
-		{
-			i_HasBeenHeadShotted[victim] = false;
-		}
+	//	i_HasBeenHeadShotted[victim] = false;
 		
 	}
 		
@@ -955,6 +1165,21 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		static int DummyAmmotype = 0; //useless but needed
 		NPC_TraceAttack(victim, attacker, inflictor, damage, damagetype, DummyAmmotype, 0, i_MeleeHitboxHit[attacker]);
 	}
+	if(EntityFuncTakeDamage[weapon][0] && EntityFuncTakeDamage[weapon][0] != INVALID_FUNCTION)
+	{
+		Call_StartFunction(null, EntityFuncTakeDamage[weapon][0]);
+		Call_PushCell(victim);
+		Call_PushCellRef(attacker);
+		Call_PushCellRef(inflictor);
+		Call_PushFloatRef(damage);
+		Call_PushCellRef(damagetype);
+		Call_PushCellRef(weapon);
+		Call_PushArray(damageForce, sizeof(damageForce));
+		Call_PushArray(damagePosition, sizeof(damagePosition));
+		Call_PushCell(zr_custom_damage);
+		Call_Finish();
+		return damage;
+	}
 	
 	switch(i_CustomWeaponEquipLogic[weapon])
 	{
@@ -973,10 +1198,10 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 			if(!CheckInHud())
 				return SniperMonkey_CrippleMoab(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition);
 		}
-		case WEAPON_IRENE:
+		case WEAPON_AMPHI:
 		{
 			if(!CheckInHud())
-				Npc_OnTakeDamage_Iberia(attacker, damagetype);
+				Npc_OnTakeDamage_Almina(attacker, damagetype);
 		}
 		case 7://WEAPON_PHLOG:
 		{
@@ -1131,8 +1356,7 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 		}
 		case WEAPON_RED_BLADE:
 		{
-			if(!CheckInHud())
-				WeaponRedBlade_OnTakeDamageNpc(attacker,victim, damagetype,weapon, damage);
+			WeaponRedBlade_OnTakeDamageNpc(attacker,victim, damagetype,weapon, damage);
 		}
 		case WEAPON_SICCERINO, WEAPON_WALDCH_SWORD_NOVISUAL, WEAPON_WALDCH_SWORD_REAL:
 		{
@@ -1242,9 +1466,41 @@ static stock float NPC_OnTakeDamage_Equipped_Weapon_Logic(int victim, int &attac
 			if(!CheckInHud())
 				SherrifRevolver_NPCTakeDamage(attacker, victim, damage,weapon, i_CustomWeaponEquipLogic[weapon]);
 		}
+		case WEAPON_KIT_OMEGA:
+        {
+            if(!CheckInHud())
+           		KitOmega_NPCTakeDamage_Melee(attacker, victim, damage, weapon, damagetype);
+        }
+        case WEAPON_KIT_OMEGA_GAUSS:
+        {
+            if(!CheckInHud())
+            KitOmega_NPCTakeDamage_Gauss(attacker, victim, damage, weapon);
+        }
+        case WEAPON_KIT_PURGE_ANNAHILATOR:
+        {
+            return Npc_OnTakeDamage_Purging_Annahilator(attacker, victim, damage, weapon, damagetype);
+        }
+        case WEAPON_KIT_PURGE_CRUSHER:
+        {
+            return PurgeKit_NPCTakeDamage_Crusher(attacker, victim, damage, weapon, damagetype);
+        }
+        case WEAPON_KIT_PURGE_RAMPAGER:
+        {
+           return PurgeKit_NPCTakeDamage_Rampager(attacker, victim, damage, weapon, damagetype);
+		}
+        case WEAPON_BRICK:
+        {
+            if(!CheckInHud())
+				return Brick_NPCTakeDamage_Do(attacker, inflictor, victim, damage, weapon, damagetype);
+		}
+		case WEAPON_BURNINGTHUMB:
+		{
+			BurningThumb_NPCTakeDamage(victim, attacker, damage, weapon);
+		}
 	}
 #endif
 
+	
 #if defined RPG
 	if(!CheckInHud())
 	{
@@ -1360,6 +1616,7 @@ static stock void OnTakeDamageRpgAgressionOnHit(int victim, int &attacker, int &
 
 stock void OnTakeDamageNpcBaseArmorLogic(int victim, int &attacker, float &damage, int &damagetype, bool trueArmorOnly = false, int weapon = 0)
 {
+	int StaggerType = StaggerTypeTarget(victim);
 	if((damagetype & DMG_CLUB)) //Needs to be here because it already gets it from the top.
 	{
 		if(!trueArmorOnly)
@@ -1385,9 +1642,21 @@ stock void OnTakeDamageNpcBaseArmorLogic(int victim, int &attacker, float &damag
 				}
 			}
 #endif
+			//if enemy is staggered, remove all res from this
+			if(StaggerType)
+				if(TotalMeleeRes < 1.0)
+					TotalMeleeRes = 1.0;
 			damage *= TotalMeleeRes;
 		}
-		damage *= fl_TotalArmor[victim];
+		if(!StaggerType)
+		{
+			damage *= fl_TotalArmor[victim];
+		}
+		else
+		{
+			if(fl_TotalArmor[victim] > 1.0)
+				damage *= fl_TotalArmor[victim];
+		}
 	}
 	else if(!(damagetype & DMG_TRUEDAMAGE))
 	{
@@ -1395,9 +1664,13 @@ stock void OnTakeDamageNpcBaseArmorLogic(int victim, int &attacker, float &damag
 		{
 			float TotalMeleeRes = 1.0;
 #if defined ZR
-			if(!b_NpcHasDied[attacker] && i_CurrentEquippedPerk[attacker] == 5)
+			if(!b_NpcHasDied[attacker] && (i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER))
 			{
 				TotalMeleeRes *= 1.25;
+			}
+			if(!b_NpcHasDied[attacker] && (i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER_X))
+			{
+				TotalMeleeRes *= 1.35;
 			}
 			if(Medival_Difficulty_Level != 0.0 && GetTeam(victim) != TFTeam_Red)
 			{
@@ -1407,16 +1680,28 @@ stock void OnTakeDamageNpcBaseArmorLogic(int victim, int &attacker, float &damag
 			TotalMeleeRes *= fl_RangedArmor[victim];
 			TotalMeleeRes *= fl_Extra_RangedArmor[victim];
 
+			//if enemy is staggered, remove all res from this
+			if(StaggerType)
+				if(TotalMeleeRes < 1.0)
+					TotalMeleeRes = 1.0;
 			damage *= TotalMeleeRes;
 		}
-		damage *= fl_TotalArmor[victim];
+		if(!StaggerType)
+		{
+			damage *= fl_TotalArmor[victim];
+		}
+		else
+		{
+			if(fl_TotalArmor[victim] > 1.0)
+				damage *= fl_TotalArmor[victim];
+		}
 	}
 	else if((damagetype & DMG_TRUEDAMAGE))
 	{
 		if(!trueArmorOnly)
 		{
 #if defined ZR
-			if(!b_NpcHasDied[attacker] && i_CurrentEquippedPerk[attacker] == 5)
+			if(!b_NpcHasDied[attacker] && (i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER))
 			{
 				damage *= 1.25;
 			}
@@ -1456,7 +1741,7 @@ stock void OnTakeDamageNpcBaseArmorLogic(int victim, int &attacker, float &damag
 #if defined ZR
 static stock void OnTakeDamageWidowsWine(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float GameTime)
 {
-	if(i_CurrentEquippedPerk[victim] == 6)
+	if((i_CurrentEquippedPerk[victim] & PERK_TESLAR_MULE))
 	{
 		if(f_WidowsWineDebuffPlayerCooldown[victim] < GameTime) //either too much dmg, or your health is too low.
 		{
@@ -1471,7 +1756,7 @@ static stock void OnTakeDamageWidowsWine(int victim, int &attacker, int &inflict
 			if(!(damagetype & DMG_TRUEDAMAGE))
 				damage *= 0.5;
 
-			ApplyStatusEffect(attacker, attacker, "Nemal's Teslar Mule", FL_WIDOWS_WINE_DURATION_NPC);
+			ApplyStatusEffect(attacker, attacker, "Teslar Mule", FL_WIDOWS_WINE_DURATION_NPC);
 		}
 	}
 }
@@ -1489,25 +1774,42 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 	{
 		ExtraDamageDealt = 0.35;
 	}
-	if(LastMann && GetTeam(victim) != TFTeam_Red)
+	if(!b_IsAloneOnServer && !Rogue_NoLastman())
 	{
-		damage *= 1.35;
-		int DisplayCritSoundTo;
-		if(attacker <= MaxClients)
-			DisplayCritSoundTo = attacker;
-		else if(inflictor <= MaxClients)
-			DisplayCritSoundTo = inflictor;
-
-		if(DisplayCritSoundTo > 0 && DisplayCritSoundTo <= MaxClients)
+		if(LastMann && GetTeam(victim) != TFTeam_Red)
 		{
-			bool PlaySound = false;
-			if(f_MinicritSoundDelay[DisplayCritSoundTo] < GetGameTime())
+			switch(CountPlayersOnRed(0, true))
 			{
-				PlaySound = true;
-				f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
+				//no change for 0 and 1 players
+				case 0,1:
+					damage *= 1.0;
+				case 2:
+					damage *= 1.15;
+				case 3:					
+					damage *= 1.2;
+				case 4:					
+					damage *= 1.25;
+				default:
+					damage *= 1.35;
+
 			}
-			
-			DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,true); //Display crit above head
+			int DisplayCritSoundTo;
+			if(attacker <= MaxClients)
+				DisplayCritSoundTo = attacker;
+			else if(inflictor <= MaxClients)
+				DisplayCritSoundTo = inflictor;
+
+			if(DisplayCritSoundTo > 0 && DisplayCritSoundTo <= MaxClients)
+			{
+				bool PlaySound = false;
+				if(f_MinicritSoundDelay[DisplayCritSoundTo] < GetGameTime())
+				{
+					PlaySound = true;
+					f_MinicritSoundDelay[DisplayCritSoundTo] = GetGameTime() + 0.25;
+				}
+				
+				DisplayCritAboveNpc(victim, DisplayCritSoundTo, PlaySound,_,_,true); //Display crit above head
+			}
 		}
 	}
 	if(IsValidEntity(weapon))
@@ -1516,6 +1818,17 @@ stock bool OnTakeDamageScalingWaveDamage(int &victim, int &attacker, int &inflic
 		{
 			ExtraDamageDealt *= 0.5;
 			damage *= ExtraDamageDealt;
+			char buffer[128];
+			zr_tagblacklist.GetString(buffer, sizeof(buffer));
+			if(StrContains(buffer, "fools26", false) != -1)
+			{
+				damage *= 0.5;
+			}
+			if(!WasHereSinceStartOfWave(attacker))
+			{
+				damage = 0.0;
+				return true;
+			}
 		}
 	}
 	if(IsValidEntity(inflictor))
@@ -1557,7 +1870,7 @@ static stock bool OnTakeDamageBackstab(int victim, int &attacker, int &inflictor
 	if(i_ExplosiveProjectileHexArray[weapon] & EP_GIBS_REGARDLESS) //Block explosives ?
 		return false;
 
-	if(f_BackstabDmgMulti[weapon] != 0.0 && !b_CannotBeBackstabbed[victim]) //Irene weapon cannot backstab.
+	if(f_BackstabDmgMulti[weapon] != 0.0 && !b_CannotBeBackstabbed[victim]) //Amphi weapon cannot backstab.
 	{
 		if(damagetype & DMG_CLUB && !(i_HexCustomDamageTypes[victim] & ZR_DAMAGE_DO_NOT_APPLY_BURN_OR_BLEED)) //Use dmg slash for any npc that shouldnt be scaled.
 		{
@@ -1639,9 +1952,13 @@ static stock bool OnTakeDamageBackstab(int victim, int &attacker, int &inflictor
 
 					damage *= f_BackstabDmgMulti[weapon];		
 #if defined ZR
-					if(i_CurrentEquippedPerk[attacker] == 5) //Deadshot!
+					if(i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER) //Deadshot!
 					{
 						damage *= 1.25;
+					}	
+					if(i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER_X) //Deadshot!
+					{
+						damage *= 1.35;
 					}	
 #endif					
 					if(!(GetClientButtons(attacker) & IN_DUCK)) //This shit only works sometimes, i blame tf2 for this.
@@ -1717,6 +2034,7 @@ static stock bool OnTakeDamageBackstab(int victim, int &attacker, int &inflictor
 		f_InBattleDelay[attacker] = GetGameTime() + 3.0;
 		if(damagetype & DMG_CRIT)
 		{		
+			damage *= f_HeadshotDamageMultiNpc[victim];
 			damage *= 1.35;
 			DisplayCritAboveNpc(victim, attacker, true); //Display crit above head
 			damagetype &= ~DMG_CRIT;
@@ -1725,7 +2043,7 @@ static stock bool OnTakeDamageBackstab(int victim, int &attacker, int &inflictor
 			{
 				damage *= 1.35;
 			}
-			if(i_CurrentEquippedPerk[attacker] == 5) //Just give them 25% more damage if they do crits with the huntsman, includes buffbanner i guess
+			if(i_CurrentEquippedPerk[attacker] & PERK_MARKSMAN_BEER) //Just give them 25% more damage if they do crits with the huntsman, includes buffbanner i guess
 			{
 				damage *= 1.25;
 			}
@@ -1759,7 +2077,11 @@ static stock bool OnTakeDamagePlayerSpecific(int victim, int &attacker, int &inf
 	float CritChance = Attributes_GetOnPlayer(attacker, Attrib_CritChance, false,_, 0.0);
 	if(CritChance && GetRandomFloat(0.0, 1.0) < (CritChance))
 	{
-		damage *= 2.0;
+		if(Rogue_Rift_BookOfWeakness())
+			damage *= 2.0;
+		else
+			damage *= 3.0;
+			
 		DisplayCritAboveNpc(victim, attacker, true); //Display crit above head
 	}
 
@@ -1800,14 +2122,14 @@ stock void OnTakeDamageResistanceBuffs(int victim, int &attacker, int &inflictor
 	//Resistance buffs will not count towards this flat decrease, they will be universal!hussar!
 	//these are absolutes
 #if !defined RPG
-	if(victim > MaxClients && i_npcspawnprotection[victim] == 1)
+	if(victim > MaxClients && i_npcspawnprotection[victim] == NPC_SPAWNPROT_ON)
 	{
 		//dont give spawnprotection if both are
 		if(attacker <= MaxClients)
 		{
 			DamageRes *= 0.05;
 		}
-		else if(i_npcspawnprotection[attacker] != 1)
+		else if(i_npcspawnprotection[attacker] != NPC_SPAWNPROT_ON)
 		{
 			DamageRes *= 0.05;
 		}
@@ -1855,7 +2177,7 @@ stock void OnTakeDamageResistanceBuffs(int victim, int &attacker, int &inflictor
 	damage *= DamageRes;	
 
 #if !defined RPG
-	if(attacker > MaxClients && i_npcspawnprotection[attacker] == 1)
+	if(attacker > MaxClients && i_npcspawnprotection[attacker] == NPC_SPAWNPROT_ON)
 	{
 		damage *= 1.5;
 	}
@@ -1886,7 +2208,7 @@ stock void OnTakeDamageResistanceBuffs(int victim, int &attacker, int &inflictor
 	}
 
 #if defined ZR
-	if(i_CurrentEquippedPerk[victim] == 2 && !(damagetype & DMG_TRUEDAMAGE))
+	if((i_CurrentEquippedPerk[victim] & PERK_OBSIDIAN) && !(damagetype & DMG_TRUEDAMAGE))
 		damage *= 0.85;
 #endif
 }
@@ -1900,7 +2222,7 @@ stock void OnTakeDamageDamageBuffs(int &attacker, int &inflictor, float &damage,
 		{
 			if(!(damagetype & (DMG_CLUB|DMG_TRUEDAMAGE))) //if its not melee damage
 			{
-				if(i_CurrentEquippedPerk[inflictor] == 5)
+				if(i_CurrentEquippedPerk[inflictor] & PERK_MARKSMAN_BEER)
 				{
 					damage *= 1.25; //this should stack
 				}
@@ -1978,11 +2300,11 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 	}
 #endif
 
-	char BufferAdd[6];
+	char BufferAdd[12];
 #if defined ZR
-	if(Victoria_Support_RechargeTime(victim))
+	if(Vesta_Support_RechargeTime(victim))
 	{
-		FormatEx(Debuff_Adder_left, SizeOfChar, "%s[◈ %i％]", Debuff_Adder_left, Victoria_Support_RechargeTime(victim));
+		FormatEx(Debuff_Adder_left, SizeOfChar, "%s[◈ %i％]", Debuff_Adder_left, Vesta_Support_RechargeTime(victim));
 	}
 	else if(IsValidClient(victim) && Vs_LockOn[victim])
 	{
@@ -2026,4 +2348,49 @@ void EntityBuffHudShow(int victim, int attacker, char[] Debuff_Adder_left, char[
 			Format(Debuff_Adder_left, SizeOfChar, "%c%s", BufferAdd,Debuff_Adder_left);
 		}
 	}
+}
+
+
+float f_DamageWhen[MAXPLAYERS];
+void DownedOrKilledClient_Feedback(int client, int attacker, float damage, int damagetype)
+{
+	if(GetGameTime() == f_DamageWhen[client])
+		return;
+	f_DamageWhen[client] = GetGameTime();
+	char AttackerWho[128];
+	if(attacker <= 0 || (attacker > 0 && (!b_ThisWasAnNpc[attacker] && !i_IsABuilding[attacker])))
+	{
+		Format(AttackerWho, sizeof(AttackerWho), "%T", "Unknown", client);		
+	}
+	else
+	{
+#if defined ZR
+		if (b_NameNoTranslation[attacker])
+			Format(AttackerWho, sizeof(AttackerWho), "%s",c_NpcName[attacker]);
+		else
+			Format(AttackerWho, sizeof(AttackerWho), "%T",c_NpcName[attacker], client);
+#else
+		Format(AttackerWho, sizeof(AttackerWho), "%T",c_NpcName[attacker], client);
+#endif
+
+		char prefix[255];
+		StatusEffects_PrefixName(attacker, client, prefix, sizeof(prefix));
+
+		Format(AttackerWho, sizeof(AttackerWho), "%s%s",prefix,AttackerWho);
+	}
+	char c_DamageType[64];
+	if((damagetype & DMG_TRUEDAMAGE))
+	{
+		Format(c_DamageType, sizeof(c_DamageType), "%T","True Damage",client);
+	}
+	else if((damagetype & DMG_CLUB))
+	{
+		Format(c_DamageType, sizeof(c_DamageType), "%T","Melee Damage",client);
+	}
+	else
+	{
+		Format(c_DamageType, sizeof(c_DamageType), "%T","Ranged Damage",client);
+	}
+
+	SPrintToChat(client, "%T", "Last Hit Recieved info",client, AttackerWho, damage, c_DamageType, i_LatestHealthLeft[client]);
 }

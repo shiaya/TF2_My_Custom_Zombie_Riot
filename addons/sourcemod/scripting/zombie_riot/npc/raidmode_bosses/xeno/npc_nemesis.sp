@@ -1,3 +1,4 @@
+
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -78,9 +79,9 @@ static char g_HappySounds[][] =
 #define INFECTION_MODEL "models/weapons/w_bugbait.mdl"
 #define INFECTION_RANGE 150.0
 
-float InfectionDelay()
+float InfectionDelay(bool isEnraged)
 {
-	if(XenoExtraLogic())
+	if(isEnraged)
 		return 0.7;
 	
 	return 0.8;
@@ -122,6 +123,40 @@ static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, co
 }
 methodmap RaidbossNemesis < CClotBody
 {
+	property int m_iGrabbedTarget
+	{
+		public get()		 
+		{ 
+			int returnint = EntRefToEntIndex(i_TargetToWalkTo[this.index]);
+			if(returnint == -1)
+			{
+				return 0;
+			}
+			return returnint;
+		}
+		public set(int iInt) 
+		{
+			if(iInt == 0 || iInt == -1 || iInt == INVALID_ENT_REFERENCE)
+			{
+				i_TargetToWalkTo[this.index] = INVALID_ENT_REFERENCE;
+			}
+			else
+			{
+				i_TargetToWalkTo[this.index] = EntIndexToEntRef(iInt);
+			}
+		}
+	}
+	property bool m_bIsEnraged
+	{
+		public get()
+		{
+			return view_as<bool>(i_TimesSummoned[this.index]);
+		}
+		public set(bool value)
+		{
+			i_TimesSummoned[this.index] = view_as<int>(value);
+		}
+	}
 	public void PlayHurtSound()
 	{
 		int sound = GetRandomInt(0, sizeof(g_HurtSounds) - 1);
@@ -204,6 +239,7 @@ methodmap RaidbossNemesis < CClotBody
 		SDKHook(npc.index, SDKHook_OnTakeDamagePost, RaidbossNemesis_OnTakeDamagePost);
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 		RaidModeTime = GetGameTime(npc.index) + 200.0;
 
 
@@ -214,7 +250,11 @@ methodmap RaidbossNemesis < CClotBody
 			i_RaidGrantExtra[npc.index] = 1;
 		}
 
-		if(XenoExtraLogic())
+		// Check for enraged state
+		bool isEnraged = StrContains(data, "enraged") != -1;
+		npc.m_bIsEnraged = isEnraged;
+
+		if(isEnraged)
 			RaidModeTime = GetGameTime(npc.index) + 9999999.0;
 
 		npc.m_flMeleeArmor = 1.25; 		//Melee should be rewarded for trying to face this monster
@@ -275,14 +315,15 @@ methodmap RaidbossNemesis < CClotBody
 		i_GunMode[npc.index] = 0;
 		i_GunAmmo[npc.index] = 0;
 		fl_StopDodgeCD[npc.index] = GetGameTime(npc.index) + 25.0;
-		if(XenoExtraLogic())
+
+		if(isEnraged)
 		{
 			FormatEx(c_NpcName[npc.index], sizeof(c_NpcName[]), "Enraged Calmaticus");
-			CPrintToChatAll("{green}칼마티커스: 너희는 좋은 DNA 공급원이 될 테지...");
+			NPCTalkMessage(npc.index, "YOU WILL BECOME DNA SUPLIMENTS.");
 		}
 		else
 		{
-			CPrintToChatAll("{green}칼마티커스: 너희도 저기 굴러다니는 감염체 중 하나가 될 것이다...");
+			NPCTalkMessage(npc.index, "You all will be one with the virus.");
 		}
 		
 		npc.m_iWearable6 = npc.EquipItem("weapon_bone", "models/workshop/player/items/pyro/hw2013_mucus_membrane/hw2013_mucus_membrane.mdl");
@@ -294,17 +335,22 @@ methodmap RaidbossNemesis < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "green", message, .customName = "Calmaticus", .messageColor = "green", .customNameIsTranslated = true);
+}
+
 public void RaidbossNemesis_ClotThink(int iNPC)
 {
 	RaidbossNemesis npc = view_as<RaidbossNemesis>(iNPC);
-	
+	Nemesis_AdjustGrabbedTarget(iNPC);
 	float gameTime = GetGameTime(npc.index);
 	if(LastMann)
 	{
 		if(!npc.m_fbGunout)
 		{
 			npc.m_fbGunout = true;
-			CPrintToChatAll("{green} 감염이 당신의 동료를 전부 집어삼키고 말았습니다... 가능하면 도주하세요.");
+			CPrintToChatAll("{green}The infection got all your friends... Run while you can.");
 		}
 	}
 	if(RaidModeTime < GetGameTime())
@@ -313,7 +359,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 		i_RaidGrantExtra[npc.index] = 0;
 		ForcePlayerLoss();
 		RaidBossActive = INVALID_ENT_REFERENCE;
-		CPrintToChatAll("{green} 당신은 감염에 저항조차 못 했습니다... 당신은 이제 한낱 감염체로 전락하고 말았습니다.");
+		CPrintToChatAll("{green}The infection proves too strong for you to resist as you join his side...");
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
 		return;
 	}
@@ -382,7 +428,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 
 			int HealByThis = ReturnEntityMaxHealth(npc.index) / 3250;
 			HealByThis = RoundToCeil(float(HealByThis) / TickrateModify);
-			if(XenoExtraLogic())
+			if(npc.m_bIsEnraged)
 			{
 				SetEntProp(npc.index, Prop_Data, "m_iHealth", GetEntProp(npc.index, Prop_Data, "m_iHealth") + (HealByThis * 2));
 			}
@@ -616,14 +662,12 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 		{
 			if(npc.m_flNextRangedAttackHappening < gameTime)
 			{
-				if(XenoExtraLogic())
+				if(npc.m_bIsEnraged)
 				{
 					ResolvePlayerCollisions_Npc(npc.index, /*damage crush*/ 350.0);
 				}
 				else
 				{
-					i_GrabbedThis[npc.index] = -1;
-					AcceptEntityInput(client_victim, "ClearParent");
 							
 					float flPos[3]; // original
 					float flAng[3]; // original
@@ -653,6 +697,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 					}
 					npc.m_flNextRangedAttackHappening = 0.0;	
 					SDKHooks_TakeDamage(client_victim, npc.index, npc.index, 10000.0, DMG_CLUB, -1);
+					i_GrabbedThis[npc.index] = -1;
 					i_TankAntiStuck[client_victim] = EntIndexToEntRef(npc.index);
 					CreateTimer(0.1, CheckStuckNemesis, EntIndexToEntRef(client_victim), TIMER_FLAG_NO_MAPCHANGE);
 					npc.PlayRangedSpecialSound();
@@ -668,7 +713,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 			{
 				if(npc.m_iChanged_WalkCycle != 6 && npc.m_iChanged_WalkCycle != 5 && npc.m_iChanged_WalkCycle != 7) 
 				{
-					if(XenoExtraLogic())
+					if(npc.m_bIsEnraged)
 						npc.SetActivity("ACT_CALMATICUS_CHARGE_LOOP_LAB");
 					else
 						npc.SetActivity("ACT_CALMATICUS_CHARGE_LOOP");
@@ -684,7 +729,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 
 			if(IsValidEnemy(npc.index, npc.m_iTarget) && npc.flXenoInfectedSpecialHurtTime - 0.45 < gameTime)
 			{
-				if(!XenoExtraLogic())
+				if(!npc.m_bIsEnraged)
 				{
 					float vecTarget[3]; WorldSpaceCenter(npc.m_iTarget, vecTarget );
 					float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
@@ -733,7 +778,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 							{
 								SetEntityMoveType(Enemy_I_See, MOVETYPE_NONE); //Cant move XD
 								SetEntityCollisionGroup(Enemy_I_See, 1);
-								SetParent(npc.index, Enemy_I_See, "anim_attachment_LH");
+							//	SetParent(npc.index, Enemy_I_See, "anim_attachment_LH");
 							}
 							else
 							{
@@ -826,7 +871,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 							npc.SetPlaybackRate(0.6);
 							npc.m_iChanged_WalkCycle = 13;
 							npc.m_bisWalking = false;
-							if(XenoExtraLogic())
+							if(npc.m_bIsEnraged)
 							{
 								npc.m_flSpeed = 150.0;
 								if(npc.Anger)
@@ -952,7 +997,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 					npc.SetPlaybackRate(0.6);
 					npc.m_iChanged_WalkCycle = 15;
 					npc.m_bisWalking = false;
-					if(XenoExtraLogic())
+					if(npc.m_bIsEnraged)
 					{
 						npc.m_flSpeed = 150.0;
 						if(npc.Anger)
@@ -980,7 +1025,7 @@ public void RaidbossNemesis_ClotThink(int iNPC)
 				if(npc.m_iChanged_WalkCycle != 4) 
 				{
 					npc.PlayAngerSound();
-					if(XenoExtraLogic())
+					if(npc.m_bIsEnraged)
 						npc.SetActivity("ACT_CALMATICUS_CHARGE_START_LAB");
 					else
 						npc.SetActivity("ACT_CALMATICUS_CHARGE_START");
@@ -1084,7 +1129,6 @@ public void RaidbossNemesis_OnTakeDamagePost(int victim, int attacker, int infli
 		int client = EntRefToEntIndex(i_GrabbedThis[npc.index]);
 		if(IsValidEntity(client))
 		{
-			AcceptEntityInput(client, "ClearParent");
 			b_NoGravity[client] = false;
 			npc.SetVelocity({0.0,0.0,0.0});
 			if(IsValidClient(client))
@@ -1116,7 +1160,6 @@ public void RaidbossNemesis_NPCDeath(int entity)
 
 	if(IsValidEntity(client))
 	{
-		AcceptEntityInput(client, "ClearParent");
 		b_NoGravity[client] = false;
 		npc.SetVelocity({0.0,0.0,0.0});
 		if(IsValidClient(client))
@@ -1183,10 +1226,10 @@ public void RaidbossNemesis_NPCDeath(int entity)
 		{
 			if(IsValidClient(client_repat) && GetClientTeam(client_repat) == 2 && TeutonType[client_repat] != TEUTON_WAITING && PlayerPoints[client_repat	] > 500)
 			{
-				if(!XenoExtraLogic())
+				if(!npc.m_bIsEnraged)
 				{
 					Items_GiveNamedItem(client_repat, "Calmaticus' Heart Piece");
-					CPrintToChat(client_repat, "{default}당신은 그를 확실히 죽이기 위해 심장을 떼어냈고, 당신이 얻은 것은... : {green}''칼마티커스'의 심장 조각''{default}!");
+					CPrintToChat(client_repat, "{default}You cut its heart to ensure his death and gained: {green}''Calmaticus' Heart Piece''{default}!");
 				}
 			}
 		}
@@ -1287,7 +1330,7 @@ void Nemesis_TryDodgeAttack(int entity)
 	}
 }
 
-public bool TraceRayHitProjectilesOnly(int entity,int mask,any data)
+public bool TraceRayHitProjectilesOnly(int entity, int contentsMask, int filterentity)
 {
 	if(entity == 0)
 	{
@@ -1524,7 +1567,11 @@ void Nemesis_DoInfectionThrow(int entity, int MaxThrowCount)
 	GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", Nemesis_Loc);
 
 	Nemesis_Loc[2] += 10.0;
-	spawnRing_Vectors(Nemesis_Loc, INFECTION_RANGE * 3.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 0, 255, 0, 200, 1, InfectionDelay(), 5.0, 0.0, 1,1.0);	
+	
+	RaidbossNemesis npc = view_as<RaidbossNemesis>(entity);
+	bool isEnraged = npc.m_bIsEnraged;
+	
+	spawnRing_Vectors(Nemesis_Loc, INFECTION_RANGE * 3.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 0, 255, 0, 200, 1, InfectionDelay(isEnraged), 5.0, 0.0, 1,1.0);	
 	
 	float Nemesis_Ang[3];
 	Nemesis_Ang = {-90.0,0.0,0.0};
@@ -1532,7 +1579,7 @@ void Nemesis_DoInfectionThrow(int entity, int MaxThrowCount)
 	TeleportEntity(particle, NULL_VECTOR, Nemesis_Ang, NULL_VECTOR);
 
 	DataPack pack;
-	CreateDataTimer(InfectionDelay(), Nemesis_DoInfectionThrowInternal, pack, TIMER_FLAG_NO_MAPCHANGE);
+	CreateDataTimer(InfectionDelay(isEnraged), Nemesis_DoInfectionThrowInternal, pack, TIMER_FLAG_NO_MAPCHANGE);
 	pack.WriteCell(EntIndexToEntRef(entity)); 	//who this attack belongs to
 	pack.WriteCell(MaxThrowCount); 	//who this attack belongs to
 }
@@ -1590,6 +1637,9 @@ public Action Nemesis_DoInfectionThrowInternal(Handle timer, DataPack DataNem)
 	}
 
 	SortIntegers(targets, count, Sort_Random);
+	
+	RaidbossNemesis npc = view_as<RaidbossNemesis>(entity);
+	bool isEnraged = npc.m_bIsEnraged;
 
 	for(int Repeat; Repeat<MaxThrowCount; Repeat++)
 	{
@@ -1605,14 +1655,14 @@ public Action Nemesis_DoInfectionThrowInternal(Handle timer, DataPack DataNem)
 			GetEntPropVector(target, Prop_Data, "m_vecAbsOrigin", VicLoc);
 
 			VicLoc[2] += 10.0;
-			spawnRing_Vectors(VicLoc, INFECTION_RANGE * 2.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 0, 255, 0, 200, 1, InfectionDelay(), 5.0, 0.0, 1);	
+			spawnRing_Vectors(VicLoc, INFECTION_RANGE * 2.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 0, 255, 0, 200, 1, InfectionDelay(isEnraged), 5.0, 0.0, 1);	
 			VicLoc[2] -= 5.0;
-			spawnRing_Vectors(VicLoc, 0.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 0, 255, 0, 200, 1, InfectionDelay(), 5.0, 0.0, 1,INFECTION_RANGE * 2.0);	
+			spawnRing_Vectors(VicLoc, 0.0, 0.0, 0.0, 5.0, "materials/sprites/laserbeam.vmt", 0, 255, 0, 200, 1, InfectionDelay(isEnraged), 5.0, 0.0, 1,INFECTION_RANGE * 2.0);	
 			
 			float damage = 500.0;
 
 			DataPack pack;
-			CreateDataTimer(InfectionDelay(), Nemesis_Infection_Throw, pack, TIMER_FLAG_NO_MAPCHANGE);
+			CreateDataTimer(InfectionDelay(isEnraged), Nemesis_Infection_Throw, pack, TIMER_FLAG_NO_MAPCHANGE);
 			pack.WriteCell(EntIndexToEntRef(entity)); 	//who this attack belongs to
 			pack.WriteCell(damage);
 			pack.WriteCell(VicLoc[0]);
@@ -1656,110 +1706,46 @@ void NemesisHitInfection(int entity, int victim, float damage, int weapon)
 			float HudY = -1.0;
 			float HudX = -1.0;
 			SetHudTextParams(HudX, HudY, 3.0, 50, 255, 50, 255);
-			SetGlobalTransTarget(victim);
-			ShowHudText(victim,  -1, "%t", "You have been Infected by Calmaticus");
+			ShowHudText(victim, -1, "%T", "You have been Infected by Calmaticus", victim);
 			ClientCommand(victim, "playgamesound items/powerup_pickup_plague_infected.wav");		
 			int InfectionCount = 15;
 			StartBleedingTimer(victim, entity, 150.0, InfectionCount, -1, DMG_TRUEDAMAGE, 0, 1);
-			DataPack pack;
-			CreateDataTimer(0.5, Timer_Nemesis_Infect_Allies, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-			pack.WriteCell(EntIndexToEntRef(victim));
-			pack.WriteCell(EntIndexToEntRef(entity));
-//			pack.WriteCell(EntIndexToEntRef(particle));
-//			pack.WriteCell(EntIndexToEntRef(particle2));
-			pack.WriteCell(-1);
-			pack.WriteCell(-1);
-			pack.WriteCell(InfectionCount);
 		}
 	}
 }
 
-public Action Timer_Nemesis_Infect_Allies(Handle timer, DataPack pack)
-{
-	pack.Reset();
-	int client = EntRefToEntIndex(pack.ReadCell());
-	int entity = EntRefToEntIndex(pack.ReadCell());
-	int Particle_entity = EntRefToEntIndex(pack.ReadCell());
-	int Particle_entity_2 = EntRefToEntIndex(pack.ReadCell());
-	if(!IsValidEntity(entity))
-	{
-		if(IsValidEntity(Particle_entity))
-		{
-			RemoveEntity(Particle_entity);
-		}
-		if(IsValidEntity(Particle_entity_2))
-		{
-			RemoveEntity(Particle_entity_2);
-		}
-		return Plugin_Stop;
-	}
-	if(!IsValidEnemy(entity, client))
-	{
-		if(IsValidEntity(Particle_entity))
-		{
-			RemoveEntity(Particle_entity);
-		}
-		if(IsValidEntity(Particle_entity_2))
-		{
-			RemoveEntity(Particle_entity_2);
-		}
-		return Plugin_Stop;
-	}
-
-
-	//everything is valid, infect nearby allies.
-	//dont make it work on npcs, would be unfair.
-	for(int AllyClient = 1; AllyClient <= MaxClients; AllyClient++)
-	{
-		if(IsValidEnemy(entity, AllyClient) && AllyClient != client)
-		{
-			float vAngles[3];				
-			float entity_angles[3];						
-			GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", vAngles); 
-			GetEntPropVector(AllyClient, Prop_Data, "m_vecAbsOrigin", entity_angles); 				
-			float Distance = GetVectorDistance(vAngles, entity_angles);
-			if(Distance < 30.0)
-			{		
-				NemesisHitInfection(entity, AllyClient, 0.0 , -1);
-			}
-		}
-	}
-	int bleed_count = pack.ReadCell();
-	if(IsInvuln(client))
-	{
-		bleed_count = 0;
-	}
-	if(bleed_count < 1)
-	{
-		if(IsValidEntity(Particle_entity))
-		{
-			RemoveEntity(Particle_entity);
-		}
-		if(IsValidEntity(Particle_entity_2))
-		{
-			RemoveEntity(Particle_entity_2);
-		}
-		return Plugin_Stop;
-	}
-
-	pack.Position--;
-	pack.WriteCell(bleed_count-1, false);
-	return Plugin_Continue;
-}
 
 public void Raidmode_Nemesis_Win(int entity)
 {
 	func_NPCThink[entity] = INVALID_FUNCTION;
+	RaidbossNemesis npc = view_as<RaidbossNemesis>(entity);
 	if(RaidBossActive == EntIndexToEntRef(entity) && i_RaidGrantExtra[entity] == 1)
 	{
-		if(XenoExtraLogic())
+		if(npc.m_bIsEnraged)
 		{
-			CPrintToChatAll("{crimson}당신은 이 싸움에서 희망의 빛줄기를 보지 못 했습니다.");
+			CPrintToChatAll("{crimson}You afterall... had no chance.");
 		}
 		else
 		{
-			CPrintToChatAll("{snow}???{default}: 아주 잘 했다, 칼마티커스. 연구소로 돌아와라");
+			CPrintToChatAll("{snow}???{default}: Good job Calmaticus, head back to the lab.");
 		}
 	}
 	i_RaidGrantExtra[entity] = RAIDITEM_INDEX_WIN_COND;
+}
+
+
+
+void Nemesis_AdjustGrabbedTarget(int iNPC)
+{
+	RaidbossNemesis npc = view_as<RaidbossNemesis>(iNPC);
+	if(!IsValidEntity(i_GrabbedThis[npc.index]))
+		return;
+
+	int EnemyGrab = EntRefToEntIndex(i_GrabbedThis[npc.index]);
+	float flPos[3]; // original
+	float flAng[3]; // original
+
+	npc.GetAttachment("anim_attachment_LH", flPos, flAng);
+	
+	TeleportEntity(EnemyGrab, flPos, NULL_VECTOR, {0.0,0.0,0.0});
 }

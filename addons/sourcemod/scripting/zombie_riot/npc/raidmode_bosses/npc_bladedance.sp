@@ -59,6 +59,18 @@ static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, co
 
 methodmap RaidbossBladedance < CClotBody
 {
+	property bool m_bBossRushDuo
+	{
+		public get()							{ return b_FlamerToggled[this.index]; }
+		public set(bool TempValueForProperty) 	{ b_FlamerToggled[this.index] = TempValueForProperty; }
+	}
+	
+	property bool m_bForceNextWave
+	{
+		public get()							{ return b_DuringHook[this.index]; }
+		public set(bool TempValueForProperty) 	{ b_DuringHook[this.index] = TempValueForProperty; }
+	}
+	
 	public void PlayIdleSound()
 	{
 		if(this.m_flNextIdleSound > GetGameTime(this.index))
@@ -135,6 +147,8 @@ methodmap RaidbossBladedance < CClotBody
 		func_NPCDeath[npc.index] = RaidbossBladedance_NPCDeath;
 		func_NPCOnTakeDamage[npc.index] = RaidbossBladedance_OnTakeDamage;
 		func_NPCThink[npc.index] = RaidbossBladedance_ClotThink;
+		func_NPCSpawnForward[npc.index] = Bladedance_AllySpawn;
+		func_NPCFuncWin[npc.index] = view_as<Function>(Raidmode_Expidonsa_Sensal_Win);
 		
 		f_ExplodeDamageVulnerabilityNpc[npc.index] = 0.7;
 
@@ -145,6 +159,10 @@ methodmap RaidbossBladedance < CClotBody
 
 		
 		bool final = StrContains(data, "final_item") != -1;
+		npc.m_bBossRushDuo = StrContains(data, "bossrush_duo") != -1;
+		
+		if(Rogue_HasNamedArtifact("Ascension Stack"))
+			final = false;
 		
 		if(final)
 		{
@@ -192,11 +210,26 @@ methodmap RaidbossBladedance < CClotBody
 
 		RaidModeScaling = 0.0;
 		RaidModeTime = GetGameTime() + ((300.0) * (1.0 + (MultiGlobalEnemy * 0.4)));
-		Format(WhatDifficultySetting, sizeof(WhatDifficultySetting), "??????????????????????????????????");
-		CPrintToChatAll("{crimson}칼춤{default}: 어떻게 여기까지 온 거지? 날 공격하는 이유가 뭐냐? 네 놈들도 또 공허의 하수인들이겠군?");
-
-		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = true;
+		RaidAllowLastman = true;
+		
+		if (npc.m_bBossRushDuo)
+		{
+			if (!IsValidEntity(RaidBossActive))
+				RaidBossActive = EntIndexToEntRef(npc.index);
+			
+			GiveNpcOutLineLastOrBoss(npc.index, true);
+			RaidAllowsBuildings = false;
+			RaidAllowLastman = true;
+			RaidModeTime = GetGameTime() + 500.0;
+		}
+		else
+		{
+			Format(WhatDifficultySetting, sizeof(WhatDifficultySetting), "??????????????????????????????????");
+			CPrintToChatAll("{crimson}Bladedance{default}: How did you get here? Why are you attacking me?? More void creatures?");
+			
+			RaidBossActive = EntIndexToEntRef(npc.index);
+		}
 
 		return npc;
 	}
@@ -267,12 +300,20 @@ public void RaidbossBladedance_ClotThink(int iNPC)
 		if(--npc.m_iOverlordComboAttack < 1)
 			npc.Anger = false;
 	}
+	else if(npc.m_iOverlordComboAttack > 45 && !npc.m_bForceNextWave && i_RaidGrantExtra[npc.index] == 1)
+	{
+		delete WaveTimer;
+		WaveTimer = CreateTimer(0.1, Waves_ProgressTimer);
+		npc.m_bForceNextWave = true;
+	}
 	else if(npc.m_iOverlordComboAttack > 50)
 	{
 		if(IsValidEnemy(npc.index, npc.m_iTarget))
 		{
 			npc.Anger = true;
 			
+			npc.m_bForceNextWave = false;
+
 			float vecTarget[3]; WorldSpaceCenter(npc.m_iTarget, vecTarget );
 			npc.FaceTowards(vecTarget, 30000.0);
 			
@@ -281,11 +322,11 @@ public void RaidbossBladedance_ClotThink(int iNPC)
 			switch(GetRandomInt(1,3))
 			{
 				case 1:
-					CPrintToChatAll("{crimson}칼춤{default}: 가라, 내 분신들아!");
+					CPrintToChatAll("{crimson}Bladedance{default}: My copies, go!");
 				case 2:
-					CPrintToChatAll("{crimson}칼춤{default}: 이젠 정말 지긋지긋한 싸움이다! 여기서 꺼져라!");
+					CPrintToChatAll("{crimson}Bladedance{default}: I god damn hate fighting, get out!");
 				case 3:
-					CPrintToChatAll("{crimson}칼춤{default}: 내 카지노에서 진 걸로 지금 나한테 화풀이 하는건 아니겠지!");
+					CPrintToChatAll("{crimson}Bladedance{default}: Wish you could lose at the casino I once owned!");
 
 			}
 			
@@ -327,8 +368,17 @@ public void RaidbossBladedance_ClotThink(int iNPC)
 				float vPredictedPos[3]; PredictSubjectPositionForProjectiles(npc, npc.m_iTarget, 400.0, _,vPredictedPos);
 				npc.FireRocket(vPredictedPos, 1000.0, 400.0, "models/effects/combineball.mdl");
 				npc.PlayRangedSound();
-
-				Elemental_AddNervousDamage(npc.m_iTarget, npc.index, 200);
+				
+				// Add a LOS check and halve nervous impairment slowdown on boss rush
+				if (npc.m_bBossRushDuo)
+				{
+					if (Can_I_See_Enemy(npc.index, npc.m_iTarget))
+						Elemental_AddNervousDamage(npc.m_iTarget, npc.index, 200, .slowdown = 0.45);
+				}
+				else
+				{
+					Elemental_AddNervousDamage(npc.m_iTarget, npc.index, 200);
+				}
 			}
 		}
 	}
@@ -438,7 +488,7 @@ public Action RaidbossBladedance_OnTakeDamage(int victim, int &attacker, int &in
 			npc.m_flBladedanceAngerResistance = 1.0;
 			ApplyStatusEffect(npc.index, npc.index, "Very Defensive Backup", 25.0);
 			ApplyStatusEffect(npc.index, npc.index, "Godly Motivation", 40.0);
-			CPrintToChatAll("{crimson}칼춤{default}: 넌 내가 하는 말을 전혀 듣지 않는군. 난 네 적이 아니란 말이다!");
+			CPrintToChatAll("{crimson}Bladedance{default}: You have seen nothing I say! I'm the least of your worries!");
 			npc.DispatchParticleEffect(npc.index, "hightower_explosion", NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, npc.FindAttachment("eyes"), PATTACH_POINT_FOLLOW, true);
 		}
 	}
@@ -448,9 +498,10 @@ public Action RaidbossBladedance_OnTakeDamage(int victim, int &attacker, int &in
 
 public void RaidbossBladedance_NPCDeath(int entity)
 {
-	Waves_ClearWave();
-
 	RaidbossBladedance npc = view_as<RaidbossBladedance>(entity);
+	
+	if (!npc.m_bBossRushDuo)
+		Waves_ClearWave();
 	
 	float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
 		
@@ -464,14 +515,14 @@ public void RaidbossBladedance_NPCDeath(int entity)
 	
 	if(i_RaidGrantExtra[npc.index] == 1 && GameRules_GetRoundState() == RoundState_ZombieRiot)
 	{
-		CPrintToChatAll("{crimson}칼춤{default}: 너. 그리고 밥 1세... 너희 둘은 진정한 적이 누군지 모르고 있다... {white}배풍등{default}이라고, 멍청이들아! 그가 {crimson}귄{default}마저도 배신했단 말이다!");
-		CPrintToChatAll("{crimson}칼춤{default}: 그 놈은 너의 손아귀에서 빠져나와... {crimson}너{default}를 카피하는 방법을 얻었지.");
+		CPrintToChatAll("{crimson}Bladedance{default}: You and Bob the first.. you both misunderstand who the enemy is.. its {white}Whiteflower{default} you fools! He betrayed {crimson}Guln{default} aswell!");
+		CPrintToChatAll("{crimson}Bladedance{default} escapes from you... and gains the ability to copy {crimson}you.");
 		for (int client = 1; client <= MaxClients; client++)
 		{
 			if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
 			{
 				Items_GiveNamedItem(client, "Bob's true fear");
-				CPrintToChat(client,"{default}이 싸움은 일어나서는 안 될 일이었습니다. 당신에게는 거의, 아니 전혀 기회가 없었습니다. 당신이 얻은 것은...: {red}''밥의 진정한 공포''{default}!");
+				CPrintToChat(client,"{default}This battle wasn't something that should have happened. You had little to no chance... This is... {red}''Bob's True fear.''{default}!");
 			}
 		}
 		for(int i; i < i_MaxcountNpcTotal; i++)
@@ -485,6 +536,7 @@ public void RaidbossBladedance_NPCDeath(int entity)
 				}
 			}
 		}
+		Waves_ClearWaves();
 		ForcePlayerWin();
 	}
 	if(IsValidEntity(npc.m_iWearable1))
@@ -493,5 +545,21 @@ public void RaidbossBladedance_NPCDeath(int entity)
 	if(IsValidEntity(npc.m_iWearable2))
 		RemoveEntity(npc.m_iWearable2);
 
-	RaidBossActive = INVALID_ENT_REFERENCE;
+	if (EntIndexToEntRef(npc.index) == RaidBossActive)
+		RaidBossActive = INVALID_ENT_REFERENCE;
+}
+
+public void Bladedance_AllySpawn(int self, int ally)
+{
+	if(GetTeam(ally) != GetTeam(self))
+	{
+		return;
+	}
+	float pos[3]; GetEntPropVector(self, Prop_Data, "m_vecAbsOrigin", pos);
+	pos[2] += 5.0;
+	float vAngles[3];								
+	GetEntPropVector(self, Prop_Data, "m_angRotation", vAngles); 
+	TeleportEntity(ally, pos, vAngles, NULL_VECTOR);
+	ApplyStatusEffect(ally, ally, "Godly Motivation", 5.0);
+	ApplyStatusEffect(ally, ally, "Infinite Will", 5.0);
 }

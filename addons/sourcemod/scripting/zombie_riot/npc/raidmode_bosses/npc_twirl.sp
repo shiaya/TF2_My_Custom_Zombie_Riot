@@ -55,9 +55,6 @@ static const char g_AngerSounds[][] = {
 	"vo/medic_item_secop_round_start07.mp3",
 	"vo/medic_item_secop_kill_assist01.mp3"
 };
-static const char g_LaserComboSound[][] = {
-	"zombiesurvival/seaborn/loop_laser.mp3",
-};
 static const char g_FractalSound[][] = {
 	"weapons/capper_shoot.wav"
 };
@@ -67,7 +64,6 @@ static int i_lunar_entities[MAXENTITIES][3];
 #define TWIRL_TE_DURATION 0.1
 //#define RAIDBOSS_TWIRL_THEME "#zombiesurvival/ruina/ruler_of_ruina_decends.mp3", now used for wave 15, deivid cant decide 
 #define RAIDBOSS_TWIRL_THEME "#zombiesurvival/ruina/twirl_theme_new.mp3"
-static float fl_player_weapon_score[MAXPLAYERS];
 static float fl_next_textline;
 static float fl_raidmode_freeze;
 static float fl_npc_basespeed;
@@ -228,10 +224,10 @@ methodmap Twirl < CClotBody
 		EmitSoundToAll(g_AngerSounds[GetRandomInt(0, sizeof(g_AngerSounds) - 1)], this.index, _, BOSS_ZOMBIE_SOUNDLEVEL, _, RAIDBOSSBOSS_ZOMBIE_VOLUME, RUINA_NPC_PITCH);
 	}
 	public void PlayMagiaOverflowSound() {
-		if(fl_nightmare_cannon_core_sound_timer[this.index] > GetGameTime())
+		if(fl_RuinaLaserSoundTimer[this.index] > GetGameTime())
 			return;
-		EmitCustomToAll(g_LaserComboSound[GetRandomInt(0, sizeof(g_LaserComboSound) - 1)], _, _, SNDLEVEL_RAIDSIREN, _, RAIDBOSSBOSS_ZOMBIE_VOLUME);
-		fl_nightmare_cannon_core_sound_timer[this.index] = GetGameTime() + 2.25;
+		EmitCustomToAll(g_RuinaLaserLoop[GetRandomInt(0, sizeof(g_RuinaLaserLoop) - 1)], _, _, SNDLEVEL_RAIDSIREN, _, RAIDBOSSBOSS_ZOMBIE_VOLUME);
+		fl_RuinaLaserSoundTimer[this.index] = GetGameTime() + 2.25;
 	}
 	public void Predictive_Ion(int Target, float Time, float Radius, float dmg)
 	{
@@ -249,13 +245,46 @@ methodmap Twirl < CClotBody
 		this.Ion_On_Loc(Predicted_Pos, Radius, dmg, Time);
 		
 	}
-	public void Ion_On_Loc(float Predicted_Pos[3], float Radius, float dmg, float Time)
+	public int iGetSicknessFlatPerWaveMulti(int val)
+	{
+		int wave = i_current_wave[this.index];
+		float multi = 1.0;
+		if(wave<=10)	
+		{
+			multi = 1.0;
+		}
+		else if(wave <=20)	
+		{
+			multi = 1.25;
+		}
+		else if(wave <= 30)	
+		{
+			multi = 1.75;
+		}
+		else if(wave <= 40)	
+		{
+			multi = 2.5;
+		}
+		else
+		{
+			multi = 4.5;
+		}
+
+		int res = RoundToFloor(val * multi);
+		//CPrintToChatAll("input: %i", val);
+		//CPrintToChatAll("res: %i", res);
+		return res;
+	}
+	public void Ion_On_Loc(float Predicted_Pos[3], float Radius, float dmg, float Time, bool OwnIon = true)
 	{
 		int color[4]; 
 		Ruina_Color(color, i_current_wave[this.index]);
 
 		float Thickness = 6.0;
-		TE_SetupBeamRingPoint(Predicted_Pos, Radius*2.0, 0.0, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, Time, Thickness, 0.75, color, 1, 0);
+		int Tempcolor[4];
+		Tempcolor = color;
+		Tempcolor [3] = 80;
+		TE_SetupBeamRingPoint(Predicted_Pos, Radius*2.0, 0.0, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, Time, Thickness, 0.75, Tempcolor, 1, 0);
 		TE_SendToAll();
 		TE_SetupBeamRingPoint(Predicted_Pos, Radius*2.0, Radius*2.0+0.5, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, Time, Thickness, 0.1, color, 1, 0);
 		TE_SendToAll();
@@ -263,31 +292,49 @@ methodmap Twirl < CClotBody
 		Ruina_IonSoundInvoke(Predicted_Pos);
 		
 		DataPack pack;
-		CreateDataTimer(Time, Ruina_Generic_Ion, pack, TIMER_FLAG_NO_MAPCHANGE);
+		CreateDataTimer(Time, OwnIon ? Timer_Twirl_Ion : Ruina_Generic_Ion, pack, TIMER_FLAG_NO_MAPCHANGE);
 		pack.WriteCell(EntIndexToEntRef(this.index));
 		pack.WriteFloatArray(Predicted_Pos, sizeof(Predicted_Pos));
 		pack.WriteCellArray(color, sizeof(color));
 		pack.WriteFloat(Radius);
 		pack.WriteFloat(dmg);
 		pack.WriteFloat(0.25);			//Sickness %
-		pack.WriteCell(100);			//Sickness flat
+		pack.WriteCell(this.iGetSicknessFlatPerWaveMulti(200));			//Sickness flat
 		pack.WriteCell(this.Anger);		//Override sickness timeout
 
 		float Sky_Loc[3]; Sky_Loc = Predicted_Pos; Sky_Loc[2]+=500.0; Predicted_Pos[2]-=100.0;
 
-		int laser;
-		laser = ConnectWithBeam(-1, -1, color[0], color[1], color[2], 4.0, 4.0, 5.0, BEAM_COMBINE_BLACK, Predicted_Pos, Sky_Loc);
+		if(!AtEdictLimit(EDICT_NPC))
+		{
+			int laser;
+			laser = ConnectWithBeam(-1, -1, color[0], color[1], color[2], 4.0, 4.0, 5.0, BEAM_COMBINE_BLACK, Predicted_Pos, Sky_Loc);
+			if(IsValidEntity(laser))
+				CreateTimer(0.5, Timer_RemoveEntity, EntIndexToEntRef(laser), TIMER_FLAG_NO_MAPCHANGE);
+		}
+		
+			
+		int loop_for = 4;
 
-		CreateTimer(0.5, Timer_RemoveEntity, EntIndexToEntRef(laser), TIMER_FLAG_NO_MAPCHANGE);
-		int loop_for = 5;
+		Predicted_Pos[2] +=100.0;
+
+		//float ring_min = Radius * 0.25;
+		//float ring_max = Radius * 0.75;
 		float Add_Height = 500.0/loop_for;
 		for(int i=0 ; i < loop_for ; i++)
 		{
+			float radius_ratio = 1.0 - (float(i)/float(loop_for));
+			if(radius_ratio<= 0.0)
+				radius_ratio = 0.001;
 			Predicted_Pos[2]+=Add_Height;
-			TE_SetupBeamRingPoint(Predicted_Pos, (Radius*2.0)/(i+1), 0.0, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, Time, Thickness, 0.75, color, 1, 0);
+			//float AdjustRadius = ring_min + (ring_max - ring_min) * radius_ratio;
+
+			//float AdjustRadius = Radius * (Pow(2.0, (Logarithm(radius_ratio))));
+
+			float AdjustRadius = Radius / (i + 2);
+			
+			TE_SetupBeamRingPoint(Predicted_Pos, AdjustRadius * 2.0, 0.0, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, Time, Thickness, 0.75, Tempcolor, 1, 0);
 			TE_SendToAll();
 		}
-		
 	}
 	public bool Add_Combo(int amt)
 	{
@@ -774,11 +821,10 @@ methodmap Twirl < CClotBody
 		b_lastman = false;
 		b_wonviatimer = false;
 		b_wonviakill = false;
+		i_RaidGrantExtra[npc.index] = 0;
 
 		Zero(b_said_player_weaponline);
 		fl_said_player_weaponline_time[npc.index] = GetGameTime() + GetRandomFloat(0.0, 5.0);
-
-		c_NpcName[npc.index] = "Twirl";
 
 		b_force_transformation = false;
 
@@ -810,6 +856,7 @@ methodmap Twirl < CClotBody
 		
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 	
 		fl_next_textline = 0.0;
 		for(int client_check=1; client_check<=MaxClients; client_check++)
@@ -942,6 +989,8 @@ methodmap Twirl < CClotBody
 		npc.GetAttachment("head", flPos, flAng);	
 		npc.m_iWearable8 = ParticleEffectAt_Parent(flPos, "unusual_invasion_boogaloop_2", npc.index, "head", {0.0,0.0,0.0});
 		
+		NpcColourCosmetic_ViaPaint(npc.m_iWearable4, 16777215);
+		
 		SetVariantInt(npc.i_weapon_type());
 		AcceptEntityInput(npc.m_iWearable1, "SetBodyGroup");
 		SetVariantInt(WINGS_TWIRL);
@@ -951,10 +1000,8 @@ methodmap Twirl < CClotBody
 
 		if(b_tripple_raid)
 		{
-			Twirl_Lines(npc, "어머, 엑스피돈사인들이 너한테 좀 관대하게 대해줬나봐? 우리? 우린 안 그럴건데, 우리 루이나인들은 일하는 방식이 다르니까~");
-			Twirl_Lines(npc, "...카를라스 빼고, 아, 이건 말하면 안 되지!");
-			CPrintToChatAll("{crimson}카를라스{snow}: .....");
-			CPrintToChatAll("{crimson}카를라스{snow}: :(");
+			WaveStart_SubWaveStart(GetGameTime() + 700.0);	//due to lots and lots of time
+			CreateTimer(0.0, Timer_Twirl_TripleIntro, false);
 			RaidModeTime = GetGameTime(npc.index) + 500.0;
 			GiveOneRevive(true);
 
@@ -965,12 +1012,12 @@ methodmap Twirl < CClotBody
 			npc.m_iRangedAmmo = 5;
 			switch(GetRandomInt(0, 5))
 			{
-				case 0: Twirl_Lines(npc, "아, 가끔은 외출도 좋은 것 같네...");
-				case 1: Twirl_Lines(npc, "흐음, 과연 내가 너희와의 {crimson}싸움{snow}에서 얻을 행복이란...");
-				case 2: Twirl_Lines(npc, "{aqua}스텔라{snow}가 말한대로라면, 이건 좀 {purple}재밌겠네{snow}..");
-				case 3: Twirl_Lines(npc, "자, 한쪽이 {crimson}죽을때까지{snow} 싸워볼까!");
-				case 4: Twirl_Lines(npc, "음, 흥미롭네. 너희가 과연 어떤 존재일까? 뭐, {crimson}붙어봐야 알겠지만?");	//HEY ITS ME GOKU, I HEARD YOUR ADDICTION IS STRONG, LET ME FIGHT IT
-				case 5: Twirl_Lines(npc, "같이 돌아볼까? 끝없는 \"팽이\" 들의 회전처럼.");
+				case 0: Twirl_Lines(npc, "Ahhh, it feels nice to venture out into the world every once in a while...");
+				case 1: Twirl_Lines(npc, "Oh the joy I will get from {crimson}fighting{snow} you all");
+				case 2: Twirl_Lines(npc, "From what {aqua}Stella{snow}'s told, this should be great {purple}fun{snow}..");
+				case 3: Twirl_Lines(npc, "Let's see who dies {crimson}first{snow}!");
+				case 4: Twirl_Lines(npc, "Huh interesting, who might you be? no matter, you look strong, {crimson}ima fight you");	//HEY ITS ME GOKU, I HEARD YOUR ADDICTION IS STRONG, LET ME FIGHT IT
+				case 5: Twirl_Lines(npc, "Its time to \"Twirl\" like a beyblade");
 			}
 		}
 		else if(wave <=20)
@@ -978,11 +1025,11 @@ methodmap Twirl < CClotBody
 			npc.m_iRangedAmmo = 7;
 			switch(GetRandomInt(0, 4))
 			{
-				case 0: Twirl_Lines(npc, "지난 번엔, 운동 좀 됐었어. {crimson}그럼 또 해야지{snow}!");
-				case 1: Twirl_Lines(npc, "이전의 싸움은 정말 즐거웠어. 이번에도 이전처럼 즐거웠으면 좋겠네!");
-				case 2: Twirl_Lines(npc, "{aqua}스텔라{snow}가 맞았어, 너희가 가장 재밌어!");
-				case 3: Twirl_Lines(npc, "으흠, 이제 누가 먼저 {crimson}죽을까{snow}?");
-				case 4: Twirl_Lines(npc, "You spin me right round...");
+				case 0: Twirl_Lines(npc, "Last time, it was a great workout, {crimson}Time to do it again{snow}!");
+				case 1: Twirl_Lines(npc, "Our last fight was so fun, I hope this fight is as fun as the last one!");
+				case 2: Twirl_Lines(npc, "{aqua}Stella{snow} was right, you all ARE great fun to play with!");
+				case 3: Twirl_Lines(npc, "Ehe, now who will die {crimson}last{snow}?");
+				case 4: Twirl_Lines(npc, "You spin me right round..");
 			}
 		}
 		else if(wave <=30)
@@ -990,11 +1037,11 @@ methodmap Twirl < CClotBody
 			npc.m_iRangedAmmo = 9;
 			switch(GetRandomInt(0, 4))
 			{
-				case 0: Twirl_Lines(npc, "어머나, 아직도 여기 있었구나, {purple}정말 대단해!");
-				case 1: Twirl_Lines(npc, "여기까지 너희가 온 걸 생각해보면, {purple}나처럼{snow} 싸우는걸 좋아하는구나?");
-				case 2: Twirl_Lines(npc, "{aqua}스텔라{snow}, 이 자들이 가진 {purple}재미{snow}를 너무 과소평가 한 것 같네!");
-				case 3: Twirl_Lines(npc, "좀 더 강한 {purple}중장비{snow}를 가지고 왔단다.");
-				case 4: Twirl_Lines(npc, "아직 우리들의 \"회전\"은 끝나지 않았단다.");
+				case 0: Twirl_Lines(npc, "My Oh my, you're still here, {purple}how wonderful!");
+				case 1: Twirl_Lines(npc, "You must enjoy fighting as much as {purple}I do{snow}, considering you've made it this far!");
+				case 2: Twirl_Lines(npc, "{aqua}Stella{snow}, you understated how {purple}fun{snow} this would be!");
+				case 3: Twirl_Lines(npc, "I've brought some {purple}Heavy Equipment{snow} heh");
+				case 4: Twirl_Lines(npc, "Time to \"Twirl\", heh");
 			}
 		}
 		else if(wave <=40)
@@ -1002,22 +1049,22 @@ methodmap Twirl < CClotBody
 			npc.m_iRangedAmmo = 12;
 			switch(GetRandomInt(0, 4))
 			{
-				case 0: Twirl_Lines(npc, "마지막 공연이야. 자, {purple}너희도 전부 기대하고 있길 바랄게{snow}!");
-				case 1: Twirl_Lines(npc, "아아, {aqua}스텔라{snow}가 놓친 이 재미,{purple} 바보같네{snow}.");
-				case 2: Twirl_Lines(npc, "이 {purple}싸움{snow}에 대한 대비가 되어있길 바래.");
-				case 3: Twirl_Lines(npc, "쿠루 쿠루~");
+				case 0: Twirl_Lines(npc, "Its time for the final show, {purple}I hope you're all as excited as I am{snow}!");
+				case 1: Twirl_Lines(npc, "Ah, the fun that {aqua}Stella{snow}'s missing out on,{purple} a shame{snow}.");
+				case 2: Twirl_Lines(npc, "I hope you're ready for this final {purple}battle{snow}.");
+				case 3: Twirl_Lines(npc, "Kuru Kuru~");
 				case 4:
 				{
 					switch(GetRandomInt(0, 2))
 					{
 						case 1:	//1/6*1/3 ~ 5.(5)% of it happening
 						{
-							Twirl_Lines(npc, "있잖아, 내가 항상 궁금해했던 게 있어, 왜 사람들이 나를 계속 마조히스트라고 부르는지.");
-							Twirl_Lines(npc, "그러니까, 나는 그런 사람이 아닌데, 과거에 나와 싸웠던 \"사람\" 들 중 일부가 날 그렇게 부르더라구.");
-							Twirl_Lines(npc, "그리고 걔들이 왜 그런 말을 하는지 이해할 수가 없어. 왜 그럴까? 정말로. 난 새디스트조차 아니란 말이야.");
-							Twirl_Lines(npc, "그래서... 음, 가능하다면 네가 그 이유를 좀 알려줄래?");
+							Twirl_Lines(npc, "You know, there's something I've always wondered about, why do you people keep on calling me a masochist.");
+							Twirl_Lines(npc, "Since like, I'm not one for the record, and yet some of the \"people\" I've fought in the past keep calling me that.");
+							Twirl_Lines(npc, "And I'm at a loss as to WHY they say that, if anything it would be more accurate to call me a sadist, for the record, I'm not..");
+							Twirl_Lines(npc, "So yaknow, if you can, try and explain it, please?");
 						}
-						default: Twirl_Lines(npc, "쿠루링~");
+						default: Twirl_Lines(npc, "Kururing~");
 					}
 				}
 			}
@@ -1031,11 +1078,13 @@ methodmap Twirl < CClotBody
 			npc.m_iRangedAmmo = 12;
 			switch(GetRandomInt(0, 3))
 			{
-				case 1: Twirl_Lines(npc, "마법의 흐름을 따라 이끌려왔는데, {purple}참 흥미롭네{snow}...");
-				case 2: Twirl_Lines(npc, "아, 너희들이구나. 어때, {crimson}붙어볼까{snow}? {purple}너도 나랑 싸우는걸 원할테니까{snow}!");
-				case 3: Twirl_Lines(npc, "긴장 좀 풀어야할 타이밍이었는데, 마침 잘 찾아왔네!");
+				case 1: Twirl_Lines(npc, "So the flow of magic lead me here, {purple}how interesting{snow}...");
+				case 2: Twirl_Lines(npc, "Oh, its you all, hey, wanna {crimson}fight{snow}? {purple}of course you do{snow}!");
+				case 3: Twirl_Lines(npc, "I need to unwind, and you all look {crimson}perfect{snow} for that!");
 			}
 		}
+
+		c_NpcName[npc.index] = "Twirl";
 
 		i_current_Text = 0;
 
@@ -1083,6 +1132,90 @@ methodmap Twirl < CClotBody
 	}
 }
 
+static float fl_ion_passthrough_dmg;
+static float fl_ion_passthrough_vec[3];
+static bool b_ion_passthrough_override;
+static int i_ion_passthrough_sickness_flat;
+static float fl_ion_passthrough_sickness_multi;
+static Action Timer_Twirl_Ion(Handle Timer, DataPack data)
+{
+	data.Reset();
+	int iNPC =EntRefToEntIndex(data.ReadCell());
+	float end_point[3];
+	int color[4];
+	data.ReadFloatArray(end_point, sizeof(end_point));
+	data.ReadCellArray(color, sizeof(color));
+	float Radius			= data.ReadFloat();
+	float dmg 				= data.ReadFloat();
+	float Sickness_Multi 	= data.ReadFloat();
+	int Sickness_flat 		= data.ReadCell();
+	bool Override 			= data.ReadCell();
+
+	if(!IsValidEntity(iNPC))
+		return Plugin_Stop;
+
+	Explode_Logic_Custom(0.0, iNPC, iNPC, -1, end_point, Radius, _, _, true, _ , _    , 2.0, Twirl_Ion_OnHit);
+
+	fl_ion_passthrough_dmg = dmg;
+	fl_ion_passthrough_vec = end_point;
+
+	EmitSoundToAll(RUINA_ION_CANNON_SOUND_TOUCHDOWN, 0, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 1.0, SNDPITCH_NORMAL, -1, end_point);
+	EmitSoundToAll(RUINA_ION_CANNON_SOUND_TOUCHDOWN, 0, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 1.0, SNDPITCH_NORMAL, -1, end_point);
+
+	b_ion_passthrough_override = Override;
+
+	i_ion_passthrough_sickness_flat = Sickness_flat;
+	fl_ion_passthrough_sickness_multi = Sickness_Multi;
+
+	float Thickness = 6.0;
+	TE_SetupBeamRingPoint(end_point, 0.0, Radius*2.0, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, 0.4, Thickness, 0.75, color, 1, 0);
+	TE_SendToAll();
+
+	float Sky_Loc[3]; Sky_Loc = end_point; Sky_Loc[2]+=1000.0; end_point[2]-=100.0; 
+
+	if(AtEdictLimit(EDICT_NPC))
+		return Plugin_Stop;
+		
+	int laser;
+	laser = ConnectWithBeam(-1, -1, color[0], color[1], color[2], 7.0, 7.0, 1.0, BEAM_COMBINE_BLACK, end_point, Sky_Loc);
+	CreateTimer(1.0, Timer_RemoveEntity, EntIndexToEntRef(laser), TIMER_FLAG_NO_MAPCHANGE);
+	laser = ConnectWithBeam(-1, -1, color[0], color[1], color[2], 5.0, 5.0, 0.1, LASERBEAM, end_point, Sky_Loc);
+	CreateTimer(1.0, Timer_RemoveEntity, EntIndexToEntRef(laser), TIMER_FLAG_NO_MAPCHANGE);
+
+	int particle = ParticleEffectAt(Sky_Loc, "kartimpacttrail", 1.0);
+	SetEdictFlags(particle, (GetEdictFlags(particle) | FL_EDICT_ALWAYS));	
+	CreateTimer(0.25, Nearl_Falling_Shot, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
+
+	return Plugin_Stop;
+}
+static void Twirl_Ion_OnHit(int entity, int victim, float damage, int weapon)
+{
+	if(IsValidClient(victim))
+	{
+		EmitSoundToClient(victim, RUINA_ION_CANNON_SOUND_ATTACK);
+		EmitSoundToClient(victim, RUINA_ION_CANNON_SOUND_ATTACK);
+		//CPrintToChatAll("Twirl attempting to attack %N", victim);
+	}
+
+	if(IsIn_HitDetectionCooldown(entity,victim))
+		return;
+
+	//if(IsValidClient(victim))
+	//	CPrintToChatAll("Twirl Sucesfully attacking %N", victim);
+
+	if(i_ion_passthrough_sickness_flat || fl_ion_passthrough_sickness_multi)
+		Ruina_Add_Mana_Sickness(entity, victim, fl_ion_passthrough_sickness_multi, i_ion_passthrough_sickness_flat, b_ion_passthrough_override);
+			
+	Set_HitDetectionCooldown(entity,victim, GetGameTime() + 0.5);	//this will make it so if a player gets attacked by 1 ions at nearly the same instance, only 1 will actually deal damage. instead of the 8 other clumped up ions
+
+	float dmg = fl_ion_passthrough_dmg;
+
+	if(ShouldNpcDealBonusDamage(victim))
+		dmg *= 3.0;
+
+	SDKHooks_TakeDamage(victim, entity, entity, dmg, DMG_PLASMA, _, fl_ion_passthrough_vec); 
+}
+
 void TwirlSetBatteryPercentage(int entity, float percentage)
 {
 	fl_ruina_battery_max[entity] = 1000000.0; //so high itll never be reached.
@@ -1098,24 +1231,24 @@ static void Twirl_WinLine(int entity)
 
 	if(b_force_transformation)
 	{
-		Twirl_Lines(npc, "{crimson}스러져라...");
+		Twirl_Lines(npc, "{crimson}Perish");
 		return;
 	}
 
-	switch(GetRandomInt(0, 10))
+	switch(GetRandomInt(0, 11))
 	{
-		case 0: Twirl_Lines(npc, "왜, 포기하려고?");
-		case 1: Twirl_Lines(npc, "재밌었어. 이런 느낌을 받은건 참 오랜만이야!");
-		case 2: Twirl_Lines(npc, "허, 이게 너희가 할 수 있는 전부였나봐. 안타깝네.");
-		case 3: Twirl_Lines(npc, "여왕으로서, 이런 좋은 시간을 보내게 해줘서 정말 고마워.");
-		case 4: Twirl_Lines(npc, "아아, 정말 멋진 운동이었어. 이제 샤워해야겠네.");
-		case 5: Twirl_Lines(npc, "이건 싸움이 아니라 저항이라 부른단다.");
-		case 6: Twirl_Lines(npc, "또 한 명 쓰러져가네.");
-		case 7: Twirl_Lines(npc, "아, 어리석은 용병들, 다음에는 적절한 전략을 생각해 보는 게 어떨까.");
-		case 8: Twirl_Lines(npc, "그래, 순수한 힘도 좋지. 그런데 그걸 못 버티는 이유는, {crimson}디버프 때문이지.");
-		case 9: Twirl_Lines(npc, "만약 더 많은 {aqua}지원{snow} 요소가 있었다면 네가 이겼을텐데, 아깝네.");
-		case 10: Twirl_Lines(npc, "{crimson}정말 귀엽군{snow}.");
-		case 11: Twirl_Lines(npc, "이것보다 더 강한거 아니었니?");
+		case 0: Twirl_Lines(npc, "Wait, you're all dead already??");
+		case 1: Twirl_Lines(npc, "This was quite fun, I thank you for the experience!");
+		case 2: Twirl_Lines(npc, "Huh, I guess this was all you were capable of, a shame");
+		case 3: Twirl_Lines(npc, "I, as the empress, thank you for this wonderful time");
+		case 4: Twirl_Lines(npc, "Ahhh, that was a great workout, time to hit the showers");
+		case 5: Twirl_Lines(npc, "You call this fighting? We call this resisting arrest");
+		case 6: Twirl_Lines(npc, "Another one bites the dust");
+		case 7: Twirl_Lines(npc, "Ah foolish Mercenaries, maybe next time think about a proper strategy");
+		case 8: Twirl_Lines(npc, "Raw power is good and all, but you know what's better? {crimson}Debuffs");
+		case 9: Twirl_Lines(npc, "Perhaps if you all had more {aqua}supports{snow} you'd might have won. Allas");
+		case 10: Twirl_Lines(npc, "{crimson}How Cute{snow}.");
+		case 11: Twirl_Lines(npc, "And you're all supposed to be strong?");
 	}
 
 }
@@ -1146,19 +1279,19 @@ static void ClotThink(int iNPC)
 			fl_next_textline = GameTime + 3.0;
 			switch(i_current_Text)
 			{
-				case 0: Twirl_Lines(npc, "자, 나를 이길 수 있었구나.");
-				case 1: Twirl_Lines(npc, "정말 잘 했어. ...이긴 이유를 모르겠다고?");
-				case 2: Twirl_Lines(npc, "간단하잖아. 네가 얼마나 많은 것을 해왔는지 보여주는거야.");
-				case 3: Twirl_Lines(npc, "넌 세계를 멸망시킬수도 있는 감염을 여러 차례 격퇴했고, 그로 인해 많은 동맹을 얻었어.");
-				case 4: Twirl_Lines(npc, "하지만 그 뒤에는 훨씬 더 많은 어려움과 위험이 도사리고 있어.");
-				case 5: Twirl_Lines(npc, "그래서 우리 루이나인들이 너희의 실력을 시험해보기로 결정한 거야.");
-				case 6: Twirl_Lines(npc, "너희 모두가 그 미래에 대한 대비가 되어있는지를 확인해보기 위해서.");
-				case 7: Twirl_Lines(npc, "그리고, 보아하니 너흰 전부 다 준비되어있는 것 같네.");
-				case 8: Twirl_Lines(npc, "하지만 이건 명심해. 네가 여기서 싸웠던 루이나인들은...");
-				case 9: Twirl_Lines(npc, "흠.. 그래, 그냥 그들의 힘의 극히 일부분일 뿐이야.");
+				case 0: Twirl_Lines(npc, "So then, you managed to beat me");
+				case 1: Twirl_Lines(npc, "Thats great, why you may ask?");
+				case 2: Twirl_Lines(npc, "Its quite simple, it shows that you've all gone far");
+				case 3: Twirl_Lines(npc, "You beat several world ending infections, alongside that gained many allies");
+				case 4: Twirl_Lines(npc, "But the future holds many more hardships and dangers");
+				case 5: Twirl_Lines(npc, "And so, it was decided that we the Ruanian's would test your skills");
+				case 6: Twirl_Lines(npc, "To see if you’re all ready for what the future holds");
+				case 7: Twirl_Lines(npc, "And well, you do, you are certainly ready for the future");
+				case 8: Twirl_Lines(npc, "But do keep this in mind, the ''Ruina'' that you fought here, was just a mere...");
+				case 9: Twirl_Lines(npc, "Heh.. Yeah, a mere fraction of what we are capable off");
 				case 10:
 				{
-					Twirl_Lines(npc, "어쨌든, 이걸 받아줘. 네 미래를 위한 여정에 도움이 될 거야.");
+					Twirl_Lines(npc, "Regardless take this, it's something that might help in your future adventures");
 
 					npc.m_bDissapearOnDeath = true;
 
@@ -1173,10 +1306,10 @@ static void ClotThink(int iNPC)
 						if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
 						{
 							Items_GiveNamedItem(client, "Twirl's Hairpins");
-							CPrintToChat(client,"당신은 {purple}%s{snow}의 헤어핀을 얻었습니다...", c_NpcName[npc.index]);
+							CPrintToChat(client,"{snow}You have been given {purple}%s{snow}'s hairpins...", c_NpcName[npc.index]);
 						}
 					}
-					Twirl_Lines(npc, "그거 소중히 다뤄야해.");
+					Twirl_Lines(npc, "Make sure to take good care of them... or else.");
 					return;
 				}
 			}
@@ -1188,24 +1321,23 @@ static void ClotThink(int iNPC)
 	if(LastMann && !b_lastman)
 	{
 		b_lastman = true;
-		if(b_force_transformation)
+		if(!b_force_transformation)
 		{
 			switch(GetRandomInt(0, 7))
 			{
-				case 0: Twirl_Lines(npc, "이런, 지금 네가 처한 상황을 보렴.");
-				case 1: Twirl_Lines(npc, "이것 봐, {purple}이게 너희가 할 수 있는 전부야{snow}? 아니란걸 증명해봐.");
-				case 2: Twirl_Lines(npc, "너희가 이 이상의 능력을 가지고 있다는 걸 알아.");
-				case 3: Twirl_Lines(npc, "혼자 남았네? 그럼 {purple}네가{snow} 제일 강하다는 뜻이겠지?");
-				case 4: Twirl_Lines(npc, "흥미로운데. 어쩌면 과대평가했을지도.");
-				case 5: Twirl_Lines(npc, "만약 지금 네가 {purple}숨겨둔 무기{snow}같은걸 가지고 있다면, 지금 써야해.");
-				case 6: Twirl_Lines(npc, "이런게 바로 전장이지. 한 명만 남을때까지 {purple}계속 죽어나가는 것...{snow}.");
-				case 7: Twirl_Lines(npc, "{crimson}정말 귀엽군{snow}. 너 혼자라니, 정말 멋진 광경이야.");
+				case 0: Twirl_Lines(npc, "Oh my, quite the situation you’re in here");
+				case 1: Twirl_Lines(npc, "Come now, {purple}is this all you can do{snow}? Prove me wrong.");
+				case 2: Twirl_Lines(npc, "I know you're capable more than just this");
+				case 3: Twirl_Lines(npc, "You're the last one alive, {purple}but{snow} are you the strongest?");
+				case 4: Twirl_Lines(npc, "Interesting, perhaps I overestimated you all.");
+				case 5: Twirl_Lines(npc, "If you have some form of {purple}secret weapon{snow}, its best to use it now.");
+				case 6: Twirl_Lines(npc, "Such is the battlefield, {purple}they all die one by one{snow}, until there is but one standing...");
+				case 7: Twirl_Lines(npc, "{crimson}How Cute{snow}. You alone, its such a view");
 			}
 		}
 	}
 
-	if(HandleRaidTimer(npc))
-		return;
+	HandleRaidTimer(npc);
 
 	if((npc.Anger) && npc.m_flNextChargeSpecialAttack < GetGameTime(npc.index) && npc.m_flNextChargeSpecialAttack != FAR_FUTURE)
 	{
@@ -1218,22 +1350,22 @@ static void ClotThink(int iNPC)
 		{
 			switch(GetRandomInt(0, 2))
 			{
-				case 0: Twirl_Lines(npc, "그럼 이제 진짜 싸움을 시작해볼까?");
-				case 1: Twirl_Lines(npc, "이번엔 기다리고 싶지 않은데.");
-				case 2: Twirl_Lines(npc, "열을 더 올려보자. {crimson}끝까지.");
+				case 0: Twirl_Lines(npc, "You ain't getting a normal phase shift");
+				case 1: Twirl_Lines(npc, "This time, I ain't waiting");
+				case 2: Twirl_Lines(npc, "Its time to ramp the heater up to {crimson}max");
 			}
 		}
 		else
 		{
 			switch(GetRandomInt(0, 6))
 			{
-				case 0: Twirl_Lines(npc, "그럼 이제 올려볼까? {purple}열기 말이야.");
-				case 1: Twirl_Lines(npc, "아하, 진짜 {purple}재밌네!{snow} 여기서 하나 더 첨가해주면 더 재밌겠는데?");
-				case 2: Twirl_Lines(npc, "2라운드!");
-				case 3: Twirl_Lines(npc, "음~ 더 재밌어지고 있네.");
-				case 4: Twirl_Lines(npc, "우리 좀만 더 진득하게 놀아볼까?");
-				case 5: Twirl_Lines(npc, "넌 안 즐겁니? 난 즐겁기만 한데!");
-				case 6: Twirl_Lines(npc, "이 {aqua}마나{snow}의 흐름은 정말 {purple}흥미로워{snow}, 마음에 드는데!");
+				case 0: Twirl_Lines(npc, "Time to ramp up the {purple}heat");
+				case 1: Twirl_Lines(npc, "Ahhh, this is {purple}fun{snow}, lets step it up a notch");
+				case 2: Twirl_Lines(npc, "Round 2. Fight!");
+				case 3: Twirl_Lines(npc, "Ai, this is getting fun");
+				case 4: Twirl_Lines(npc, "I’m extremely curious to see how you fair {purple}against this");
+				case 5: Twirl_Lines(npc, "Ahahahah, the joy of battle, don't act like you’re not enjoying this");
+				case 6: Twirl_Lines(npc, "The flow of {aqua}mana{snow} is so {purple}intense{snow}, I love this oh so much!");
 			}
 		}
 		
@@ -1283,10 +1415,15 @@ static void ClotThink(int iNPC)
 
 	if(b_allow_final_invocation)
 	{
-		if(npc.m_flFinalInvocationTimer != FAR_FUTURE)
+		if(npc.m_flFinalInvocationTimer < GameTime && npc.m_flFinalInvocationTimer != FAR_FUTURE)
 		{
 			npc.m_flFinalInvocationTimer = FAR_FUTURE;
 			//npc.m_flFinalInvocationLogic = GetGameTime() + 5.0;
+
+			if(b_wonviatimer)
+			{
+				npc.m_flFinalInvocationTimer = GameTime + 300.0;
+			}
 			Final_Invocation(npc);
 		}
 	}
@@ -1316,28 +1453,34 @@ static void ClotThink(int iNPC)
 			float vecTarget[3]; WorldSpaceCenter(npc.m_iTarget, vecTarget);
 
 			float Turn_Speed = (npc.Anger ? 30.0 : 19.0);
+			Turn_Speed *= 1.25;
 			//if there are more then 3 players near twirl, her laser starts to turn faster.
 			int Nearby = Nearby_Players(npc, (npc.Anger ? 300.0 : 250.0));
 			if(Nearby > 3)
 			{
 				Turn_Speed *= (Nearby/2.0)*1.2;
+				Turn_Speed *= 1.25;
+			}
+			if(Nearby > 6)
+			{
+				Turn_Speed *= 1.15;
 			}
 			npc.FaceTowards(vecTarget, Turn_Speed);
 			float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
 
 			int iPitch = npc.LookupPoseParameter("body_pitch");
-			if(iPitch < 0)
-				return;		
-
-			//Body pitch
-			float v[3], ang[3];
-			SubtractVectors(VecSelfNpc, vecTarget, v); 
-			NormalizeVector(v, v);
-			GetVectorAngles(v, ang); 
-									
-			float flPitch = npc.GetPoseParameter(iPitch);
-									
-			npc.SetPoseParameter(iPitch, ApproachAngle(ang[0], flPitch, 10.0));
+			if(iPitch >= 0)
+			{
+				//Body pitch
+				float v[3], ang[3];
+				SubtractVectors(VecSelfNpc, vecTarget, v); 
+				NormalizeVector(v, v);
+				GetVectorAngles(v, ang); 
+										
+				float flPitch = npc.GetPoseParameter(iPitch);
+										
+				npc.SetPoseParameter(iPitch, ApproachAngle(ang[0], flPitch, 10.0));
+			}	
 		}
 		else
 		{
@@ -1404,18 +1547,20 @@ static void ClotThink(int iNPC)
 		float flDistanceToTarget = GetVectorDistance(vecTarget, VecSelfNpc, true);
 
 		int iPitch = npc.LookupPoseParameter("body_pitch");
-		if(iPitch < 0)
-			return;		
+		if(iPitch >= 0)
+		{
 
-		//Body pitch
-		float v[3], ang[3];
-		SubtractVectors(VecSelfNpc, vecTarget, v); 
-		NormalizeVector(v, v);
-		GetVectorAngles(v, ang); 
-								
-		float flPitch = npc.GetPoseParameter(iPitch);
-								
-		npc.SetPoseParameter(iPitch, ApproachAngle(ang[0], flPitch, 10.0));
+			//Body pitch
+			float v[3], ang[3];
+			SubtractVectors(VecSelfNpc, vecTarget, v); 
+			NormalizeVector(v, v);
+			GetVectorAngles(v, ang); 
+									
+			float flPitch = npc.GetPoseParameter(iPitch);
+									
+			npc.SetPoseParameter(iPitch, ApproachAngle(ang[0], flPitch, 10.0));
+		}	
+
 
 		npc.StartPathing();
 
@@ -1547,32 +1692,34 @@ static void Final_Invocation(Twirl npc)
 			SetEntProp(spawn_index, Prop_Data, "m_iMaxHealth", RoundToCeil(Tower_Health));
 		}
 	}
-	if(b_force_transformation)
+	if(!b_wonviatimer)
 	{
-		switch(GetRandomInt(0, 3))
+		if(b_force_transformation)
 		{
-			case 0: Twirl_Lines(npc, "이제 이 이상으로는 못 넘어갈걸.");
-			case 1: Twirl_Lines(npc, "{crimson}스러져라.");
-			case 2: Twirl_Lines(npc, "{crimson}여기까지 온 건 처음이야.");
-			case 3: Twirl_Lines(npc, "{crimson}슬슬 끝낼때가 됐지?");
+			switch(GetRandomInt(0, 3))
+			{
+				case 0: Twirl_Lines(npc, "I refuse to let you go beyond this point");
+				case 1: Twirl_Lines(npc, "{crimson}Perish.");
+				case 2: Twirl_Lines(npc, "{crimson}I Got a Glock in my rari.");
+				case 3: Twirl_Lines(npc, "{crimson}I'm going to mount your heads on a staff as a warning for others not to fuck with me");
+			}
 		}
-	}
-	else
-	{
-		switch(GetRandomInt(0, 7))
+		else
 		{
-			case 0: Twirl_Lines(npc, "음, 이게 끝이라고 생각했어? {crimson}난 아닌데...");
-			case 1: Twirl_Lines(npc, "아하하, 내가 집정관이라는거 알고 있지? {purple}그럼 이것도 누구 물건이란것도 알겠네?");
-			case 2: Twirl_Lines(npc, "그래, 광역 공격은 잘 챙겼고?");
-			case 3: Twirl_Lines(npc, "어, 걱정 마. {aqua}스텔라 위버{snow}는 저기서 안 나와.");
-			case 4: Twirl_Lines(npc, "흐음, 지원이 필요하다고? 여기 있어! 비록 네 지원군은 아니지만.");
-			case 5: Twirl_Lines(npc, "이걸 첨가하는 싸움은 더 재밌어질거야!");
-			case 6: Twirl_Lines(npc, "마지막 호출!");
-			case 7: Twirl_Lines(npc, "{lightblue}알락시오스{default}? 아, 걔... 맞아, 걔한테서 좀 배운 기술이거든. 그러니까 이건 걔한테는 비밀이다?");
+			switch(GetRandomInt(0, 7))
+			{
+				case 0: Twirl_Lines(npc, "If you think I’m all you have to deal with, {crimson}well then...");
+				case 1: Twirl_Lines(npc, "Ahahah, I am a ruler Afterall, {purple}and a ruler usually has an army");
+				case 2: Twirl_Lines(npc, "How's your aoe situation?");
+				case 3: Twirl_Lines(npc, "Don't worry, the {aqua}Stellar Weaver{snow} won't be showing up from them");
+				case 4: Twirl_Lines(npc, "Hmm, how about a bit of support, {crimson}for myself");
+				case 5: Twirl_Lines(npc, "Aye, this’ll do, now go forth my minion’s {crimson}and crush them{snow}!");
+				case 6: Twirl_Lines(npc, "The Final Invocation!");
+				case 7: Twirl_Lines(npc, "{lightblue}Alaxios{default} Oh HIM, yeah I maaay have borrowed this from him, heh, just don't tell him or his ''god''lines might get hurt.");
+			}
 		}
+		RaidModeTime += 60.0;
 	}
-	
-	RaidModeTime += 60.0;
 
 	/*
 	simply un comment to readd.
@@ -1582,8 +1729,8 @@ static void Final_Invocation(Twirl npc)
 	{
 		switch(GetRandomInt(0, 1))
 		{
-			case 0: Twirl_Lines(npc, "음? 이게 뭐야? 너 뭔가 열망하고 있는것 같은데...");
-			case 1: Twirl_Lines(npc, "아, 내 생각보단 쉽지 않을것 같네.");
+			case 0: Twirl_Lines(npc, "Hm? Whats this? You seem eager?");
+			case 1: Twirl_Lines(npc, "Oh my, looks like this wont be as easy as i thought...");
 		}
 	}
 	
@@ -1651,42 +1798,46 @@ static void lunar_Radiance(Twirl npc)
 	{
 		switch(GetRandomInt(0, 17))
 		{
-			case 0: Twirl_Lines(npc, "이건 내가 쓰는 개인용 {crimson}이온{snow}일 뿐이야. 루이나쪽이 더 무섭단다~");
-			case 2: Twirl_Lines(npc, "어어, {crimson}머리 조심{snow}!");
-			case 5: Twirl_Lines(npc, "{crimson}위를 봐{snow}!");
-			case 7: Twirl_Lines(npc, "잘 피하길 바래. {crimson}그렇지 않으면 {snow}끔찍한 일이 벌어질테니.");
-			case 9: Twirl_Lines(npc, "음악도 우리 {aqua}마법{snow}의 핵심이야!");
-			case 11: Twirl_Lines(npc, "춤추렴, 용병들아. 춤 춰...");
-			case 13: Twirl_Lines(npc, "{crimson}에헤{snow}.");
-			case 15: Twirl_Lines(npc, "{crimson}올림바단조 {snow}방식의 죽음을 맞이하렴.");
-			case 17: Twirl_Lines(npc, "오, {crimson}불쌍한{snow} 아이들...");
+			case 0: Twirl_Lines(npc, "These are just my own personal {crimson}ION{snow}'s. Ruina's ones are far scarier~");
+			case 2: Twirl_Lines(npc, "Watch your {crimson}Step{snow}!");
+			case 5: Twirl_Lines(npc, "Lookout {crimson}Above{snow}!");
+			case 7: Twirl_Lines(npc, "I hope you're all split up, {crimson}Or else {snow}this won't end well");
+			case 9: Twirl_Lines(npc, "Music is a core part of our {aqua}Magic{snow} too!");
+			case 11: Twirl_Lines(npc, "Dance little merc, dance...");
+			case 13: Twirl_Lines(npc, "{crimson}Ehe{snow}.");
+			case 15: Twirl_Lines(npc, "Annihilation in {crimson}F# {snow}Minor");
+			case 17: Twirl_Lines(npc, "Oh, {crimson}poor{snow} you...");
 		}
 	}
 
-	float flPos[3], flAng[3];
-	npc.GetAttachment("effect_hand_r", flPos, flAng);
-	int ent1 = ParticleEffectAt_Parent(flPos, "raygun_projectile_blue_crit", npc.index, "effect_hand_r", {0.0,0.0,0.0});
-	npc.GetAttachment("effect_hand_l", flPos, flAng);
-	int ent2 = ParticleEffectAt_Parent(flPos, "raygun_projectile_red_crit", npc.index, "effect_hand_l", {0.0,0.0,0.0});
-	if(IsValidEntity(ent1) && IsValidEntity(ent2))
+	if(!AtEdictLimit(EDICT_NPC))
 	{
-		i_lunar_entities[npc.index][0] = EntIndexToEntRef(ent1);
-		i_lunar_entities[npc.index][1] = EntIndexToEntRef(ent2);
-		int color[4];
-		Ruina_Color(color, i_current_wave[npc.index]);
-		int laser = ConnectWithBeamClient(ent1, ent2, color[0], color[1], color[2], 5.0, 5.0, 1.0, LASERBEAM);
-		if(IsValidEntity(laser))
+		float flPos[3], flAng[3];
+		npc.GetAttachment("effect_hand_r", flPos, flAng);
+		int ent1 = ParticleEffectAt_Parent(flPos, "raygun_projectile_blue_crit", npc.index, "effect_hand_r", {0.0,0.0,0.0});
+		npc.GetAttachment("effect_hand_l", flPos, flAng);
+		int ent2 = ParticleEffectAt_Parent(flPos, "raygun_projectile_red_crit", npc.index, "effect_hand_l", {0.0,0.0,0.0});
+		if(IsValidEntity(ent1) && IsValidEntity(ent2))
 		{
-			i_lunar_entities[npc.index][2] = EntIndexToEntRef(laser);
+			i_lunar_entities[npc.index][0] = EntIndexToEntRef(ent1);
+			i_lunar_entities[npc.index][1] = EntIndexToEntRef(ent2);
+			int color[4];
+			Ruina_Color(color, i_current_wave[npc.index]);
+			int laser = ConnectWithBeamClient(ent1, ent2, color[0], color[1], color[2], 5.0, 5.0, 1.0, LASERBEAM);
+			if(IsValidEntity(laser))
+			{
+				i_lunar_entities[npc.index][2] = EntIndexToEntRef(laser);
+			}
+		}
+		else
+		{
+			if(IsValidEntity(ent1))
+				RemoveEntity(ent1);
+			if(IsValidEntity(ent2))
+				RemoveEntity(ent2);
 		}
 	}
-	else
-	{
-		if(IsValidEntity(ent1))
-			RemoveEntity(ent1);
-		if(IsValidEntity(ent2))
-			RemoveEntity(ent2);
-	}
+	
 
 	npc.m_flLunarThrottle = GameTime + 0.5;
 	fl_ruina_battery_timeout[npc.index] = GameTime + 2.5;
@@ -2027,7 +2178,8 @@ static void Self_Defense(Twirl npc, float flDistanceToTarget, int PrimaryThreatI
 							float Radius = (npc.Anger ? 225.0 : 150.0);
 							float dmg = 75.0;
 							dmg *= RaidModeScaling;
-							npc.Predictive_Ion(target, (npc.Anger ? 1.0 : 1.5), Radius, dmg);
+							float VicLoc[3]; GetAbsOrigin(target, VicLoc);
+							npc.Ion_On_Loc(VicLoc, Radius, dmg, (npc.Anger ? 1.0 : 1.5), false);
 						}
 			
 						SDKHooks_TakeDamage(target, npc.index, npc.index, Modify_Damage(target, 40.0), DMG_CLUB, -1, _, vecHit);
@@ -2045,7 +2197,7 @@ static void Self_Defense(Twirl npc, float flDistanceToTarget, int PrimaryThreatI
 								TF2_AddCondition(target, TFCond_AirCurrent, 0.5);
 							}
 						}
-						Ruina_Add_Mana_Sickness(npc.index, target, 0.2, RoundToNearest(Modify_Damage(target, 7.0)));
+						Ruina_Add_Mana_Sickness(npc.index, target, npc.Anger ? 0.2 : 0.3, npc.iGetSicknessFlatPerWaveMulti(npc.Anger ? 75 : 100));
 					}
 					npc.PlayMeleeHitSound();
 					
@@ -2067,10 +2219,8 @@ static void Self_Defense(Twirl npc, float flDistanceToTarget, int PrimaryThreatI
 
 		if(npc.m_flNextMeleeAttack < GameTime && flDistanceToTarget < (NORMAL_ENEMY_MELEE_RANGE_FLOAT_SQUARED*1.25))	//its a lance so bigger range
 		{
-			int Enemy_I_See;
-									
-			Enemy_I_See = Can_I_See_Enemy(npc.index, PrimaryThreatIndex);
-					
+			int Enemy_I_See = Can_I_See_Enemy(npc.index, PrimaryThreatIndex);
+			
 			if(IsValidEnemy(npc.index, Enemy_I_See))
 			{
 				fl_ruina_in_combat_timer[npc.index]=GameTime+5.0;
@@ -2121,8 +2271,8 @@ static void Initiate_Projectile_ParticleAccelerator(Twirl npc, int projectile, i
 
 	fl_BEAM_DurationTime[projectile] = float(npc.m_iState);
 
-	float 	Homing_Power = 3.0,
-			Homing_Lockon = 80.0;
+	float 	Homing_Power = b_wonviatimer ? 30.0 : 3.0,
+			Homing_Lockon = b_wonviatimer ? 360.0 : 80.0;
 
 	float angles[3];
 	GetEntPropVector(projectile, Prop_Data, "m_angRotation", angles);
@@ -2131,7 +2281,7 @@ static void Initiate_Projectile_ParticleAccelerator(Twirl npc, int projectile, i
 	npc.index,
 	Homing_Lockon,			// float lockonAngleMax,
 	Homing_Power,			// float homingaSec,
-	true,				// bool LockOnlyOnce,
+	!b_wonviatimer,				// bool LockOnlyOnce,
 	true,					// bool changeAngles,
 	angles,
 	PrimaryThreatIndex
@@ -2183,7 +2333,7 @@ static Action Projectile_ParticleCannonThink(int entity)
 }
 //since homing only sets speeds every 0.1s and this is a every tick operation, in some instances the projectile will have uneven acceleration, and even won't accelerate fully.
 //as such, we need to also manually set the speed real time every tick.
-static void SetProjectileSpeed(int projectile, float speed, float angles[3])
+void SetProjectileSpeed(int projectile, float speed, float angles[3])
 {
 	float forward_direction[3];
 	GetAngleVectors(angles, forward_direction, NULL_VECTOR, NULL_VECTOR);
@@ -2192,26 +2342,27 @@ static void SetProjectileSpeed(int projectile, float speed, float angles[3])
 }
 static void ReplaceProjectileParticle(int projectile, const char[] particle_string)
 {
-	int particle = EntRefToEntIndex(i_rocket_particle[projectile]);
+	int particle = EntRefToEntIndex(i_WandParticle[projectile]);
 	if(IsValidEntity(particle))
 		RemoveEntity(particle);
 
 	float ProjLoc[3];
 	WorldSpaceCenter(projectile, ProjLoc);
 	particle = ParticleEffectAt(ProjLoc, particle_string, 0.0); //Inf duartion
-	i_rocket_particle[projectile]= EntIndexToEntRef(particle);
+	i_WandParticle[projectile]= EntIndexToEntRef(particle);
 	SetParent(projectile, particle);	
 }
 
 static float Modify_Damage(int Target, float damage)
 {
 	if(ShouldNpcDealBonusDamage(Target))
-		damage*=10.0;
+		damage*=4.0;
 
 	damage*=RaidModeScaling;
 
 	return damage;
 }
+static float fl_cosmic_gaze_animation_ratio;
 static float fl_cosmic_gaze_range = 1500.0;
 static float fl_cosmic_gaze_radius = 750.0;
 static void Cosmic_Gaze(Twirl npc, int Target)
@@ -2247,14 +2398,15 @@ static void Cosmic_Gaze(Twirl npc, int Target)
 	SetEntityRenderMode(npc.m_iWearable1, RENDER_NORMAL);
 	SetEntityRenderColor(npc.m_iWearable1, 255, 255, 255, 255);
 
-	float Windup = 2.0;
+	float Windup = 2.0;	//2.0
 	float Duration;
 	float Baseline = 1.75;
 
-	float Ratio = (Baseline/Windup);
+	float anim_ratio = (Baseline/Windup);
 
-	float anim_ratio = Ratio;
-	Duration = 1.3 * (Windup/Baseline);
+	Duration = 1.3 * anim_ratio;
+
+	fl_cosmic_gaze_animation_ratio = anim_ratio;
 
 	npc.m_bisWalking = false; 
 	npc.m_flDoingAnimation = GameTime + Duration + Windup + 0.2;
@@ -2345,7 +2497,7 @@ static Action Cosmic_Gaze_Tick(int iNPC)
 	{
 		if(!npc.m_bAnimationSet)
 		{
-			npc.SetPlaybackRate(0.25);
+			npc.SetPlaybackRate(0.25 * fl_cosmic_gaze_animation_ratio);
 
 			EmitSoundToAll(g_DefaultLaserLaunchSound[GetRandomInt(0, sizeof(g_DefaultLaserLaunchSound) - 1)], npc.index, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL);
 			EmitSoundToAll(g_DefaultLaserLaunchSound[GetRandomInt(0, sizeof(g_DefaultLaserLaunchSound) - 1)], npc.index, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL);
@@ -2455,7 +2607,7 @@ static Action Cosmic_Gaze_Tick(int iNPC)
 		else if(npc.m_flCosmicGazeDurationOffset != FAR_FUTURE)
 		{
 			npc.m_flCosmicGazeDurationOffset = FAR_FUTURE;
-			npc.SetPlaybackRate(1.36*0.72);
+			npc.SetPlaybackRate(1.36 * fl_cosmic_gaze_animation_ratio);
 
 			Ruina_Laser_Logic Laser;
 			Laser.client = npc.index;
@@ -2570,8 +2722,8 @@ static Action Delayed_Explosion(Handle Timer, DataPack data)
 			TE_SendToAll(0.0);
 		}
 	}
-
-	Explode_Logic_Custom(Modify_Damage(-1, 60.0), iNPC, iNPC, -1, Loc, Radius, _, _, true, _, false, _, Cosmic_Gaze_Boom_OnHit);
+	//the ability itself doesn't deal much damage, but what it does is it gives the target hit the telsar debuff.
+	Explode_Logic_Custom(Modify_Damage(-1, 60.0), iNPC, iNPC, -1, Loc, Radius, _, _, true, _, false, _, _, Cosmic_Gaze_Boom_OnHit);
 
 	return Plugin_Stop;
 }
@@ -2605,6 +2757,10 @@ static Action Timer_Repeat_Sound(Handle Timer, DataPack data)
 }
 static void Cosmic_Gaze_Boom_OnHit(int entity, int victim, float damage, int weapon)
 {
+	Twirl npc = view_as<Twirl>(entity);
+	
+	ApplyStatusEffect(npc.index, victim, "Teslar Shock", (npc.Anger ? 7.5 : 5.0));
+
 	if(IsValidClient(victim))
 		Client_Shake(victim, 0, 7.5, 7.5, 3.0);
 }
@@ -2726,12 +2882,19 @@ static void Fractal_Attack(int iNPC, float VecTarget[3], float dmg, float speed,
 		int color[4];
 		Ruina_Color(color, i_current_wave[iNPC]);
 		Twirl npc = view_as<Twirl>(iNPC);
-		int beam = ConnectWithBeamClient(npc.m_iWearable1, Proj, color[0], color[1], color[2], f_start, f_end, amp, LASERBEAM);
-		i_rocket_particle[Proj] = EntIndexToEntRef(beam);
 		DataPack pack;
 		CreateDataTimer(0.1, Laser_Projectile_Timer, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 		pack.WriteCell(EntIndexToEntRef(iNPC));
-		pack.WriteCell(EntIndexToEntRef(beam));
+		if(!AtEdictLimit(EDICT_NPC))
+		{
+			int beam = ConnectWithBeamClient(npc.m_iWearable1, Proj, color[0], color[1], color[2], f_start, f_end, amp, LASERBEAM);
+			i_WandParticle[Proj] = EntIndexToEntRef(beam);
+			pack.WriteCell(EntIndexToEntRef(beam));
+		}
+		else
+		{
+			pack.WriteCell(-69);
+		}
 		pack.WriteCell(EntIndexToEntRef(Proj));
 		pack.WriteCellArray(color, sizeof(color));
 		pack.WriteFloat(radius);
@@ -2748,11 +2911,11 @@ static void Func_On_Proj_Touch(int entity, int other)
 		return;
 	}
 
-	int beam = EntRefToEntIndex(i_rocket_particle[entity]);
+	int beam = EntRefToEntIndex(i_WandParticle[entity]);
 	if(IsValidEntity(beam))
 		RemoveEntity(beam);
 
-	i_rocket_particle[entity] = INVALID_ENT_REFERENCE;
+	i_WandParticle[entity] = INVALID_ENT_REFERENCE;
 	
 	float ProjectileLoc[3];
 	GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", ProjectileLoc);
@@ -2771,7 +2934,7 @@ static void Func_On_Proj_Touch(int entity, int other)
 		float dmg = Modify_Damage(-1, 12.0);
 
 		float Time = (npc.Anger ? 1.45 : 1.9);
-		npc.Ion_On_Loc(ProjectileLoc, radius, dmg, Time);
+		npc.Ion_On_Loc(ProjectileLoc, radius, dmg, Time, false);
 	}
 
 	Ruina_Remove_Projectile(entity);
@@ -2781,14 +2944,18 @@ static Action Laser_Projectile_Timer(Handle timer, DataPack data)
 {
 	data.Reset();
 	int iNPC = EntRefToEntIndex(data.ReadCell());
-	int Laser_Entity = EntRefToEntIndex(data.ReadCell());
+	int Laser_Entity = data.ReadCell();
+
+	if(Laser_Entity != -69)
+		Laser_Entity = EntRefToEntIndex(Laser_Entity);
+
 	int Projectile = EntRefToEntIndex(data.ReadCell());
 	int color[4];
 	data.ReadCellArray(color, sizeof(color));
 	float Radius	= data.ReadFloat();
 	float dmg 		= data.ReadFloat();
 
-	if(!IsValidEntity(iNPC) || !IsValidEntity(Laser_Entity) || !IsValidEntity(Projectile))
+	if(!IsValidEntity(iNPC) || (!IsValidEntity(Laser_Entity) && Laser_Entity != -69) || !IsValidEntity(Projectile))
 	{
 		if(IsValidEntity(Laser_Entity))
 			RemoveEntity(Laser_Entity);
@@ -2798,6 +2965,8 @@ static Action Laser_Projectile_Timer(Handle timer, DataPack data)
 		
 		return Plugin_Stop;
 	}
+
+	
 
 	Ruina_Laser_Logic Laser;
 
@@ -2820,6 +2989,12 @@ static Action Laser_Projectile_Timer(Handle timer, DataPack data)
 	Laser.Bonus_Damage = dmg*6.0;
 	Laser.damagetype = DMG_PLASMA;
 
+
+	if(Laser_Entity == -69)	//The projectile was fired when we are at edict criticality, as such we will render the "laser" with a TE rather then env beam.
+	{
+		TE_SetupBeamPoints(Laser.Start_Point, Laser.End_Point, g_Ruina_BEAM_Laser, 0, 0, 0, 0.1, Radius*2.0, Radius*2.0, 0, 0.1, color, 3);
+		TE_SendToAll();
+	}
 	Laser.Deal_Damage(On_LaserHit);
 
 
@@ -2997,19 +3172,19 @@ static bool Retreat(Twirl npc, bool block_ions = false)
 	switch(GetRandomInt(0, 13))
 	{
 		case 0: Twirl_Lines(npc, "{crimson}Twirly Wirly{snow}~");
-		case 1: Twirl_Lines(npc, "정말로 날 {purple}붙잡는게 {snow}가능하다 생각해?");
-		case 2: Twirl_Lines(npc, "어허, {crimson}안 되지.");
-		case 3: Twirl_Lines(npc, "너무 가까운데?");
-		case 4: Twirl_Lines(npc, "{crimson}빙글 빙글{snow}~");
-		case 5: Twirl_Lines(npc, "이봐, 좀 떨어져있어야지?");
-		case 6: Twirl_Lines(npc, "{purple}포위{snow}는 그렇게 하는게 아닌데?");
-		case 7: Twirl_Lines(npc, "너무 가까운거 아니니?");
-		case 8: Twirl_Lines(npc, "빠져나갈 틈이 너무 많네? 그럼 포위가 아니잖아?");
-		case 9: Twirl_Lines(npc, "나한테 그렇게 쉽게 다가올 수 있을거란 생각은 하지마.");
-		case 10: Twirl_Lines(npc, "우리 아직 잘 모르는 사이인데 그렇게 가까이 오면 안 되지.");
-		case 11: Twirl_Lines(npc, "{crimson}쿠루 쿠루{snow}~");
-		case 12: Twirl_Lines(npc, "오 이런, 여러 명이 이렇게 한 명을 {purple}둘러싸는{snow} 장면이라니!");
-		case 13: Twirl_Lines(npc, "아하, 네네~");
+		case 1: Twirl_Lines(npc, "You really think you can {purple}catch {snow}me?");
+		case 2: Twirl_Lines(npc, "Ahaaa, {crimson}bad");
+		case 3: Twirl_Lines(npc, "So close, yet far");
+		case 4: Twirl_Lines(npc, "{crimson}Kururing{snow}~");
+		case 5: Twirl_Lines(npc, "HEY, {purple}personal{snow} space buddy");
+		case 6: Twirl_Lines(npc, "You think I'd let myself get {purple}surrounded{snow} like that?");
+		case 7: Twirl_Lines(npc, "Don't surround me like that.");
+		case 8: Twirl_Lines(npc, "When will you learn this,{crimson} DON'T COME NEAR ME");
+		case 9: Twirl_Lines(npc, "My innocence, you won't get close to it that easily");
+		case 10: Twirl_Lines(npc, "Aiya, how rude of you to come close.");
+		case 11: Twirl_Lines(npc, "{crimson}Kuru Kuru{snow}~");
+		case 12: Twirl_Lines(npc, "Oh my, ganging up on someone as {purple}innocent{snow} as me?");
+		case 13: Twirl_Lines(npc, "Aaa, hai hai~");
 	}
 	return true;
 }
@@ -3229,10 +3404,10 @@ static void CountTargets(int entity, int victim, float damage, int weapon)
 static void On_LaserHit(int client, int target, int damagetype, float damage)
 {
 	Twirl npc = view_as<Twirl>(client);
-	Ruina_Add_Mana_Sickness(npc.index, target, 0.1, (npc.Anger ? 55 : 45), true);
+	Ruina_Add_Mana_Sickness(npc.index, target, 0.1, (npc.Anger ? npc.iGetSicknessFlatPerWaveMulti(25) : npc.iGetSicknessFlatPerWaveMulti(45)), true);
 }
 static float fl_ionic_fracture_range = 1000.0;
-static float fl_ionic_fracture_detionation_radius = 1500.0;
+static float fl_ionic_fracture_detionation_radius = 800.0;
 static int 	 i_ionic_fracture_amt = 12;
 static float fl_ionic_fracture_det_timer = 2.5;
 static float fl_ionic_fracture_windup = 2.0;
@@ -3291,9 +3466,8 @@ static bool IonicFracture(Twirl npc)
 
 	float Origin[3]; GetAbsOrigin(npc.index, Origin); Origin[2]+=5.0;
 
-	float Radius = fl_ionic_fracture_detionation_radius;
 	int color[4]; Ruina_Color(color, i_current_wave[npc.index]);
-	TE_SetupBeamRingPoint(Origin, 0.0, Radius*2.0, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, windup , 50.0, 0.75, color, 1, 0);
+	TE_SetupBeamRingPoint(Origin, 0.0, fl_ionic_fracture_detionation_radius*2.0, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, windup , 50.0, 0.75, color, 1, 0);
 	TE_SendToAll();
 
 	SDKUnhook(npc.index, SDKHook_Think, IonicFracture_Think);
@@ -3389,15 +3563,14 @@ static Action IonicFracture_Think(int iNPC)
 		Projectile.Start_Loc = Origin;
 		Projectile.radius = 150.0;
 		Projectile.damage = Modify_Damage(-1, Dmg);
-		Projectile.bonus_dmg = Modify_Damage(-1, Dmg)*2.5;
+		Projectile.bonus_dmg = 1.0;
 		Projectile.Time = (npc.m_flIonicFractureEndTimer - GameTime) + 10.0;	//the +10.0 is for potential npc stuns and such. the projectile gets deleted by the ability itself anyway so technically the timer isn't even needed, but its here just incase
 		Projectile.visible = false;
 
 		Origin[2]-=45.0;
 
-		float Radius = fl_ionic_fracture_detionation_radius;
 		int color[4]; Ruina_Color(color, i_current_wave[npc.index]);
-		TE_SetupBeamRingPoint(Origin, Radius*2.0, Radius*2.0 + 0.5, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, (npc.m_flIonicFractureEndTimer - GameTime) , 50.0, 0.75, color, 1, 0);
+		TE_SetupBeamRingPoint(Origin, fl_ionic_fracture_detionation_radius*2.0, fl_ionic_fracture_detionation_radius*2.0 + 0.5, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, (npc.m_flIonicFractureEndTimer - GameTime) , 50.0, 0.75, color, 1, 0);
 		TE_SendToAll();
 
 		Origin[2]+=45.0;
@@ -3424,7 +3597,7 @@ static Action IonicFracture_Think(int iNPC)
 			Laser.DoForwardTrace_Custom(Angles, Origin, fl_ionic_fracture_range);
 
 			float distance = GetVectorDistance(Laser.Start_Point, Laser.End_Point);	//get the distance from start to end loc, adjust for what distance we want
-			float speed = distance / fl_ionic_fracture_charge_time;	//then adjust speed acordingly.
+			float speed = (distance / fl_ionic_fracture_charge_time) / ReturnEntityAttackspeed(npc.index);	//then adjust speed acordingly.
 			Projectile.speed = speed;
 			Projectile.Angles = Angles;
 			int projectile = Projectile.Launch_Projectile(FuncTwirlIonicFractalProjectileTouch);
@@ -3447,13 +3620,12 @@ static Action IonicFracture_Think(int iNPC)
 	if(npc.m_flIonicFractureChargeTimer < GameTime)
 	{
 		int color[4]; Ruina_Color(color, i_current_wave[npc.index]);
-		float Radius = fl_ionic_fracture_detionation_radius;
 		float Thickness = 20.0;
 		float ground[3]; GetAbsOrigin(npc.index, ground);
 
 		ground[2] += fl_BEAM_DurationTime[npc.index];
 
-		TE_SetupBeamRingPoint(ground, Radius*2.0, Radius*2.0+0.5, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, TWIRL_TE_DURATION , Thickness, 0.75, color, 1, 0);
+		TE_SetupBeamRingPoint(ground, fl_ionic_fracture_detionation_radius*2.0, fl_ionic_fracture_detionation_radius*2.0+0.5, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, TWIRL_TE_DURATION , Thickness, 0.75, color, 1, 0);
 		TE_SendToAll();
 
 		fl_BEAM_DurationTime[npc.index]+=3.0;
@@ -3467,6 +3639,7 @@ static Action IonicFracture_Think(int iNPC)
 		npc.SetPlaybackRate(1.0);
 
 		float Origin[3]; GetAbsOrigin(npc.index, Origin);
+		Origin[2] += 5.0;
 
 		fl_ruina_battery_timeout[npc.index] = GameTime + 0.6;
 		npc.m_flDoingAnimation = GameTime + 0.6;
@@ -3481,10 +3654,9 @@ static Action IonicFracture_Think(int iNPC)
 		int loop_for = 15;		//15
 		float height = 1500.0;	//1500
 		float sky_loc[3]; sky_loc = Origin; sky_loc[2]+=height;
-		float radius = fl_ionic_fracture_detionation_radius;
 
-		Explode_Logic_Custom(Modify_Damage(-1, 200.0), npc.index, npc.index, -1, Origin, radius,_,0.8, true);
-		Ruina_AOE_Add_Mana_Sickness(Origin, npc.index, radius, 0.5, 200, true);
+		Explode_Logic_Custom(Modify_Damage(-1, 200.0), npc.index, npc.index, -1, Origin, fl_ionic_fracture_detionation_radius,_,0.8, true);
+		Ruina_AOE_Add_Mana_Sickness(Origin, npc.index, fl_ionic_fracture_detionation_radius, 0.5, npc.iGetSicknessFlatPerWaveMulti(400), true);
 
 		StopSound(npc.index, SNDCHAN_STATIC, TWIRL_IONIC_FRACTURE_PASSIVE_SOUND);
 		StopSound(npc.index, SNDCHAN_STATIC, TWIRL_IONIC_FRACTURE_PASSIVE_SOUND);
@@ -3498,7 +3670,7 @@ static Action IonicFracture_Think(int iNPC)
 
 		EmitAmbientSound(TWIRL_IONIC_FRACTURE_EXPLOSION, Origin, _, 120, _, _, GetRandomInt(55, 75));
 		EmitAmbientSound(TWIRL_IONIC_FRACTURE_EXPLOSION, Origin, _, 120, _, _, GetRandomInt(55, 75));
-		TE_SetupBeamRingPoint(Origin, 1.0, radius*2.0, g_Ruina_Laser_BEAM, g_Ruina_HALO_Laser, 0, 1, 1.0, 20.0, 1.0, color, 1, 0);
+		TE_SetupBeamRingPoint(Origin, 1.0, fl_ionic_fracture_detionation_radius*2.0, g_Ruina_Laser_BEAM, g_Ruina_HALO_Laser, 0, 1, 1.0, 20.0, 1.0, color, 1, 0);
 		TE_SendToAll();
 		
 		float start = 75.0;
@@ -3528,7 +3700,7 @@ static Action IonicFracture_Think(int iNPC)
 			if(timer<=0.02)
 				timer=0.02;
 			float end_ratio = (((loop_for/2.0)/i));
-			float final_radius = radius*end_ratio;
+			float final_radius = fl_ionic_fracture_detionation_radius*end_ratio;
 			if(final_radius > 4096.0)	//so apperantly there is a max endradius, these are the types of things you only findout if you are dumb enough to even try...
 				final_radius= 4095.0;
 			TE_SetupBeamRingPoint(Origin, 0.0, final_radius, g_Ruina_Laser_BEAM, g_Ruina_Laser_BEAM, 0, 1, timer, thicc, 0.1, color, 1, 0);
@@ -3601,14 +3773,14 @@ static Action IonicFracture_ProjectileThink(int entity)
 		TeleportEntity(entity, NULL_VECTOR, NULL_VECTOR, {0.0, 0.0, 0.0});
 		if(npc.m_flIonicFractureHoverTimer < GameTime)
 		{
-			int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+			int particle = EntRefToEntIndex(i_WandParticle[entity]);
 			if(IsValidEntity(particle))
 				RemoveEntity(particle);
 
 			float Angles[3];
 			MakeVectorFromPoints(ProjectileLoc, Origin, Angles);
 			GetVectorAngles(Angles, Angles);
-			float speed = Distance / (fl_ionic_fracture_det_timer);
+			float speed = Distance / (fl_ionic_fracture_det_timer) / ReturnEntityAttackspeed(npc.index);
 			SetProjectileSpeed(entity, speed, Angles);
 			fl_BEAM_ChargeUpTime[entity] = 2.0;
 		}
@@ -3672,9 +3844,9 @@ static bool Magia_Overflow(Twirl npc)
 	fl_ruina_shield_break_timeout[npc.index] = 0.0;		//make 100% sure she WILL get the shield.
 	//give the shield to itself.
 	if(Waves_InFreeplay())
-		Ruina_Npc_Give_Shield(npc.index, 0.65);
+		Ruina_Npc_Give_Shield(npc.index, 0.50, true);
 	else
-		Ruina_Npc_Give_Shield(npc.index, 0.45);
+		Ruina_Npc_Give_Shield(npc.index, 0.315, true);
 	
 	npc.AddActivityViaSequence("taunt_the_scaredycat_medic");
 	npc.SetPlaybackRate(1.0);	
@@ -3692,14 +3864,7 @@ static bool Magia_Overflow(Twirl npc)
 	npc.m_flRetreatLaserThrottle = GameTime + 0.7;
 	npc.m_flMagiaOverflowRecharge = GameTime + Duration + 0.7 + (npc.Anger ? 30.0 : 45.0);
 
-	float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
-	int color[4]; 
-	Ruina_Color(color, i_current_wave[npc.index]);
-	float Thickness = 6.0;
-	VecSelfNpc[2]-=2.5;
 	//create a ring around twirl showing the radius for her special "if you're near me, my laser turns faster"
-	TE_SetupBeamRingPoint(VecSelfNpc, (npc.Anger ? 350.0 : 275.0)*2.0, (npc.Anger ? 350.0 : 275.0)*2.0+0.5, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, Duration+0.7, Thickness, 0.75, color, 1, 0);
-	TE_SendToAll();
 
 	npc.m_bAnimationSet = false;
 
@@ -3722,8 +3887,9 @@ static Action Magia_Overflow_Tick(int iNPC)
 	Twirl npc = view_as<Twirl>(iNPC);
 	float GameTime = GetGameTime(npc.index);
 
-	if(fl_ruina_battery_timeout[npc.index] < GameTime)
+	if(fl_ruina_battery_timeout[npc.index] < GameTime || npc.m_flArmorCount <= 0.0)
 	{
+		//either timer over or no more armor
 		SDKUnhook(npc.index, SDKHook_Think, Magia_Overflow_Tick);
 
 		StopSound(npc.index, SNDCHAN_STATIC, TWIRL_LASER_SOUND);
@@ -3733,7 +3899,8 @@ static Action Magia_Overflow_Tick(int iNPC)
 		f_NpcTurnPenalty[npc.index] = 1.0;
 		npc.m_flSpeed = fl_npc_basespeed;
 		npc.StartPathing();
-
+		npc.m_flDoingAnimation = 1.0;
+		
 		npc.m_bInKame = false;
 		SetEntityRenderMode(npc.m_iWearable1, RENDER_NORMAL);
 		SetEntityRenderColor(npc.m_iWearable1, 255, 255, 255, 255);
@@ -3744,6 +3911,8 @@ static Action Magia_Overflow_Tick(int iNPC)
 
 		return Plugin_Stop;
 	}
+
+
 	ApplyStatusEffect(npc.index, npc.index, "Hardened Aura", 0.25);
 	ApplyStatusEffect(npc.index, npc.index, "Solid Stance", 0.25);
 
@@ -3770,18 +3939,20 @@ static Action Magia_Overflow_Tick(int iNPC)
 	float Radius = 30.0;
 	float diameter = Radius*2.0;
 	Ruina_Laser_Logic Laser;
+	Laser.Bonus_Damage = 20.0;
 	Laser.client = npc.index;
 	float 	flPos[3], // original
 			flAng[3]; // original
 	float Angles[3];
 
 	GetEntPropVector(npc.index, Prop_Data, "m_angRotation", Angles);	//pitch code stolen from fusion. ty artvin
-
+	float flPitch = 0.0;
 	int iPitch = npc.LookupPoseParameter("body_pitch");
-	if(iPitch < 0)
-		return Plugin_Continue;
+	if(iPitch >= 0)
+	{
+		flPitch = npc.GetPoseParameter(iPitch);
+	}
 
-	float flPitch = npc.GetPoseParameter(iPitch);
 	flPitch *= -1.0;
 	Angles[0] = flPitch;
 	GetAttachment(npc.index, "effect_hand_r", flPos, flAng);
@@ -3807,6 +3978,14 @@ static Action Magia_Overflow_Tick(int iNPC)
 	Laser.DoForwardTrace_Custom(Angles, flPos, -1.0);
 	if(update)
 	{
+		float VecSelfNpc[3]; WorldSpaceCenter(npc.index, VecSelfNpc);
+		int color[4]; 
+		Ruina_Color(color, i_current_wave[npc.index]);
+		float Thickness = 6.0;
+		VecSelfNpc[2]-=2.5;
+		TE_SetupBeamRingPoint(VecSelfNpc, (npc.Anger ? 350.0 : 275.0)*2.0, (npc.Anger ? 350.0 : 275.0)*2.0+0.5, g_Ruina_BEAM_Laser, g_Ruina_HALO_Laser, 0, 1, 0.1, Thickness, 0.75, color, 1, 0);
+		TE_SendToAll();
+	
 		float Duration = fl_ruina_battery_timeout[npc.index] - GameTime;
 		float Ratio = (1.0 - (Duration / TWIRL_MAGIA_OVERFLOW_DURATION));
 		if(Ratio<0.1)
@@ -4078,53 +4257,124 @@ static void Twirl_Ruina_Weapon_Lines(Twirl npc, int client)
 
 	Text_Lines = "";
 
+	bool ruina_wings = IsValidEntity(Cosmetic_WearableExtra[client]) ? MagiaWingsDo(client) : false;
+
+	if(ruina_wings)
+	{
+		if(GetRandomFloat(0.0, 3.0) < 0.01)
+		{
+			switch(MagiaWingsType(client))
+			{
+				case WINGS_LANCELOT: 	Format(Text_Lines, sizeof(Text_Lines), "Pointy stick man. mr {gold}%N{snow} stole their wings.", client);
+				case WINGS_RULIANA: 	Format(Text_Lines, sizeof(Text_Lines), "Why. {gold}%N{snow}. Why do you have her wings?", client);
+				case WINGS_TWIRL: 
+				{
+					static char buffer[96];
+					GetClientName(client, buffer, sizeof(buffer));
+
+					//i use names instead of id's so people can change their names and see these results.
+					//but frankly, to achive this message you need to 
+					//1: not be using a weapon thats inside the base text lines.
+					//2: have it be a weapon that attacks fast. (since low chance %)
+					//3: have the correct wings.
+					//4: have 1 of 3 names
+					//the 3rd requirement makes it a 99.9% chance of like never happening.
+					//unless the wings become a reward item in some far future.
+					if(StrEqual(buffer, "jDavid", false))
+					{
+						//so at first I wanted to try making glitchy text like barney.
+						//then I wanted to try and use stargates ancient language to "encrypt" a funny message.
+						//but that failed since the symbols used for that are non standard.
+						//and finally I just decided to go for the most "the fuck do you mean" messages I could think of.
+						//very vague, incredibly vauge.
+						//AND THEN I DECIDED TO MAKE A SWITCH CASE.
+						switch(GetRandomInt(0, 1))
+						{
+							case 0: Format(Text_Lines, sizeof(Text_Lines), "J. Why.");
+							case 1: Format(Text_Lines, sizeof(Text_Lines), "J. Please, a one-way ticket to heaven");	//Mili - In Hell We Live, Lament (at roughly 1:56) ((I was listening to that song at the time of writing))
+						}
+					}
+					else if(StrEqual(buffer, "artvin", false))
+					{
+						Format(Text_Lines, sizeof(Text_Lines), "Mr. Art. those are the wrong wings.");
+					}
+					else if(StrEqual(buffer, "Unknown(fish)", false))
+					{
+						Format(Text_Lines, sizeof(Text_Lines), "Fish. (of the unkown variety). Tell me, what do you see, do you see gold, rocks, jewls, crystals, diamonds, or maybe.. a friend?");
+					}
+					else
+						Format(Text_Lines, sizeof(Text_Lines), "Bruh {gold}%N{snow}. THOSE ARE MY WINGS", client);
+				}
+				//case WINGS_HELIA: 		Format(Text_Lines, sizeof(Text_Lines), "Why, how, where, {gold}%N{snow} did you get Helia's Wings?", client);
+				case WINGS_STELLA: 		Format(Text_Lines, sizeof(Text_Lines), "Stella? what, no, you're {gold}%N{snow}, what", client);
+				case WINGS_KARLAS: 		Format(Text_Lines, sizeof(Text_Lines), "Wait when did {crimson}Karlas{snow} start speak-. WAIT YOURE {gold}%N{snow}, A MERC, NOT HIM", client);
+			}
+
+			Twirl_Lines(npc, Text_Lines);
+			fl_said_player_weaponline_time[npc.index] = GameTime + GetRandomFloat(17.0, 26.0);
+			b_said_player_weaponline[client] = true;
+			return;
+		}
+	}
+
+	//switch(GetRandomInt(0,2)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "", client); 	case 1: Format(Text_Lines, sizeof(Text_Lines), "", client); case 2: Format(Text_Lines, sizeof(Text_Lines), "", client);}
+
 	switch(i_CustomWeaponEquipLogic[weapon])
 	{
-		case WEAPON_MAGNESIS: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "네가 하는 걸 더 이상 못 봐주겠네, {gold}%N{snow}씨?", client); 												case 1: Format(Text_Lines, sizeof(Text_Lines), "내가 널 잡으면 어떤 기분이 들겠어, {gold}%N{snow}?", client);}
+		case WEAPON_MAGNESIS: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "I've had it up to here MISTER {gold}%N{snow}.", client); 												case 1: Format(Text_Lines, sizeof(Text_Lines), "How would you feel {gold}%N{snow} if I grabbed YOU?", client);}
+		case WEAPON_YAKUZA: switch(GetRandomInt(0,1)) 				{case 0: Format(Text_Lines, sizeof(Text_Lines), "Oh god another one. YOUR STRENGTH {gold}%N{snow} IS FAKE", client); 									case 1: Format(Text_Lines, sizeof(Text_Lines), "I would prefer if your arms did not touch me mr {gold}%N{snow}.", client);}
 		
-		case WEAPON_KIT_BLITZKRIEG_CORE: switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "어머나, {gold}%N{snow}, 그거 혹시 그 기계를 따라하려는 거니?", client); 									case 1: Format(Text_Lines, sizeof(Text_Lines), "으음, {gold}%N{snow}, 하필이면 블리츠크리그 같은 실패작을 따라하려 한다는건...", client);}	//IT ACTUALLY WORKS, LMFAO
-		case WEAPON_COSMIC_TERROR: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "아, 코즈믹 테러, 그 유물, 오랜만에 보네."); 										case 1: Format(Text_Lines, sizeof(Text_Lines), "써보니까 달이 되게 강력한 레이저지? 그치, {gold}%N{snow}?",client);}
-		case WEAPON_LANTEAN: switch(GetRandomInt(0,1)) 				{case 0: Format(Text_Lines, sizeof(Text_Lines), "아, {gold}%N{snow}, 그 드론들, {crimson}참 귀엽네...", client); 										case 1: Format(Text_Lines, sizeof(Text_Lines), "이 곳에서 랜턴 스태프를 쓰려고 애쓴 {gold}%N{snow} 너에게 찬사를 보낼 수 밖에 없어...", client);}
-		case WEAPON_YAMATO: switch(GetRandomInt(0,1)) 				{case 0: Format(Text_Lines, sizeof(Text_Lines), "오, {gold}%N{snow}. 너 좀 활기차진 것 같네?", client); 												case 1: Format(Text_Lines, sizeof(Text_Lines), "계속해, {gold}%N{snow}. 그렇게 하면 너 자신이 {aqua}몰아치는 폭풍이 될 수 있어!{crimson}!", client);}
-		case WEAPON_BEAM_PAP: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "흠, 이중 에너지 코어라? 그거 좋네, {gold}%N", client); 												case 1: Format(Text_Lines, sizeof(Text_Lines), "그래서, 네가 {aqua}탐사정{snow}이라도 되려는거야? %N{snow}?", client);}	
-		case WEAPON_FANTASY_BLADE: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "와우, {gold} %N{snow}, 그 무기, {crimson}카를라스의{snow} 오래된 검인데?", client); 		case 1: Format(Text_Lines, sizeof(Text_Lines), "판타지 블레이드. 좋은 무기지. 그런데, {gold}%N{snow}. 그건 그런 식으로 쓰는게 아니란다..", client);}	
-		case WEAPON_QUINCY_BOW: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "오, {aqua}퀸시{snow}가 여기 있네. 어서 {crimson}사신{snow}을 불러!", client);	case 1: Format(Text_Lines, sizeof(Text_Lines), "흠, 여전히 진정한 퀸시로는 거듭나지 못 했나봐, {gold}%N{snow}?", client);}	
-		case WEAPON_ION_BEAM: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "그 무지개 레이저는 개선이 더 필요해보이네, {gold}%N{snow}.",client); 						case 1: Format(Text_Lines, sizeof(Text_Lines), "네 무지개 레이저엔 큰 잠재력이 있어, {gold}%N{snow}!", client);}	
-		case WEAPON_ION_BEAM_PULSE: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "음, {gold}%N{snow}, 네 박동이 펄스를 타고 흐르는구나!", client); 								case 1: Format(Text_Lines, sizeof(Text_Lines), "네 파동이 이 곳에 점점 흘러넘치고 있어, {gold}%N{snow}!", client);}	
-		case WEAPON_ION_BEAM_NIGHT: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "우와, {gold}%N{snow}지금 {aqua}스텔라{snow}를 따라하는거니?", client); 					case 1: Format(Text_Lines, sizeof(Text_Lines), "레이저가 너무 작잖아, {gold}%N{crimson}! 좀 더 크기를 키워봐!", client);}
-		case WEAPON_ION_BEAM_FEED: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "피드백 루프를 잘 쓰고 있구나, {gold}%N", client); 											case 1: Format(Text_Lines, sizeof(Text_Lines), "피드백 루프가 좀 흥미로운 물건이지, 그치? {gold}%N", client);}				
-		case WEAPON_IMPACT_LANCE: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "정말 그걸로 날 찌를거야, {gold}%N{snow}?", client); 							case 1: Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow}, 그 창을 제대로 쓸 줄 알려면 사용법을 알아야할텐데.", client);}	
-		case WEAPON_GRAVATON_WAND: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "중력의 일부를 제어하는 기분이 어때, {gold} %N{snow}?", client); 							case 1: Format(Text_Lines, sizeof(Text_Lines), "중력 마법은 아직 다 완성되지 못 했지만, 그래도 {gold}%N{snow}, 네가 잘 써먹고 있는걸 보면 뭐...", client);}
-		case WEAPON_BOBS_GUN:  Format(Text_Lines, sizeof(Text_Lines), "밥의 총? {crimson}진심으로? {gold}%N ?", client); 	
+		case WEAPON_KIT_BLITZKRIEG_CORE: switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "Oh my, {gold}%N{snow}, you're trying to copy the Machine?", client); 									case 1: Format(Text_Lines, sizeof(Text_Lines), "Ah, how foolish {gold}%N{snow} Blitzkrieg was a poor mistake to copy...", client);}	//IT ACTUALLY WORKS, LMFAO
+		case WEAPON_COSMIC_TERROR: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "Ah, the Cosmic Terror, haven't seen that relic in a long while"); 										case 1: Format(Text_Lines, sizeof(Text_Lines), "The moon is a deadly laser, am I right {gold}%N{snow}?",client);}
+		case WEAPON_LANTEAN: switch(GetRandomInt(0,1)) 				{case 0: Format(Text_Lines, sizeof(Text_Lines), "Ah, {gold}%N{snow}, Those drones, {crimson}how cute...", client); 										case 1: Format(Text_Lines, sizeof(Text_Lines), "I applaud your efforts {gold}%N{snow} for trying to use the Lantean staff here...", client);}
+		case WEAPON_YAMATO: switch(GetRandomInt(0,1)) 				{case 0: Format(Text_Lines, sizeof(Text_Lines), "Oh, {gold}%N{snow}'s a little {aqua}Motivated", client); 												case 1: Format(Text_Lines, sizeof(Text_Lines), "Go fourth {gold}%N{snow}, AND BECOME {aqua}THE STORM THAT IS APROACHING{crimson}!", client);}
+		case WEAPON_BEAM_PAP: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "Ah, dual energy Pylons, nice choice {gold}%N", client); 												case 1: Format(Text_Lines, sizeof(Text_Lines), "So, are you Team {aqua}Particle Cannon{snow} or Team{orange} Particle Beam{gold} %N{snow}?", client);}	
+		case WEAPON_FANTASY_BLADE: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "Oh how {crimson}cute{gold} %N{snow}, you're using {crimson}Karlas's{snow} Old blade", client); 		case 1: Format(Text_Lines, sizeof(Text_Lines), "The Fantasy blade is quite the weapon, {gold}%N{snow} but you're not using it correctly.", client);}	
+		case WEAPON_QUINCY_BOW: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "Oh, {gold}%N{snow}'s being a {aqua}Quincy{snow}, quick call the {crimson}Shinigami{snow}!", client);	case 1: Format(Text_Lines, sizeof(Text_Lines), "Ah, what a shame {gold}%N{snow} Here I thought you were a true {aqua}Quincy", client);}	
+		case WEAPON_ION_BEAM: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "That laser is still quite young {gold}%N{snow} It needs more upgrades",client); 						case 1: Format(Text_Lines, sizeof(Text_Lines), "Your Prismatic Laser has potential {gold}%N{snow}!", client);}	
+		case WEAPON_ION_BEAM_PULSE: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "I see, {gold}%N{snow}, You decided to go down the pulse path!", client); 								case 1: Format(Text_Lines, sizeof(Text_Lines), "I do quite enjoy a faster pulsating laser, just like you {gold}%N{snow} by the looks of it", client);}	
+		case WEAPON_ION_BEAM_NIGHT: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "Oh my, are you {gold}%N{snow}, trying to cosplay as {aqua}Stella{snow}?", client); 					case 1: Format(Text_Lines, sizeof(Text_Lines), "That Laser Tickles {gold}%N{crimson} Get a bigger laser{aqua} NOW!", client);}
+		case WEAPON_ION_BEAM_FEED: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "A cascading feedback loop laser, ballsy {gold}%N", client); 											case 1: Format(Text_Lines, sizeof(Text_Lines), "Prismatic Feedback loop is a very powerful weapon, but its also quite hard to master... {gold}%N", client);}				
+		case WEAPON_IMPACT_LANCE: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "You’re seriously trying to poke me with that thing {gold}%N{snow}?", client); 							case 1: Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow}, You don't have the needed skills to properly use the lance.", client);}	
+		case WEAPON_GRAVATON_WAND: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "How does it feel to control a fraction of gravity{gold} %N{snow}?", client); 							case 1: Format(Text_Lines, sizeof(Text_Lines), "The Gravaton wand was only a partial success, and yet {gold}%N{snow}, you’re using it...", client);}
+		case WEAPON_BOBS_GUN:  Format(Text_Lines, sizeof(Text_Lines), "BOBS GUN?! {crimson}GET AWAY FROM ME!!!!!!!!!! {gold}%N", client); 	
+		case WEAPON_REIUJI_WAND: switch(GetRandomInt(0,1)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "So {gold}%N{snow}, you got ahold of Rulianas's Launcher huh?", client); 								case 1: Format(Text_Lines, sizeof(Text_Lines), "Too bad that the weapon your using {gold}%N{snow}, is primarily meant for horde control", client);}
+		case 9:/*9 is passenger*/ switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "I'll be frank {gold}%N{snow}, even though that wand looks like one of ours, it ain't", client); 		case 1: Format(Text_Lines, sizeof(Text_Lines), "I'm somewhat ashamed to admit that the wand you're using {gold}%N{snow}, wasn't made by us, which is frankly a shock considering it has all the characteristics of our wands", client);}
+		case WEAPON_RUINA_DRONE_KNIFE: switch(GetRandomInt(0,2)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "NICE KNIFE {gold}%N{snow}.", client); 																	case 1: Format(Text_Lines, sizeof(Text_Lines), "It's british shanking time {gold}%N{snow}!", client); case 2: Format(Text_Lines, sizeof(Text_Lines), "OI, {gold}%N{snow} YOU GOT A LOISCENCE FOR THAT KNOIFE?", client);}
+		case WEAPON_SIGIL_BLADE: switch(GetRandomInt(0,2)) 			{case 0: Format(Text_Lines, sizeof(Text_Lines), "Huh, how did you {gold}%N{snow} manage to turn that worthless thing into a somwhat competent weapon?", client); case 1: Format(Text_Lines, sizeof(Text_Lines), "Wait, isn't that Shard from my Airships's fog-lamps? How, where did you {gold}%N{snow} find that?", client); case 2: Format(Text_Lines, sizeof(Text_Lines), "I applaude you {gold}%N{snow} for turning that \"thing\" into a weapon", client);}
+		case WEAPON_AMPHI: switch(GetRandomInt(0,1)) 				{case 0: Format(Text_Lines, sizeof(Text_Lines), "Oh, so you know Amphi {gold}%N{snow}? Do you perchance have a picture of her...?", client); 			case 1: Format(Text_Lines, sizeof(Text_Lines), "Such an interesting weapon, say {gold}%N{snow} Where did you get that from?", client);}
+		case WEAPON_RAIGEKI: switch(GetRandomInt(0,1)) 				{case 0: Format(Text_Lines, sizeof(Text_Lines), "ITS TIME TO, DU-DU-DU-DU-DUEL {gold}%N{snow}!", client); 												case 1: Format(Text_Lines, sizeof(Text_Lines), "I use pot of greed {gold}%N{snow}.", client);}
+		case WEAPON_CHEMICAL_THROWER: switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "I'm not quite fond of {gold}%N{snow} using chemical warfare, quite barbaric if I'm being honest", client); case 1: Format(Text_Lines, sizeof(Text_Lines), "Spread the chemicals {gold}%N{snow}, spread the that which will burn the world to nothing but pools of acid!", client);}
+		case WEAPON_KIT_PROTOTYPE, WEAPON_KIT_PROTOTYPE_MELEE: switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "uhhh, shouldn't you {gold}%N{snow}, be on my side? or did {gold}Expidonsa{snow} finally have enough of my \"Twirly Antics\"?", client); case 1: Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow} has just gotta be a broken unit, hope {gold}Expidonsa{snow} won't mind too bad if I bust it up before they get a chance to recover it...", client);}
 		
 		case WEAPON_KIT_FRACTAL: 
 		{
 			switch(GetRandomInt(0,4)) 		
 			{
-				case 0: Format(Text_Lines, sizeof(Text_Lines), "아, 그러니까 내 힘을 나에게 써먹어보겠다고, {gold}%N{snow}?", client); 				
-				case 1: Format(Text_Lines, sizeof(Text_Lines), "흠, {gold}%N{snow}, 손버릇이 좀 나쁜가봐? 남의 물건도 막 훔치고.", client);
-				case 2: Format(Text_Lines, sizeof(Text_Lines), "그러니까... 지금 {gold}%N{snow} 네 덕분에 방금 도난 방지 소속원들이 완전 바보들이라는 걸 알게 됐어. 집에 가면 전부 해고할 거야.", client);
+				case 0: Format(Text_Lines, sizeof(Text_Lines), "Ahhh, so your trying to use my own power's against me {gold}%N{snow}?", client); 				
+				case 1: Format(Text_Lines, sizeof(Text_Lines), "Tell me {gold}%N{snow} Do you take pleasure in stealing other people's belongings?", client);
+				case 2: Format(Text_Lines, sizeof(Text_Lines), "So you {gold}%N{snow} just taught me that the people at the department of anti-theft are complete idiots, I'm firing them when I get home", client);
 				case 3:
 				{
 					if(!IsValidEntity(Cosmetic_WearableExtra[client]))
-						Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow}, 넌 날개도 없는데 그걸 어떻게 사용하고 있는거니?", client);
+						Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow} You don't even have the wings, how dare you use that?", client);
 					else
 					{
-						if(MagiaWingsDo(client))
+						if(ruina_wings)
 						{
-							Format(Text_Lines, sizeof(Text_Lines), "뭐야. {gold}%N{snow} 너 그 날개는 우리의 것인데?, 거기다 {aqua}프랙탈{snow}까지 사용한다고? 이해가 아예 안 되는건 아니지만...", client);
+							Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow} You, you have OUR WINGS???, And your using the {aqua}Fractal{snow}, atleast that makes sense", client);
 						}
 						else if(SilvesterWingsDo(client))
 						{
-							Format(Text_Lines, sizeof(Text_Lines), "음? {gold}%N{snow}, 그건 {gold}실베스터{snow}의 날개인데? 거기다 우리의 마법까지 쓸 줄 안다고? 이게 무슨 원리지?", client);
+							Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow} Wait a minute, those are {gold}Silvesters{snow} wings, and your using our spells?. That doesn't make sense", client);
 						}
 						else
 						{
-							Format(Text_Lines, sizeof(Text_Lines), "이상하네, {gold}%N{snow} 가 쓰는건 분명 내 {aqua}프랙탈{snow}인데, 왜 네 날개가 우리 데이터베이스 쪽에 없는걸까?", client);
+							Format(Text_Lines, sizeof(Text_Lines), "You Mr {gold}%N{snow} are using MY {aqua}Fractal{snow}, but you're wings aren't known to me.. huh?", client);
 						}
 					}
 				}
-				case 4: Format(Text_Lines, sizeof(Text_Lines), "{gold}%N{snow}. 내가 간다. {crimson}더 이상 도망갈 길은 없어{snow}. 넌 {aqua}프랙탈{snow}을 훔친 대가를 치를거야.", client);
+				case 4: Format(Text_Lines, sizeof(Text_Lines), "Mr {gold}%N{snow}. I'm coming for you. {crimson}you cannot hide{snow}. You will pay for stealing the {aqua}Fractal{snow}.", client);
 			}
 		}
 		default:
@@ -4212,41 +4462,41 @@ static void NPC_Death(int entity)
 		{
 			switch(GetRandomInt(0, 1))
 			{
-				case 0: Twirl_Lines(npc, "{crimson}그럼 이만.");
-				case 1: Twirl_Lines(npc, "{crimson}난 간다.");
+				case 0: Twirl_Lines(npc, "{crimson}Bye");
+				case 1: Twirl_Lines(npc, "{crimson}I'm Leaving.");
 			}
 		}
 		else if(wave <=10)
 		{
 			switch(GetRandomInt(0, 4))
 			{
-				case 0: Twirl_Lines(npc, "아, 이건 좋네. 우리의 다음 만남을 기대하고 있을게.");
-				case 1: Twirl_Lines(npc, "넌 강해. 그러니 다음을 기대할게.");						//HEY ITS ME GOKU, I HEARD YOUR ADDICTION IS STRONG, LET ME FIGHT IT
-				case 2: Twirl_Lines(npc, "아하, 재밌네.");
-				case 3: Twirl_Lines(npc, "훌륭해. 내가 기대했던 대로야.");
-				case 4: Twirl_Lines(npc, "흥미롭구나...");
+				case 0: Twirl_Lines(npc, "Ah, this is great, I have high hopes for our next encounter");
+				case 1: Twirl_Lines(npc, "You're strong, I like that, till next time");						//HEY ITS ME GOKU, I HEARD YOUR ADDICTION IS STRONG, LET ME FIGHT IT
+				case 2: Twirl_Lines(npc, "Ahaha, toodles");
+				case 3: Twirl_Lines(npc, "Magnificent, just what I was hoping for");
+				case 4: Twirl_Lines(npc, "How interesting..");
 			}
 		}
 		else if(wave <=20)
 		{
 			switch(GetRandomInt(0, 4))
 			{
-				case 0: Twirl_Lines(npc, "정말 재밌었어. 다음에도 우리 꼭 만나자?");
-				case 1: Twirl_Lines(npc, "오우, 아마도 널 과소평가 한 것 같네.");
-				case 2: Twirl_Lines(npc, "{aqua}스텔라{snow}가 잘못 알고 있었나봐. 그냥 재밌는게 아닌데.");
-				case 3: Twirl_Lines(npc, "최고야. 네가 날 또 이겼어. 그럼 또 만나자!");
-				case 4: Twirl_Lines(npc, "시뮬레이션이 틀린것 같군..");
+				case 0: Twirl_Lines(npc, "This was great fun, better not let me down and not make it to our next battle!");
+				case 1: Twirl_Lines(npc, "Oh my, I may have underestimated you, this is great news");
+				case 2: Twirl_Lines(npc, "I'll have to give {aqua}Stella{snow} a little treat, this has been great fun");
+				case 3: Twirl_Lines(npc, "Most excellent, you bested me, hope to see you again!");
+				case 4: Twirl_Lines(npc, "The simulations seem to be off..");
 			}
 		}
 		else if(wave <=30)
 		{
 			switch(GetRandomInt(0, 4))
 			{
-				case 0: Twirl_Lines(npc, "이거 분명 {purple}''중장비''{snow}인데, 그래도 너희가 이겼네? 잘했어.");
-				case 1: Twirl_Lines(npc, "이러면 다음번에 얼마나 강해져있을지 기다릴 수가 없네...");
-				case 2: Twirl_Lines(npc, "너희도 나만큼 즐거웠길 바래.");
-				case 3: Twirl_Lines(npc, "너희 전부 내 기대를 뛰어넘었어. 난 다음번의 {crimson}우리의 마지막 전투{snow}가 더욱 신날거라고 믿을게!");
-				case 4: Twirl_Lines(npc, "너희가 지는 시뮬레이션이 있었는데, 그거 만든 놈들 전부 해고해야겠어.");
+				case 0: Twirl_Lines(npc, "Even with my {purple}''Heavy Equipment''{snow} you bested me, good work");
+				case 1: Twirl_Lines(npc, "You're quite strong, can't wait for our next match");
+				case 2: Twirl_Lines(npc, "I hope you all had as much fun as I did");
+				case 3: Twirl_Lines(npc, "You've all exceeded my expectations, I do believe our next and final battle will be the {crimson}most fun{snow}!");
+				case 4: Twirl_Lines(npc, "Whoever made those simulations is gonna get fired..");
 			}
 		}
 		else
@@ -4255,19 +4505,19 @@ static void NPC_Death(int entity)
 			{
 				switch(GetRandomInt(0, 2))
 				{
-					case 0: Twirl_Lines(npc, "잘 했어.");
-					case 1: Twirl_Lines(npc, "에헤, 이거 좀 신나는데, 다음에 또 다시 만나자.");
-					case 2: Twirl_Lines(npc, "마음에 드는데~");
+					case 0: Twirl_Lines(npc, "Nice job.");
+					case 1: Twirl_Lines(npc, "Ehe, this has been quite entertaining, I hope we meet again in the future");
+					case 2: Twirl_Lines(npc, "Good luck with the rest~");
 				}
 			}
 			else
 			{
 				switch(GetRandomInt(1, 4))
 				{
-					case 1: Twirl_Lines(npc, "에헤, 이거 좀 신나는데, 다음에 또 다시 만나자.");
-					case 2: Twirl_Lines(npc, "그리고, 우리의 싸움은 끝났어. 네가 이겼어.");
-					case 3: Twirl_Lines(npc, "완벽해!");
-					case 4: Twirl_Lines(npc, "{crimson}정말 귀엽군{snow}.");
+					case 1: Twirl_Lines(npc, "Ehe, this has been quite entertaining, I hope we meet again in the future");
+					case 2: Twirl_Lines(npc, "And so, our battle has ended, you've won this.");
+					case 3: Twirl_Lines(npc, "toodles!");
+					case 4: Twirl_Lines(npc, "{crimson}How Cute{snow}.");
 				}
 			}
 		}
@@ -4319,7 +4569,7 @@ static void Twirl_Lines(Twirl npc, const char[] text)
 	if(b_test_mode)
 		return;
 
-	CPrintToChatAll("%s %s", npc.GetName(), text);
+	PrintNPCMessageWithPrefixes(npc.index, NameColour, text, .messageColor = TextColour);
 }
 static float[] GetNPCAngles(CClotBody npc)
 {
@@ -4333,48 +4583,86 @@ static float[] GetNPCAngles(CClotBody npc)
 
 	return Angles;
 }
-static bool HandleRaidTimer(Twirl npc)
+static void HandleRaidTimer(Twirl npc)
 {
+	//only trigger once
+	if(i_RaidGrantExtra[npc.index])
+		return;
+
 	if(RaidModeTime < GetGameTime())
 	{
+		//you lost, its time to die!
+		/*
 		ForcePlayerLoss();
 		RaidBossActive = INVALID_ENT_REFERENCE;
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
+		*/
 		int wave = i_current_wave[npc.index];
 		b_wonviatimer = true;
+		RaidModeScaling *= 100.0;
+
+		for(int i=0 ; i < sizeof(fl_player_weapon_score) ; i++)
+		{
+			fl_player_weapon_score[i] = -111111.0;
+		}
+
+		npc.m_flFinalInvocationTimer = 0.0;
+		i_RaidGrantExtra[npc.index] = 1;
+		if(wave < 40)
+			i_current_wave[npc.index] = 40;
+
+		ApplyStatusEffect(npc.index, npc.index, "Dimensional Turbulence", 999.0);
+
+		int MaxHealth = ReturnEntityMaxHealth(npc.index);
+		HealEntityGlobal(npc.index, npc.index, float((MaxHealth)), 1.0, 10.0, HEAL_ABSOLUTE);
+
+		npc.m_flMagiaOverflowRecharge = FAR_FUTURE;
+
+		ApplyStatusEffect(npc.index, npc.index, "Ancient Melodies", 999.0);
+		ApplyStatusEffect(npc.index, npc.index, "Hardened Aura", 999.0);
+		ApplyStatusEffect(npc.index, npc.index, "Solid Stance", 999.0);
+
+		npc.m_iRangedAmmo = 999;
+
+		ApplyStatusEffect(npc.index, npc.index, "Ruina's Defense", 999.0);
+		NpcStats_RuinaDefenseStengthen(npc.index, 0.5);	//50% resistances
+		ApplyStatusEffect(npc.index, npc.index, "Ruina's Agility", 999.0);
+		NpcStats_RuinaAgilityStengthen(npc.index, 1.2); //20% speed bonus, going bellow 1.0 will make npc's slower
+		ApplyStatusEffect(npc.index, npc.index, "Ruina's Damage", 999.0);
+		NpcStats_RuinaDamageStengthen(npc.index, 0.5);	//50% dmg bonus
+
+		Kill_Abilities(npc);
+
 		if(b_force_transformation)
 		{
-			Twirl_Lines(npc, "이제 끝.");
+			i_RaidGrantExtra[npc.index] = 2;
+			Twirl_Lines(npc, "Begone. Times Up.");
 		}
 		else if(wave <=40)
 		{
-			switch(GetRandomInt(0, 9))
+			switch(GetRandomInt(0, 8))
 			{
-				case 0: Twirl_Lines(npc, "아, 좋은 운동이었어.");
-				case 1: Twirl_Lines(npc, "헤, 좀 재미있었는데.");
-				case 2: Twirl_Lines(npc, "어쩌면 {aqua}스텔라{snow}가 좀 과장해서 얘기해준 것 같은데..");
-				case 3: Twirl_Lines(npc, "너희 전부 하나씩 쓰러지는게 아름답구나.");
-				case 4: Twirl_Lines(npc, "잠깐, 지금 내가 해야 할 일이 많이 생겼으니까, 대신 나중에 다시 해보자!");
-				case 5: Twirl_Lines(npc, "아무래도 여기까지 버틸만큼 투지가 부족한 것 같은데, {crimson}그럼 나와 싸울 자격은 없지.");
-				case 6: Twirl_Lines(npc, "어머나, 이렇게 많은 시간을 보냈음에도 불구하고 여전히 나를 못 이겼다는건, 좀 한심하네.");
-				case 7: Twirl_Lines(npc, "이것 봐, 난 {gold}엑스피돈사{default} 친구들이 쓰는 보호막도 없었단 말야.");
-				case 8: Twirl_Lines(npc, "왜 이리 질질 끄는지 말해주겠어?");
-				case 9: Twirl_Lines(npc, "지루하네. {crimson}그냥 다 끝내버리자.");
+				case 0: Twirl_Lines(npc, "Ahhh, that was a nice walk, {crimson}time to end it");
+				case 1: Twirl_Lines(npc, "Heh, I suppose that was somewhat fun, now for the cleanup...");
+				case 2: Twirl_Lines(npc, "I must say {aqua}Stella{snow} may have overhyped this.. Alass, time to kill you all");
+				case 3: Twirl_Lines(npc, "Amazingly you were all too slow to die. And I've got a meeting I need to catch");
+				case 4: Twirl_Lines(npc, "Times up, I’ve got better things to do, so here, {crimson}have this parting gift{snow}!");
+				case 5: Twirl_Lines(npc, "Clearly you all lack proper fighting spirit to take this long, that’s it, {crimson}I’m ending this");
+				case 6: Twirl_Lines(npc, "My oh my, even after having such a large amount of time, you still couldn't do it, shame");
+				case 7: Twirl_Lines(npc, "There is a difference being slow and being cautious or methodical, clearly you all are the former");
+				case 8: Twirl_Lines(npc, "Tell me why you're this slow?");
 			}
 		}
 		else	//freeplay
 		{
 			switch(GetRandomInt(0, 2))
 			{
-				case 0: Twirl_Lines(npc, "흠, 너희가 전부 아무데서나 끌려온 자들이라는 점을 고려하면 예상된 일이었어.");
-				case 1: Twirl_Lines(npc, "생각했던 것보다 실망이야. 요즘 내 마법 감각이 좀 이상해져서 그런가.");
-				case 2: Twirl_Lines(npc, "{crimson}정말 귀엽군{snow}.");
+				case 0: Twirl_Lines(npc, "Well considering you all were just some randoms this was to be expected");
+				case 1: Twirl_Lines(npc, "Guess my sense of magic's been off lately, this was exceedingly boring.");
+				case 2: Twirl_Lines(npc, "{crimson}How Cute{snow}.");
 			}
 		}
-		
-		return true;
 	}
-	return false;
 }
 void Twirl_OnStellaKarlasDeath()
 {
@@ -4394,7 +4682,7 @@ void Twirl_OnStellaKarlasDeath()
 	//stella died first.
 	if(!Stella_index && Karlas_index)
 	{
-		Twirl_Lines(npc, "{crimson}카를라스{snow}! 나와 자리 바꿔. 이제 내가 할게.");
+		Twirl_Lines(npc, "{crimson}Karlas{snow}! Switch to me, I'm now your priority");
 
 		Set_Karlas_Ally(npc.index, Karlas_index, i_current_wave[npc.index], false, true);
 		Stella stella = view_as<Stella>(npc.index);
@@ -4408,9 +4696,9 @@ void Twirl_OnStellaKarlasDeath()
 	{
 		switch(GetRandomInt(0, 2))
 		{
-			case 0: Twirl_Lines(npc, "그가 우리쪽의 유일한 남성이었는데... 허망하게 쓰러져버렸네.");
-			case 1: Twirl_Lines(npc, "흠, 이제 {aqua}스텔라{snow}는 내 거란 소리인가?");
-			case 2: Twirl_Lines(npc, "허, 이제 쟤들이 내 라이벌이겠네.");
+			case 0: Twirl_Lines(npc, "Hey, just because hes the only man here doesn't mean he should have died first.");
+			case 1: Twirl_Lines(npc, "Oh, neat, now {aqua}Stella{snow}'s all mine.");
+			case 2: Twirl_Lines(npc, "Huh, there goes my rival.");
 		}
 		
 	}
@@ -4420,9 +4708,9 @@ void Twirl_OnStellaKarlasDeath()
 		b_force_transformation = true;
 		switch(GetRandomInt(0, 2))
 		{
-			case 0:Twirl_Lines(npc, "오오, 이게 쉽게 끝날거라고 생각하는구나, {crimson}그렇지?");
-			case 1:Twirl_Lines(npc, "{crimson}이제 좀 마음에 드네.");
-			case 2:Twirl_Lines(npc, "{crimson}더 세게 가볼까?");
+			case 0:Twirl_Lines(npc, "Ohoh, You think this is gonna end easily, you are {crimson}SORELY MISTAKEN");
+			case 1:Twirl_Lines(npc, "{crimson}I won't let you win");
+			case 2:Twirl_Lines(npc, "{crimson}This is where your story ends");
 		}
 		b_tripple_raid = false;
 		if(fl_Extra_Damage[npc.index] < 1.0)
@@ -4431,12 +4719,13 @@ void Twirl_OnStellaKarlasDeath()
 			fl_Extra_Speed[npc.index] = 1.0;
 		npc.m_iRangedAmmo += RoundToFloor(npc.m_iRangedAmmo*0.5);
 
+		ApplyStatusEffect(npc.index, npc.index, "Ancient Melodies", 999.0);
 		ApplyStatusEffect(npc.index, npc.index, "Ruina's Defense", 999.0);
-		NpcStats_RuinaDefenseStengthen(npc.index, 0.8);	//20% resistances
+		NpcStats_RuinaDefenseStengthen(npc.index, 0.7);	//20% resistances
 		ApplyStatusEffect(npc.index, npc.index, "Ruina's Agility", 999.0);
 		NpcStats_RuinaAgilityStengthen(npc.index, 1.2); //20% speed bonus, going bellow 1.0 will make npc's slower
 		ApplyStatusEffect(npc.index, npc.index, "Ruina's Damage", 999.0);
-		NpcStats_RuinaDamageStengthen(npc.index, 0.2);	//20% dmg bonus
+		NpcStats_RuinaDamageStengthen(npc.index, 0.6);	//20% dmg bonus
 	}
 }
 static int[] i_GetAllPartiesInvolved()
@@ -4544,4 +4833,30 @@ void TwirlEarsApply(int iNpc, char[] attachment = "head", float size = 1.0)
 	i_ExpidonsaEnergyEffect[iNpc][8] = EntIndexToEntRef(particle_ears4_r);
 	i_ExpidonsaEnergyEffect[iNpc][9] = EntIndexToEntRef(Laser_ears_1_r);
 	i_ExpidonsaEnergyEffect[iNpc][10] = EntIndexToEntRef(Laser_ears_2_r);
+}
+
+static void Timer_Twirl_TripleIntro(Handle timer, bool shouldKarlasChat)
+{
+	int raids[3];
+	raids = i_GetAllPartiesInvolved();
+	
+	if (!shouldKarlasChat && raids[0] != 0)
+	{
+		// Twirl's turn
+		Twirl npc = view_as<Twirl>(raids[0]);
+		
+		Twirl_Lines(npc, "Oh my, looks like the expidonsans went easy on you, we sure wont my dears. Us ruanians work differently~");
+		Twirl_Lines(npc, "... Except Karlas but shhhh!");
+		
+		// We have to wait for Karlas to spawn...
+		CreateTimer(1.0, Timer_Twirl_TripleIntro, true, TIMER_FLAG_NO_MAPCHANGE);
+	}
+	else if (shouldKarlasChat && raids[2] != 0)
+	{
+		// Karlas' turn
+		Karlas allyNpc = view_as<Karlas>(raids[2]);
+		
+		Karlas_Lines(allyNpc, ".....");
+		Karlas_Lines(allyNpc, ":(");			
+	}
 }

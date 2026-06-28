@@ -156,30 +156,34 @@ public void DropPowerupChance(int entity)
 			}
 		}
 	}
-	i_KilledThisMany_Nuke += 1;
-	if(i_KilledThisMany_Nuke > i_KillTheseManyMorePowerup_Nuke || b_ForceSpawnNextTimeNuke)
+	if(!Dungeon_Mode())
 	{
-		if((GetRandomFloat(0.0, 1.0) * f_PowerupSpawnMulti) || b_ForceSpawnNextTimeNuke)
+		i_KilledThisMany_Nuke += 1;
+		if(i_KilledThisMany_Nuke > i_KillTheseManyMorePowerup_Nuke || b_ForceSpawnNextTimeNuke)
 		{
-			if(i_AllowNuke)
+			if((GetRandomFloat(0.0, 1.0) * f_PowerupSpawnMulti) || b_ForceSpawnNextTimeNuke)
 			{
-			//	i_AllowNuke = false;
-				
-				float VecOrigin[3];
-				GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
-				VecOrigin[2] += 54.0;
-				if(!IsPointHazard(VecOrigin) && !IsPointOutsideMap(VecOrigin)) //Is it valid?
+				if(i_AllowNuke)
 				{
-					b_ForceSpawnNextTimeNuke = false;
-					SpawnNuke(entity);
+				//	i_AllowNuke = false;
+					
+					float VecOrigin[3];
+					GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
+					VecOrigin[2] += 54.0;
+					if(!IsPointHazard(VecOrigin) && !IsPointOutsideMap(VecOrigin)) //Is it valid?
+					{
+						b_ForceSpawnNextTimeNuke = false;
+						SpawnNuke(entity);
+					}
+					else //Not a valid position, we must force it! next time we try!
+					{
+						b_ForceSpawnNextTimeNuke = true;
+					}
+					i_KilledThisMany_Nuke = 0;
 				}
-				else //Not a valid position, we must force it! next time we try!
-				{
-					b_ForceSpawnNextTimeNuke = true;
-				}
-				i_KilledThisMany_Nuke = 0;
 			}
 		}
+			
 	}
 	i_KilledThisMany_Maxammo += 1;
 	if(i_KilledThisMany_Maxammo > i_KillTheseManyMorePowerup_Maxammo || b_ForceSpawnNextTimeAmmo)
@@ -268,7 +272,6 @@ public void SpawnNuke(int entity)
 	{
 		b_ToggleTransparency[prop] = false;
 		DispatchKeyValue(prop, "model", NUKE_MODEL);
-		DispatchKeyValue(prop, "modelscale", "0.65");
 		DispatchKeyValue(prop, "StartDisabled", "false");
 		GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
 		DispatchKeyValue(prop, "Solid", "0");
@@ -277,6 +280,7 @@ public void SpawnNuke(int entity)
 		VecOrigin[2] += 54.0;
 		TeleportEntity(prop, VecOrigin, VecAngles, NULL_VECTOR);
 		DispatchSpawn(prop);
+		SetEntPropFloat(prop, Prop_Send, "m_flModelScale", 0.65);
 		SetEntityCollisionGroup(prop, 1);
 		AcceptEntityInput(prop, "DisableShadow");
 		AcceptEntityInput(prop, "DisableCollision");
@@ -353,7 +357,6 @@ void SpawnMaxAmmo(int entity, bool MenacinglyFlyToPlayer = false)
 	{
 		b_ToggleTransparency[prop] = false;
 		DispatchKeyValue(prop, "model", AMMO_MODEL);
-		DispatchKeyValue(prop, "modelscale", "1.0");
 		GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
 		DispatchKeyValue(prop, "StartDisabled", "false");
 		DispatchKeyValue(prop, "Solid", "0");
@@ -399,7 +402,8 @@ public Action Timer_Detect_Player_Near_Ammo(Handle timer, any entid)
 				if (GetVectorDistance(powerup_pos, client_pos, true) <= PLAYER_DETECT_RANGE_DROPS)
 				{
 					ParticleEffectAt(powerup_pos, "utaunt_arcane_green_sparkle_start", 1.0);
-					EmitSoundToAll(AMMO_SOUND, _, SNDCHAN_STATIC, 100, _);
+					if(!Rogue_Mode())
+						EmitSoundToAll(AMMO_SOUND, _, SNDCHAN_STATIC, 100, _);
 					for (int client_Hud = 1; client_Hud <= MaxClients; client_Hud++)
 					{
 						if (IsValidClient(client_Hud) && IsPlayerAlive(client_Hud) && GetClientTeam(client_Hud) == view_as<int>(TFTeam_Red))
@@ -493,7 +497,6 @@ void SpawnHealth(int entity, bool MenacinglyFlyToPlayer = false)
 	{
 		b_ToggleTransparency[prop] = false;
 		DispatchKeyValue(prop, "model", HEALTH_MODEL);
-		DispatchKeyValue(prop, "modelscale", "1.0");
 		GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
 		DispatchKeyValue(prop, "StartDisabled", "false");
 		DispatchKeyValue(prop, "Solid", "0");
@@ -538,25 +541,20 @@ public Action Timer_Detect_Player_Near_Health(Handle timer, any entid)
 				if (GetVectorDistance(powerup_pos, client_pos, true) <= PLAYER_DETECT_RANGE_DROPS)
 				{
 					ParticleEffectAt(powerup_pos, "utaunt_arcane_green_sparkle_start", 1.0);
-					EmitSoundToAll(HEALTH_SOUND, _, SNDCHAN_STATIC, 100, _,0.65);
+					if(!Rogue_Mode())
+						EmitSoundToAll(HEALTH_SOUND, _, SNDCHAN_STATIC, 100, _,0.65);
 					for (int client_Hud = 1; client_Hud <= MaxClients; client_Hud++)
 					{
 						if (IsValidClient(client_Hud) && IsPlayerAlive(client_Hud) && GetClientTeam(client_Hud) == view_as<int>(TFTeam_Red))
 						{
-							int MaxHealth = SDKCall_GetMaxHealth(client_Hud);
-							int flHealth = GetEntProp(client_Hud, Prop_Send, "m_iHealth");
 							
-							flHealth += MaxHealth / 2;
-
-							SetEntProp(client_Hud, Prop_Send, "m_iHealth", flHealth);
-							ApplyHealEvent(client_Hud, MaxHealth / 2);	// Show healing number
-
-							if(flHealth > MaxHealth * 2)
+							if(dieingstate[client_Hud] == 0 && TeutonType[client_Hud] == TEUTON_NONE)
 							{
-								SetEntProp(client_Hud, Prop_Send, "m_iHealth", MaxHealth * 2);
-							}
+								int MaxHealth = SDKCall_GetMaxHealth(client_Hud);
+								HealEntityGlobal(client_Hud, client_Hud, float(MaxHealth / 2), 1.0, 0.0, HEAL_ABSOLUTE);
 
-							//This gives 35% armor
+								//This gives 35% armor
+							}
 							GiveArmorViaPercentage(client_Hud, 0.35, 1.0);
 
 							SetHudTextParams(-1.0, 0.30, 3.01, 125, 125, 255, 255);
@@ -588,7 +586,6 @@ void SpawnMoney(int entity, bool MenacinglyFlyToPlayer = false)
 	{
 		b_ToggleTransparency[prop] = false;
 		DispatchKeyValue(prop, "model", MONEY_MODEL);
-		DispatchKeyValue(prop, "modelscale", "1.0");
 		GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
 		DispatchKeyValue(prop, "StartDisabled", "false");
 		DispatchKeyValue(prop, "Solid", "0");
@@ -639,7 +636,6 @@ public Action Timer_Detect_Player_Near_Money(Handle timer, any entid)
 					{
 						if (IsValidClient(client_Hud) && IsPlayerAlive(client_Hud) && GetClientTeam(client_Hud) == view_as<int>(TFTeam_Red))
 						{
-							CashSpent[client_Hud] -= 500;
 							SetHudTextParams(-1.0, 0.30, 3.01, 125, 125, 255, 255);
 							SetGlobalTransTarget(client_Hud);
 							ShowHudText(client_Hud,  -1, "%t", "Max Money Activated");
@@ -727,7 +723,6 @@ public void SpawnGrigoriPowerup(int entity)
 	{
 		b_ToggleTransparency[prop] = false;
 		DispatchKeyValue(prop, "model", GRIGORI_POWERUP_MODEL);
-		DispatchKeyValue(prop, "modelscale", "0.65");
 		DispatchKeyValue(prop, "StartDisabled", "false");
 		GetEntPropVector(entity, Prop_Data, "m_vecOrigin", VecOrigin);
 		DispatchKeyValue(prop, "Solid", "0");
@@ -736,6 +731,7 @@ public void SpawnGrigoriPowerup(int entity)
 		VecOrigin[2] += 54.0;
 		TeleportEntity(prop, VecOrigin, VecAngles, NULL_VECTOR);
 		DispatchSpawn(prop);
+		SetEntPropFloat(prop, Prop_Send, "m_flModelScale", 0.65);
 		SetEntityCollisionGroup(prop, 1);
 		AcceptEntityInput(prop, "DisableShadow");
 		AcceptEntityInput(prop, "DisableCollision");

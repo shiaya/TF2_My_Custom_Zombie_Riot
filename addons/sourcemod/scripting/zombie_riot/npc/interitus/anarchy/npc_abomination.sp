@@ -297,14 +297,19 @@ public Action AnarchyAbomination_OnTakeDamage(int victim, int &attacker, int &in
 
 		npc.m_flSpeed = 290.0;
 		npc.Anger = false;
+		float minimumres = 0.05;
+		if(EnableSilentMode)
+		{
+			minimumres = 0.25;
+		}
 		if(damagetype & DMG_CLUB)
 		{
 			if(!NpcStats_IsEnemySilenced(npc.index))
 			{
 				npc.m_flMeleeArmor -= 0.05;
-				if(npc.m_flMeleeArmor < 0.05)
+				if(npc.m_flMeleeArmor < minimumres)
 				{
-					npc.m_flMeleeArmor = 0.05;
+					npc.m_flMeleeArmor = minimumres;
 					npc.Anger = true;
 				}
 			}
@@ -319,10 +324,10 @@ public Action AnarchyAbomination_OnTakeDamage(int victim, int &attacker, int &in
 		else if(!(damagetype & DMG_TRUEDAMAGE))
 		{
 			npc.m_flRangedArmor -= 0.05;
-			if(npc.m_flRangedArmor < 0.05)
+			if(npc.m_flRangedArmor < minimumres)
 			{
 				npc.Anger = true;
-				npc.m_flRangedArmor = 0.05;
+				npc.m_flRangedArmor = minimumres;
 			}
 			
 			npc.m_flMeleeArmor += 0.05;
@@ -388,7 +393,7 @@ int AnarchyAbominationSelfDefense(AnarchyAbomination npc, bool &SpinSound)
 			if(npc.Anger)
 			{
 				PredictSubjectPositionForProjectiles(npc, target, ProjectileSpeed, _,vecTarget);
-				projectile = npc.FireParticleRocket(vecTarget, 20.0, ProjectileSpeed, 150.0, "superrare_burning2", true);
+				projectile = npc.FireParticleRocket(vecTarget, 30.0, ProjectileSpeed, 150.0, "superrare_burning2", true);
 				static float ang_Look[3];
 				GetEntPropVector(projectile, Prop_Send, "m_angRotation", ang_Look);
 				Initiate_HomingProjectile(projectile,
@@ -402,10 +407,10 @@ int AnarchyAbominationSelfDefense(AnarchyAbomination npc, bool &SpinSound)
 			}
 			else
 			{
-				projectile = npc.FireParticleRocket(vecTarget, 20.0, ProjectileSpeed, 150.0, "superrare_burning1", true);
+				projectile = npc.FireParticleRocket(vecTarget, 30.0, ProjectileSpeed, 150.0, "superrare_burning1", true);
 			}
 			SDKUnhook(projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-			int particle = EntRefToEntIndex(i_rocket_particle[projectile]);
+			int particle = EntRefToEntIndex(i_WandParticle[projectile]);
 			CreateTimer(0.5, Timer_RemoveEntity, EntIndexToEntRef(projectile), TIMER_FLAG_NO_MAPCHANGE);
 			CreateTimer(0.5, Timer_RemoveEntity, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
 			
@@ -471,7 +476,7 @@ public void AnarchyAbomination_Rocket_Particle_StartTouch(int entity, int target
 			DamageDeal *= h_BonusDmgToSpecialArrow[entity];
 
 		if(ShouldNpcDealBonusDamage(target))
-			DamageDeal *= 12.5;
+			DamageDeal *= 17.5;
 
 		SDKHooks_TakeDamage(target, owner, inflictor, DamageDeal, DMG_BULLET|DMG_PREVENT_PHYSICS_FORCE, -1);	//acts like a kinetic rocket	
 
@@ -479,7 +484,7 @@ public void AnarchyAbomination_Rocket_Particle_StartTouch(int entity, int target
 
 		NPC_Ignite(target, owner,12.0, -1, 8.0);
 
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		if(IsValidEntity(particle))
 		{
 			RemoveEntity(particle);
@@ -487,7 +492,7 @@ public void AnarchyAbomination_Rocket_Particle_StartTouch(int entity, int target
 	}
 	else
 	{
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		//we uhh, missed?
 		if(IsValidEntity(particle))
 		{

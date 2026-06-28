@@ -52,7 +52,6 @@ void FullMoon_Enable(int client, int weapon)
 			h_TimerFullMoon[client] = CreateDataTimer(0.1, Timer_Management_FullMoon, pack, TIMER_REPEAT);
 			pack.WriteCell(client);
 			pack.WriteCell(EntIndexToEntRef(weapon));
-			Attributes_SetMulti(weapon, 412, 1.8);
 			//force panic attack and vulnerability
 			Panic_Attack[weapon] = 0.175;
 			FullmoonDownload();
@@ -67,7 +66,6 @@ void FullMoon_Enable(int client, int weapon)
 		h_TimerFullMoon[client] = CreateDataTimer(0.1, Timer_Management_FullMoon, pack, TIMER_REPEAT);
 		pack.WriteCell(client);
 		pack.WriteCell(EntIndexToEntRef(weapon));
-		Attributes_SetMulti(weapon, 412, 1.8);
 		Panic_Attack[weapon] = 0.175;
 		FullmoonDownload();
 	}
@@ -96,6 +94,17 @@ public void FullMoonDoubleHp(int client, StringMap map)
 			// +15% max health
 			map.GetValue("26", value);
 			map.SetValue("26", value * 2.4);
+			if(map.GetValue("4062", value))
+			{
+				map.SetValue("4062", value * (1.0/ 2.4));
+				
+			}
+			else
+				map.SetValue("4062", (1.0/ 2.4));
+
+			value = 1.0;
+			map.GetValue("412", value);
+			map.SetValue("412", value * 1.8);
 		}
 		else
 		{
@@ -269,7 +278,7 @@ public void FullMoonM1(int client, int weapon, bool crit, int slot)
 		client, _, 80, _, 1.0);
 		DataPack pack = new DataPack();
 		pack.WriteCell(EntIndexToEntRef(client));
-		pack.WriteFloat(GetGameTime() + 0.12);	
+		pack.WriteFloat(GetGameTime() + 0.07);	
 		RequestFrame(FullMoonDoM1Effect, pack);
 	}
 }
@@ -285,7 +294,7 @@ void FullMoonDoM1Effect(DataPack pack)
 	}
 	float TimeUntillEnd = pack.ReadFloat();
 	float TimeUntillSnap = TimeUntillEnd - GetGameTime();
-	TimeUntillSnap *= 13.0;
+	TimeUntillSnap *= 20.0;
 	static float belowBossEyes[3];
 	belowBossEyes[0] = 0.0;
 	belowBossEyes[1] = 0.0;
@@ -319,7 +328,7 @@ void DrawGiantMoon(float Angles[3], int client, float belowBossEyes[3], float An
 	VectorTarget_2[0] = belowBossEyes[0] + vecForward[0] * VectorForward;
 	VectorTarget_2[1] = belowBossEyes[1] + vecForward[1] * VectorForward;
 	VectorTarget_2[2] = belowBossEyes[2] + vecForward[2] * VectorForward;
-	Passanger_Lightning_Effect(belowBossEyes, VectorTarget_2, 3, LaserFatness, Colour);
+	Passanger_Lightning_Effect(belowBossEyes, VectorTarget_2, 4, LaserFatness, Colour);
 }
 
 public void FullMoonAbilityM2(int client, int weapon, bool crit, int slot)

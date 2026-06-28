@@ -156,6 +156,7 @@ public Action PlayerAnimationSettingFreezePost(Handle timer, DataPack pack)
 				SetEntProp(entity, Prop_Send, "m_fEffects", GetEntProp(entity, Prop_Send, "m_fEffects") &~ EF_NODRAW);
 		}
 	}
+	
 	SetEntityMoveType(client, MOVETYPE_WALK);
 	if (thirdperson[client])
 	{
@@ -261,6 +262,7 @@ int SetCameraEffectAndModel(int client, int &ModelToDelete, int Type, float dama
 	int viewcontrol = CreateEntityByName("prop_dynamic");
 	if (IsValidEntity(viewcontrol))
 	{
+		b_ThisEntityIgnored[viewcontrol] = true;
 		GetVectorAnglesTwoPoints(vecSwingEnd, MiddleAngle, vAngleCamera);
 		SetEntityModel(viewcontrol, "models/empty.mdl");
 		DispatchKeyValueVector(viewcontrol, "origin", vecSwingEnd);

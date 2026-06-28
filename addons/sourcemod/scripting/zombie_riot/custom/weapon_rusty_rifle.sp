@@ -227,10 +227,14 @@ public void Weapon_Rusty_Rifle_Fire(int client, int weapon, bool crit)
 					{
 						dmg *= 1.65;
 					}
-
-					if(i_CurrentEquippedPerk[client] == 5)
+					
+					if(i_CurrentEquippedPerk[client] & PERK_MARKSMAN_BEER)
 					{
 						dmg *= 1.25;
+					}
+					if(i_CurrentEquippedPerk[client] & PERK_MARKSMAN_BEER_X)
+					{
+						dmg *= 1.35;
 					}
 
 					SDKHooks_TakeDamage(victim, client, client, dmg, DMG_BULLET, weapon, NULL_VECTOR, vicLoc);

@@ -87,10 +87,10 @@ methodmap PackaPunch < CClotBody
 		npc.m_fbRangedSpecialOn = false;
 		npc.m_bDissapearOnDeath = true;
 		
-		npc.m_flMeleeArmor = 0.69;
-		npc.m_flRangedArmor = 0.69;
+		npc.m_flMeleeArmor = 0.25;
+		npc.m_flRangedArmor = 0.25;
 
-		SetEntityRenderColor(npc.index, 1, 255, 1, 255);
+		SetEntityRenderColor(npc.index, 255, 0, 1, 255);
 		
 		if(Garrison[npc.index])
 		{
@@ -276,7 +276,7 @@ void PackaPunch_NPCDeath(int entity)
 		{
 			for(int i; i < 1; i++)
 			{
-				int other = NPC_CreateByName("npc_netherseaspewer", -1, pos, ang, team);
+				int other = NPC_CreateByName("npc_abyssspewer", -1, pos, ang, team);
 				if(other > MaxClients)
 				{
 					if(team != TFTeam_Red)

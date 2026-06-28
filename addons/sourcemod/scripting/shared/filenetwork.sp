@@ -7,17 +7,17 @@
 static bool StartedQueue[MAXPLAYERS];
 static bool Downloading[MAXPLAYERS];
 
-static ArrayList SoundList;
 static StringMap SoundAlts;
-static int SoundLevel[MAXPLAYERS];
 
 static ArrayList ExtraList;
 static int ExtraLevel[MAXPLAYERS];
-static bool DoingSoundFix[MAXPLAYERS];
 
-static bool FileNetworkLib;
 #endif
+static bool DoingSoundFix[MAXPLAYERS];
+static bool FileNetworkLib;
+static ArrayList SoundList;
 
+static int SoundLevel[MAXPLAYERS];
 static bool InServerSetup;
 static ArrayList DownloadList;
 
@@ -25,24 +25,21 @@ void FileNetwork_PluginStart()
 {
 	RegServerCmd("zr_showfilenetlist", DebugCommand);
 
-#if defined _filenetwork_included
 	SoundList = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
+#if defined _filenetwork_included
 	SoundAlts = new StringMap();
 	ExtraList = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 #endif
 
 	DownloadList = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 
-#if defined _filenetwork_included
 	FileNetworkLib = LibraryExists("filenetwork");
-#endif
 }
 
 static Action DebugCommand(int args)
 {
 	char buffer[PLATFORM_MAX_PATH];
 
-#if defined _filenetwork_included
 	if(SoundList)
 	{
 		int length = SoundList.Length;
@@ -53,6 +50,7 @@ static Action DebugCommand(int args)
 		}
 	}
 
+#if defined _filenetwork_included
 	if(ExtraList)
 	{
 		int length = ExtraList.Length;
@@ -90,6 +88,11 @@ stock void FileNetwork_LibraryAdded(const char[] name)
 				SendNextFile(client);
 		}
 	}
+#else
+	//Remove warning
+	if(name[0])
+		return;
+
 #endif
 }
 
@@ -98,6 +101,10 @@ stock void FileNetwork_LibraryRemoved(const char[] name)
 #if defined _filenetwork_included
 	if(FileNetworkLib && StrEqual(name, "filenetwork"))
 		FileNetworkLib = false;
+#else
+	//Remove warning
+	if(name[0])
+		return;
 #endif
 }
 
@@ -105,7 +112,7 @@ stock bool FileNetwork_Enabled()
 {
 #if defined _filenetwork_included
 	if(FileNetworkLib)
-		return CvarFileNetworkDisable.IntValue < 1;
+		return (CvarFileNetworkDisable.IntValue == FILENETWORK_ENABLED);
 #endif
 	return false;
 }
@@ -126,14 +133,17 @@ void FileNetwork_MapStart()
 
 void FileNetwork_MapEnd()
 {
-#if defined _filenetwork_included
+	delete SoundList;
 	for(int i; i < sizeof(SoundLevel); i++)
 	{
 		SoundLevel[i] = 0;
+	}
+#if defined _filenetwork_included
+	for(int i; i < sizeof(SoundLevel); i++)
+	{
 		ExtraLevel[i] = 0;
 	}
 
-	delete SoundList;
 	delete SoundAlts;
 	delete ExtraList;
 #endif
@@ -150,10 +160,25 @@ void FileNetwork_ClientPutInServer(int client)
 #if defined _filenetwork_included
 	//give 3 seconds of breathing
 	CreateTimer(3.0, Timer_FilenetworkBegin, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
-	DoingSoundFix[client] = false;
 #endif
+
+	DoingSoundFix[client] = false;
+	if(!FileNetworkLib || CvarFileNetworkDisable.IntValue != FILENETWORK_ENABLED)
+	{
+		SoundLevel[client] = 9999;
+		CreateTimer(3.0, Timer_FixSoundCache, EntIndexToEntRef(client), TIMER_FLAG_NO_MAPCHANGE);
+	}
 }
 
+public Action Timer_FixSoundCache(Handle timer, int ref)
+{
+	int client = EntRefToEntIndex(ref);
+	if(!IsValidClient(client))
+		return Plugin_Stop;
+
+	Manual_SoundcacheFixTest(client, 0);
+	return Plugin_Stop;
+}
 #if defined _filenetwork_included
 public Action Timer_FilenetworkBegin(Handle timer, int ref)
 {
@@ -168,10 +193,10 @@ public Action Timer_FilenetworkBegin(Handle timer, int ref)
 
 stock void FileNetwork_ClientDisconnect(int client)
 {
+	SoundLevel[client] = 0;
 #if defined _filenetwork_included
 	StartedQueue[client] = false;
 	Downloading[client] = false;
-	SoundLevel[client] = 0;
 	ExtraLevel[client] = 0;
 #endif
 }
@@ -308,7 +333,7 @@ stock void PrecacheSoundCustom(const char[] sound, const char[] altsound = "", i
 		PrintToServer("PrecacheSoundCustom::TooLate '%s'", sound);
 
 #if defined _filenetwork_included
-	if(InServerSetup && (!FileNetworkLib || CvarFileNetworkDisable.IntValue > 0))
+	if(InServerSetup && (!FileNetworkLib || CvarFileNetworkDisable.IntValue != FILENETWORK_ENABLED))
 #else
 	if(InServerSetup)
 #endif
@@ -317,6 +342,8 @@ stock void PrecacheSoundCustom(const char[] sound, const char[] altsound = "", i
 		FormatEx(buffer, sizeof(buffer), "sound/%s", sound);
 		ReplaceString(buffer, sizeof(buffer), "#", "");
 		AddToDownloadsTable(buffer, sound);
+
+		AddSoundFile(sound);
 		return;
 	}
 
@@ -333,6 +360,12 @@ stock void PrecacheSoundCustom(const char[] sound, const char[] altsound = "", i
 		pack.WriteString(sound);
 		RequestFrames(FileNetwork_AddSoundFrame, delay, pack);
 	}
+#else
+	//Remove warning
+	if(altsound[0])
+		return;
+	if(delay)
+		return;
 #endif
 }
 
@@ -347,7 +380,7 @@ stock void PrecacheMvMIconCustom(const char[] icon, bool vtf = true)
 		FormatEx(buffer, sizeof(buffer), "materials/hud/leaderboard_class_%s.vtf", icon);
 
 #if defined _filenetwork_included
-		if(InServerSetup && (!FileNetworkLib || CvarFileNetworkDisable.IntValue > 1))
+		if(InServerSetup && (!FileNetworkLib || CvarFileNetworkDisable.IntValue > FILENETWORK_ICONONLY))
 #else
 		if(InServerSetup)
 #endif
@@ -365,7 +398,7 @@ stock void PrecacheMvMIconCustom(const char[] icon, bool vtf = true)
 	FormatEx(buffer, sizeof(buffer), "materials/hud/leaderboard_class_%s.vmt", icon);
 
 #if defined _filenetwork_included
-	if(InServerSetup && (!FileNetworkLib || CvarFileNetworkDisable.IntValue > 1))
+	if(InServerSetup && (!FileNetworkLib || CvarFileNetworkDisable.IntValue > FILENETWORK_ICONONLY))
 #else
 	if(InServerSetup)
 #endif
@@ -409,6 +442,21 @@ stock void AddToDownloadsTable(const char[] file, const char[] original = "")
 	}
 }
 
+static void AddSoundFile(const char[] sound)
+{
+	if(SoundList.FindString(sound) == -1)
+	{
+		SoundList.PushString(sound);
+
+#if defined _filenetwork_included
+		for(int client = 1; client <= MaxClients; client++)
+		{
+			if(StartedQueue[client] && !Downloading[client])
+				SendNextFile(client);
+		}
+#endif
+	}
+}
 #if defined _filenetwork_included
 public void FileNetwork_AddSoundFrame(DataPack pack)
 {
@@ -422,21 +470,8 @@ public void FileNetwork_AddSoundFrame(DataPack pack)
 	AddSoundFile(buffer);
 }
 
-static void AddSoundFile(const char[] sound)
-{
-	if(SoundList.FindString(sound) == -1)
-	{
-		SoundList.PushString(sound);
 
-		for(int client = 1; client <= MaxClients; client++)
-		{
-			if(StartedQueue[client] && !Downloading[client])
-				SendNextFile(client);
-		}
-	}
-}
-
-static void FormatFileCheck(const char[] file, int client, char[] output, int length)
+void FormatFileCheck(const char[] file, int client, char[] output, int length)
 {
 	strcopy(output, length, file);
 	ReplaceString(output, length, ".", "");
@@ -588,22 +623,18 @@ public void FileNetwork_RequestResults(int client, const char[] file, int id, bo
 }
 #endif	// _filenetwork_included
 
-public void Manual_SoundcacheFixTest(int client)
+void Manual_SoundcacheFixTest(int client, int Notify)
 {
-#if defined _filenetwork_included
-	SetGlobalTransTarget(client);
 	if(SoundList)
 	{
 		DataPack pack;
 		CreateDataTimer(0.25, StartSoundCache_ManualLoop, pack, TIMER_FLAG_NO_MAPCHANGE);
 		pack.WriteCell(0);
 		pack.WriteCell(EntIndexToEntRef(client));
-		pack.WriteCell(1);
+		pack.WriteCell(Notify);
 	}
-#endif
 }
 
-#if defined _filenetwork_included
 public Action StartSoundCache_ManualLoop(Handle timer, DataPack pack)
 {
 	pack.Reset();
@@ -673,7 +704,7 @@ public Action Timer_FixSoundsCancelThem(Handle timer, DataPack pack)
 	return Plugin_Handled; 
 }
 
-
+#if defined _filenetwork_included
 public void FileNetwork_SendResults(int client, const char[] file, bool success, DataPack pack)
 {
 	// When done, send a dummy file and the next file in queue
@@ -781,6 +812,12 @@ stock bool HasCustomSound(int client, const char[] sound)
 
 	return SoundLevel[client] > soundlevel;
 #else
+	//remove warnings
+	if(client)
+		return false;
+	if(sound[0])
+		return false;
+
 	return false;
 #endif
 }
@@ -878,7 +915,7 @@ stock void EmitCustomToAll(const char[] sound, int entity = SOUND_FROM_PLAYER, i
 
 stock void EmitCustom(const int[] clients, int numClients, const char[] sound, int entity = SOUND_FROM_PLAYER, int channel = SNDCHAN_AUTO, int level = SNDLEVEL_NORMAL, int flags = SND_NOFLAGS, float volume = SNDVOL_NORMAL, int pitch = SNDPITCH_NORMAL, int speakerentity = -1, const float origin[3]=NULL_VECTOR, const float dir[3]=NULL_VECTOR, bool updatePos = true, float soundtime = 0.0)
 {
-	if(DownloadList.FindString(sound) != -1)
+	if(DownloadList.FindString(sound) != -1 || CvarFileNetworkDisable.IntValue >= FILENETWORK_ICONONLY)
 	{
 		float volume2 = volume;
 		int count = RoundToCeil(volume);
@@ -965,7 +1002,7 @@ stock bool IsFileInDownloads(const char[] file)
 stock void SendSingleFileToClient(int client, const char[] download, Function func)
 {
 #if defined _filenetwork_included
-	if(!FileNetworkLib || CvarFileNetworkDisable.IntValue > 0)
+	if(!FileNetworkLib || CvarFileNetworkDisable.IntValue > FILENETWORK_ENABLED)
 		return;
 	
 	DataPack pack = new DataPack();
@@ -981,5 +1018,14 @@ stock void SendSingleFileToClient(int client, const char[] download, Function fu
 		Format(filecheck, sizeof(filecheck), "download/%s", filecheck);
 		DeleteFile(filecheck);
 	}
+#else
+
+	//Remove warning
+	if(client)
+		return;
+	if(download[0])
+		return;
+	if(func)
+		return;
 #endif
 }

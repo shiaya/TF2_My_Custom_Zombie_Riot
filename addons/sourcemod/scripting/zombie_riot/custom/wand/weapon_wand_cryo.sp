@@ -291,7 +291,7 @@ public void Cryo_Touch(int entity, int target)
 			return;
 			
 		Set_HitDetectionCooldown(entity,target, FAR_FUTURE);
-
+	
 		int owner = EntRefToEntIndex(i_WandOwner[entity]);
 		static float angles[3];
 		GetEntPropVector(entity, Prop_Send, "m_angRotation", angles);		
@@ -404,7 +404,7 @@ void Cryo_FreezeZombie(int client, int zombie, int type)
 	if(type != 3)
 		ApplyStatusEffect(client, zombie, "Frozen", FreezeDuration);
 
-	if (!IsValidEntity(ZNPC.m_iFreezeWearable) && !HasSpecificBuff(zombie, "Clear Head"))
+	if (!IsValidEntity(ZNPC.m_iFreezeWearable) && !HasSpecificBuff(zombie, "Clear Head") && !i_NpcIsABuilding[zombie] && !i_IsABuilding[zombie])
 	{
 		float offsetToHeight = 40.0;
 		if(b_IsGiant[zombie])
@@ -425,8 +425,8 @@ void Cryo_FreezeZombie(int client, int zombie, int type)
 		SetEntityRenderColor(ZNPC.m_iFreezeWearable, 65, 65, 185, 65);
 	}
 
-	SetEntityRenderMode(zombie, RENDER_NORMAL, false, 1, false, true);
-	SetEntityRenderColor(zombie, 0, 0, 255, 255, false, false, true);
+//	SetEntityRenderMode(zombie, RENDER_NORMAL, false, 1, false, true);
+//	SetEntityRenderColor(zombie, 25, 25, 255, 255, false, false, true);
 	float position[3];
 	GetEntPropVector(zombie, Prop_Data, "m_vecAbsOrigin", position);
 	switch (Cryo_SlowType_Zombie[zombie])
@@ -462,8 +462,8 @@ public Action Cryo_Unfreeze(Handle Unfreeze, int ref)
 		
 		CreateTimer(Cryo_SlowDuration, Cryo_Unslow, EntIndexToEntRef(zombie), TIMER_FLAG_NO_MAPCHANGE);
 		
-		SetEntityRenderMode(zombie, i_EntityRenderMode[zombie], true, 2, false, true);
-		SetEntityRenderColor(zombie, i_EntityRenderColour1[zombie], i_EntityRenderColour2[zombie], i_EntityRenderColour3[zombie], i_EntityRenderColour4[zombie], true, false, true);
+	//	SetEntityRenderMode(zombie, i_EntityRenderMode[zombie], true, 2, false, true);
+	//	SetEntityRenderColor(zombie, i_EntityRenderColour1[zombie], i_EntityRenderColour2[zombie], i_EntityRenderColour3[zombie], i_EntityRenderColour4[zombie], true, false, true);
 	}
 	
 	return Plugin_Continue;

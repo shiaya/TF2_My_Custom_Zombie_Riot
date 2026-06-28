@@ -24,8 +24,8 @@ void StalkerGoggles_OnMapStart()
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Machina Waldch");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_stalker_goggles");
-	strcopy(data.Icon, sizeof(data.Icon), "");
-	data.IconCustom = false;
+	strcopy(data.Icon, sizeof(data.Icon), "goggles");
+	data.IconCustom = true;
 	data.Flags = 0;
 	data.Category = Type_Special;
 	data.Func = ClotSummon;
@@ -89,6 +89,7 @@ methodmap StalkerGoggles < StalkerShared
 		npc.m_iStepNoiseType = STEPSOUND_NORMAL;
 		npc.m_iNpcStepVariation = STEPTYPE_ROBOT;
 
+		b_thisNpcIsAMiniboss[npc.index] = true;
 		float wave = float(Waves_GetRoundScale()+1);
 		wave *= 0.133333;
 		npc.m_flWaveScale = wave;
@@ -243,35 +244,35 @@ public void StalkerGoggles_ClotThink(int iNPC)
 			{
 				case 1:	// 0.0
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: ...");
+					CPrintToChatAll("{darkblue}Waldch{default}: ...");
 				}
 				case 3:	// 5.0
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: 그 놈들이 또 내 의식을 다시 만들어낼 거고, 난 또 이렇게 되고 말거야.");
+					CPrintToChatAll("{darkblue}Waldch{default}: They tried to re-create my consciousness.");
 				}
 				case 5:	// 10.0
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: 부탁한다. 혼돈을 막아줘.");
+					CPrintToChatAll("{darkblue}Waldch{default}: Please halt the chaos.");
 				}
 				case 7:	// 15.0
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: 그 놈들은.. 끔찍한 것들을 만들어내고 있어.");
+					CPrintToChatAll("{darkblue}Waldch{default}: It makes them.. create unholy beings.");
 				}
 				case 9:	// 20.0
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: 나처럼.");
+					CPrintToChatAll("{darkblue}Waldch{default}: Such as me.");
 				}
 				case 10:	// 22.5
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: 하나만 약속해줘.");
+					CPrintToChatAll("{darkblue}Waldch{default}: Promise me something.");
 				}
 				case 11:	// 25.0
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: {gold}실베스터{default}... 걔 좀 잘 돌봐줘...");
+					CPrintToChatAll("{darkblue}Waldch{default}: Take care of {gold}Silvester{default}.");
 				}
 				case 12:	// 27.5
 				{
-					CPrintToChatAll("{darkblue}월드치{default}: {crimson}오류. 의식을 찾을수 없음.");
+					CPrintToChatAll("{darkblue}Waldch{default}: {crimson}FAILURE, CANNOT COPY PERSONALTIY.");
 					npc.m_bDissapearOnDeath = true;
 					RequestFrame(KillNpc, EntIndexToEntRef(npc.index));
 
@@ -280,7 +281,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 						if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING)
 						{
 							Items_GiveNamedItem(client, "Chaos Machina Waldch Chip");
-							CPrintToChat(client, "{default}이 기계가 천천히 스러져가며, 거기서 떨어져나온 것은...: {blue}''혼돈 마키나 월드치 칩''{default}!");
+							CPrintToChat(client, "{default}This machine is fell, and gave...: {blue}''Chaos Machina Waldch Chip''{default}!");
 						}
 					}
 				}
@@ -295,7 +296,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 		{
 			if(AppearedBefore_Suicide)
 			{
-				CPrintToChatAll("{darkblue}그 기계는 이 곳을 잠시 방황하고는 흔적도 사라졌습니다. 그에게 이 장소는 더 이상 흥미로운 장소가 아닙니다. 다른 누군가가 그 자리를 차지할 것입니다...");
+				CPrintToChatAll("{darkblue}The machine wanders off, it isnt interrested in this place anymore, someone else takes its place instead...");
 				b_NpcForcepowerupspawn[npc.index] = 0;
 			}
 			i_RaidGrantExtra[npc.index] = 0;
@@ -303,7 +304,7 @@ public void StalkerGoggles_ClotThink(int iNPC)
 			b_DoGibThisNpc[npc.index] = true;
 			SmiteNpcToDeath(npc.index);
 			if(AppearedBefore_Suicide)
-				NPC_SpawnNext(true, true, -1); //This will force spawn a panzer.
+				NPC_SpawnNext(true, true); //This will force spawn a panzer.
 
 			AppearedBefore_Suicide = true;
 			return;
@@ -615,7 +616,7 @@ public Action StalkerGoggles_OnTakeDamage(int victim, int &attacker, int &inflic
 		if(IsValidEntity(npc.m_iWearable3))
 			RemoveEntity(npc.m_iWearable3);
 		
-		CPrintToChatAll("{darkblue}월드치{default}: 프로그래밍에 이상현상 발생중.");
+		CPrintToChatAll("{darkblue}Waldch{default}: Looks like my programming is going wrong.");
 
 		for(int i; i < 9; i++)
 		{

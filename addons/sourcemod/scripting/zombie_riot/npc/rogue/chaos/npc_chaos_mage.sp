@@ -115,6 +115,7 @@ methodmap ChaosMage < CClotBody
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
 		npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+		Elemental_AddChaosDamage(npc.index, npc.index, 1, false);
 
 		func_NPCDeath[npc.index] = view_as<Function>(ChaosMage_NPCDeath);
 		func_NPCOnTakeDamagePost[npc.index] = view_as<Function>(ChaosMage_OnTakeDamage);
@@ -136,8 +137,8 @@ methodmap ChaosMage < CClotBody
 		
 		SetEntProp(npc.m_iWearable1, Prop_Send, "m_nSkin", skin);
 		
-		SetEntityRenderColor(npc.index, 125, 125, 125, 255);
-		SetEntityRenderColor(npc.m_iWearable1, 125, 125, 125, 255);
+		SetEntityRenderColor(npc.index, 150, 150, 150, 255);
+		SetEntityRenderColor(npc.m_iWearable1, 150, 150, 150, 255);
 		
 		float flPos[3], flAng[3];
 				

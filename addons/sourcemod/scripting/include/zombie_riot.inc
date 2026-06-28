@@ -10,7 +10,12 @@ enum ZRSpecialMode
 	Mode_Standard = 0,
 	Mode_Rogue1,
 	Mode_Rogue2,
+	Mode_Rogue3,
+	Mode_BetWars,
 	Mode_Construction,
+	Mode_Survival,
+	Mode_Construction2,
+	Mode_Freeplay,
 }
 
 enum ZRLifeState
@@ -20,6 +25,16 @@ enum ZRLifeState
 	LifeState_Teuton,
 	LifeState_Dead,
 	LifeState_Spectator,
+}
+
+enum ZRGiftRarity
+{
+	None = -1,
+	Common,
+	Uncommon,
+	Rare,
+	Legend,
+	Mythic
 }
 
 /**
@@ -217,6 +232,19 @@ forward Action ZR_OnGivenCash(int client, int &cash);
 forward Action ZR_OnWinTeam(TFTeam Team);
 
 /**
+ * Sends information when RED wins.
+ * 
+ * @param playerList	List of players (as entindices) in RED.
+ * @param waveset		The internal name of the waveset beaten.
+ * @param modifier		The name of the current modifier.
+ * @param time			How long it took to beat, in seconds.
+ * @param wave			What wave at the time of beating.
+ * 
+ * @noreturn
+ */
+forward void ZR_OnWinInfo(ArrayList playerList, const char[] waveset, const char[] modifier, int time, int wave, ArrayList RogueItemNames)
+
+/**
  * Whenever any client gets XP, this is spammed! Be Warned!
  * 
  * @param client	Client index
@@ -254,6 +282,16 @@ forward void ZR_OnWaveEnd(int waves, int maxwaves, int realmaxwaves);
  */
 forward void ZR_OnSpecialModeProgress(int CurrentFloor, int MaxFloor);
 
+/**
+ * Whenever a gift is collected
+ * 
+ * @param Collector	 What client collected
+ * @param Rarity	 What rarity was it
+ * 
+ * @return	
+ */
+forward void ZR_OnGiftCollected(int Collector, ZRGiftRarity Rarity)
+
 stock int XpToLevel(int xp)
 {
 	return RoundToFloor(Pow(xp / 200.0, 0.5));
@@ -285,6 +323,7 @@ public void __pl_zombie_riot_SetNTVOptional()
 	MarkNativeAsOptional("ZR_GiveNamedItem");
 	MarkNativeAsOptional("ZR_GetAliveStatus");
 	MarkNativeAsOptional("ZR_OnWinTeam");
+	MarkNativeAsOptional("ZR_OnGiftCollected");
 	MarkNativeAsOptional("ZR_GetSpecialMode");
 	MarkNativeAsOptional("ZR_OnGetXP");
 	MarkNativeAsOptional("ZR_SetXpAndLevel");

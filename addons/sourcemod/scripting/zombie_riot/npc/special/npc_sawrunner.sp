@@ -43,7 +43,7 @@ void SawRunner_OnMapStart_NPC()
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Sawrunner");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_sawrunner");
-	strcopy(data.Icon, sizeof(data.Icon), "sawrunner");
+	strcopy(data.Icon, sizeof(data.Icon), "mb_sawrunner");
 	data.IconCustom = true;
 	data.Flags = 0;
 	data.Category = Type_Special;
@@ -154,6 +154,7 @@ methodmap SawRunner < CClotBody
 		func_NPCThink[npc.index] = SawRunner_ClotThink;
 		npc.m_flDoSpawnGesture = GetGameTime(npc.index) + 2.0;
 		f_HeadshotDamageMultiNpc[npc.index] = 2.0;
+		b_thisNpcIsAMiniboss[npc.index] = true;
 		
 		
 		npc.m_flSpeed = 200.0;
@@ -167,7 +168,7 @@ methodmap SawRunner < CClotBody
 		
 		npc.StartPathing();
 		b_HideHealth[npc.index] = true;
-		b_NoHealthbar[npc.index] = true;
+		b_NoHealthbar[npc.index] = 1;
 		//counts as a static npc, means it wont count towards NPC limit.
 		AddNpcToAliveList(npc.index, 1);
 		

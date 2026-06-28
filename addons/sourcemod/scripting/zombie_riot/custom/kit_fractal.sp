@@ -329,12 +329,13 @@ static void Fire_Beam(int client, int weapon, bool update)
 	float Angles[3];
 
 	GetEntPropVector(npc.index, Prop_Data, "m_angRotation", Angles);
-
+	
+	float flPitch = 0.0;
 	int iPitch = npc.LookupPoseParameter("body_pitch");
-	if(iPitch < 0)
-		return;
-
-	float flPitch = npc.GetPoseParameter(iPitch);
+	if(iPitch >= 0)
+	{
+		flPitch = npc.GetPoseParameter(iPitch);
+	}
 	flPitch *=-1.0;
 	if(flPitch>25.0)	//limit the pitch. by a lot
 		flPitch=25.0;
@@ -670,7 +671,7 @@ public void Fantasia_Mouse1(int client, int weapon, bool &result, int slot)
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.");
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough", RoundToFloor(fl_current_crystal_amt[client]), RoundToFloor(FRACTAL_KIT_FANTASIA_COST));
 		return;
 	}
 	int mana_cost;
@@ -949,7 +950,7 @@ public void Kit_Fractal_OverDrive(int client, int weapon, bool &result, int slot
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.");
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough", RoundToFloor(fl_current_crystal_amt[client]), RoundToFloor(FRACTAL_KIT_PASSIVE_OVERDRIVE_COST * 2.0));
 		return;
 	}
 
@@ -969,7 +970,7 @@ public void Kit_Fractal_Starfall(int client, int weapon, bool &result, int slot)
 		ClientCommand(client, "playgamesound items/medshotno1.wav");
 		SetDefaultHudPosition(client);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "Your Weapon is not charged enough.");
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Your Weapon is not charged enough", RoundToFloor(fl_current_crystal_amt[client]), RoundToFloor(FRACTAL_KIT_STARFALL_COST));
 		return;
 	}
 	if(fl_starfall_CD[client] > GameTime)
@@ -1266,8 +1267,10 @@ static Action Mana_Harvester_Tick(int client)
 	//we now have every valid target within range / within line of sight, comence the harvesting!
 	int color[4]; color = Kit_Color();
 
-	if(i_CurrentEquippedPerk[client] == 4)
+	if(i_CurrentEquippedPerk[client] & PERK_HASTY_HOPS)
 		mana_cost = RoundToFloor(mana_cost * 1.33);
+	if(i_CurrentEquippedPerk[client] & PERK_HASTY_HOPS_X)
+		mana_cost = RoundToFloor(mana_cost * 1.65);
 
 	for(int i=0 ; i < FRACTAL_HARVESTER_MAX_AMT ; i++)
 	{
@@ -1768,7 +1771,7 @@ void Send_Te_Client_ZR(int client)
 		TE_SendToClient(client);
 }
 
-static int i_maxtargets_hit;
+int i_maxtargets_hit;
 enum struct Player_Laser_Logic
 {
 	int client;
@@ -1794,8 +1797,11 @@ enum struct Player_Laser_Logic
 
 	*/
 
-	void DoForwardTrace_Basic(float Dist=-1.0)
+	void DoForwardTrace_Basic(float Dist=-1.0, TraceEntityFilter Func_Trace = INVALID_FUNCTION)
 	{
+		if(Func_Trace==INVALID_FUNCTION)
+			Func_Trace = Player_Laser_BEAM_TraceWallsOnly;
+
 		float Angles[3], startPoint[3], Loc[3];
 		GetClientEyePosition(this.client, startPoint);
 		GetClientEyeAngles(this.client, Angles);
@@ -1805,7 +1811,7 @@ enum struct Player_Laser_Logic
 
 		b_LagCompNPC_No_Layers = true;
 		StartLagCompensation_Base_Boss(this.client);
-		Handle trace = TR_TraceRayFilterEx(startPoint, Angles, 11, RayType_Infinite, Player_Laser_BEAM_TraceWallsOnly);
+		Handle trace = TR_TraceRayFilterEx(startPoint, Angles, 11, RayType_Infinite, Func_Trace, this.client);
 
 		if (TR_DidHit(trace))
 		{
@@ -1828,15 +1834,18 @@ enum struct Player_Laser_Logic
 		}
 		FinishLagCompensation_Base_boss();
 	}
-	void DoForwardTrace_Custom(float Angles[3], float startPoint[3], float Dist=-1.0)
+	void DoForwardTrace_Custom(float Angles[3], float startPoint[3], float Dist=-1.0, TraceEntityFilter Func_Trace = INVALID_FUNCTION)
 	{
+		if(Func_Trace==INVALID_FUNCTION)
+			Func_Trace = Player_Laser_BEAM_TraceWallsOnly;
+
 		if(Dist != -1.0)
 			this.MaxDist = Dist;
 
 		float Loc[3];
 		b_LagCompNPC_No_Layers = true;
 		StartLagCompensation_Base_Boss(this.client);
-		Handle trace = TR_TraceRayFilterEx(startPoint, Angles, 11, RayType_Infinite, Player_Laser_BEAM_TraceWallsOnly);
+		Handle trace = TR_TraceRayFilterEx(startPoint, Angles, 11, RayType_Infinite, Func_Trace, this.client);
 		if (TR_DidHit(trace))
 		{
 			TR_GetEndPosition(Loc, trace);
@@ -2046,4 +2055,45 @@ static bool Player_Laser_BEAM_TraceUsers(int entity, int contentsMask, int clien
 		}
 	}
 	return false;
+}
+public bool RayCastTraceEnemies(int entity, int contentsMask, int client)
+{
+	if (IsValidEntity(entity))
+	{
+		if(IsValidEnemy(client, entity, true, true))
+		{
+			for(int i=0 ; i < i_maxtargets_hit ; i++)
+			{
+				//don't retrace the same entity!
+				if(i_Ruina_Laser_BEAM_HitDetected[i] == entity)
+					break;
+
+				if(!i_Ruina_Laser_BEAM_HitDetected[i])
+				{
+					i_Ruina_Laser_BEAM_HitDetected[i] = entity;
+					break;
+				}
+			}
+		}
+	}
+	return !entity;
+}
+public bool RayCastTraceEverything(int entity, int contentsMask, int client)
+{
+	if (IsValidEntity(entity))
+	{
+		for(int i=0 ; i < i_maxtargets_hit ; i++)
+		{
+			//don't retrace the same entity!
+			if(i_Ruina_Laser_BEAM_HitDetected[i] == entity)
+				break;
+				
+			if(!i_Ruina_Laser_BEAM_HitDetected[i])
+			{
+				i_Ruina_Laser_BEAM_HitDetected[i] = entity;
+				break;
+			}
+		}
+	}
+	return !entity;
 }

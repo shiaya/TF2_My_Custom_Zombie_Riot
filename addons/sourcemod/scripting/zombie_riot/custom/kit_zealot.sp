@@ -122,6 +122,8 @@ void Zealot_ReduceGlobalRCooldown(int client, float Duration, bool potion = fals
 
 public void Weapon_ZealotBlockRapier(int client, int weapon, bool &result, int slot)
 {
+	//this is a holding one, dont.
+	f_CooldownForAbilities[client][0] = FAR_FUTURE;
 	if(i_CustomWeaponEquipLogic[weapon] == WEAPON_ZEALOT_MELEE && (GetClientButtons(client) & IN_DUCK))
 	{
 		if(i_PaPLevel[client] >= 2)
@@ -206,6 +208,8 @@ public void Weapon_ZealotBlockRapier(int client, int weapon, bool &result, int s
 
 public void Weapon_ZealotRapidfirePistol(int client, int weapon, bool &result, int slot)
 {
+	//this is a holding one, dont.
+	f_CooldownForAbilities[client][1] = FAR_FUTURE;
 	f_BlockCheckDelay[client] = GetGameTime();
 	WeaponCheckExistRapidFire[client] = EntIndexToEntRef(weapon);
 	SDKUnhook(client, SDKHook_PreThink, Client_ZealotRevolverRapid);
@@ -465,10 +469,10 @@ public float Player_OnTakeDamage_Zealot(int victim, float &damage, int attacker,
 		EmitSoundToClient(victim, SAMURAI_SWORD_PARRY, victim, SNDCHAN_STATIC, 60, _, 0.25, GetRandomInt(95,105));				
 		if(damage * ZR_ARMOR_DAMAGE_REDUCTION >= f_StaminaLeftZealot[victim])
 		{
-			float damage_recieved_after_calc;
-			damage_recieved_after_calc = damage - f_StaminaLeftZealot[victim];
+			float damage_received_after_calc;
+			damage_received_after_calc = damage - f_StaminaLeftZealot[victim];
 			f_StaminaLeftZealot[victim] = 0.0;
-			damage = damage_recieved_after_calc;
+			damage = damage_received_after_calc;
 		}
 		else
 		{

@@ -6,7 +6,6 @@ static float ability_cooldown_2[MAXPLAYERS+1]={0.0, ...};
 static int Attack3AbilitySlotArray[MAXPLAYERS+1]={0, ...};
 static float f_HealDelay[MAXENTITIES];
 static float f_Duration[MAXENTITIES];
-static bool b_ActivatedDuringLastMann[MAXPLAYERS+1];
 static int g_ProjectileModel;
 static int g_ProjectileModelArmor;
 int g_BeamIndex_heal = -1;
@@ -16,6 +15,22 @@ static float f_ReinforceTillMax[MAXPLAYERS];
 static bool b_ReinforceReady_soundonly[MAXPLAYERS];
 static int i_MaxRevivesAWave;
 static float MorphineCharge[MAXPLAYERS+1]={0.0, ...};
+static const char g_TeleportHomeSound[][] =
+{
+	"weapons/vaccinator_charge_tier_01.wav",
+	"weapons/vaccinator_charge_tier_02.wav",
+	"weapons/vaccinator_charge_tier_03.wav",
+	"weapons/vaccinator_charge_tier_04.wav",
+};
+
+
+void GiveMorphineToEveryone()
+{
+	for(int client = 1; client <= MaxClients; client++)
+	{
+		MorphineCharge[client] = 1.0;
+	}
+}
 
 static const char g_TeleSounds[][] = {
 	"weapons/rescue_ranger_teleport_receive_01.wav",
@@ -30,6 +45,16 @@ static const char g_ReinforceSounds[][] = {
 int MaxRevivesReturn()
 {
 	return i_MaxRevivesAWave;
+}
+
+int MaxRevivesAllowed()
+{
+	int ReviveAllowMax;
+	ReviveAllowMax = RoundToNearest(float(CountPlayersOnRed(0, true)) * 0.2);
+	if(ReviveAllowMax <= 3)
+		ReviveAllowMax = 3;
+
+	return ReviveAllowMax;
 }
 static const char g_ReinforceReadySounds[] = "mvm/mvm_bought_in.wav";
 
@@ -59,6 +84,7 @@ public void M3_Abilities_Precache()
 	model = "models/healthvial.mdl";
 	g_ProjectileModel = PrecacheModel(model);
 	model = "models/Items/battery.mdl";
+	PrecacheSoundArray(g_TeleportHomeSound);
 	g_ProjectileModelArmor = PrecacheModel(model);
 	g_BeamIndex_heal = PrecacheModel("materials/sprites/laserbeam.vmt", true);
 	for (int i = 0; i < (sizeof(g_TeleSounds));	   i++) { PrecacheSound(g_TeleSounds[i]);	   }
@@ -69,13 +95,14 @@ public void M3_Abilities_Precache()
 	PrecacheSound(SOUND_REPAIR_BEAM);
 	PrecacheSound(SOUND_DASH);
 	PrecacheSound("mvm/mvm_tank_start.wav");
+	PrecacheSound("player/invuln_on_vaccinator.wav");
+	PrecacheSound("player/invuln_off_vaccinator.wav");
 	PrecacheSound("weapons/air_burster_explode3.wav");
 	HookEntityOutput("func_movelinear", "OnFullyOpen", OnBombDrop);
 	PrecacheSound("weapons/slam/throw.wav");
 }
 public void M3_ClearAll()
 {
-	Zero(b_ActivatedDuringLastMann);
 	Zero(ability_cooldown);
 	Zero(ability_cooldown_2);
 	Zero(Attack3AbilitySlotArray);
@@ -142,6 +169,10 @@ void M3_AbilitiesWaveEnd()
 	Zero(i_BurstpackUsedThisRound);
 	Zero(i_MaxMorhpinesThisRound);
 	i_MaxRevivesAWave = 0;
+	for(int target = 1; target <= MaxClients; target++)
+	{
+		RemoveSpecificBuff(target, "Vuntulum Bomb EMP Death");
+	}
 }
 
 bool MorphineMaxed(int client)
@@ -173,9 +204,9 @@ stock void GiveMorphineOnDamage(int client, int victim, float damage, int damage
 
 	MinCashMaxGain -= 250;
 
-	if(MinCashMaxGain >= 200000)
+	if(MinCashMaxGain >= 100000)
 	{
-		MinCashMaxGain = 200000;
+		MinCashMaxGain = 100000;
 	}
 	
 	float DamageForMaxCharge = (Pow(2.0 * MinCashMaxGain, 1.2) + MinCashMaxGain * 3.0);
@@ -195,15 +226,18 @@ stock void GiveMorphineOnDamage(int client, int victim, float damage, int damage
 }
 public void MorphineShot(int client)
 {
-	if(dieingstate[client] > 0 || MorphineMaxed(client))
+	if(!CvarInfiniteCash.BoolValue)
 	{
-		ClientCommand(client, "playgamesound items/medshotno1.wav");
-		return;
-	}
-	if(MorphineCharge[client] < 1.0)
-	{
-		ClientCommand(client, "playgamesound items/medshotno1.wav");
-		return;
+		if(dieingstate[client] > 0 || MorphineMaxed(client))
+		{
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			return;
+		}
+		if(MorphineCharge[client] < 1.0)
+		{
+			ClientCommand(client, "playgamesound items/medshotno1.wav");
+			return;
+		}
 	}
 	i_MaxMorhpinesThisRound[client] += 1;
 	MorphineShotLogic(client);	
@@ -243,6 +277,12 @@ public void WeakDash(int client)
 				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Burstpack Already Used This Round, Recharging");	
 				return;
 			}
+			if (!Raigeki_OnBurstPack(client))	//Block Burst Pack while charging Raigeki. I intentionally did not copy/paste this to the downed version of Burst Pack, because Raigeki cannot even be charged while downed.
+			{
+				Utility_HUDNotification_Translation(client, "Raigeki Gear Blocked By Charge", true);
+				return;
+			}
+
 			i_BurstpackUsedThisRound[client] += 1;
 			ability_cooldown[client] = GetGameTime() + (60.0 * CooldownReductionAmount(client));
 			WeakDashLogic(client);
@@ -263,16 +303,31 @@ public void WeakDash(int client)
 }
 
 
-public void MorphineShotLogic(int client)
+void MorphineShotLogic(int client, bool Oneshot_Protection = false)
 {
-	EmitSoundToAll(SOUND_HEAL_BEAM, client, _, 70, _, 1.0, 70);
-	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 3.0);
 	float MaxHealth = float(SDKCall_GetMaxHealth(client));
-	HealEntityGlobal(client, client, MaxHealth * 0.15, 0.5, 3.0, HEAL_SELFHEAL);
+	if(!Oneshot_Protection)
+	{
+		EmitSoundToAll(SOUND_HEAL_BEAM, client, _, 70, _, 1.0, 70);
+		if(Rogue_SuperStimsOn())
+		{
+			HealEntityGlobal(client, client, MaxHealth * 3.0, 1.0, 3.0, HEAL_SELFHEAL);
+		}
+		else
+		{
+			HealEntityGlobal(client, client, MaxHealth * 0.15, 0.5, 3.0, HEAL_SELFHEAL);
+		}
+		MorphineCharge[client] = 0.0;
+	}
+	else
+	{
+		HealEntityGlobal(client, client, MaxHealth * 0.15, 0.5, 3.0, HEAL_SELFHEAL);
+	}
+	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 3.0);
 	f_AntiStuckPhaseThrough[client] = GetGameTime() + 3.0 + 0.5;
 	f_AntiStuckPhaseThroughFirstCheck[client] = GetGameTime() + 3.0 + 0.5;
 	ApplyStatusEffect(client, client, "Intangible", 3.0);
-	MorphineCharge[client] = 0.0;
+
 }
 public void WeakDashLogic(int client)
 {
@@ -615,7 +670,7 @@ public Action Timer_Detect_Player_Near_Healing_Grenade(Handle timer, DataPack pa
 						if(dieingstate[target] > 0)
 						{
 							EmitSoundToClient(target, SOUND_HEAL_BEAM, target, _, 90, _, 0.7);
-							if(i_CurrentEquippedPerk[client] == 1)
+							if(i_CurrentEquippedPerk[client] & PERK_REGENE)
 							{
 								SetEntityHealth(target,  GetClientHealth(target) + 12);
 								dieingstate[target] -= 20;
@@ -650,7 +705,7 @@ public Action Timer_Detect_Player_Near_Healing_Grenade(Handle timer, DataPack pa
 					{
 						if(Citizen_IsIt(target) && Citizen_ThatIsDowned(target))
 						{
-							if(i_CurrentEquippedPerk[client] == 1)
+							if(i_CurrentEquippedPerk[client] & PERK_REGENE)
 							{
 								Citizen_ReviveTicks(target, 20, client, true);
 							}
@@ -764,6 +819,10 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 	{
 		weapon = Purnell_Existant(client);
 	}
+	if(Is_Cheesed_Up(client))
+	{
+		weapon = ReturnWeapon_PlasmaKit(client);
+	}
 	if(IsValidEntity(weapon))
 	{
 		switch(i_CustomWeaponEquipLogic[weapon])
@@ -778,7 +837,7 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 				
 				Base_HealingMaxPoints=RoundToCeil(3500.0 * Healing_Amount);
 			}
-			case WEAPON_SEABORN_MISC:
+			case WEAPON_DWELLER_MISC:
 			{
 				Healing_Amount=Attributes_Get(weapon, 8, 0.0)/2.0;
 				if(Healing_Amount<1.0)
@@ -797,6 +856,15 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 				
 				Base_HealingMaxPoints=RoundToCeil(800.0 * Healing_Amount);
 			}
+			case WEAPON_CHEESY_MELEE:
+			{
+				Healing_Amount=Attributes_Get(weapon, Attrib_PapNumber, 0.0);
+				//it starts at -1.0, so it should go upto 1.0.
+				if(Healing_Amount<1.0)
+					Healing_Amount=1.0;
+
+				Base_HealingMaxPoints=RoundToCeil(7500.0 * Healing_Amount);
+			}
 			default:
 				Base_HealingMaxPoints=RoundToCeil(1900.0 * Healing_Amount);
 		}
@@ -808,8 +876,10 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 		Base_HealingMaxPoints = 3000;
 		
 
+	//make it easier by 10%
+	Base_HealingMaxPoints = RoundToNearest(float(Base_HealingMaxPoints) * 0.9);
 
-	if(autoscale != 0.0) 
+	if(autoscale != 0.0)
 		f_ReinforceTillMax[client] += autoscale;
 	else
 		f_ReinforceTillMax[client] += (float(healthvalue) / float(Base_HealingMaxPoints));
@@ -821,8 +891,8 @@ void HealPointToReinforce(int client, int healthvalue, float autoscale = 0.0)
 
 		if(!b_ReinforceReady_soundonly[client])
 		{
-			EmitSoundToClient(client, g_ReinforceSounds[GetRandomInt(0, sizeof(g_ReinforceSounds) - 1)], _, _, _, _, 0.8, _, _, _, _, false);
-			CPrintToChat(client, "{green}이제 증원 요청을 사용할 수 있음.");
+			EmitSoundToClient(client, g_ReinforceSounds[GetRandomInt(0, sizeof(g_ReinforceSounds) - 1)], _, _, _, _, 0.5, _, _, _, _, false);
+			CPrintToChat(client, "{green}You can now call in reinforcements.");
 			b_ReinforceReady_soundonly[client]=true;
 		}
 	}
@@ -872,7 +942,7 @@ public void Reinforce(int client, bool NoCD)
 				ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Need Healing Point");
 				return;
 			}
-			if(i_MaxRevivesAWave >= 3)
+			if(i_MaxRevivesAWave >= MaxRevivesAllowed())
 			{
 				ClientCommand(client, "playgamesound items/medshotno1.wav");
 				SetDefaultHudPosition(client);
@@ -889,7 +959,7 @@ public void Reinforce(int client, bool NoCD)
 		int MaxCashScale = CurrentCash;
 		if(MaxCashScale > 60000)
 			MaxCashScale = 60000;
-			
+		
 		bool DeadPlayer;
 		for(int client_check=1; client_check<=MaxClients; client_check++)
 		{
@@ -897,11 +967,17 @@ public void Reinforce(int client, bool NoCD)
 				continue;
 			if(TeutonType[client_check] == TEUTON_NONE)
 				continue;
+			if(!b_AntiLateSpawn_Allow[client_check])
+				continue;
 			if(client==client_check || GetTeam(client_check) != TFTeam_Red)
 				continue;
-			if(!b_HasBeenHereSinceStartOfWave[client_check])
+			if(!WasHereSinceStartOfWave(client_check))
 				continue;
 			if(f_PlayerLastKeyDetected[client_check] < GetGameTime())
+				continue;
+			if(HasSpecificBuff(client_check, "Vuntulum Bomb EMP Death"))
+				continue;
+			if(!Rogue_BlueParadox_CanTeutonUpdate(client_check))
 				continue;
 
 			int CashSpendScale = CashSpentTotal[client_check];
@@ -914,18 +990,18 @@ public void Reinforce(int client, bool NoCD)
 
 			DeadPlayer=true;
 		}
+
 		if(!DeadPlayer)
 		{
 			ClientCommand(client, "playgamesound items/medshotno1.wav");
 			SetDefaultHudPosition(client);
-			SetGlobalTransTarget(client);
-			ShowSyncHudText(client,  SyncHud_Notifaction, "Player not detected");
+			ShowSyncHudText(client,  SyncHud_Notifaction, "%T", "Player not detected", client);
 			return;
 		}
 
 		
 		i_MaxRevivesAWave++;
-		CPrintToChatAll("{green}%N 이(가) 추가 지원을 위해 증원을 요청하고 있습니다...",client);
+		CPrintToChatAll("{green}%N is calling for additonal Mercs for temporary assistance...",client);
 		float position[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
@@ -1023,20 +1099,45 @@ public Action M3_Ability_Is_Back(Handle cut_timer, int ref)
 		ClientCommand(client, "playgamesound items/gunpickup2.wav");
 		SetHudTextParams(-1.0, 0.45, 3.01, 34, 139, 34, 255);
 		SetGlobalTransTarget(client);
-		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "Ability Is Back");
+		ShowSyncHudText(client,  SyncHud_Notifaction, "%t", "M3 Ability Is Back");
 	}
 	return Plugin_Handled;
 }
 
+static Handle CallbackTimer[MAXPLAYERS];
+
 public void BuilderMenu(int client)
 {
-	if(dieingstate[client] == 0)
+	if(IsPlayerAlive(client) && dieingstate[client] == 0)
 	{	
 		CancelClientMenu(client);
 		SetStoreMenuLogic(client, false);
 		static char buffer[128];
 		Menu menu = new Menu(BuilderMenuM);
+		AnyMenuOpen[client] = 1.0;
 
+		if(Dungeon_Mode() && Dungeon_InSetup())
+		{
+			//Teleport back to base, with a cooldown
+			if(CallbackTimer[client] != null)
+			{
+				delete CallbackTimer[client];
+				ClientCommand(client, "playgamesound items/medshotno1.wav");
+			}
+			else if(!IsValidEntity(ZoneMarkerRef[Zone_HomeBase]))
+			{
+				ClientCommand(client, "playgamesound items/medshotno1.wav");
+			}
+			else
+			{
+				EmitSoundToAll("player/invuln_on_vaccinator.wav", client, SNDCHAN_STATIC, 70, _, 0.7, 100, .soundtime = GetGameTime() - 1.0);
+				DataPack pack1;
+				CallbackTimer[client] = CreateDataTimer(0.25, Timer_RecallBackToBase, pack1, TIMER_REPEAT);
+				pack1.WriteCell(client);	
+				pack1.WriteCell(EntIndexToEntRef(client));	
+				pack1.WriteFloat(GetGameTime() + 5.0);	
+			}
+		}
 		SetGlobalTransTarget(client);
 		
 		menu.SetTitle("%t", "Extra Menu");
@@ -1055,9 +1156,6 @@ public void BuilderMenu(int client)
 									
 		FormatEx(buffer, sizeof(buffer), "%t", "Bring up Class Change Menu");
 		menu.AddItem("-4", buffer);
-
-	//	FormatEx(buffer, sizeof(buffer), "%t", "Display top 5");
-	//	menu.AddItem("-5", buffer);
 		
 									
 		menu.ExitButton = true;
@@ -1065,16 +1163,103 @@ public void BuilderMenu(int client)
 	}
 }
 
-/*
-	SetStoreMenuLogic(client, false);
-	sResetStoreMenuLogic(client);
-*/
+static Action Timer_RecallBackToBase(Handle dashHud, DataPack pack)
+{
+	pack.Reset();
+	int idx_client = pack.ReadCell();
+	int client = EntRefToEntIndex(pack.ReadCell());
+	//This belongs to a client.
+	if(!IsValidClient(client))
+	{
+		CallbackTimer[idx_client] = null;
+		return Plugin_Stop;
+	}
+	if(dieingstate[client] != 0)
+	{
+		ClientCommand(client, "playgamesound items/medshotno1.wav");
+		CallbackTimer[idx_client] = null;
+		return Plugin_Stop;
+	}
+	if(f_TimeUntillNormalHeal[client] > GetGameTime())
+	{
+		ClientCommand(client, "playgamesound items/medshotno1.wav");
+		CallbackTimer[idx_client] = null;
+		return Plugin_Stop;
+	}
+	float GameTimeFinish = pack.ReadFloat();
+	if(GameTimeFinish <= GetGameTime())
+	{
+		if(IsValidEntity(ZoneMarkerRef[Zone_HomeBase]))
+		{
+			float pos[3], ang[3];
+			GetEntPropVector(ZoneMarkerRef[Zone_HomeBase], Prop_Data, "m_vecOrigin", pos);
+			GetEntPropVector(ZoneMarkerRef[Zone_HomeBase], Prop_Data, "m_angRotation", ang);
+
+			TeleportEntity(client, pos, ang);
+			Dungeon_SetEntityZone(client, Zone_HomeBase);
+			float RangeMax = 150.0;
+			float VecPosEnd[3];
+			VecPosEnd = pos;
+			VecPosEnd[2] += 400.0;
+			TE_SetupBeamPoints(pos, VecPosEnd, gLaser1, 0, 0, 0, 0.5, 20.0, 0.1, 0, 0.1, {125, 125, 255, 125}, 3);
+			spawnRing_Vectors(pos, 0.1, 0.0, 0.0, 0.0, "materials/sprites/laserbeam.vmt", 125, 125, 255, 125, 1, /*DURATION*/ 0.5, 6.0, 0.5, 1,RangeMax * 2.0);
+			spawnRing_Vectors(pos, 0.1, 0.0, 0.0, 0.0, "materials/sprites/laserbeam.vmt", 125, 125, 255, 125, 1, /*DURATION*/ 0.5, 6.0, 0.5, 1,RangeMax * 3.0);
+			spawnRing_Vectors(pos, 0.1, 0.0, 0.0, 0.0, "materials/sprites/laserbeam.vmt", 125, 125, 255, 125, 1, /*DURATION*/ 0.5, 6.0, 0.5, 1,RangeMax * 4.0);
+		
+			EmitSoundToAll("player/invuln_off_vaccinator.wav", client, SNDCHAN_STATIC, 70, _, 0.7, 100);
+			i_AmountDowned[idx_client] = 0;
+		}
+		CallbackTimer[idx_client] = null;
+		return Plugin_Stop;
+	}
+	TF2_StunPlayer(client, 0.5, 0.85, TF_STUNFLAG_NOSOUNDOREFFECT|TF_STUNFLAG_SLOWDOWN);
+
+	float VecPos[3];
+	float VecPosEnd[3];
+	GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", VecPos);
+	VecPos[2] += 2.0;
+	VecPosEnd = VecPos;
+	VecPosEnd[2] += 400.0;
+
+	float RangeMax = 150.0;
+
+	RangeMax *= ((GameTimeFinish - GetGameTime()) / 5.0);
+	int SoundPlayDo = RoundToCeil(GameTimeFinish - GetGameTime());
+	switch(SoundPlayDo)
+	{
+		case 4:
+		{
+			EmitSoundToAll(g_TeleportHomeSound[0], client, SNDCHAN_STATIC, 70, _, 0.7, 80);
+		}
+		case 3:
+		{
+			EmitSoundToAll(g_TeleportHomeSound[1], client, SNDCHAN_STATIC, 70, _, 0.5, 80);
+		}
+		case 2:
+		{
+			EmitSoundToAll(g_TeleportHomeSound[2], client, SNDCHAN_STATIC, 70, _, 0.3, 80);
+		}
+		case 1:
+		{
+			EmitSoundToAll(g_TeleportHomeSound[3], client, SNDCHAN_STATIC, 70, _, 0.25, 80);
+		}
+	}
+
+	TE_SetupBeamPoints(VecPos, VecPosEnd, gLaser1, 0, 0, 0, 0.26, 20.0, 0.1, 0, 0.1, {125, 125, 255, 125}, 3);
+	TE_SendToAll();
+	spawnRing_Vectors(VecPos, RangeMax * 2.0, 0.0, 0.0, 0.0, "materials/sprites/laserbeam.vmt", 125, 125, 255, 125, 1, /*DURATION*/ 0.26, 6.0, 0.5, 1);
+	spawnRing_Vectors(VecPos, RangeMax * 2.0, 0.0, 0.0, 0.0, "materials/sprites/laserbeam.vmt", 125, 125, 255, 125, 1, /*DURATION*/ 0.26, 6.0, 0.5, 1, 0.1);
+	
+	return Plugin_Continue;
+}
+
 public int BuilderMenuM(Menu menu, MenuAction action, int client, int choice)
 {
 	switch(action)
 	{
 		case MenuAction_Select:
 		{
+			AnyMenuOpen[client] = 0.0;
 			ResetStoreMenuLogic(client);
 			char buffer[24];
 			menu.GetItem(choice, buffer, sizeof(buffer));
@@ -1124,6 +1309,7 @@ public int BuilderMenuM(Menu menu, MenuAction action, int client, int choice)
 		}
 		case MenuAction_Cancel:
 		{
+			AnyMenuOpen[client] = 0.0;
 			ResetStoreMenuLogic(client);
 		}
 	}
@@ -1411,12 +1597,7 @@ public void GearTesting(int client)
 
 			SetEntityMoveType(client, MOVETYPE_NONE);
 
-			i_ClientHasCustomGearEquipped[client] = true;
-			b_ActivatedDuringLastMann[client] = false;
-			if(LastMann)
-			{
-				b_ActivatedDuringLastMann[client] = true;
-			}
+			i_ClientHasCustomGearEquipped[client] = 2;
 
 			IncreaseEntityDamageTakenBy(client, 0.5, 3.0);
 			
@@ -1469,8 +1650,9 @@ public Action QuantumActivate(Handle cut_timer, int ref)
 			float startPosition[3];
 			GetClientAbsOrigin(client, startPosition);
 			i_HealthBeforeSuit[client] = GetClientHealth(client);
+			i_HealthBeforeSuitMaxHP[client] = ReturnEntityMaxHealth(client);
 
-			i_ClientHasCustomGearEquipped[client] = true;
+			i_ClientHasCustomGearEquipped[client] = 2;
 			
 			Store_GiveAll(client, 50, true);
 			ViewChange_PlayerModel(client);
@@ -1510,7 +1692,7 @@ public Action QuantumActivate(Handle cut_timer, int ref)
 		{
 			SetEntityMoveType(client, MOVETYPE_WALK);
 
-			i_ClientHasCustomGearEquipped[client] = false;
+			i_ClientHasCustomGearEquipped[client] = 0;
 		}
 	}
 	return Plugin_Handled;
@@ -1521,7 +1703,7 @@ public Action QuantumDeactivate(Handle cut_timer, int ref)
 	int client = EntRefToEntIndex(ref);
 	if(IsValidClient(client) && i_HealthBeforeSuit[client] > 0)
 	{
-		i_ClientHasCustomGearEquipped[client] = false;
+		i_ClientHasCustomGearEquipped[client] = 0;
 		int health = i_HealthBeforeSuit[client];
 
 		i_HealthBeforeSuit[client] = 0;
@@ -1539,12 +1721,6 @@ public Action QuantumDeactivate(Handle cut_timer, int ref)
 		CurrentClass[client] = view_as<TFClassType>(GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"));
 		ViewChange_DeleteHands(client);
 		ViewChange_UpdateHands(client, CurrentClass[client]);
-		if(b_ActivatedDuringLastMann[client])
-		{
-			int MaxHealth = SDKCall_GetMaxHealth(client) * 2;
-			SetEntProp(client, Prop_Send, "m_iHealth", MaxHealth);
-		}
-		b_ActivatedDuringLastMann[client] = false;
 		//if in lastman, then give extra health.
 	}
 	return Plugin_Handled;
@@ -1697,6 +1873,10 @@ public Action Timer_Detect_Player_Near_Repair_Grenade(Handle timer, DataPack pac
 					int entity_close = EntRefToEntIndexFast(i_ObjectsBuilding[entitycount]);
 					if(IsValidEntity(entity_close))
 					{
+						// Downed construct buildings
+						if(view_as<ObjectGeneric>(entity_close).m_bConstructBuilding && IsValidEntity(view_as<ObjectGeneric>(entity_close).m_iConstructDeathModel))
+							continue;
+						
 						GetEntPropVector(entity_close, Prop_Data, "m_vecAbsOrigin", client_pos);
 						if (GetVectorDistance(powerup_pos, client_pos, true) <= (500.0 * 500.0))
 						{
@@ -1709,6 +1889,7 @@ public Action Timer_Detect_Player_Near_Repair_Grenade(Handle timer, DataPack pac
 							if(CurrentMetal > 0)
 							{
 								int HealthAfter = HealEntityGlobal(client, entity_close, float(healing_Amount), .MaxHealPermitted = CurrentMetal);
+								ReduceMetalCost(client, HealthAfter);
 
 								CurrentMetal -= (HealthAfter) / 5;
 							}
@@ -1865,14 +2046,12 @@ stock int Drop_Prop(int client, float fPos[3], float PropSpeed=1200.0, const cha
 		float Down[3]={90.0,0.0,0.0};
 		DispatchKeyValueVector(PropMove, "origin", fPos);
 		DispatchKeyValueVector(PropMove, "movedir", Down);
+		DispatchKeyValue(PropMove, "targetname", PropNeam_patch);
 		DispatchKeyValue(PropMove, "movedir", "90 0 0");
-		DispatchKeyValue(PropMove, "modelscale", "3");
 		Format(buffer, sizeof(buffer), "%.2f", 5000.0);
 		DispatchKeyValue(PropMove, "movedistance", buffer);
 		Format(buffer, sizeof(buffer), "%.2f", PropSpeed);
 		DispatchKeyValue(PropMove, "speed", buffer);
-		FormatEx(buffer, sizeof(buffer), "%s_Drop_%d", PropNeam_patch, client);
-		DispatchKeyValue(PropMove, "targetname", buffer);
 		DispatchKeyValue(PropMove, "startsound", "none");
 		DispatchKeyValue(PropMove, "stopsound", "none");
 		TeleportEntity(PropMove, fPos, NULL_VECTOR, NULL_VECTOR);
@@ -1883,16 +2062,11 @@ stock int Drop_Prop(int client, float fPos[3], float PropSpeed=1200.0, const cha
 		{
 			DispatchKeyValue(Prop, "model", worldmodel_patch);
 			DispatchKeyValue(Prop, "angles", "-90 0 0");
-			DispatchKeyValue(Prop, "parentname", buffer);
 			DispatchKeyValue(Prop, "solid", "0");
-			FormatEx(buffer, sizeof(buffer), "%s_%d", PropNeam_patch, client);
-			DispatchKeyValue(Prop, "targetname", buffer);
 			TeleportEntity(Prop, fPos, NULL_VECTOR, NULL_VECTOR);
 			DispatchSpawn(Prop);
-			
-			FormatEx(buffer, sizeof(buffer), "%s_Drop_%d", PropNeam_patch, client);
-			SetVariantString(buffer);
-			AcceptEntityInput(Prop, "SetParent");
+			SetParent(PropMove, Prop);
+			SetEntPropFloat(Prop, Prop_Send, "m_flModelScale", 1.25);
 		}
 		AcceptEntityInput(PropMove, "Open");
 		SetEntPropEnt(PropMove, Prop_Data, "m_hOwnerEntity", client);
@@ -1917,7 +2091,7 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 		if(IsValidClient(PreviousOwner))
 		{
 			int RandomHELLDIVER = GetRandomDeathPlayer(HELLDIVER);
-			if(IsValidClient(RandomHELLDIVER) && GetTeam(RandomHELLDIVER) == TFTeam_Red && TeutonType[RandomHELLDIVER] == TEUTON_DEAD && b_HasBeenHereSinceStartOfWave[RandomHELLDIVER])
+			if(IsValidClient(RandomHELLDIVER) && GetTeam(RandomHELLDIVER) == TFTeam_Red && TeutonType[RandomHELLDIVER] == TEUTON_DEAD && WasHereSinceStartOfWave(RandomHELLDIVER))
 			{
 				TeutonType[RandomHELLDIVER] = TEUTON_NONE;
 				dieingstate[RandomHELLDIVER] = 0;
@@ -1939,19 +2113,20 @@ public Action OnBombDrop(const char [] output, int caller, int activator, float 
 				GiveCompleteInvul(RandomHELLDIVER, 3.5);
 				TF2_AddCondition(RandomHELLDIVER, TFCond_SpeedBuffAlly, 2.0);
 				EmitSoundToAll(g_ReinforceReadySounds, RandomHELLDIVER, SNDCHAN_STATIC, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
-				CPrintToChatAll("그리고 {black}밥 2세{green}가 응답하여.... 다음 플레이어를 징집시켰습니다! : {yellow}%N!",RandomHELLDIVER);
+				CPrintToChatAll("%s {green}responds... and was able to recruit {yellow}%N{green}!", s_MissionClient, RandomHELLDIVER);
 				DataPack pack_boom = new DataPack();
 				pack_boom.WriteFloat(position[0]);
 				pack_boom.WriteFloat(position[1]);
 				pack_boom.WriteFloat(position[2]);
 				pack_boom.WriteCell(1);
 				RequestFrame(MakeExplosionFrameLater, pack_boom);
+				CheckAlivePlayers();
 			}
 			else
 			{
 				if(IsValidClient(PreviousOwner))
 				{
-					CPrintToChat(PreviousOwner, "하지만 {black}밥 2세{default} 휘하의 용병이 더 이상 없습니다... 그가 지원을 거부했습니다.");
+					CPrintToChat(PreviousOwner, "%s {default}wasn't able to get any merc... the backup call was refunded.");
 					HealPointToReinforce(PreviousOwner, 0, 1.0);
 					i_MaxRevivesAWave--;
 				}
@@ -2017,13 +2192,19 @@ stock int GetRandomDeathPlayer(int client)
 		if(TeutonType[client_check] == TEUTON_NONE)
 			continue;
 
+		if(!b_AntiLateSpawn_Allow[client_check])
+			continue;
 		if(client==client_check || GetTeam(client_check) != TFTeam_Red)
 			continue;
 
-		if(!b_HasBeenHereSinceStartOfWave[client_check])
+		if(!WasHereSinceStartOfWave(client_check))
 			continue;
 
 		if(f_PlayerLastKeyDetected[client_check] < GetGameTime())
+			continue;
+		if(HasSpecificBuff(client_check, "Vuntulum Bomb EMP Death"))
+			continue;
+		if(!Rogue_BlueParadox_CanTeutonUpdate(client_check))
 			continue;
 
 		int CashSpendScale = CashSpentTotal[client_check];

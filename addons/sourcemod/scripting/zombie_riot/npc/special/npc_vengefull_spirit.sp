@@ -20,8 +20,8 @@ void VengefullSpirit_OnMapStart_NPC()
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Vengeful Spirit");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_vengefull_spirit");
-	strcopy(data.Icon, sizeof(data.Icon), ""); 				//leaderboard_class_(insert the name)
-	data.IconCustom = false;													//download needed?
+	strcopy(data.Icon, sizeof(data.Icon), "mb_spiritangry"); 				//leaderboard_class_(insert the name)
+	data.IconCustom = true;													//download needed?
 	data.Flags = 0;																//example: MVM_CLASS_FLAG_MINIBOSS|MVM_CLASS_FLAG_ALWAYSCRIT;, forces these flags.	
 	data.Category = Type_Special;
 	data.Func = ClotSummon;
@@ -67,6 +67,7 @@ methodmap VengefullSpirit < CClotBody
 		func_NPCOnTakeDamage[npc.index] = view_as<Function>(Internal_OnTakeDamage);
 		func_NPCThink[npc.index] = view_as<Function>(Internal_ClotThink);
 		
+		b_thisNpcIsAMiniboss[npc.index] = true;
 		float wave = float(Waves_GetRoundScale()+1);
 		wave *= 0.133333;
 		npc.m_flWaveScale = wave;
@@ -90,7 +91,7 @@ methodmap VengefullSpirit < CClotBody
 		if(Decicion == 2)
 			Decicion = TeleportDiversioToRandLocation(npc.index, _, 1250.0, 0.0);
 
-		b_NoHealthbar[npc.index] = true; //Makes it so they never have an outline
+		b_NoHealthbar[npc.index] = 1; //Makes it so they never have an outline
 		GiveNpcOutLineLastOrBoss(npc.index, false);
 		b_thisNpcHasAnOutline[npc.index] = true; 
 		

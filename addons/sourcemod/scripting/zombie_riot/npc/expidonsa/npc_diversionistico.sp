@@ -62,9 +62,9 @@ void Diversionistico_OnMapStart_NPC()
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Diversionistico");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_diversionistico");
-	strcopy(data.Icon, sizeof(data.Icon), "diversionistico");
+	strcopy(data.Icon, sizeof(data.Icon), "spy");
 	data.IconCustom = true;
-	data.Flags = MVM_CLASS_FLAG_SUPPORT;
+	data.Flags = MVM_CLASS_FLAG_MISSION;
 	data.Category = Type_Expidonsa;
 	data.Func = ClotSummon;
 	NPCId = NPC_Add(data);
@@ -152,6 +152,7 @@ methodmap Diversionistico < CClotBody
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
 		npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+		SetEntPropFloat(npc.index, Prop_Data, "m_flElementRes", 1.0, Element_Chaos);
 		
 
 		func_NPCDeath[npc.index] = Diversionistico_NPCDeath;
@@ -469,16 +470,28 @@ void DiversionisticoSelfDefense(Diversionistico npc, float gameTime, int target,
 
 
 
-int TeleportDiversioToRandLocation(int iNPC, bool RespectOutOfBounds = false, float MaxSpawnDist = 1250.0, float MinSpawnDist = 500.0, bool forceSpawn = false, bool NeedLOSPlayer = false)
+int TeleportDiversioToRandLocation(int iNPC, bool RespectOutOfBounds = false, float MaxSpawnDist = 1250.0, float MinSpawnDist = 500.0, bool forceSpawn = false, bool NeedLOSPlayer = false, float VectorSave[3] = {0.0,0.0,0.0})
 {
-	if(!forceSpawn && zr_disablerandomvillagerspawn.BoolValue)
+	if(!forceSpawn && zr_disablerandomvillagerspawn.BoolValue && !DisableRandomSpawns)
 		return 3;
-	
+	float f3_VecAbs[3];
+	GetEntPropVector(iNPC, Prop_Data, "m_vecAbsOrigin", f3_VecAbs);
 	Diversionistico npc = view_as<Diversionistico>(iNPC);
-	for( int loop = 1; loop <= 100; loop++ ) 
+	for( int loop = 1; loop <= 150; loop++ ) 
 	{
 		float AproxRandomSpaceToWalkTo[3];
-		CNavArea RandomArea = PickRandomArea();	
+		CNavArea RandomArea;
+		
+		if(!Rogue_Mode())
+		{
+			RandomArea = PickRandomArea();	
+		}
+		else
+		{
+			RandomArea = GetRandomNearbyArea(f3_VecAbs, DomeRadiusGlobal());
+			NeedLOSPlayer = true;
+			//it sucks but its needed so nothing breaks.
+		}
 			
 		if(RandomArea == NULL_AREA) 
 			break; //No nav?
@@ -490,6 +503,11 @@ int TeleportDiversioToRandLocation(int iNPC, bool RespectOutOfBounds = false, fl
 		}
 
 		RandomArea.GetCenter(AproxRandomSpaceToWalkTo);
+
+		//for rouge2 and 3
+		if(Dome_PointOutside(AproxRandomSpaceToWalkTo))
+			continue;
+
 		bool DoNotTeleport = false;
 		int WasTooFarAway = 0;
 		int PlayersCount = 0;
@@ -522,7 +540,18 @@ int TeleportDiversioToRandLocation(int iNPC, bool RespectOutOfBounds = false, fl
 			continue;
 		static float hullcheckmaxs_Player_Again[3];
 		static float hullcheckmins_Player_Again[3];
-		if(b_IsGiant[npc.index])
+		
+		if(f3_CustomMinMaxBoundingBox[npc.index][1] != 0.0)
+		{
+			hullcheckmaxs_Player_Again[0] = f3_CustomMinMaxBoundingBox[npc.index][0];
+			hullcheckmaxs_Player_Again[1] = f3_CustomMinMaxBoundingBox[npc.index][1];
+			hullcheckmaxs_Player_Again[2] = f3_CustomMinMaxBoundingBox[npc.index][2];
+
+			hullcheckmins_Player_Again[0] = -f3_CustomMinMaxBoundingBox[npc.index][0];
+			hullcheckmins_Player_Again[1] = -f3_CustomMinMaxBoundingBox[npc.index][1];
+			hullcheckmins_Player_Again[2] = 0.0;	
+		}
+		else if(b_IsGiant[npc.index])
 		{
 			hullcheckmaxs_Player_Again = view_as<float>( { 30.0, 30.0, 120.0 } );
 			hullcheckmins_Player_Again = view_as<float>( { -30.0, -30.0, 0.0 } );	
@@ -532,6 +561,7 @@ int TeleportDiversioToRandLocation(int iNPC, bool RespectOutOfBounds = false, fl
 			hullcheckmaxs_Player_Again = view_as<float>( { 24.0, 24.0, 82.0 } );
 			hullcheckmins_Player_Again = view_as<float>( { -24.0, -24.0, 0.0 } );		
 		}
+
 		if(IsBoxHazard(AproxRandomSpaceToWalkTo, hullcheckmins_Player_Again, hullcheckmaxs_Player_Again)) //Retry.
 			continue;
 
@@ -565,7 +595,10 @@ int TeleportDiversioToRandLocation(int iNPC, bool RespectOutOfBounds = false, fl
 		}
 		
 		//everything is valid, now we check if we are too close to the enemy, or too far away.
-		TeleportEntity(npc.index, AproxRandomSpaceToWalkTo);
+		if(VectorSave[1] == 0.0)
+			TeleportEntity(npc.index, AproxRandomSpaceToWalkTo);
+
+		VectorSave = AproxRandomSpaceToWalkTo;
 		RemoveSpawnProtectionLogic(npc.index, true);
 		return 1;
 	}

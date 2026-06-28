@@ -1,59 +1,6 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-/*
-public Action Do_Spike_Stuff(Handle dashHud, int ref)
-{
-	int entity = EntRefToEntIndex(ref);
-	if(IsValidEntity(entity))
-	{
-		int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-		int owner_failsafe = GetEntPropEnt(entity, Prop_Send, "m_hLauncher");
-		if(IsValidEntity(owner))
-		{
-			int weapon = GetPlayerWeaponSlot(owner, TFWeaponSlot_Primary);
-			int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-		//	PrintToChatAll("test");
-			if(index == 997) //Hardcode to this.
-			{
-				PrintToChatAll("test");
-				Do_Spike_Change(entity, weapon, owner);
-			}
-		}
-		else if(IsValidEntity(owner_failsafe))
-		{
-			int weapon = GetPlayerWeaponSlot(owner, TFWeaponSlot_Primary);
-			int index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-		//	PrintToChatAll("test");
-			if(index == 997) //Hardcode to this.
-			{
-				PrintToChatAll("test");
-				Do_Spike_Change(entity, weapon, owner);
-			}
-		}
-	}
-}
-
-
-public void Do_Spike_Change(int projectile, int weapon, int client)
-{
-	SetEntityCollisionGroup(projectile, ); 									//Make sure it doesnt collide with anything except the world.
-	SDKHook(projectile, SDKHook_ShouldCollide, Spike_ShouldCollide);
-}
-
-
-public bool Spike_ShouldCollide(int client, int collisiongroup, int contentsmask, bool originalResult)
-{
-	return false;
-} 
-*/ 
-//Doesnt work, arrows ignore this.
-//Do usual method!
-//Make bullets 0 and add 280 ; 1 so it shoots litterally nothing!
-
-//static int Spike_Owner[MAXENTITIES]={0, ...};
-
-
 #define MAXSPIKESALLOWED 60
 
 static int Spike_Health[MAXENTITIES]={0, ...};
@@ -95,7 +42,7 @@ void Reset_stats_SpikeLayer_Singular(int client) //This is on disconnect/connect
 	f_DeleteAllSpikesDelay[client] = 0.0;
 }
 
-public void Weapon_Spike_Layer(int client, int weapon, const char[] classname, bool &result)
+public void Weapon_Spike_Layer(int client, int weapon, bool crit, int slot)
 {
 	Spikes_AliveCap[client] = 15;
 	if(Spikes_AliveGlobal >= MAXSPIKESALLOWED)
@@ -194,7 +141,7 @@ public void Weapon_Spike_Layer(int client, int weapon, const char[] classname, b
 }
 
 
-public void Weapon_Spike_Layer_PAP(int client, int weapon, const char[] classname, bool &result)
+public void Weapon_Spike_Layer_PAP(int client, int weapon, bool crit, int slot)
 {
 	Spikes_AliveCap[client] = 20;
 	if(Spikes_AliveGlobal >= MAXSPIKESALLOWED)
@@ -320,7 +267,6 @@ public Action Detect_Spike_Still(Handle timer, int ref)
 					pack.WriteCell(EntIndexToEntRef(entity));
 					pack.WriteCell(entity);
 					pack.WriteCell(client);
-				//	SDKHook(entity, SDKHook_ShouldCollide, Spike_ShouldCollide); //So zombies cant use these as stairs lol
 					return Plugin_Stop;
 				}
 			}
@@ -421,7 +367,7 @@ public Action Did_Enemy_Step_On_Spike(Handle timer, DataPack pack)
 	return Plugin_Continue;
 }
 
-public void Spike_Pick_Back_up(int client, int weapon, const char[] classname, bool &result)
+public void Spike_Pick_Back_up(int client, int weapon, bool crit, int slot)
 {
 	static float angles[3];
 	GetClientEyeAngles(client, angles);

@@ -229,6 +229,7 @@ methodmap TrueFusionWarrior < CClotBody
 		
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 		
 		int iActivity = npc.LookupActivity("ACT_MP_RUN_MELEE");
 		if(iActivity > 0) npc.StartActivity(iActivity);
@@ -276,7 +277,8 @@ methodmap TrueFusionWarrior < CClotBody
 		
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_GIANT;	
-		npc.m_iNpcStepVariation = STEPSOUND_NORMAL;		
+		npc.m_iNpcStepVariation = STEPSOUND_NORMAL;	
+		SetEntPropFloat(npc.index, Prop_Data, "m_flElementRes", 1.0, Element_Chaos);	
 		
 		npc.m_bThisNpcIsABoss = true;
 		
@@ -423,6 +425,17 @@ methodmap TrueFusionWarrior < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	char name[128];
+	
+	if (b_angered_twice[iNPC])
+		name = "Silvester";
+	else
+		name = "Silvester?";
+	
+	PrintNPCMessageWithPrefixes(iNPC, "gold", message, .customName = name);
+}
 
 public void TrueFusionWarrior_ClotThink(int iNPC)
 {
@@ -437,15 +450,15 @@ public void TrueFusionWarrior_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{gold}실베스터?{default}: 도망... 쳐...");
+					NPCTalkMessage(npc.index, "Run... Away...");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{gold}실베스터?{default}: 도와줘...");
+					NPCTalkMessage(npc.index, "Help...");
 				}
-				case 3:
+				case 2:
 				{
-					CPrintToChatAll("{gold}실베스터?{crimson}: 으아아아악!!!");
+					NPCTalkMessage(npc.index, "{crimson}AGHHRRR!!!");
 				}
 			}
 		}
@@ -454,14 +467,14 @@ public void TrueFusionWarrior_ClotThink(int iNPC)
 	{
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
 		
-		CPrintToChatAll("{gold}실베스터?{default}: 새로운... 희생자...");
+		NPCTalkMessage(npc.index, "New... victims to infect...");
 		return;
 	}
 	if(RaidModeTime < GetGameTime())
 	{
 		ForcePlayerLoss();
 		RaidBossActive = INVALID_ENT_REFERENCE;
-		CPrintToChatAll("{gold}실베스터?{default}: {green}제노{default} 바이러스는... 저항하기... 힘들어... {crimson}그러니까 함께 하자...{default}");
+		NPCTalkMessage(npc.index, "{green}Xeno{default} virus too strong... to resist.. {crimson}join...{default}");
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
 		return;
 	}
@@ -505,7 +518,7 @@ public void TrueFusionWarrior_ClotThink(int iNPC)
 		}
 		if(GetGameTime() > npc.m_flTimeSinceHasBeenHurt)
 		{
-			CPrintToChatAll("{gold}실베스터{default}: 곧 내 친구와 연락하게 될 거야. 다시 한 번, 정말 고마워. 그렇지만 그 미친 불량기계를 조심해. {red}블리츠크리그를.");
+			NPCTalkMessage(npc.index, "You will get soon in touch with a friend of mine, I thank you, though beware of the rogue machine... {red}Blitzkrieg.");
 			npc.m_bDissapearOnDeath = true;
 			RequestFrame(KillNpc, EntIndexToEntRef(npc.index));
 			for (int client = 1; client <= MaxClients; client++)
@@ -513,29 +526,29 @@ public void TrueFusionWarrior_ClotThink(int iNPC)
 				if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
 				{
 					Items_GiveNamedItem(client, "Cured Silvester");
-					CPrintToChat(client,"{default}당신은 그의 호의를 얻었습니다. 그에게서 이것을 받았습니다 : {yellow}''감염이 치유된 실베스터''{default}!");
+					CPrintToChat(client,"{default}You gained his favor, you obtained: {yellow}''Cured Silvester''{default}!");
 				}
 			}
 		}
 		else if(GetGameTime() + 5.0 > npc.m_flTimeSinceHasBeenHurt && i_SaidLineAlready[npc.index] < 4)
 		{
 			i_SaidLineAlready[npc.index] = 4;
-			CPrintToChatAll("{gold}실베스터{default}: 혼돈을 멈춰야해. 세계를 도와줘!");
+			NPCTalkMessage(npc.index, "Help the world, retain the chaos!");
 		}
 		else if(GetGameTime() + 10.0 > npc.m_flTimeSinceHasBeenHurt && i_SaidLineAlready[npc.index] < 3)
 		{
 			i_SaidLineAlready[npc.index] = 3;
-			CPrintToChatAll("{gold}실베스터{default}: 정말 고마워. 하지만 나중에 네 도움이 꼭 필요할 거야. 그리고 위험한 게 있으면 경고해줄게.");
+			NPCTalkMessage(npc.index, "I thank you, but I will need help from you later, and I will warn you of dangers.");
 		}
 		else if(GetGameTime() + 13.0 > npc.m_flTimeSinceHasBeenHurt && i_SaidLineAlready[npc.index] < 2)
 		{
 			i_SaidLineAlready[npc.index] = 2;
-			CPrintToChatAll("{gold}실베스터{default}: 엄청난 대혼란이 일어나고 있어. 그리고 네 덕분에 난 정신을 좀 차리게 되었고.");
+			NPCTalkMessage(npc.index, "A huge chaos is breaking out, you were able to knock some sense into me..!");
 		}
 		else if(GetGameTime() + 16.5 > npc.m_flTimeSinceHasBeenHurt && i_SaidLineAlready[npc.index] < 1)
 		{
 			i_SaidLineAlready[npc.index] = 1;
-			CPrintToChatAll("{gold}실베스터{default}: 내 말 좀 들어줘, 제발!");
+			NPCTalkMessage(npc.index, "Listen to me, please!");
 		}
 		return; //He is trying to help.
 	}
@@ -734,7 +747,8 @@ public void TrueFusionWarrior_ClotThink(int iNPC)
 														
 									TF2_AddCondition(client, TFCond_LostFooting, 0.5);
 									TF2_AddCondition(client, TFCond_AirCurrent, 0.5);
-									f_ImmuneToFalldamage[client] = GetGameTime() + 5.0;
+									if(ZR_Get_Modifier() != 8)
+										f_ImmuneToFalldamage[client] = GetGameTime() + 5.0;
 															
 									GetAngleVectors(vAngles, vDirection, NULL_VECTOR, NULL_VECTOR);
 														
@@ -778,13 +792,14 @@ public void TrueFusionWarrior_ClotThink(int iNPC)
 								{				
 									if(vAngles[0] > -45.0)
 									{
-											vAngles[0] = -45.0;
+										vAngles[0] = -45.0;
 									}
 														
 									TF2_AddCondition(client, TFCond_LostFooting, 0.5);
 									TF2_AddCondition(client, TFCond_AirCurrent, 0.5);
 									
-									f_ImmuneToFalldamage[client] = GetGameTime() + 5.0;
+									if(ZR_Get_Modifier() != 8)
+										f_ImmuneToFalldamage[client] = GetGameTime() + 5.0;
 															
 									GetAngleVectors(vAngles, vDirection, NULL_VECTOR, NULL_VECTOR);
 											
@@ -982,7 +997,7 @@ public Action TrueFusionWarrior_OnTakeDamage(int victim, int &attacker, int &inf
 
 			SDKUnhook(npc.index, SDKHook_Think, TrueFusionWarrior_TBB_Tick);
 
-			CPrintToChatAll("{gold}실베스터{default}: 잠깐, 잠깐! 부탁이야! 난 감염됐었어!");
+			NPCTalkMessage(npc.index, "Stop, stop please I beg you, I was infected!");
 			int i = MaxClients + 1;
 			while((i = FindEntityByClassname(i, "obj_sentrygun")) != -1)
 			{
@@ -1110,6 +1125,8 @@ public void TrueFusionwarrior_IOC_Invoke(int ref, int enemy)
 		static float IOCDist=250.0;
 		static float IOCdamage;
 		IOCdamage= (150.0 * RaidModeScaling);
+		if(ZR_Get_Modifier() == 8)
+			IOCdamage = 2000000000.0;
 		
 		float vecTarget[3];
 		GetEntPropVector(enemy, Prop_Data, "m_vecAbsOrigin", vecTarget);

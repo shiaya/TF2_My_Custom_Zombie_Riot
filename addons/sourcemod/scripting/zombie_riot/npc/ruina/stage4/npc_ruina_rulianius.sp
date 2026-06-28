@@ -508,7 +508,6 @@ static void Rulianius_Special(CClotBody npc, int PrimaryThreatIndex)
 
 		int Proj = Projectile.Launch_Projectile();
 		SDKUnhook(Proj, SDKHook_StartTouch, Ruina_Projectile_Touch);
-		SDKHook(Proj, SDKHook_ShouldCollide, Never_ShouldCollide);
 
 		int color[3] = {255, 150, 150};
 
@@ -620,8 +619,8 @@ static Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		fl_ruina_battery_timer[npc.index]=GameTime+5.0;
 		int healing = RoundToFloor(i_damage_taken[npc.index]*0.15);
 
-		if(healing > RoundToFloor(Max_Health*0.75))
-			healing = RoundToFloor(Max_Health*0.75);
+		if(healing > RoundToFloor(Max_Health*0.35))
+			healing = RoundToFloor(Max_Health*0.35);
 
 		//CPrintToChatAll("Healing: %i",healing);
 			

@@ -7,6 +7,8 @@ int ThornsAbilityActiveTimes[MAXENTITIES];
 float ThornsAbilityActive[MAXENTITIES];
 int ThornsLevelAt[MAXENTITIES];
 float ThornsAttackedSince[MAXENTITIES];
+float ThornsRevive[MAXENTITIES];
+int ThornsDowned[MAXENTITIES];
 
 static const char g_RangedAttackSounds[][] = {
 	"weapons/bison_main_shot_01.wav",
@@ -83,10 +85,12 @@ methodmap BarrackThorns < BarrackBody
 	{
 		bool elite ;
 		bool MaxPot;
-		if(client > 0)
+		if (client > 0)
 		{
-			elite = client ? view_as<bool>(Store_HasNamedItem(client, "Construction Master")) : true;
-			MaxPot = client ? view_as<bool>(Store_HasNamedItem(client, "Construction Killer")) : true;
+			int PapBarracks = Barracks_GetInfo(client, 1);
+
+			elite = (PapBarracks >= 5);     // He's ELITE when pap >= 5
+			MaxPot = (PapBarracks >= 6);    // He's Max Potency when Pap >=6
 		}
 		
 		char healthSize[10];
@@ -164,32 +168,43 @@ public void BarrackThorns_ClotThink(int iNPC)
 {
 	BarrackThorns npc = view_as<BarrackThorns>(iNPC);
 	float GameTime = GetGameTime(iNPC);
+	if (ThornsDowned[npc.index] && ThornsRevive[npc.index] && ThornsRevive[npc.index] < GetGameTime())	// Revive
+	{
+		npc.PlayThornsSpawn();
+		SetDownedState_Thorns(npc.index, false);
+		DesertYadeamDoHealEffect(npc.index, 200.0);
+	}
 	if(ThornsDelayTimerUpgrade[npc.index] < GetGameTime())
 	{
 		int owner = GetClientOfUserId(npc.OwnerUserId);
 		if(IsValidClient(owner))
 		{
 			ThornsDelayTimerUpgrade[npc.index] = GetGameTime() + 5.0;
-			if(!ThornsHasElite[npc.index])
+
+			int PapBarracks = Barracks_GetInfo(owner, 1);
+
+			if(!ThornsHasElite[npc.index] && PapBarracks >= 5)
 			{
-				ThornsHasElite[npc.index] = view_as<bool>(Store_HasNamedItem(owner, "Construction Master"));
-				if(ThornsHasElite[npc.index])
-				{
-					ThornsLevelAt[npc.index] = 1;
-					npc.BonusDamageBonus *= 2.0;
-					SetEntProp(npc.index, Prop_Data, "m_iMaxHealth",ReturnEntityMaxHealth(npc.index) * 2);
-				}
+				ThornsHasElite[npc.index] = true;
+				ThornsLevelAt[npc.index] = 1;
+
+				npc.BonusDamageBonus *= 2.0;
+
+				int newMax = ReturnEntityMaxHealth(npc.index) * 2;
+				SetEntProp(npc.index, Prop_Data, "m_iMaxHealth", newMax);
+				SetEntProp(npc.index, Prop_Data, "m_iHealth", newMax);
 			}
-			if(!ThornsHasMaxPot[npc.index])
+
+			if(!ThornsHasMaxPot[npc.index] && PapBarracks >= 6)
 			{
-				ThornsHasMaxPot[npc.index] = view_as<bool>(Store_HasNamedItem(owner, "Construction Killer"));
-				if(ThornsHasMaxPot[npc.index])
-				{
-					ThornsLevelAt[npc.index] = 2;
-					SetEntProp(npc.index, Prop_Data, "m_iMaxHealth", RoundToNearest(float(ReturnEntityMaxHealth(npc.index)) * 1.5));
-				}
+				ThornsHasMaxPot[npc.index] = true;
+				ThornsLevelAt[npc.index] = 2;
+
+				int newMax = RoundToNearest(float(ReturnEntityMaxHealth(npc.index)) * 1.5);
+				SetEntProp(npc.index, Prop_Data, "m_iMaxHealth", newMax);
+				SetEntProp(npc.index, Prop_Data, "m_iHealth", newMax);
 			}
-			if(ThornsHasElite[npc.index] && ThornsHasMaxPot[npc.index] && ThornsLevelAt[npc.index] == 2)
+			if(ThornsHasElite[npc.index] && ThornsHasMaxPot[npc.index])
 			{
 				ThornsDelayTimerUpgrade[npc.index] = FAR_FUTURE;
 			}
@@ -203,7 +218,6 @@ public void BarrackThorns_ClotThink(int iNPC)
 	{
 		npc.m_flSpeed = 250.0;
 	}
-
 	if(BarrackBody_ThinkStart(npc.index, GameTime))
 	{
 		int client = BarrackBody_ThinkTarget(npc.index, true, GameTime);
@@ -270,19 +284,19 @@ public void BarrackThorns_ClotThink(int iNPC)
 				{
 					case 0:
 					{
-						NpcSpeechBubble(npc.index, "돌아다니지 마라. 그렇게 하면 서로 수고를 덜 하게 될 테니.", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
+						NpcSpeechBubble(npc.index, "Stop moving around. It'll spare all of us the effort.", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
 					}
 					case 1:
 					{
-						NpcSpeechBubble(npc.index, "네 공격은 예상한 대로다.", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
+						NpcSpeechBubble(npc.index, "Your attacks are all within my calculations.", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
 					}
 					case 2:
 					{
-						NpcSpeechBubble(npc.index, "소용없다.", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
+						NpcSpeechBubble(npc.index, "Futile.", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
 					}
 					case 3:
 					{
-						NpcSpeechBubble(npc.index, "똑똑히 봐라, 이게 바로 이베리아의 데스트레자다!", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
+						NpcSpeechBubble(npc.index, "Watch carefully, this is the Destreza of Almina!", 5, {255,255,255,255}, {0.0,0.0,60.0}, "");
 					}
 				}
 			}
@@ -483,10 +497,17 @@ void ThornsBasicAttackM1Ranged(BarrackThorns npc, float gameTime, int EnemyToAtt
 					rocket = npc.FireParticleRocket(vecTarget, Barracks_UnitExtraDamageCalc(npc.index, GetClientOfUserId(npc.OwnerUserId),damage, 1) , speed, 100.0 , "raygun_projectile_red_trail", _, false, true, flPos, _ , GetClientOfUserId(npc.OwnerUserId));
 				//	npc.DispatchParticleEffect(npc.index, "utaunt_firework_shockwave", NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, npc.FindAttachment("effect_hand_r"), PATTACH_POINT_FOLLOW, true);
 
-					DataPack pack;
-					CreateDataTimer(0.1, PerfectHomingShot, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-					pack.WriteCell(EntIndexToEntRef(rocket)); //projectile
-					pack.WriteCell(EntIndexToEntRef(EnemyToAttack));		//victim to annihilate :)
+					float fAng[3];
+					GetEntPropVector(rocket, Prop_Send, "m_angRotation", fAng);
+					Initiate_HomingProjectile(rocket,
+					npc.index,
+						180.0,			// float lockonAngleMax,
+						90.0,				//float homingaSec,
+						true,				// bool LockOnlyOnce,
+						true,				// bool changeAngles,
+						fAng,
+						EnemyToAttack);			// float AnglesInitiate[3]);
+					TriggerTimerHoming(rocket);	
 				}
 			}
 		}
@@ -571,11 +592,17 @@ void ThornsBasicAttackM2Ability(BarrackThorns npc, float gameTime, int EnemyToAt
 					int rocket;
 					rocket = npc.FireParticleRocket(vecTarget, Barracks_UnitExtraDamageCalc(npc.index, GetClientOfUserId(npc.OwnerUserId),damage, 1) , speed, 100.0 , "raygun_projectile_red_crit", _, false, true, flPos, _ , GetClientOfUserId(npc.OwnerUserId));
 				
-					DataPack pack;
-					CreateDataTimer(0.1, PerfectHomingShot, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-					pack.WriteCell(EntIndexToEntRef(rocket)); //projectile
-					pack.WriteCell(EntIndexToEntRef(EnemyToAttack));		//victim to annihilate :)
-				
+					float fAng[3];
+					GetEntPropVector(rocket, Prop_Send, "m_angRotation", fAng);
+					Initiate_HomingProjectile(rocket,
+					npc.index,
+						180.0,			// float lockonAngleMax,
+						90.0,				//float homingaSec,
+						true,				// bool LockOnlyOnce,
+						true,				// bool changeAngles,
+						fAng,
+						EnemyToAttack);			// float AnglesInitiate[3]);
+					TriggerTimerHoming(rocket);		
 				}
 			}
 		}
@@ -635,10 +662,49 @@ public Action BarrackThorns_OnTakeDamage(int victim, int &attacker, int &inflict
 	BarrackThorns npc = view_as<BarrackThorns>(victim);
 	
 	float Maxhealth = ReturnEntityMaxHealth(npc.index) + 0.0;
+	int health = GetEntProp(npc.index, Prop_Data, "m_iHealth");
 	if((ReturnEntityMaxHealth(npc.index)/2) <= damage) // If teutonic takes a single instance of damage higher than 1/2 of his max hp he instead takes only 50% of his max hp as dmg
 	{
 		damage = Maxhealth/2;
 	}
+	if (damage >= health)
+	{
+		damage = 0.0;
+		npc.PlayThornsDeath();
+		ThornsDowned[npc.index] = 1;
+		ThornsRevive[npc.index] = GetGameTime() + 60.0; // 60 seconds to revive
+		npc.m_flNextMeleeAttack = GetGameTime() + 60.0;
+
+		b_NpcIsInvulnerable[npc.index] = true;
+		b_ThisEntityIgnored[npc.index] = true;
+
+		SetEntProp(npc.index, Prop_Data, "m_iHealth", Maxhealth);
+		SetDownedState_Thorns(npc.index, true);
+	}
 
 	return Plugin_Changed;
+}
+void SetDownedState_Thorns(int iNpc, bool StateDo)
+{
+	BarrackThorns npc = view_as<BarrackThorns>(iNpc);
+	if(StateDo) // Make him go KO
+	{
+		ThornsDowned[iNpc] = 1;
+		ThornsRevive[iNpc] = GetGameTime() + 60.0;
+		b_ThisEntityIgnored[iNpc] = true;
+		b_NpcIsInvulnerable[iNpc] = true;
+	}
+	else // Get him back up
+	{
+		if(ThornsDowned[iNpc])
+		{
+			ThornsDowned[iNpc] = 0;
+		}
+		ThornsRevive[iNpc] = 0.0;
+		b_ThisEntityIgnored[iNpc] = false;
+		b_NpcIsInvulnerable[iNpc] = false;
+		SetEntProp(iNpc, Prop_Data, "m_iHealth", ReturnEntityMaxHealth(iNpc));	// Heal him back to full
+		DesertYadeamDoHealEffect(iNpc, 200.0);
+		NpcSpeechBubble(npc.index, "I'm back i'm back... no need to make a fuss.", 7, {50,205,50,255}, {0.0,0.0,120.0}, "");
+	}
 }

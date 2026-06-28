@@ -15,7 +15,7 @@ void AlliedKahmlAbilityOnMapStart()
 	strcopy(data.Icon, sizeof(data.Icon), "");
 	data.IconCustom = false;
 	data.Flags = 0;
-	data.Category = Type_Ally;
+	data.Category = Type_Hidden;
 	data.Func = ClotSummon;
 	NPC_Add(data);
 }
@@ -65,7 +65,7 @@ methodmap AlliedKahmlAbility < CClotBody
 
 		while(TF2U_GetWearable(client, entity, i, "tf_wearable"))
 		{
-			if(entity == EntRefToEntIndex(Armor_Wearable[client]) || i_WeaponVMTExtraSetting[entity] != -1)
+			if(i_WeaponVMTExtraSetting[entity] != -1)
 				continue;
 				
 			if(EntRefToEntIndex(i_Viewmodel_PlayerModel[client]) != entity || (i_CustomModelOverrideIndex[client] < BARNEY || !b_HideCosmeticsPlayer[client]))
@@ -304,10 +304,18 @@ int ChaosKahmlsteinAllySelfDefense(AlliedKahmlAbility npc, int target, float dis
 				}
 			}
 			
-			DataPack pack;
-			CreateDataTimer(0.1, PerfectHomingShot, pack, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-			pack.WriteCell(EntIndexToEntRef(projectile)); //projectile
-			pack.WriteCell(EntIndexToEntRef(npc.m_iTarget));	//victim to annihilate :)	
+			
+			float fAng[3];
+			GetEntPropVector(projectile, Prop_Send, "m_angRotation", fAng);
+			Initiate_HomingProjectile(projectile,
+				npc.index,
+					180.0,			// float lockonAngleMax,
+					90.0,				//float homingaSec,
+					true,				// bool LockOnlyOnce,
+					true,				// bool changeAngles,
+					fAng,
+					npc.m_iTarget);			// float AnglesInitiate[3]);
+			TriggerTimerHoming(projectile);
 			
 		}
 		if(distance > (NORMAL_ENEMY_MELEE_RANGE_FLOAT_SQUARED * 5.5))

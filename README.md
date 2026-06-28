@@ -1,3 +1,6 @@
+
+<img width="1625" height="1501" alt="outline4x" src="https://github.com/user-attachments/assets/633f1f05-84ae-426e-aee1-336d8a8c75fa" />
+
 If you wish to donate to support this project then concider subscribing to the patron, cus i like money.
 
 [Patreon](https://www.patreon.com/user?u=95717000)
@@ -40,6 +43,11 @@ Main Servers:
 145.239.70.42:27015 ( steam://connect/145.239.70.42:27015 )
 
 
+## info
+Zr uses a system that allows creators to add more sounds without straining servers and others.
+
+This uses a different repo were you download sounds manually with a simple drag and drop.
+- [Manual ZR Sound Repo](https://github.com/artvin01/ZrManualSounds)
  
 ## cvar's
 
@@ -76,8 +84,8 @@ global zr can be a shared database across multiple servers, local one should sta
 
 ### Dependencies
 
-Sourcemod 1.13 Is a Must.
-For both linux and Windows, not all linux gamedata might be here.
+### [Sourcemod 1.12] Is a Must.
+1.13 does not work anymore.
 The SourceMod plugins / extensions listed below are required for TF2 Zombie Riot to run:
 
 - [Flaming Sarge's TF2Attribute fork](https://github.com/FlaminSarge/tf2attributes)
@@ -91,10 +99,12 @@ The SourceMod plugins / extensions listed below are required for TF2 Zombie Riot
 - [CollisionHookFIX](https://github.com/voided/CollisionHook)
 - [Source scramble](https://github.com/nosoop/SMExt-SourceScramble)
 - [Load Soundscript](https://github.com/haxtonsale/LoadSoundScript)
+- [vscript-ext](https://github.com/Mikusch/vscript-ext)
 - [Max speed unlocker/Edict Alloc](https://github.com/Mikusch/SourceScramble-Patches) (install both speed unlocker and Alloc)
 
 If you want to compile, this include is needed!
 - [More Colours](https://github.com/DoctorMcKay/sourcemod-plugins)
+- SourcePawn Compiler 1.12.0.7031 (Zr will compile much faster at this version. for a server release, use latest compiler, for testing, 1.12.0.7031.)
 
 
 ## Optional Things
@@ -120,6 +130,7 @@ Current coders that in anyway actively helped, in order of how much:
 - [backwards] (backwards#8236) on discord. (Helped with sdkcall lag compensation.)
 
 Some Code is borrowed/just takes from other plugins i or friends made, often with permission,
+Banner by @sun_tonic on discord
 rarely without because i couldnt contact the person or it was just open sourcecode, credited anyways when i did that inside the code.
 All was under the GLP3.0 lisence.
 

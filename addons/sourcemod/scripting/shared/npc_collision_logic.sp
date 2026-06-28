@@ -29,15 +29,15 @@ bool ShouldCollide_NpcLoco_Internal(int bot_entidx, int otherindex, int extrarul
 	//it ignores all npc collisions (But not traces.)
 	if(extrarules == 0 && b_ThisEntityIgnoredBeingCarried[bot_entidx])
 		return false;
-	/*
+	
 
-	This was added when we tried to go away from the extention
+	//This was added when we tried to go away from the extention
 	//it ignores all npc collisions (But not traces.)
 	if(extrarules == 0 && otherindex <= MaxClients && f_AntiStuckPhaseThrough[otherindex] > GetGameTime())
 	{
-			return false;
+		return false;
 	}
-	*/
+	
 
 #if defined ZR
 	//if the bots team is player team, then they cant collide with any entities that have this flag.
@@ -139,10 +139,14 @@ bool ShouldCollide_NpcLoco_Internal(int bot_entidx, int otherindex, int extrarul
 		if(GetTeam(otherindex) == -1)
 			return false;
 		
-		if(extrarules == 0)
-			NpcStartTouch(bot_entidx,otherindex);
+		// Allow being hit via attacks
+		if(extrarules == 1)
+			return true;
 		
-		return true;
+		/*if(extrarules == 0)
+			NpcStartTouch(bot_entidx,otherindex);*/
+		
+		return false;
 	}
 	//other entity is an npc
 	if(!b_NpcHasDied[otherindex])

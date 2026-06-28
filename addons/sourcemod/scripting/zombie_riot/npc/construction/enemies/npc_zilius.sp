@@ -121,7 +121,7 @@ void Zilius_TBB_Precahce()
 	PrecacheSound("weapons/cow_mangler_explosion_normal_06.wav");
 	PrecacheSoundCustom("#zombiesurvival/construct/bat_prtsstage1.mp3");
 	
-	if(Construction_Mode())
+	if(Construction_Mode() || Dungeon_Mode())
 		PrecacheModel("models/zombie_riot/special_boss/zilius_1.mdl");
 
 	PrecacheSound("mvm/mvm_cpoint_klaxon.wav");
@@ -313,57 +313,57 @@ methodmap Construction_Raid_Zilius < CClotBody
 	public void SayStuffZilius()
 	{
 		//one in 3 chance.
-		if(GetRandomInt(1,3) != 3)
+		if(GetRandomInt(1,3) != 3 || !Construction_Mode())
 			return;
-
+		
 		switch(GetRandomInt(1,10))
 		{
 			case 1:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 혼돈? 나와 {black}''밥 2세''{default}, 아니. {black}''이잔''{default}만이 알고 있는 비밀이 있지.");
+				CPrintToChatAll("{black}Zilius{default}: Chaos? If only {black}''Izan''{default} was still around to tell you himself.");
 			}
 			case 2:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 끝없는 폭력이 뭘 초래하는지 모르고 있나보군. 네 더러운 몸을 좀 돌아봐라.");
+				CPrintToChatAll("{black}Zilius{default}: Ever think about what endless violence causes? Look at yourselves.");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 우리의 행성은, 황폐화되었다. 네 놈들은 전부 {violet}공허의 장막{default} 대항용으론 아무 쓸모도 없겠지.");
+				CPrintToChatAll("{black}Zilius{default}: You are just as bad as the {violet}curtain{default} and {violet}void{default} was.");
 			}
 			case 4:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 엑스피돈사는 단순한 지하 도시가 아니다. 네가 살고 있는 행성 그 자체란 말이다, 이 기생충들아.");
+				CPrintToChatAll("{black}Zilius{default}: Expidonsa wasnt just an underground city, it was the very planet you live on, Parasites.");
 			}
 			case 5:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 다른 상관들과 {black}''이잔''{default}이 다른 놈들을 돕지 않았다면 이렇게까진 되지 않았을텐데.");
+				CPrintToChatAll("{black}Zilius{default}: If only the other higherups and {black}''Izan''{default} agreed to not save those others.");
 			}
 			case 6:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 네가 엑스피돈사에 없다고 생각하는 것들? 그런건 전부 다 있다.");
+				CPrintToChatAll("{black}Zilius{default}: Whatever you think expidonsa doesn't have, it does.");
 			}
 			case 7:
 			{
-				CPrintToChatAll("{black}질리우스{default}: {blue}센살{default}, {gold}실베스터{default}, 이 놈들을 포함한 그 지역의 엑스피돈사인들은 누가 혼돈을 만들었는지조차 모르고 있지.");
+				CPrintToChatAll("{black}Zilius{default}: {blue}Sensal{default}, {gold}Silvester{default}, all those other expidonsans in that region are so clueless to whomever made chaos.");
 			}
 			case 8:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 내가 존경하는 자들은 이베리아인 뿐이고, 마제트는 실패한 융합체일 뿐이다.");
+				CPrintToChatAll("{black}Zilius{default}: Alminans are the only ones I respect, Mazeat is an amalgam of failures.");
 			}
 			case 9:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 캄르스타인은 재능을 너무 낭비한 존재였다. 안타깝게도, 그 놈은 {gold}너무 많은걸 알려고 했지{default}.");
+				CPrintToChatAll("{black}Zilius{default}: Kahmlstein is such a wasted person, sadly he wasnt apart of the {gold}prime race{default}.");
 			}
 			case 10:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 논리적으로 생각해보면, 너희 전부를 박멸하는 것이 {violet}그 놈들{default}을 끝낼 유일한 방법이다.");
+				CPrintToChatAll("{black}Zilius{default}: If you think very logically, extermination for all of you is the only to truly finish {violet}them{default}.");
 			}
 		}
 	}
 	public Construction_Raid_Zilius(float vecPos[3], float vecAng[3], int ally, const char[] data)
 	{
 		Construction_Raid_Zilius npc;
-		if(!Construction_Mode())
+		if(!Construction_Mode() && !Dungeon_Mode())
 			npc = view_as<Construction_Raid_Zilius>(CClotBody(vecPos, vecAng, "models/player/medic.mdl", "1.0", "25000", ally, false, false, false,true)); //giant!
 		else
 			npc = view_as<Construction_Raid_Zilius>(CClotBody(vecPos, vecAng, "models/zombie_riot/special_boss/zilius_1.mdl", "1.0", "25000", ally, false, false, false,true)); //giant!
@@ -373,8 +373,9 @@ methodmap Construction_Raid_Zilius < CClotBody
 		
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = true;
+		RaidAllowLastman = true;
 		
-		if(Construction_Mode())
+		if(Construction_Mode() || Dungeon_Mode())
 		{
 			npc.SetActivity("ACT_BOSS_RUN");
 		}
@@ -408,34 +409,42 @@ methodmap Construction_Raid_Zilius < CClotBody
 		{
 			case 1:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 다른 종족들은 우릴 거들떠도 보지 않았지. 그리고 이제 너희는 그 대가를 치를거다.");
+				CPrintToChatAll("{black}Zilius{default}: No other races even help us, we will wipe you out ourselves.");
 			}
 			case 2:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 뛰어난 지능은 선견지명에서 나온다고 생각하지 않나?");
+				CPrintToChatAll("{black}Zilius{default}: Extreme intelligence comes from foresight, dont you think?");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{black}질리우스{default}: 우린 다른 엑스피돈사인들과는 달리 불친절하다. 그러니 불친절하게 대접해주지.");
+				CPrintToChatAll("{black}Zilius{default}: Zilius and the other expidonsans are too nice, we do lack that weakness.");
 			}
 		}
 		RemoveAllDamageAddition();
 		bool final = StrContains(data, "final_item") != -1;
+		bool bossrush = StrContains(data, "bossrush") != -1;
 		
 		Zero(b_said_player_weaponline);
 		fl_said_player_weaponline_time[npc.index] = GetGameTime() + GetRandomFloat(0.0, 5.0);
 		
 		if(final)
 		{
-			PrintToChatAll("test1");
 			b_NpcUnableToDie[npc.index] = true;
 			i_RaidGrantExtra[npc.index] = 1;
 		}
+		
+		if (bossrush)
+		{
+			RaidAllowsBuildings = false;
+			RaidAllowLastman = true;
+		}
+		
 		b_thisNpcIsARaid[npc.index] = true;
 		
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_GIANT;	
-		npc.m_iNpcStepVariation = STEPSOUND_NORMAL;		
+		npc.m_iNpcStepVariation = STEPSOUND_NORMAL;
+		SetEntPropFloat(npc.index, Prop_Data, "m_flElementRes", 1.0, Element_Chaos);		
 		npc.m_bDissapearOnDeath = true;
 		
 		npc.m_bThisNpcIsABoss = true;
@@ -487,7 +496,6 @@ methodmap Construction_Raid_Zilius < CClotBody
 		
 		ApplyStatusEffect(npc.index, npc.index, "Anti-Waves", 99999.0);
 		//cannot be healed ever
-		
 		b_angered_twice[npc.index] = false;
 		
 		int skin = 1;
@@ -533,7 +541,7 @@ methodmap Construction_Raid_Zilius < CClotBody
 		SetVariantInt(1);
 		AcceptEntityInput(npc.index, "SetBodyGroup");
 
-		SetVariantColor(view_as<int>({0, 0, 0, 150}));
+		SetVariantColor(view_as<int>({50, 50, 150, 200}));
 		AcceptEntityInput(npc.m_iTeamGlow, "SetGlowColor");
 		bool ingoremusic = StrContains(data, "triple_enemies") != -1;
 		
@@ -583,62 +591,71 @@ static void Internal_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 그리고 {black}''밥 2세''{default}, 네 놈은 여전히 역겹군. 하지만 아무래도 상관 없지.");
+					CPrintToChatAll("{black}Zilius{default}: {black}''Bob the second''{default} is still such an ass, but whatever.");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 우리 둘 다 손해를 봤으니, 휴전으로 받아들이지.");
+					CPrintToChatAll("{black}Zilius{default}: We both suffered losses, so take it as a truce now.");
 				}
 				case 2:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 넌 다른 종족들이 전부 다 쓸모없는 쓰레기가 아니란 것을 증명했다. 하지만 대부분은 여전히 역겨운 쓰레기일 뿐이지.");
+					CPrintToChatAll("{black}Zilius{default}: You proved to me that other races have the chance to not be useless... but most are regardless.");
 				}
 				case 3:
 				{
-					CPrintToChatAll("{black}질리우스{default}: {purple}공허{default}가 몰려올 때마다, 센살이나 저 놈들이 감당할 수 있을진 모르겠군.");
+					CPrintToChatAll("{black}Zilius{default}: Whenever the {purple}void or curtain{default} surfaces we'll land a hand, dont you think sensal or whoever are the only ones.");
 				} 
 				case 4:
 				{
-					CPrintToChatAll("{snow}제이나{default}: ... 도대체 저를 왜-");
+					CPrintToChatAll("{snow}Zeina{default}: ... Why did you im-");
 					npc.m_flWinAnimationSay = GetGameTime() + 1.0;
 				} 
 				case 5:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 네가 만든 시뮬레이션은 한심하기 짝이 없으니까. 멍청하게 누가 현실에 대응하기 위한 가짜 시뮬레이션을 만드나.");
+					CPrintToChatAll("{black}Zilius{default}: Because you created a simulation thats just pathetic, Dont mess with reality or even a fake of it.");
 					npc.m_flWinAnimationSay = GetGameTime() + 3.0;
 				} 
 				case 6:
 				{
-					CPrintToChatAll("{snow}제이나{default}: ... 그건 제.. 아이디어도 아닌-");
+					CPrintToChatAll("{snow}Zeina{default}: ... wasnt even my.. ide-");
 					npc.m_flWinAnimationSay = GetGameTime() + 1.0;
 				} 
 				case 7:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 그래서 어쩌라는 거지? 비록 엑스피돈사가 존경 받고 있더라도, 신뢰까지 얻은건 아니지.");
+					CPrintToChatAll("{black}Zilius{default}: Whatever, Theres many more expidonsans to convince, you earned our respect, but not our trust yet.");
 				} 
 				case 8:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 하나 더, {black}''밥 2세''{default}, 그만 좀 나대고, 네 놈의 엑스피돈사 하수인들과 함께 혼돈을 맞서 싸울 준비나 해라...  {black}''이잔''{default}.");
+					CPrintToChatAll("{black}Zilius{default}: for one, {black}''Bob the second''{default}, stop being so inactive and finally help against the chaos with your fellow expidonsans... {black}''Izan''{default}.");
 				} 
 				case 9:
 				{
-					CPrintToChatAll("{black}이잔{default}: ...혹시 모르지, 또 그들이 날 처벌할 수도 있고...");
+					CPrintToChatAll("{black}Izan{default}: ... Nobody can know, theyll have my head on a stick...");
 				} 
 				case 10:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 쫄지 마라. 그리고 네 용병 따까리들에게 전해. 비밀 누설하면 전부 감염체들 밥으로 던지겠다고.");
+					CPrintToChatAll("{black}Zilius{default}: Sure, just tell your Mercs to not spill the beans.");
 				} 
 				case 11:
 				{
-					CPrintToChatAll("{black}이잔{default}: 그러니까...아니, 말을 말아야겠군. 전해두겠다.");
+					CPrintToChatAll("{black}Izan{default}: ... sure... whatever...");
 				} 
 				default:
 				{
+					for (int client = 1; client <= MaxClients; client++)
+					{
+						if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
+						{
+							if(Items_GiveNamedItem(client, "Foreign Expidonsan Chip"))
+							{
+								CPrintToChat(client, "{green}Obtained{yellow} ''Foreign Expidonsan Chip''");
+							}
+						}
+					}
 					ForcePlayerWin();
 					npc.m_flWinAnimationSay = 0.0;
 					npc.m_flWinAnimation = 0.0;
 				}
-			
 			}
 			TalkAtWhatAm++;
 		}
@@ -663,7 +680,7 @@ static void Internal_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{black}질리우스{default}: 널 더 위대한 존재로 만들어줄 유전자 변형 기술을 유지했었다면 참 좋았을텐데.");
+					CPrintToChatAll("{black}Zilius{default}: If only we kept your gene modification tech to make you into something greater.");
 				}
 			}
 		}
@@ -708,7 +725,7 @@ static void Internal_ClotThink(int iNPC)
 		if(npc.IsOnGround())
 		{
 			npc.m_flLandAnimationdo = 0.0;
-			if(Construction_Mode())
+			if(Construction_Mode() || Dungeon_Mode())
 				npc.AddGesture("ACT_BOSS_LAND", _,_,_, 2.0);
 		}	
 	}
@@ -794,18 +811,24 @@ static Action Internal_OnTakeDamage(int victim, int &attacker, int &inflictor, f
 	int health = GetEntProp(victim, Prop_Data, "m_iHealth");
 	if(RoundToCeil(damage) >= health && i_RaidGrantExtra[npc.index] == 1)
 	{
-		CPrintToChatAll("{black}질리우스{default}: 아무래도 생각했던 것보다 훨씬 쓸모 있는 놈들이군. 너희는 {purple}공허{default} 대항용으로 유용하게 쓰일 수 있겠어.");
-		npc.m_flWinAnimation = GetGameTime() + 50.0;
-		npc.m_flWinAnimationSay = GetGameTime() + 4.0;
-		i_RaidGrantExtra[npc.index] = 1111;
-		if(Construction_Mode())
+		if(Construction_Mode() || Dungeon_Mode())
+		{
+			CPrintToChatAll("{black}Zilius{default}: Guess you lot are more then worthy. ill let you be, be usefull against the {purple}void{default}.");
+			npc.m_flWinAnimation = GetGameTime() + 50.0;
+			npc.m_flWinAnimationSay = GetGameTime() + 4.0;
+			i_RaidGrantExtra[npc.index] = 1111;
 			npc.SetActivity("ACT_BOSS_RUN");
+			RaidModeTime += 9999.0;
+			npc.m_bisWalking = false;
+			npc.StopPathing();
+			npc.m_flSpeed = 0.0;
+		}
 		else
-			npc.SetActivity("ACT_MP_STAND_MELEE");
-		RaidModeTime += 9999.0;
-		npc.m_bisWalking = false;
-		npc.StopPathing();
-		npc.m_flSpeed = 0.0;
+		{
+			i_RaidGrantExtra[npc.index] = 0;
+			b_NpcUnableToDie[npc.index] = false;
+		}
+
 		for(int targ; targ<i_MaxcountNpcTotal; targ++)
 		{
 			int baseboss_index = EntRefToEntIndexFast(i_ObjectsNpcsTotal[targ]);
@@ -815,8 +838,23 @@ static Action Internal_OnTakeDamage(int victim, int &attacker, int &inflictor, f
 				SetEntityCollisionGroup(baseboss_index, 24);
 			}
 		}
+
 		Waves_ClearWaves();
-		GiveProgressDelay(50.0);
+		
+		if(Construction_Mode() || Dungeon_Mode())
+		{
+			GiveProgressDelay(50.0);
+
+			int time = GetTime() + 60;
+			for(int client = 1; client <= MaxClients; client++)
+			{
+				if(!b_IsPlayerABot[client] && IsClientInGame(client))
+				{
+					Music_Stop_All(client);
+					SetMusicTimer(client, time);
+				}
+			}
+		}
 	}
 	Internal_Weapon_Lines(npc, attacker);
 
@@ -899,7 +937,7 @@ void Construction_Raid_ZiliusSelfDefense(Construction_Raid_Zilius npc, float gam
 				ApplyStatusEffect(npc.index, npc.index, "Solid Stance", 1.0);	
 				npc.m_flPrepareFlyAtEnemy = GetGameTime(npc.index) + 0.6;
 
-				if(Construction_Mode())
+				if(Construction_Mode() || Dungeon_Mode())
 					npc.AddGesture("ACT_BOSS_JUMP");
 
 				float cooldownDo = 20.0;
@@ -990,7 +1028,7 @@ void Construction_Raid_ZiliusSelfDefense(Construction_Raid_Zilius npc, float gam
 
 					npc.PlayMeleeSound();
 					
-					if(Construction_Mode())
+					if(Construction_Mode() || Dungeon_Mode())
 					{
 						switch(GetRandomInt(1,2))
 						{
@@ -1115,20 +1153,20 @@ static void Internal_Weapon_Lines(Construction_Raid_Zilius npc, int client)
 	{
 		
 		case WEAPON_SENSAL_SCYTHE,WEAPON_SENSAL_SCYTHE_PAP_1,WEAPON_SENSAL_SCYTHE_PAP_2,WEAPON_SENSAL_SCYTHE_PAP_3:
-		 switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "{blue}센살{default}이 네 사지를 찢지 않은게 정말 어이가 없군.");
-		  							case 1: Format(Text_Lines, sizeof(Text_Lines), "어이. {gold}%N{default). 농사하다 왔냐? 낫으로 나대고 있군.", client);}	//IT ACTUALLY WORKS, LMFAO
-		case WEAPON_FUSION,WEAPON_FUSION_PAP1,WEAPON_FUSION_PAP2, WEAPON_NEARL: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "어디서 장난감 팽이라도 사왔나보군?");
-		 							case 1: Format(Text_Lines, sizeof(Text_Lines), "내 검이 그딴 고철보다 수천년 더 앞서 있다.");}
-		case WEAPON_KIT_BLITZKRIEG_CORE:  Format(Text_Lines, sizeof(Text_Lines), "{crimson}블리츠크리그{default}가 패퇴한건 정말 한탄스럽기 짝이 없는 결과였다.");
+		 switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "Be lucky {blue}Sensal{default} didnt kill you for it.");
+		  							case 1: Format(Text_Lines, sizeof(Text_Lines), "Scythes are a farming tool {gold}%N{default}, Not a weapon.", client);}	//IT ACTUALLY WORKS, LMFAO
+		case WEAPON_FUSION,WEAPON_FUSION_PAP1,WEAPON_FUSION_PAP2, WEAPON_NEARL: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "One of many, huh.");
+		 							case 1: Format(Text_Lines, sizeof(Text_Lines), "My blade is a eons ahead.");}
+		case WEAPON_KIT_BLITZKRIEG_CORE:  Format(Text_Lines, sizeof(Text_Lines), "Truly upsetting that {crimson} He {default} failed..");
 		case WEAPON_BOBS_GUN:
 		{
-			Format(Text_Lines, sizeof(Text_Lines), "{crimson}네 놈이 지금 그걸로 날 상대하려는거냐?");
+			Format(Text_Lines, sizeof(Text_Lines), "{crimson}You think you have a chance with that against me?");
 			fl_Extra_Speed[npc.index] = 3.0;
 			fl_Extra_MeleeArmor[npc.index] = 0.01;
 			fl_Extra_RangedArmor[npc.index] = 0.01;
 			f_AttackSpeedNpcIncrease[npc.index] = 0.25;
 		} 
-		case WEAPON_ANGELIC_SHOTGUN:  Format(Text_Lines, sizeof(Text_Lines), "{lightblue}네말{default}은 우리에게 있어서 수치스러운 년이다.");
+		case WEAPON_ANGELIC_SHOTGUN:  Format(Text_Lines, sizeof(Text_Lines), "{lightblue}she{default} is a disgrace for being with others.");
 
 		default:
 		{
@@ -1217,7 +1255,7 @@ bool ZiliusRegenShieldDo(Construction_Raid_Zilius npc)
 			ZiliusApplyEffects(npc.index);
 			npc.m_flShieldRegenCD = GetGameTime(npc.index) + 30.0;
 
-			if(Construction_Mode())
+			if(Construction_Mode() || Dungeon_Mode())
 				npc.SetActivity("ACT_BOSS_RUN");
 			else
 				npc.SetActivity("ACT_MP_RUN_MELEE");
@@ -1245,7 +1283,7 @@ bool ZiliusRegenShieldDo(Construction_Raid_Zilius npc)
 
 		npc.PlayShieldRegenSoundInit();
 		npc.m_bisWalking = false;
-		if(Construction_Mode())
+		if(Construction_Mode() || Dungeon_Mode())
 		{
 			npc.AddActivityViaSequence("boss_shield");
 			npc.SetPlaybackRate(0.5);
@@ -1289,7 +1327,7 @@ bool ZiliusFrontSlicer(Construction_Raid_Zilius npc)
 			npc.GetAttachment("effect_hand_l", flPos, flAng);
 			npc.m_iWearable9 = ParticleEffectAt_Parent(flPos, "raygun_projectile_blue_crit", npc.index, "effect_hand_l", {0.0,0.0,0.0});
 			
-			if(Construction_Mode())
+			if(Construction_Mode() || Dungeon_Mode())
 			{
 				npc.AddActivityViaSequence("boss_dash");
 			}
@@ -1323,7 +1361,7 @@ bool ZiliusFrontSlicer(Construction_Raid_Zilius npc)
 	}
 	if(!npc.m_flFrontSlicerCD)
 	{
-		if(!Construction_Mode())
+		if(!Construction_Mode() && !Dungeon_Mode())
 		{
 			npc.SetPoseParameter_Easy("move_x", 1.0);
 			npc.SetPoseParameter_Easy("move_y", 0.0);
@@ -1347,7 +1385,7 @@ bool ZiliusFrontSlicer(Construction_Raid_Zilius npc)
 			npc.m_flFrontSlicerCD = GetGameTime(npc.index) + 30.0;
 			npc.RemoveGesture("ACT_MP_GESTURE_VC_FISTPUMP_PRIMARY");
 			
-			if(Construction_Mode())
+			if(Construction_Mode() || Dungeon_Mode())
 				npc.SetActivity("ACT_BOSS_RUN");
 			else
 				npc.SetActivity("ACT_MP_RUN_MELEE");
@@ -1431,35 +1469,45 @@ static void Zilius_KickTouched(int entity, int enemy)
 
 void Zilius_KickLogic(int iNPC)
 {
+	CClotBody npc = view_as<CClotBody>(iNPC);
+	static float vel[3];
 	static float flMyPos[3];
+	npc.GetVelocity(vel);
+	fClamp(vel[0], -300.0, 300.0);
+	fClamp(vel[1], -300.0, 300.0);
+	fClamp(vel[2], -300.0, 300.0);
 	GetEntPropVector(iNPC, Prop_Data, "m_vecAbsOrigin", flMyPos);
-	float vecUp[3];
-	float vecForward[3];
-	float vecRight[3];
-
-	GetVectors(iNPC, vecForward, vecRight, vecUp); //Sorry i dont know any other way with this :(
-
-	float vecSwingEnd[3];
-	vecSwingEnd[0] = flMyPos[0] + vecForward[0] * (40.0);
-	vecSwingEnd[1] = flMyPos[1] + vecForward[1] * (40.0);
-	vecSwingEnd[2] = flMyPos[2];
-				
-
-	static float hullcheckmaxs[3];
-	static float hullcheckmins[3];
-	hullcheckmaxs = view_as<float>( { 24.0, 24.0, 82.0 } );
-	hullcheckmins = view_as<float>( { -24.0, -24.0, 0.0 } );	
 		
-	//Fat kick!
-	hullcheckmaxs[0] *= 1.5;
-	hullcheckmaxs[1] *= 1.5;
-	hullcheckmaxs[2] *= 1.5;
+	static float hullcheckmins[3];
+	static float hullcheckmaxs[3];
+	if(b_IsGiant[iNPC])
+	{
+		hullcheckmaxs = view_as<float>( { 30.0, 30.0, 120.0 } );
+		hullcheckmins = view_as<float>( { -30.0, -30.0, 0.0 } );	
+	}
+	else if(f3_CustomMinMaxBoundingBox[iNPC][1] != 0.0)
+	{
+		hullcheckmaxs[0] = f3_CustomMinMaxBoundingBox[iNPC][0];
+		hullcheckmaxs[1] = f3_CustomMinMaxBoundingBox[iNPC][1];
+		hullcheckmaxs[2] = f3_CustomMinMaxBoundingBox[iNPC][2];
 
-	hullcheckmins[0] *= 1.5;
-	hullcheckmins[1] *= 1.5;
-	hullcheckmins[2] *= 1.5;
+		hullcheckmins[0] = -f3_CustomMinMaxBoundingBox[iNPC][0];
+		hullcheckmins[1] = -f3_CustomMinMaxBoundingBox[iNPC][1];
+		hullcheckmins[2] = 0.0;	
+	}
+	else
+	{
+		hullcheckmaxs = view_as<float>( { 24.0, 24.0, 82.0 } );
+		hullcheckmins = view_as<float>( { -24.0, -24.0, 0.0 } );			
+	}
 	
-	ResolvePlayerCollisions_Npc_Internal(vecSwingEnd, hullcheckmins, hullcheckmaxs, iNPC);
+	static float flPosEnd[3];
+	flPosEnd = flMyPos;
+	ScaleVector(vel, 0.1);
+	AddVectors(flMyPos, vel, flPosEnd);
+	
+	ResetTouchedentityResolve();
+	ResolvePlayerCollisions_Npc_Internal(flMyPos, flPosEnd, hullcheckmins, hullcheckmaxs, iNPC);
 
 	for (int entity_traced = 0; entity_traced < MAXENTITIES; entity_traced++)
 	{
@@ -1522,7 +1570,7 @@ bool ZiliusSpawnPortal(Construction_Raid_Zilius npc)
 			ZiliusApplyEffects(npc.index);
 			npc.m_flSpawnPortal = GetGameTime(npc.index) + 60.0;
 			
-			if(Construction_Mode())
+			if(Construction_Mode() || Dungeon_Mode())
 				npc.SetActivity("ACT_BOSS_RUN");
 			else
 				npc.SetActivity("ACT_MP_RUN_MELEE");

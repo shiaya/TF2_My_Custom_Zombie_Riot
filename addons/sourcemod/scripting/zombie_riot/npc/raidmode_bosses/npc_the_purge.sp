@@ -41,6 +41,9 @@ void ThePurge_MapStart()
 	data.Func = ClotSummon;
 	data.Precache = ClotPrecache;
 	NPC_Add(data);
+
+	//used in a kit
+	PrecacheSoundCustom("#zombiesurvival/internius/chaos_engineered_cyborg.mp3");
 }
 
 static void ClotPrecache()
@@ -57,7 +60,6 @@ static void ClotPrecache()
 	PrecacheSound("mvm/giant_heavy/giant_heavy_gunwinddown.wav");
 	PrecacheSound("mvm/giant_soldier/giant_soldier_rocket_shoot.wav");
 	PrecacheSound("mvm/giant_demoman/giant_demoman_grenade_shoot.wav");
-	PrecacheSoundCustom("#zombiesurvival/internius/chaos_engineered_cyborg.mp3");
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, const char[] data)
@@ -179,6 +181,7 @@ methodmap ThePurge < CClotBody
 		npc.m_iTeamGlow = TF2_CreateGlow(npc.index);
 		npc.m_bTeamGlowDefault = false;
 		
+		SDKHook(npc.index, SDKHook_Touch, PurgeDetectRiding);
 		SetVariantColor(view_as<int>({200, 200, 50, 200}));
 		AcceptEntityInput(npc.m_iTeamGlow, "SetGlowColor");
 
@@ -241,11 +244,12 @@ methodmap ThePurge < CClotBody
 			}
 		}
 		RemoveAllDamageAddition();
-		CPrintToChatAll("{crimson}퍼지{default}: {crimson}목표 추적.");
+		NPCTalkMessage(npc.index, "{crimson}Termination: {crimson}Begin.");
 			
 		RaidModeTime = GetGameTime(npc.index) + 200.0;
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 		
 		
 		char buffers[3][64];
@@ -286,7 +290,7 @@ methodmap ThePurge < CClotBody
 		music.Volume = 1.6;
 		music.Custom = true;
 		strcopy(music.Name, sizeof(music.Name), "Chaos Engineered Cyborg");
-		strcopy(music.Artist, sizeof(music.Artist), "Granda Bard");
+		strcopy(music.Artist, sizeof(music.Artist), "Grandpa Bard");
 		Music_SetRaidMusic(music);
 		
 		Citizen_MiniBossSpawn();
@@ -294,9 +298,22 @@ methodmap ThePurge < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "crimson", message);
+}
+
 static void ClotThink(int iNPC)
 {
 	ThePurge npc = view_as<ThePurge>(iNPC);
+	float VelAm[3];
+	npc.GetVelocity(VelAm);
+
+	//too slow or attacking npc
+	if(getLinearVelocity(VelAm) <= 20.0 || (IsValidEnemy(npc.index, npc.m_iTarget) && !IsValidClient(npc.m_iTarget)))
+	{
+		ApplyStatusEffect(iNPC, iNPC, "Aimbot", 0.1);
+	}
 	
 	float gameTime = GetGameTime(npc.index);
 	if(i_RaidGrantExtra[iNPC] == RAIDITEM_INDEX_WIN_COND)
@@ -327,6 +344,7 @@ static void ClotThink(int iNPC)
 		if(IsValidEntity(npc.m_iTarget))
 			ApplyStatusEffect(npc.m_iTarget, npc.m_iTarget, "Purging Intention", 0.2);
 
+
 		float RangeSupport = 350.0;
 		float pos[3]; GetEntPropVector(iNPC, Prop_Data, "m_vecAbsOrigin", pos);
 		pos[2] += 5.0;
@@ -340,7 +358,17 @@ static void ClotThink(int iNPC)
 	{
 		if(npc.m_iGunType != 11)
 		{
-			CPrintToChatAll("{crimson}퍼지{default}: {crimson}말살 명령 가동.");
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+				{
+					NPCTalkMessage(npc.index, "{crimson}Annihilation Status: Absolute.");
+				}
+				case 1:
+				{
+					NPCTalkMessage(npc.index, "{crimson}Triggering Overclock Protocol.");
+				}
+			}
 			npc.PlayAngerSound();
 			npc.PlayMinigunStartSound();
 			npc.m_iGunType = 11;
@@ -381,7 +409,7 @@ static void ClotThink(int iNPC)
 		if(!npc.m_fbGunout)
 		{
 			npc.m_fbGunout = true;
-			CPrintToChatAll("{crimson}퍼지{default}: {crimson}마지막 생존자 감지됨.");
+			NPCTalkMessage(npc.index, "{crimson} One Biological Signal Remaining.");
 		}
 	}
 	int target = npc.m_iTarget;
@@ -463,8 +491,21 @@ static void ClotThink(int iNPC)
 					npc.m_flNextMeleeAttack = gameTime + (npc.Anger ? 0.5 : 1.0);
 					npc.m_flSpeed = 50.0;
 					cooldown = 6.0;
-					CPrintToChatAll("{crimson}퍼지{default}: {crimson}전투 준비.");
-
+					switch(GetRandomInt(0,2))
+					{
+						case 0:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Activation: Heavy Minigun.");
+						}
+						case 1:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Engaging The Targets.");
+						}
+						case 2:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Gunning Them Down.");
+						}
+					}
 					npc.m_flRangedArmor = 0.5;
 					npc.m_flMeleeArmor = 0.75;
 
@@ -479,7 +520,21 @@ static void ClotThink(int iNPC)
 					npc.m_flNextMeleeAttack = gameTime + (npc.Anger ? 1.65 : 3.25);
 					npc.m_flSpeed = 1.0;
 					cooldown = 5.3;
-					CPrintToChatAll("{crimson}퍼지{default}: {crimson}가동: 로켓 세례.");
+					switch(GetRandomInt(0,2))
+					{
+						case 0:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Activation: Rocket Barrage.");
+						}
+						case 1:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Rocket Storm.");
+						}
+						case 2:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Explosive Typhoon.");
+						}
+					}
 
 					if(npc.Anger)
 						npc.SetPlaybackRate(2.0);
@@ -502,7 +557,21 @@ static void ClotThink(int iNPC)
 					npc.m_flRangedArmor = 1.0;
 					npc.m_flMeleeArmor = 1.5;
 					EmitSoundToAll("mvm/mvm_cpoint_klaxon.wav", _, _, _, _, 1.0);
-					CPrintToChatAll("{crimson}퍼지{default}: {crimson}4연 속사 발사대 가동.");
+					switch(GetRandomInt(0,2))
+					{
+						case 0:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Activation: Quad Burst Launcher.");
+						}
+						case 1:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Grenade Bombardment.");
+						}
+						case 2:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Pipes Of Plight.");
+						}
+					}
 				}
 				case 9:	// Grenade -> Fists
 				{
@@ -518,7 +587,21 @@ static void ClotThink(int iNPC)
 
 					npc.m_flRangedArmor = 1.5;
 					npc.m_flMeleeArmor = 2.25;
-					CPrintToChatAll("{crimson}퍼지{default}: {crimson}무기에 이상 발생. 대상에게 접근 시도.");
+					switch(GetRandomInt(0,2))
+					{
+						case 0:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Activation: Bulldozer.");
+						}
+						case 1:
+						{
+							NPCTalkMessage(npc.index, "{crimson}ERROR: Run Over Targets.");
+						}
+						case 2:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Plowing Through The Terrain.");
+						}
+					}
 				}
 				case 10:	// Healing -> Fists
 				{
@@ -528,7 +611,21 @@ static void ClotThink(int iNPC)
 					npc.SetActivity("ACT_MP_RUN_MELEE");
 					npc.m_flSpeed = 500.0;
 					cooldown = 5.0;
-					CPrintToChatAll("{crimson}퍼지{default}: {crimson}재보급 완료. 대상에게 접근 시도.");
+					switch(GetRandomInt(0,2))
+					{
+						case 0:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Re-Oiling Complete. Run Over Targets.");
+						}
+						case 1:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Oil Resupplied. Bulldozing Targets.");
+						}
+						case 2:
+						{
+							NPCTalkMessage(npc.index, "{crimson}Doubling Purging Efforts.");
+						}
+					}	
 				}
 			}
 
@@ -569,6 +666,9 @@ static void ClotThink(int iNPC)
 						
 						npc.FaceTowards(vecTarget, 400.0);
 						if(target > MaxClients)
+							npc.FaceTowards(vecTarget, 9999.0);
+
+						if(HasSpecificBuff(target, "Aimbot") || HasSpecificBuff(npc.index, "Aimbot"))
 							npc.FaceTowards(vecTarget, 9999.0);
 
 						npc.PlayShotgunSound();
@@ -620,7 +720,11 @@ static void ClotThink(int iNPC)
 						
 						npc.PlaySMGSound();
 						npc.AddGesture("ACT_MP_ATTACK_STAND_SECONDARY");
+						npc.FaceTowards(vecTarget, 100.0);
 						if(target > MaxClients)
+							npc.FaceTowards(vecTarget, 9999.0);
+
+						if(HasSpecificBuff(target, "Aimbot") || HasSpecificBuff(npc.index, "Aimbot"))
 							npc.FaceTowards(vecTarget, 9999.0);
 
 						float eyePitch[3];
@@ -667,6 +771,9 @@ static void ClotThink(int iNPC)
 					
 					npc.FaceTowards(vecTarget, 4000.0);
 					if(target > MaxClients)
+						npc.FaceTowards(vecTarget, 9999.0);
+
+					if(HasSpecificBuff(target, "Aimbot") || HasSpecificBuff(npc.index, "Aimbot"))
 						npc.FaceTowards(vecTarget, 9999.0);
 
 					npc.PlayMinigunSound();
@@ -838,7 +945,7 @@ static void ClotDeathStartThink(int iNPC)
 {
 	ThePurge npc = view_as<ThePurge>(iNPC);
 	
-	CPrintToChatAll("{crimson}퍼지{default}: {crimson}오류, 오류, 오류, 오류, 오류,");
+	NPCTalkMessage(npc.index, "{crimson}ERROR ERROR ERROR.");
 	npc.m_bisWalking = false;
 	npc.SetActivity("taunt_mourning_mercs_heavy", true);
 	npc.m_flNextThinkTime = GetGameTime(npc.index) + 2.5;
@@ -862,7 +969,7 @@ static void ClotDeathLoopThink(int iNPC)
 		return;
 	
 	float vecMe[3]; WorldSpaceCenter(npc.index, vecMe);
-	CPrintToChatAll("{darkblue}??????????{default}: 그 짓거리를 반드시 후회하게 해주마.");
+	CPrintToChatAll("{darkblue}??????????{default}: {crimson}You will regret this.");
 				
 	npc.PlayBoomSound();
 	TE_Particle("asplode_hoodoo", vecMe, NULL_VECTOR, NULL_VECTOR, _, _, _, _, _, _, _, _, _, _, 0.0);
@@ -970,7 +1077,22 @@ static void ClotDeath(int entity)
 
 public void ThePurge_Win(int entity)
 {
-	CPrintToChatAll("{crimson}퍼지{default}: {crimson}말살 완료됨.");
+	
+	switch(GetRandomInt(0,2))
+		{
+			case 0:
+			{
+				NPCTalkMessage(entity, "{crimson}Annihilation Completed.");
+			}
+			case 1:
+			{
+				NPCTalkMessage(entity, "{crimson}Targets Purged.");
+			}
+			case 2:
+			{
+				NPCTalkMessage(entity, "{crimson}All Enemies Terminated.");
+			}
+		}
 	i_RaidGrantExtra[entity] = RAIDITEM_INDEX_WIN_COND;
 }
 
@@ -983,4 +1105,32 @@ void Purge_ApplyFearToEnemy(int entity, int victim, float damage, int weapon)
 		NpcStats_PrimalFearChange(victim, 0.02);
 	else
 		NpcStats_PrimalFearChange(victim, 0.01);
+}
+
+
+static void PurgeDetectRiding(int entity, int client)
+{
+	if(!IsValidClient(client))
+		return;
+
+	float Vec[3], vec2[3];
+	WorldSpaceCenter(entity, Vec);
+	Vec[2]+=50.0;
+	WorldSpaceCenter(client, vec2);
+	if(vec2[2] > Vec[2])	
+	{
+		float newVel[3];
+		
+		newVel[0] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[0]");
+		newVel[1] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[1]");
+		newVel[2] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[2]");
+
+		newVel[2] = 500.0;
+
+		newVel[0] +=GetRandomFloat(-505.0, 505.0);
+		newVel[1] +=GetRandomFloat(-505.0, 505.0);
+		
+		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, newVel);
+		ApplyStatusEffect(client, client, "Aimbot", 3.0);
+	}
 }

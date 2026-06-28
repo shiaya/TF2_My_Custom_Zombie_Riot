@@ -271,6 +271,7 @@ methodmap Sensal < CClotBody
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_GIANT;	
 		npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+		SetEntPropFloat(npc.index, Prop_Data, "m_flElementRes", 1.0, Element_Chaos);
 		npc.m_bDissapearOnDeath = true;
 		npc.m_flMeleeArmor = 1.25;	
 		
@@ -330,16 +331,17 @@ methodmap Sensal < CClotBody
 		{
 			i_RaidGrantExtra[npc.index] = 50;
 		}
-		bool cutscene2 = StrContains(data, "victoria_cutscene") != -1;
+		bool cutscene2 = StrContains(data, "vesta_cutscene") != -1;
 		if(cutscene2)
 		{
 			i_RaidGrantExtra[npc.index] = 51;
+			b_NoKillFeed[npc.index] = true;
 		}
 		bool tripple = StrContains(data, "triple_enemies") != -1;
 		if(tripple)
 		{
 			RemoveAllDamageAddition();
-			CPrintToChatAll("{blue}센살{default}: 이제 마지막 도전이다. 우리 셋을 한꺼번에 이겨보아라. {gold}엑스피돈사{default}의 힘을 두려워하라!");
+			NPCTalkMessage(npc.index, "This is your final challange, beat all 3 of us at once, Fear the might of {gold}Expidonsa{default}!");
 			GiveOneRevive(true);
 		}
 		for(int client_check=1; client_check<=MaxClients; client_check++)
@@ -355,6 +357,7 @@ methodmap Sensal < CClotBody
 		RaidModeTime = GetGameTime(npc.index) + 200.0;
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 
 		char buffers[3][64];
 		ExplodeString(data, ";", buffers, sizeof(buffers), sizeof(buffers[]));
@@ -484,6 +487,11 @@ methodmap Sensal < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int entity, const char[] message, bool translated = false)
+{
+	PrintNPCMessageWithPrefixes(entity, "blue", message, translated);
+}
+
 static void Internal_ClotThink(int iNPC)
 {
 	Sensal npc = view_as<Sensal>(iNPC);
@@ -563,49 +571,54 @@ static void Internal_ClotThink(int iNPC)
 		{
 			case 0:
 			{
-				CPrintToChatAll("{blue}센살{default}: 당장 이 싸움을 멈춰라.");
+				NPCTalkMessage(npc.index, "Castellan_And_Sensal_Talk-1", true);
 			}
 			case 1:
 			{
-				CPrintToChatAll("{blue}센살{default}: 지금 도대체 무슨 일이 일어나고 있는거지?");
+				NPCTalkMessage(npc.index, "Castellan_And_Sensal_Talk-2", true);
 			}
 			case 2:
 			{
-				CPrintToChatAll("{blue}카스텔란{default}: 우리가 자이베리아를 공격하는 동안, 저들이 우릴 공격했습니다. 무슨 말이 더 필요한겁니까?");
+				NPCPritToChat_Override("Vesta Castellan", "{steelblue}", "Castellan_And_Sensal_Talk-3", false);
 			}
 			case 3:
 			{
-				CPrintToChatAll("{blue}센살{default}: 자이베리아를 공격하고 있다고? {darkblue}캄르스타인이{default} 죽은 뒤인데?");
+				NPCTalkMessage(npc.index, "Castellan_And_Sensal_Talk-4", true);
 			}
 			case 4:
 			{
-				CPrintToChatAll("{blue}센살{default}: 그것보다 더 중요한 처리 사항이 많을텐데.\n자이베리아는 그와 사상이 다르다.");
+				NPCTalkMessage(npc.index, "Castellan_And_Sensal_Talk-5", true);
 			}
 			case 5:
 			{
-				CPrintToChatAll("{blue}카스텔란{default}: 그럼 그가 원인이었다고 말씀하고 싶으신 겁니까?");
+				NPCPritToChat_Override("Vesta Castellan", "{steelblue}", "Castellan_And_Sensal_Talk-6", false);
 			}
 			case 6:
 			{
-				CPrintToChatAll("{blue}센살{default}: 그래. 그 나라 자체에는 잘못이 없어. 이제 이 곳을 나가라. 빅토리아도 혼돈에 대처해야한다.");
+				NPCTalkMessage(npc.index, "Castellan_And_Sensal_Talk-7", true);
 			}
 			case 7:
 			{
-				CPrintToChatAll("{blue}카스텔란{default}: 그러고보니 전에도 혼돈에 대한걸 말씀하셨죠. 만약 그것들이 우리의 성벽 안으로 진입하게 된다면, 즉시 돌아와서 상황 정리를 돕겠습니다.");
+				NPCPritToChat_Override("Vesta Castellan", "{steelblue}", "Castellan_And_Sensal_Talk-8", false);
 			}
 			case 8:
 			{
-				CPrintToChatAll("{blue}센살{default}: 좋다.");
+				NPCTalkMessage(npc.index, "Castellan_And_Sensal_Talk-9", true);
 			}
 			case 9:
 			{
-				CPrintToChatAll("{blue}카스텔란{default}: 이제 빅토리아로 돌아가겠습니다.");
+				NPCPritToChat_Override("Vesta Castellan", "{steelblue}", "Castellan_And_Sensal_Talk-10", false);
 				for (int client = 1; client <= MaxClients; client++)
 				{
 					if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
 					{
-						Items_GiveNamedItem(client, "Avangard's Processing Core-B");
-						CPrintToChat(client,"{default}카스텔란이 돌아간 후, 그의 군대가 무언가를 남겼습니다: {darkblue}''아방가르드의 프로세싱 코어-B''{default}!");
+						if(!Items_HasNamedItem(client, "A copy of Truthful Evidence"))
+						{
+							CPrintToChat(client, "%t", "Castellan_And_Sensal_Talk-11");
+							CPrintToChat(client, "%t", "Castellan_And_Sensal_Talk-12");
+						}
+						//Players who have already won the trophy will not get a message.
+						Items_GiveNamedItem(client, "A copy of Truthful Evidence");
 					}
 				}
 			}
@@ -629,15 +642,15 @@ static void Internal_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{blue}센살{default}: 네가 마지막이다.");
+					NPCTalkMessage(npc.index, "You are the last one.");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{blue}센살{default}: 너희 범죄자들 중 그 누구도 {gold}엑스피돈사{default} 앞에선 별 것도 아닌 존재지.");
+					NPCTalkMessage(npc.index, "None of you criminals are of any importance to {gold}Expidonsa{default}.");
 				}
 				case 2:
 				{
-					CPrintToChatAll("{blue}센살{default}: 네 친구들은 전부 사라졌다. {gold}엑스피돈사{default}에 복종하라.");
+					NPCTalkMessage(npc.index, "All your friends are gone. Submit to {gold}Expidonsan{default} might.");
 				}
 			}
 		}
@@ -649,7 +662,7 @@ static void Internal_ClotThink(int iNPC)
 		npc.SetCycle(0.01);
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
 		
-		CPrintToChatAll("{blue}센살{default}: 엑스피돈사와의 협력을 거부하겠다면... 너희는 전부 제거될 것이다.");
+		NPCTalkMessage(npc.index, "Refusing to collaborate or even reason with {gold}Expidonsa{default} will result in termination.");
 		return;
 	}
 	if(RaidModeTime < GetGameTime())
@@ -663,7 +676,7 @@ static void Internal_ClotThink(int iNPC)
 		npc.SetCycle(0.01);
 		RaidBossActive = INVALID_ENT_REFERENCE;
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
-		CPrintToChatAll("{blue}센살{default}: 너희를 체포한다. 엑스피돈사의 정예 부대가 너희를 포위하고 있다.");
+		NPCTalkMessage(npc.index, "You are under arrest. The Expidonsan elite forces will take you now.");
 		for(int i; i<32; i++)
 		{
 			float pos[3]; GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", pos);
@@ -801,7 +814,7 @@ static Action Internal_OnTakeDamage(int victim, int &attacker, int &inflictor, f
 			RemoveNpcFromEnemyList(npc.index);
 			GiveProgressDelay(20.0);
 			
-			CPrintToChatAll("{blue}센살{default}: 도대체 실베스터와 월드치 얘기는 왜 계속하는거지? 그들이 너와 무슨 관계가 있다고?");
+			NPCTalkMessage(npc.index, "You keep talking about Silvester and Waldch, what is the meaning of this?");
 
 			damage = 0.0; //So he doesnt get oneshot somehow, atleast once.
 			return Plugin_Handled;
@@ -858,9 +871,9 @@ static void Internal_NPCDeath(int entity)
 	if(i_RaidGrantExtra[npc.index] == 50)
 	{
 		if(XenoExtraLogic())
-			CPrintToChatAll("{blue}센살{default}: 이 구역은 제한 구역이다.");
+			NPCTalkMessage(npc.index, "This area is restricted for all of you.");
 		else
-			CPrintToChatAll("{blue}센살{default}: 너희 전부 나와 같이 가줘야겠다.");
+			NPCTalkMessage(npc.index, "You all are coming with me.");
 
 		return;
 	}
@@ -875,19 +888,19 @@ static void Internal_NPCDeath(int entity)
 	{
 		case 0:
 		{
-			CPrintToChatAll("{blue}센살{default}: 우리 {gold}엑스피돈사인{default}들에게 행한 네 행동은 절대 잊지 않겠다. 더 많은 지원과 함께 돌아오겠다.");
+			NPCTalkMessage(npc.index, "Your actions against a fellow {gold}Expidonsan{default} will not be forgiven, I will be back with reinforcements.");
 		}
 		case 1:
 		{
-			CPrintToChatAll("{blue}센살{default}: 너희는 {gold}엑스피돈사{default}만의 법칙을 위반한 대가를 치를 때가 올 것이다.");
+			NPCTalkMessage(npc.index, "Your time will come when you pay for going against the law of {gold}Expidonsa{default}.");
 		}
 		case 2:
 		{
-			CPrintToChatAll("{blue}센살{default}: {gold}엑스피돈사{default}는 네 이해 수준을 크게 벗어난 곳이다.");
+			NPCTalkMessage(npc.index, "{gold}Expidonsa{default} is beyond your level of understanding.");
 		}
 		case 3:
 		{
-			CPrintToChatAll("{blue}센살{default}: 지금 네가 뭘 하고 있는지조차 모르는건가?");
+			NPCTalkMessage(npc.index, "You do not know what you are getting yourself into.");
 		}
 	}
 
@@ -1062,6 +1075,54 @@ int SensalSelfDefense(Sensal npc, float gameTime, int target, float distance)
 			}
 			npc.m_flRangedSpecialDelay = gameTime + 15.5;
 			npc.StopPathing();
+
+			
+			int SpawnAdditionalLasers = CountPlayersOnRed(1);
+			SpawnAdditionalLasers = (RAIDBOSS_GLOBAL_ATTACKLIMIT - SpawnAdditionalLasers);
+			if(SpawnAdditionalLasers <= 3)
+				SpawnAdditionalLasers = 3;
+
+			for(int SpawnNpc ; SpawnNpc < SpawnAdditionalLasers ; SpawnNpc++)
+			{
+				float pos[3]; GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", pos);
+				float ang[3]; GetEntPropVector(npc.index, Prop_Data, "m_angRotation", ang);
+				
+				int spawn_index = NPC_CreateByName("npc_sensal_crystal_targeter", -1, pos, ang, 2);
+				if(spawn_index > MaxClients)
+				{
+					NpcStats_CopyStats(npc.index, spawn_index);
+					NpcAddedToZombiesLeftCurrently(spawn_index, true);
+					
+					int Decicion = TeleportDiversioToRandLocation(spawn_index, true, 1500.0, 1000.0, .forceSpawn = true,.NeedLOSPlayer = true);
+					switch(Decicion)
+					{
+						case 2:
+						{
+							Decicion = TeleportDiversioToRandLocation(spawn_index, true, 1000.0, 500.0,.forceSpawn = true, .NeedLOSPlayer = true);
+							if(Decicion == 2)
+							{
+								Decicion = TeleportDiversioToRandLocation(spawn_index, true, 500.0, 250.0,.forceSpawn = true, .NeedLOSPlayer = true);
+								if(Decicion == 2)
+								{
+									Decicion = TeleportDiversioToRandLocation(spawn_index, true, 250.0, 0.0,.forceSpawn = true, .NeedLOSPlayer = true);
+									if(Decicion == 2)
+									{
+										//damn, cant find any.... guess we'll just not care about LOS.
+										Decicion = TeleportDiversioToRandLocation(spawn_index, true, 1500.0, 0.0);
+									}
+								}
+							}
+						}
+						case 3:
+						{
+							//todo code on what to do if random teleport is disabled
+						}
+					}
+					RequestFrames(KillNpc, 200, EntIndexToEntRef(spawn_index));
+					SetEntProp(spawn_index, Prop_Data, "m_iHealth", 999999999);
+					SetEntProp(spawn_index, Prop_Data, "m_iMaxHealth", 999999999);
+				}
+			}
 			
 			npc.m_flDoingAnimation = gameTime + 99.0;
 			npc.m_bisWalking = false;
@@ -1491,8 +1552,8 @@ public Action Sensal_SpawnSycthes(Handle timer, DataPack pack)
 		int Projectile = npc.FireParticleRocket(FloatVector, damage , 400.0 , 100.0 , "",_,_,true,origin_altered,_,_,_,false);
 		b_RageProjectile[Projectile] = npc.Anger;
 		//dont exist !
-		SDKUnhook(Projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-		SDKHook(Projectile, SDKHook_StartTouch, Sensal_Particle_StartTouch);
+		//dont exist !
+		WandProjectile_ApplyFunctionToEntity(Projectile, Sensal_Particle_StartTouch);
 		CreateTimer(15.0, Timer_RemoveEntitySensal, EntIndexToEntRef(Projectile), TIMER_FLAG_NO_MAPCHANGE);
 		static float ang_Look[3];
 		GetEntPropVector(Projectile, Prop_Send, "m_angRotation", ang_Look);
@@ -1601,7 +1662,7 @@ public void Sensal_Particle_StartTouch(int entity, int target)
 		EmitSoundToAll(g_SyctheHitSound[GetRandomInt(0, sizeof(g_SyctheHitSound) - 1)], entity, SNDCHAN_AUTO, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME);
 		TE_Particle(b_RageProjectile[entity] ? "spell_batball_impact_red" : "spell_batball_impact_blue", ProjectileLoc, NULL_VECTOR, NULL_VECTOR, _, _, _, _, _, _, _, _, _, _, 0.0);
 
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		if(IsValidEntity(particle))
 		{
 			RemoveEntity(particle);
@@ -1609,7 +1670,7 @@ public void Sensal_Particle_StartTouch(int entity, int target)
 	}
 	else
 	{
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		//we uhh, missed?
 		float ProjectileLoc[3];
 		GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", ProjectileLoc);
@@ -1656,7 +1717,7 @@ bool SensalTalkPostWin(Sensal npc)
 	}
 	if(GetGameTime() > f_TimeSinceHasBeenHurt[npc.index])
 	{
-		CPrintToChatAll("{blue}센살{default}: 갑작스럽게 공격해서 진심으로 미안하다. 정말로 아무것도 몰랐어. 사과의 의미로 이것을 받아줘.");
+		NPCTalkMessage(npc.index, "We apologize for the sudden attack. We didn't know, take this as an apology.");
 		
 		RequestFrame(KillNpc, EntIndexToEntRef(npc.index));
 		BlockLoseSay = true;
@@ -1665,29 +1726,29 @@ bool SensalTalkPostWin(Sensal npc)
 			if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
 			{
 				Items_GiveNamedItem(client, "Expidonsan Battery Device");
-				CPrintToChat(client,"{default}센살이 당신에게 고에너지 배터리를 건네주었습니다: {darkblue}''엑스피돈사인의 배터리 장비''{default}!");
+				CPrintToChat(client,"{default}Sensal gave you a high tech battery: {darkblue}''Expidonsan Battery Device''{default}!");
 			}
 		}
 	}
 	else if(GetGameTime() + 5.0 > f_TimeSinceHasBeenHurt[npc.index] && i_SaidLineAlready[npc.index] < 4)
 	{
 		i_SaidLineAlready[npc.index] = 4;
-		CPrintToChatAll("{blue}센살{default}: 하지만 이제 그 둘의 행동이 당신들을 보호하기 위해 한 행동이란걸 알았어. 여전히, 칼마티커스를 파괴할만한 힘은 있는것 같군.");
+		NPCTalkMessage(npc.index, "But I see that this was to protect you guys and yet you were able to destroy {green}Calmaticus.");
 	}
 	else if(GetGameTime() + 10.0 > f_TimeSinceHasBeenHurt[npc.index] && i_SaidLineAlready[npc.index] < 3)
 	{
 		i_SaidLineAlready[npc.index] = 3;
-		CPrintToChatAll("{blue}센살{default}: 그를 구출하기 위해 파견되었었는데, 당신이 그를 공격하는 것을 봤었기 때문에 오해한 거야.");
+		NPCTalkMessage(npc.index, "We got sent to rescue him and we saw you attacking him.");
 	}
 	else if(GetGameTime() + 13.0 > f_TimeSinceHasBeenHurt[npc.index] && i_SaidLineAlready[npc.index] < 2)
 	{
 		i_SaidLineAlready[npc.index] = 2;
-		CPrintToChatAll("{blue}센살{default}: 우리는 친한 친구였지만, 그가 도시를 떠난 뒤로 연락이 끊겼었고,");
+		NPCTalkMessage(npc.index, "We are close friends though we lost contact since he left the city.");
 	}
 	else if(GetGameTime() + 16.5 > f_TimeSinceHasBeenHurt[npc.index] && i_SaidLineAlready[npc.index] < 1)
 	{
 		i_SaidLineAlready[npc.index] = 1;
-		CPrintToChatAll("{blue}센살{default}: 아... 이런, 그러니까 그들은 당신들의 친구였었군... ");
+		NPCTalkMessage(npc.index, "....I see. They are friend of yours now as well.");
 	}
 	return true; //He is trying to help.
 }
@@ -1777,10 +1838,40 @@ bool SensalMassLaserAttack(Sensal npc)
 	if(npc.m_flAttackHappens_2)
 	{
 		UnderTides npcGetInfo = view_as<UnderTides>(npc.index);
-		int enemy_2[RAIDBOSS_GLOBAL_ATTACKLIMIT]; 
+		
+
+		
 		//It should target upto 20 people only, if its anymore it starts becomming un dodgeable due to the nature of AOE laser attacks
 		bool ClientTargeted[MAXENTITIES];
-		GetHighDefTargets(npcGetInfo, enemy_2, sizeof(enemy_2), true, false);
+		int a;
+		int entity;
+		while((entity = FindEntityByNPC(a)) != -1)
+		{
+			if(Target_CrystalTrue(entity))
+			{
+				if(!Can_I_See_Enemy_Only(npc.index, entity))
+					continue;
+				ClientTargeted[entity] = true;
+				if(!IsValidEntity(i_LaserEntityIndex[entity]))
+				{
+					int red = 200;
+					int green = 200;
+					int blue = 200;
+					if(IsValidEntity(i_LaserEntityIndex[entity]))
+					{
+						RemoveEntity(i_LaserEntityIndex[entity]);
+					}
+
+					int laser;
+					
+					laser = ConnectWithBeam(npc.index, entity, red, green, blue, 2.0, 2.0, 1.0, LASERBEAM);
+			
+					i_LaserEntityIndex[entity] = EntIndexToEntRef(laser);
+				}
+			}
+		}
+		int enemy_2[RAIDBOSS_GLOBAL_ATTACKLIMIT]; 
+		GetHighDefTargets(npcGetInfo, enemy_2, sizeof(enemy_2), true, false,_,_,_,Target_CrystalFalse);
 		for(int i; i < sizeof(enemy_2); i++)
 		{
 			if(enemy_2[i])
@@ -1840,7 +1931,11 @@ bool SensalMassLaserAttack(Sensal npc)
 				if(IsValidEntity(i_LaserEntityIndex[EnemyLoop]))
 				{
 					RemoveEntity(i_LaserEntityIndex[EnemyLoop]);
-				}				
+				}		
+				if(i_NpcInternalId[EnemyLoop] == SensalTargetLaser_Id())
+				{
+					RequestFrame(KillNpc, EntIndexToEntRef(EnemyLoop));
+				}		
 			}
 
 			int enemy[RAIDBOSS_GLOBAL_ATTACKLIMIT];
@@ -1852,6 +1947,20 @@ bool SensalMassLaserAttack(Sensal npc)
 				{
 					foundEnemy = true;
 					float WorldSpaceVec[3]; WorldSpaceCenter(enemy[i], WorldSpaceVec);
+					SensalInitiateLaserAttack(npc.index, WorldSpaceVec, flPos);
+				}
+			}
+			
+			a = 0;
+			entity = 0;
+			while((entity = FindEntityByNPC(a)) != -1)
+			{
+				if(Target_CrystalTrue(entity))
+				{
+					if(!Can_I_See_Enemy_Only(npc.index, entity))
+						continue;
+					foundEnemy = true;
+					float WorldSpaceVec[3]; WorldSpaceCenter(entity, WorldSpaceVec);
 					SensalInitiateLaserAttack(npc.index, WorldSpaceVec, flPos);
 				}
 			}
@@ -1960,8 +2069,7 @@ public Action Sensal_TimerRepeatPortalGate(Handle timer, DataPack pack)
 				b_RageProjectile[Projectile] = npc.Anger;
 
 				//dont exist !
-				SDKUnhook(Projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-				SDKHook(Projectile, SDKHook_StartTouch, Sensal_Particle_StartTouch);
+				WandProjectile_ApplyFunctionToEntity(Projectile, Sensal_Particle_StartTouch);
 				
 				CreateTimer(15.0, Timer_RemoveEntitySensal, EntIndexToEntRef(Projectile), TIMER_FLAG_NO_MAPCHANGE);
 				static float ang_Look[3];
@@ -2221,24 +2329,24 @@ static void Sensal_Weapon_Lines(Sensal npc, int client)
 	{
 		
 		case WEAPON_SENSAL_SCYTHE,WEAPON_SENSAL_SCYTHE_PAP_1,WEAPON_SENSAL_SCYTHE_PAP_2,WEAPON_SENSAL_SCYTHE_PAP_3:
-		 switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "지금 내 무기를 쓰겠다는건가, {gold}%N{default}? 그 무기에 대한 전문 지식도 없으면서.", client);
-		  							case 1: Format(Text_Lines, sizeof(Text_Lines), "네가 그 무기의 진정한 힘을 끌어낼 수 있을 것 같나, {gold}%N{default}? 넌 {gold}발현의 장갑{default}조차 없는 놈이다.", client);}	//IT ACTUALLY WORKS, LMFAO
-		case WEAPON_FUSION,WEAPON_FUSION_PAP1,WEAPON_FUSION_PAP2: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "{gold}실베스터{default}의 검이잖아? 나참, 이걸 왜 이런 놈들한테 주는건지...");
-		 							case 1: Format(Text_Lines, sizeof(Text_Lines), "{gold}실베스터{default}, 너...");}
-		case WEAPON_SICCERINO,WEAPON_WALDCH_SWORD_NOVISUAL:  Format(Text_Lines, sizeof(Text_Lines), "그건 엑스피돈사인의 무기다. {gold}%N{default}. 어떻게 얻은거지?",client);
-		case WEAPON_WALDCH_SWORD_REAL:  Format(Text_Lines, sizeof(Text_Lines), "네가 왜 월드치의 무기를 쓰고 있는거지, {gold}%N{default}?",client);
-		case WEAPON_NEARL:  Format(Text_Lines, sizeof(Text_Lines), "{gold}실베스터{default}가 카시미어에 갔다오기라도 한 건가?");
-		case WEAPON_KAHMLFIST:  Format(Text_Lines, sizeof(Text_Lines), "캄르스타인은 그 자체로 많은 문제를 일으킨 놈이지.");
-		case WEAPON_KIT_BLITZKRIEG_CORE:  Format(Text_Lines, sizeof(Text_Lines), "그 기계는 사라졌다. 여전히 {gold}%N{default}가 쓰는 것보단 훨씬 낫겠지.",client);
-		case WEAPON_IRENE:  Format(Text_Lines, sizeof(Text_Lines), "그건 이베리아의 무기인데?! 이제야 좀 비밀이 풀리는군...");
-		case WEAPON_BOBS_GUN:  Format(Text_Lines, sizeof(Text_Lines), "맙소사, {snow}밥 1세{default}가 네 편에 섰단 말인가?!");
-		case WEAPON_ANGELIC_SHOTGUN:  Format(Text_Lines, sizeof(Text_Lines), "네 놈이 어떻게 {lightblue}네말의{default} 무기를 가지고 있는거지, {gold}%N{default}?",client);
-		case WEAPON_IMPACT_LANCE:  Format(Text_Lines, sizeof(Text_Lines), "창... 루이나와 {gold}엑스피돈사{default} 두 세력이 모두 사용하는 유일한 무기...");
+		 switch(GetRandomInt(0,1)) 	{case 0: Format(Text_Lines, sizeof(Text_Lines), "You are trying to wield my weapon, {gold}%N{default}? You are not competent enough for it.", client);
+		  							case 1: Format(Text_Lines, sizeof(Text_Lines), "You think you can use it to its fullest potential {gold}%N{default}? You do not even own the {gold}Manifestation glove.", client);}	//IT ACTUALLY WORKS, LMFAO
+		case WEAPON_FUSION,WEAPON_FUSION_PAP1,WEAPON_FUSION_PAP2: switch(GetRandomInt(0,1)) 		{case 0: Format(Text_Lines, sizeof(Text_Lines), "{gold}Silvesters{default} blade? Why is he so nice to everyone...");
+		 							case 1: Format(Text_Lines, sizeof(Text_Lines), "{gold}Silvester{default}, you...");}
+		case WEAPON_SICCERINO,WEAPON_WALDCH_SWORD_NOVISUAL:  Format(Text_Lines, sizeof(Text_Lines), "How do you have access to such {gold}Expidonsan{default} weaponry {gold}%N{default}?",client);
+		case WEAPON_WALDCH_SWORD_REAL:  Format(Text_Lines, sizeof(Text_Lines), "What? How did you get this elite blade {gold}%N{default}?",client);
+		case WEAPON_NEARL:  Format(Text_Lines, sizeof(Text_Lines), "{gold}Silvester{default} decided to visit Grunwald?");
+		case WEAPON_KAHMLFIST:  Format(Text_Lines, sizeof(Text_Lines), "Kahmlstein caused enough problems as it is.");
+		case WEAPON_KIT_BLITZKRIEG_CORE:  Format(Text_Lines, sizeof(Text_Lines), "This machine is gone now, use it better then it has {gold}%N{default}.",client);
+		case WEAPON_AMPHI:  Format(Text_Lines, sizeof(Text_Lines), "Almina's Weapons!? Looks like the secret is out of the bag now...");
+		case WEAPON_BOBS_GUN:  Format(Text_Lines, sizeof(Text_Lines), "OH MY GOD, {snow}BOB THE FIRST{default} IS ON YOUR SIDE?!");
+		case WEAPON_ANGELIC_SHOTGUN:  Format(Text_Lines, sizeof(Text_Lines), "How did you get {lightblue}Nemal's{default} weapon {gold}%N{default}?",client);
+		case WEAPON_IMPACT_LANCE:  Format(Text_Lines, sizeof(Text_Lines), "That lance... the only weapon that was forged from both {snow}Ruina{default} and {gold}Expidonsa{default}...");
 		/*
 		//uncomment on release
 		case WEAPON_NECRO_WANDS:
 		{
-			Format(Text_Lines, sizeof(Text_Lines), "이건 또 뭐지, 죽은 자를 모방...? 또{green} Spookmaster Bones{default}의 장난질인가?");
+			Format(Text_Lines, sizeof(Text_Lines), "What is this, the dead, an imitation...? Is this a prank again{green} Spookmaster Bones{default}?");
 		}
 		*/
 		default:
@@ -2249,8 +2357,28 @@ static void Sensal_Weapon_Lines(Sensal npc, int client)
 
 	if(valid)
 	{
-		CPrintToChatAll("{blue}Sensal{default}: %s", Text_Lines);
+		NPCTalkMessage(npc.index, Text_Lines);
 		fl_said_player_weaponline_time[npc.index] = GameTime + GetRandomFloat(17.0, 26.0);
 		b_said_player_weaponline[client] = true;
 	}
+}
+
+
+
+bool Target_CrystalTrue(int target)
+{
+	if(i_NpcInternalId[target] == SensalTargetLaser_Id())
+	{
+		return true;
+	}
+	return false;
+}
+
+bool Target_CrystalFalse(int entity, int target)
+{
+	if(i_NpcInternalId[target] == SensalTargetLaser_Id())
+	{
+		return false;
+	}
+	return true;
 }

@@ -121,7 +121,7 @@ void VausMagicaShieldLogicNpcOnTakeDamage(int attacker, int victim, float &damag
 	}
 }
 #define DEFAULTMAXRAID_SHIELDCAP 250
-void VausMagicaGiveShield(int entity, int amount, bool ignorecooldown = false)
+void VausMagicaGiveShield(int entity, int amount, bool ignorecooldown = false, int customMaxCapacity = 0)
 {
 	float CapacityMaxMulti = float(CountPlayersOnRed(_, true)) / 7.0;
 	int MaxShieldCapacity = RoundToNearest(5.0 * CapacityMaxMulti);
@@ -143,15 +143,22 @@ void VausMagicaGiveShield(int entity, int amount, bool ignorecooldown = false)
 	}
 	if(MaxShieldCapacity < 1)
 		MaxShieldCapacity = 1;
-
+	
+	if (customMaxCapacity > 0)
+		MaxShieldCapacity = customMaxCapacity;
+	
 	if((f_Expidonsa_ShieldBroke[entity] > GetGameTime() && !ignorecooldown) && MaxShieldCapacity < DEFAULTMAXRAID_SHIELDCAP)
 	{
 		return; //do not give shield.
 	}
+	int WhatIsHigher = MaxShieldCapacity;
+	if(amount >= WhatIsHigher)
+		WhatIsHigher = amount;
+	
 	i_ExpidonsaShieldCapacity[entity] += amount;
-	if(i_ExpidonsaShieldCapacity[entity] >= MaxShieldCapacity)
+	if(i_ExpidonsaShieldCapacity[entity] >= WhatIsHigher)
 	{
-		i_ExpidonsaShieldCapacity[entity] = MaxShieldCapacity;
+		i_ExpidonsaShieldCapacity[entity] = WhatIsHigher;
 	}
 	int alpha = i_ExpidonsaShieldCapacity[entity];
 	alpha = alpha * 20;
@@ -227,7 +234,8 @@ Function func_Expidonsa_Heal_After[MAXENTITIES] = {INVALID_FUNCTION, ...};
 Function func_Expidonsa_Heal_Before[MAXENTITIES] = {INVALID_FUNCTION, ...};
 bool DontAllowAllyHeal[MAXENTITIES];
 stock void ExpidonsaGroupHeal(int HealingNpc, float RangeDistance, int MaxAlliesHealed, float HealingAmmount,
- float Expidonsa_HealingOverheal, bool Selfheal, Function Function_HealBefore = INVALID_FUNCTION , Function Function_HealAfter = INVALID_FUNCTION, bool AnyHeal = false)
+ float Expidonsa_HealingOverheal, bool Selfheal, Function Function_HealBefore = INVALID_FUNCTION ,
+  Function Function_HealAfter = INVALID_FUNCTION, bool AnyHeal = false, bool LOS = true, float VecDoAt[3] = { 0.0,0.0,0.0})
 {
 	b_Expidonsa_Selfheal[HealingNpc] = Selfheal;
 	i_Expidonsa_HealingCount[HealingNpc] = MaxAlliesHealed;
@@ -237,20 +245,24 @@ stock void ExpidonsaGroupHeal(int HealingNpc, float RangeDistance, int MaxAllies
 	func_Expidonsa_Heal_After[HealingNpc] = Function_HealAfter;
 	DontAllowAllyHeal[HealingNpc] = AnyHeal;
 
+	if(Selfheal)
+		b_AllowSelfTarget[HealingNpc] = true;
+
 	b_NpcIsTeamkiller[HealingNpc] = true;
 	Explode_Logic_Custom(0.0,
 	HealingNpc,
 	HealingNpc,
 	-1,
-	_,
+	VecDoAt,
 	RangeDistance,
 	_,
 	_,
-	true,
+	LOS,
 	99,
 	false,
 	_,
 	Expidonsa_AllyHeal);
+	b_AllowSelfTarget[HealingNpc] = false;
 	b_NpcIsTeamkiller[HealingNpc] = false;
 }
 
@@ -332,14 +344,21 @@ stock bool Expidonsa_DontHealSameIndex(int entity, int victim, float &healingamm
 
 	return false;
 }
+stock bool Expidonsa_OnlyHealSameIndex(int entity, int victim, float &healingammount)
+{
+	if(i_NpcInternalId[entity] != i_NpcInternalId[victim])
+		return true;
+
+	return false;
+}
 #if defined ZR
-#define IBERIA_BARRACKS_COOLDOWN_HEAL 2.0
-stock bool IberiaBarracks_HealSelfLimitCD(int entity, int victim, float &healingammount)
+#define ALMINA_BARRACKS_COOLDOWN_HEAL 2.0
+stock bool AlminaBarracks_HealSelfLimitCD(int entity, int victim, float &healingammount)
 {
 	if(f_HealCooldownSetDoGlobal[victim] > GetGameTime())
 		return true;
 
-	f_HealCooldownSetDoGlobal[victim] = GetGameTime() + IBERIA_BARRACKS_COOLDOWN_HEAL;
+	f_HealCooldownSetDoGlobal[victim] = GetGameTime() + ALMINA_BARRACKS_COOLDOWN_HEAL;
 
 	return false;
 }

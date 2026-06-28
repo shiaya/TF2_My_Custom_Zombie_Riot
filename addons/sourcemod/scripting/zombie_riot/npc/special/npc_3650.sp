@@ -67,8 +67,12 @@ static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team)
 char[] MinibossHealthScaling(float healthDo = 110.0, bool ingoreplayers = false)
 {
 	if(!ingoreplayers)
+	{
+		float ScalingAm = ZRStocks_PlayerScalingDynamic();
+		if(ScalingAm <= 2.5) //account for this many, or else bosses just die in 1 hit.
+			ScalingAm = 2.5;
 		healthDo *= ZRStocks_PlayerScalingDynamic(); //yeah its high. will need to scale with waves exponentially.
-	
+	}
 	healthDo *= MinibossScalingReturn();
 	healthDo *= 1.5;
 	
@@ -151,6 +155,21 @@ methodmap ThirtySixFifty < CClotBody
 		public get()			{	return this.m_flGrappleCooldown;	}
 		public set(float value) 	{	this.m_flGrappleCooldown = value;	}
 	}
+	property int m_iRevolverAttachmentMode
+	{
+		public get()							{ return i_TimesSummoned[this.index]; }
+		public set(int TempValueForProperty) 	{ i_TimesSummoned[this.index] = TempValueForProperty; }
+	}
+	property int m_iWeaponCycleSeed
+	{
+		public get()							{ return i_MedkitAnnoyance[this.index]; }
+		public set(int TempValueForProperty) 	{ i_MedkitAnnoyance[this.index] = TempValueForProperty; }
+	}
+	property int m_iCurrentWeaponInCycle
+	{
+		public get()							{ return i_AttacksTillMegahit[this.index]; }
+		public set(int TempValueForProperty) 	{ i_AttacksTillMegahit[this.index] = TempValueForProperty; }
+	}
 
 	public void SetWeaponModel(const char[] model)		//dynamic weapon model change, don't touch
 	{
@@ -158,7 +177,26 @@ methodmap ThirtySixFifty < CClotBody
 			RemoveEntity(this.m_iWearable1);
 		
 		if(model[0])
+		{
 			this.m_iWearable1 = this.EquipItem("head", model);
+			
+			// HACK: the revolver model is omegafucked, so we hardcode bruteforce a new one at a specific position
+			if (this.m_iRevolverAttachmentMode == 1)
+			{
+				if(IsValidEntity(this.m_iWearable1))
+					RemoveEntity(this.m_iWearable1);
+				
+				this.m_iRevolverAttachmentMode = 0;
+				float origin[3], angles[3];
+				this.GetAttachment("anim_attachment_RH", origin, angles);
+				this.m_iWearable1 = this.EquipItemSeperate("models/weapons/w_357.mdl",_ ,_ , 1.15, _, true);
+				angles[1] += 180.0;
+				angles[2] += 270.0;
+				TeleportEntity(this.m_iWearable1, origin, angles);
+				
+				SetParent(this.index, this.m_iWearable1, "anim_attachment_RH", {0.0, 0.0, 4.0});
+			}
+		}
 	}
 
 	public ThirtySixFifty(float vecPos[3], float vecAng[3], int ally)
@@ -185,6 +223,7 @@ methodmap ThirtySixFifty < CClotBody
 			Variables
 		*/
 
+		b_thisNpcIsAMiniboss[npc.index] = true;
 		float wave = float(Waves_GetRoundScale()+1);
 		wave *= 0.133333;
 		npc.m_flWaveScale = wave;
@@ -199,14 +238,15 @@ methodmap ThirtySixFifty < CClotBody
 		npc.m_iTarget = 0;
 		npc.m_flGetClosestTargetTime = 0.0;
 		npc.m_flNextThinkTime = GetGameTime(npc.index) + 0.5;
-		b_NoHealthbar[npc.index] = false;
+		b_NoHealthbar[npc.index] = 0;
 		GiveNpcOutLineLastOrBoss(npc.index, true);
-		b_thisNpcHasAnOutline[npc.index] = true; 
+		b_thisNpcHasAnOutline[npc.index] = true;
 
 		npc.m_flAbilityOrAttack0 = 0.0;
 		npc.m_flNextMeleeAttack = 0.0;
 		npc.m_flAttackHappens = 0.0;
-		npc.m_iGunType = 0;
+		npc.m_iGunType = -1;
+		npc.m_iRevolverAttachmentMode = 0;
 		npc.m_flSwitchCooldown = GetGameTime(npc.index) + 2.0;
 		npc.m_flMeleeArmor = 1.0;
 		npc.m_flRangedArmor = 1.0;
@@ -216,33 +256,59 @@ methodmap ThirtySixFifty < CClotBody
 		npc.StartPathing();
 		
 		Citizen_MiniBossSpawn();
-
-		switch(GetRandomInt(0,4))
+		
+		// I want to not make more 2d MAXENTITIES arrays, but I also want to allow multiple 3650 to have their own cycles.
+		// ...so I'm storing the cycle as an int, then reading it digit by digit.
+		ArrayList weaponCycle = new ArrayList();
+		for (int i = 0; i < 6; i++)
+			weaponCycle.Push(i);
+		
+		weaponCycle.Sort(Sort_Random, Sort_Integer);
+		
+		char seedGen[16];
+		for (int i = 0; i < weaponCycle.Length; i++)
+			seedGen[i] = view_as<char>(weaponCycle.Get(i) + 48); // 2 + 48 = '2'
+			
+		delete weaponCycle;
+		
+		npc.m_iWeaponCycleSeed = StringToInt(seedGen);
+		npc.m_iCurrentWeaponInCycle = 0;
+		
+		if(!Rogue_Mode())
 		{
-			case 0:
+			switch(GetRandomInt(0,4))
 			{
-				CPrintToChatAll("{white}3650{default}: 어이, 좀비 친구들. 날 따라와라.");
-			}
-			case 1:
-			{
-				CPrintToChatAll("{white}3650{default}: 너보단 내가 더 낫잖아, 안 그래?");
-			}
-			case 2:
-			{
-				CPrintToChatAll("{white}3650{default}: 너흰 잘 모르겠지만, 난 포커페이스인 쪽이 더 좋다고.");
-			}
-			case 3:
-			{
-				CPrintToChatAll("{white}3650{default}: 저 놈들은 메딕이 있는것 같은데, 우린 없는거냐?");
-			}
-			case 4:
-			{
-				CPrintToChatAll("{white}3650{default}: 적어도 아직 내쪽엔 고기방패로 쓸 놈이 많아서 다행이구만.");
+				case 0:
+				{
+					NPCTalkMessage(npc.index, "You, zombie guy, follow me.");
+				}
+				case 1:
+				{
+					NPCTalkMessage(npc.index, "I'm more elite than you are, come on.");
+				}
+				case 2:
+				{
+					NPCTalkMessage(npc.index, "You guys can't tell, but I have a mean poker face.");
+				}
+				case 3:
+				{
+					NPCTalkMessage(npc.index, "THEY have medics, why don't WE have medics?");
+				}
+				case 4:
+				{
+					NPCTalkMessage(npc.index, "At least I still have meatshields.");
+				}
 			}
 		}
 		return npc;
 	}
 }
+
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "white", message);
+}
+
 static void ClotThink(int iNPC)
 {
 	ThirtySixFifty npc = view_as<ThirtySixFifty>(iNPC);
@@ -253,15 +319,17 @@ static void ClotThink(int iNPC)
 		return;
 	}
 
-	int time = GetTime();
-	if(i_PlayMusicSound[npc.index] < time)
+	if(!Rogue_Mode())
 	{
-		// This doesn't auto loop
-		EmitCustomToAll("#zombie_riot/omega/calculated.mp3", npc.index, SNDCHAN_STATIC, BOSS_ZOMBIE_SOUNDLEVEL, _, 2.0, 100); //song that plays duh
+		int time = GetTime();
+		if(i_PlayMusicSound[npc.index] < time)
+		{
+			// This doesn't auto loop
+			EmitCustomToAll("#zombie_riot/omega/calculated.mp3", npc.index, SNDCHAN_STATIC, BOSS_ZOMBIE_SOUNDLEVEL, _, 2.0, 100); //song that plays duh
 
-		i_PlayMusicSound[npc.index] = GetTime() + 43; //loops the song perfectly
+			i_PlayMusicSound[npc.index] = GetTime() + 43; //loops the song perfectly
+		}
 	}
-
 	if(npc.m_flAbilityOrAttack0 < gameTime)
 	{
 		npc.m_flAbilityOrAttack0 = gameTime + 0.25;
@@ -316,7 +384,7 @@ static void ClotThink(int iNPC)
 		float vecMe[3]; WorldSpaceCenter(npc.index, vecMe);
 		float vecTarget[3]; WorldSpaceCenter(target, vecTarget);
 		float distance = GetVectorDistance(vecTarget, vecMe, true);
-		if(distance < npc.GetLeadRadius()) 
+		if(npc.m_flNextMeleeAttack >= gameTime && distance < npc.GetLeadRadius()) 
 		{
 			PredictSubjectPosition(npc, target,_,_,vecTarget);
 			npc.SetGoalVector(vecTarget);
@@ -346,21 +414,23 @@ static void ClotThink(int iNPC)
 		if(npc.m_flSwitchCooldown < gameTime)
 		{
 			float cooldown = 10.0;
+			
+			char seedGen[16];
+			IntToString(npc.m_iWeaponCycleSeed, seedGen, sizeof(seedGen));
+			npc.m_iGunType = view_as<int>(seedGen[npc.m_iCurrentWeaponInCycle++ % 6]) - 48;
 
 			switch(npc.m_iGunType)
 			{
-				case 0, 3, 6:	//Shotgun
+				case 0:	//Shotgun
 				{	
-					npc.m_iGunType++;
 					npc.SetWeaponModel("models/weapons/w_shotgun.mdl");
-					npc.SetActivity("ACT_RUN_AIM_RIFLE");
+					npc.SetActivity("ACT_RUN_AIM_SHOTGUN");
 					npc.m_flNextMeleeAttack = gameTime + 0.5;
 					npc.m_flSpeed = 300.0;
 					cooldown = 8.0;
 				}
-				case 1, 4, 7:	//SMG
+				case 1:	//SMG
 				{
-					npc.m_iGunType++;
 					npc.SetWeaponModel("models/weapons/w_smg1.mdl");
 					npc.SetActivity("ACT_RUN_AIM_RIFLE");
 					npc.m_flNextMeleeAttack = gameTime + 0.5;
@@ -369,45 +439,42 @@ static void ClotThink(int iNPC)
 				}
 				case 2:			//AR2
 				{
-					npc.m_iGunType = 3;
 					npc.SetWeaponModel("models/weapons/w_irifle.mdl");
 					npc.SetActivity("ACT_RUN_AIM_RIFLE");
 					npc.m_flNextMeleeAttack = gameTime + 0.5;
 					npc.m_flSpeed = 300.0;
 					cooldown = 8.0;
 				}
-				case 5:			//RPG
+				case 3:			//RPG
 				{
-					npc.m_iGunType = 6;
 					npc.SetWeaponModel("models/weapons/w_rocket_launcher.mdl");
 					npc.SetActivity("ACT_RUN_AIM_RELAXED");
 					npc.m_flNextMeleeAttack = gameTime + 0.5;
 					npc.m_flSpeed = 300.0;
 					cooldown = 8.0;
 				}
-				case 8:			//Pistol
+				case 4:			//Pistol
 				{
-					npc.m_iGunType = 9;
 					npc.SetWeaponModel("models/weapons/w_pistol.mdl");
 					npc.SetActivity("ACT_RUN_AIM_PISTOL");
 					npc.m_flNextMeleeAttack = gameTime + 0.5;
 					npc.m_flSpeed = 300.0;
 					cooldown = 8.0;
 				}
-				case 9:			//Revolver (shit doesn't work so just skip it outright, unused)
+				case 5:			//Revolver
 				{
-					npc.m_iGunType = 0;
+					npc.m_iRevolverAttachmentMode = 1;
 					npc.SetWeaponModel("models/weapons/w_357.mdl");
 					npc.SetActivity("ACT_RUN_AIM_PISTOL");
 					npc.m_flNextMeleeAttack = gameTime + 0.5;
-					cooldown = 0.1;
+					cooldown = 8.0;
 				}
 			}
 			npc.m_flSwitchCooldown = gameTime + cooldown;
 		}
 		switch(npc.m_iGunType)
 		{
-			case 1, 4, 7:	// Shotgun
+			case 0:	// Shotgun
 			{
 				npc.StartPathing();
 
@@ -422,6 +489,7 @@ static void ClotThink(int iNPC)
 							npc.FaceTowards(vecTarget, 25000.0);
 
 						npc.PlayShotgunSound();
+						npc.AddGesture("ACT_GESTURE_RANGE_ATTACK_SHOTGUN");
 
 						float eyePitch[3];
 						GetEntPropVector(npc.index, Prop_Data, "m_angRotation", eyePitch);
@@ -458,7 +526,7 @@ static void ClotThink(int iNPC)
 					}
 				}
 			}
-			case 2, 5, 8:	// SMG
+			case 1:	// SMG
 			{
 				npc.StartPathing();
 
@@ -467,6 +535,8 @@ static void ClotThink(int iNPC)
 					if(Can_I_See_Enemy_Only(npc.index, target))
 					{
 						KillFeed_SetKillIcon(npc.index, "smg");
+						
+						npc.FaceTowards(vecTarget, 25000.0);
 						
 						npc.PlaySMGSound();
 						npc.AddGesture("ACT_GESTURE_RANGE_ATTACK_SMG1");
@@ -489,18 +559,15 @@ static void ClotThink(int iNPC)
 						float damageDealt = 3.5;
 						damageDealt *= npc.m_flWaveScale;
 
-						for(int i; i < 2; i++)
-						{
-							float x = GetRandomFloat(-0.05, 0.05);
-							float y = GetRandomFloat(-0.05, 0.05);
-							
-							vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
-							vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
-							vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
-							NormalizeVector(vecDir, vecDir);
-							
-							FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
-						}
+						float x = GetRandomFloat(-0.05, 0.05);
+						float y = GetRandomFloat(-0.05, 0.05);
+						
+						vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
+						vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
+						vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
+						NormalizeVector(vecDir, vecDir);
+						
+						FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
 
 						npc.m_flNextMeleeAttack = gameTime + 0.05;
 
@@ -508,7 +575,7 @@ static void ClotThink(int iNPC)
 					}
 				}
 			}
-			case 3:	// AR2
+			case 2:	// AR2
 			{
 				npc.StartPathing();
 
@@ -520,9 +587,8 @@ static void ClotThink(int iNPC)
 						
 						npc.PlayAR2Sound();
 						npc.AddGesture("ACT_GESTURE_RANGE_ATTACK_AR2");
-						if(target > MaxClients)
-							npc.FaceTowards(vecTarget, 25000.0);
-
+						npc.FaceTowards(vecTarget, 25000.0);
+						
 						float eyePitch[3];
 						GetEntPropVector(npc.index, Prop_Data, "m_angRotation", eyePitch);
 						
@@ -538,26 +604,23 @@ static void ClotThink(int iNPC)
 
 						float damageDealt = 4.0;
 						damageDealt *= npc.m_flWaveScale;
-
-						for(int i; i < 2; i++)
-						{
-							float x = GetRandomFloat(-0.05, 0.05);
-							float y = GetRandomFloat(-0.05, 0.05);
-							
-							vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
-							vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
-							vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
-							NormalizeVector(vecDir, vecDir);
-							
-							FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
-						}
+						
+						float x = GetRandomFloat(-0.05, 0.05);
+						float y = GetRandomFloat(-0.05, 0.05);
+						
+						vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
+						vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
+						vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
+						NormalizeVector(vecDir, vecDir);
+						
+						FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
 
 						npc.m_flNextMeleeAttack = gameTime + 0.05;
 						KillFeed_SetKillIcon(npc.index, "skull");
 					}
 				}
 			}
-			case 6:	// RPG
+			case 3:	// RPG
 			{
 				npc.StartPathing();
 
@@ -587,7 +650,7 @@ static void ClotThink(int iNPC)
 					npc.m_flNextMeleeAttack = gameTime + 2.0;
 				}
 			}
-			case 9:	// Pistol
+			case 4:	// Pistol
 			{
 				npc.StartPathing();
 
@@ -598,8 +661,6 @@ static void ClotThink(int iNPC)
 						KillFeed_SetKillIcon(npc.index, "pistol");
 						
 						npc.FaceTowards(vecTarget, 25000.0);
-						if(target > MaxClients)
-							npc.FaceTowards(vecTarget, 25000.0);
 
 						npc.PlayPistolSound();
 						npc.AddGesture("ACT_GESTURE_RANGE_ATTACK_PISTOL");
@@ -619,19 +680,16 @@ static void ClotThink(int iNPC)
 
 						float damageDealt = 1.5;
 						damageDealt *= npc.m_flWaveScale;
-
-						for(int i; i < 10; i++)
-						{
-							float x = GetRandomFloat(-0.1, 0.1);
-							float y = GetRandomFloat(-0.1, 0.1);
-							
-							vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
-							vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
-							vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
-							NormalizeVector(vecDir, vecDir);
-							
-							FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
-						}
+						
+						float x = GetRandomFloat(-0.1, 0.1);
+						float y = GetRandomFloat(-0.1, 0.1);
+						
+						vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
+						vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
+						vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
+						NormalizeVector(vecDir, vecDir);
+						
+						FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
 
 						npc.m_flNextMeleeAttack = gameTime + 0.20;
 
@@ -639,7 +697,7 @@ static void ClotThink(int iNPC)
 					}
 				}
 			}
-			case 11:	// Revolver (check revolver case)
+			case 5:	// Revolver (check revolver case)
 			{
 				npc.StartPathing();
 
@@ -650,8 +708,6 @@ static void ClotThink(int iNPC)
 						KillFeed_SetKillIcon(npc.index, "enforcer");
 						
 						npc.FaceTowards(vecTarget, 25000.0);
-						if(target > MaxClients)
-							npc.FaceTowards(vecTarget, 25000.0);
 
 						npc.PlayRevolverSound();
 						npc.AddGesture("ACT_GESTURE_RANGE_ATTACK_PISTOL");
@@ -671,19 +727,21 @@ static void ClotThink(int iNPC)
 
 						float damageDealt = 40.0;
 						damageDealt *= npc.m_flWaveScale;
-
-						for(int i; i < 10; i++)
-						{
-							float x = GetRandomFloat(-0.1, 0.1);
-							float y = GetRandomFloat(-0.1, 0.1);
-							
-							vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
-							vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
-							vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
-							NormalizeVector(vecDir, vecDir);
-							
-							FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
-						}
+						
+						/*
+						float x = GetRandomFloat(-0.1, 0.1);
+						float y = GetRandomFloat(-0.1, 0.1);
+						
+						vecDir[0] = vecDirShooting[0] + x * vecRight[0] + y * vecUp[0]; 
+						vecDir[1] = vecDirShooting[1] + x * vecRight[1] + y * vecUp[1]; 
+						vecDir[2] = vecDirShooting[2] + x * vecRight[2] + y * vecUp[2]; 
+						*/
+						
+						vecDir = vecDirShooting;
+						
+						NormalizeVector(vecDir, vecDir);
+						
+						FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damageDealt, 3000.0, DMG_BULLET, "bullet_tracer01_red");
 
 						npc.m_flNextMeleeAttack = gameTime + 2.0;
 

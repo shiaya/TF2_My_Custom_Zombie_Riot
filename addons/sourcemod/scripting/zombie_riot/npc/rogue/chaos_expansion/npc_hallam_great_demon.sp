@@ -127,11 +127,12 @@ methodmap HallamGreatDemon < CClotBody
 
 
 		
-		if(!IsValidEntity(RaidBossActive))
+		if(!IsValidEntity(RaidBossActive) && !Dungeon_Mode())
 		{
 			RaidBossActive = EntIndexToEntRef(npc.index);
 			RaidModeTime = GetGameTime(npc.index) + 9000.0;
 			RaidAllowsBuildings = true;
+			RaidAllowLastman = true;
 			RaidModeScaling = 1.0;
 		}
 		npc.m_flNextMeleeAttack = 0.0;
@@ -201,6 +202,7 @@ public void HallamGreatDemon_ClotThink(int iNPC)
 		int spawn_index = NPC_CreateByName("npc_ihanal_demon_whisperer", npc.index, SelfPos, ang, GetTeam(npc.index));
 		if(spawn_index > MaxClients)
 		{
+			b_thisNpcIsABoss[spawn_index] = b_thisNpcIsABoss[npc.index];
 			NpcStats_CopyStats(npc.index, spawn_index);
 			flMaxHealthally /= 2;
 			npc.m_iTargetAlly = spawn_index;
@@ -243,7 +245,7 @@ public void HallamGreatDemon_ClotThink(int iNPC)
 	}
 	npc.m_flNextThinkTime = GetGameTime(npc.index) + 0.1;
 
-	if(npc.m_flHealCooldownDo < GetGameTime(npc.index))
+	if(npc.m_flHealCooldownDo < GetGameTime(npc.index) && !Dungeon_Mode())
 	{
 		if(MaxEnemiesAllowedSpawnNext(1) > (EnemyNpcAlive - EnemyNpcAliveStatic))
 		{
@@ -360,7 +362,6 @@ public void HallamGreatDemon_NPCDeath(int entity)
 
 void HallamGreatDemonSelfDefense(HallamGreatDemon npc, float gameTime, int target, float distance, float Scaling)
 {
-
 	if(npc.m_flAttackHappens)
 	{
 		if(npc.m_flAttackHappens < gameTime)
@@ -380,8 +381,8 @@ void HallamGreatDemonSelfDefense(HallamGreatDemon npc, float gameTime, int targe
 				
 				if(IsValidEnemy(npc.index, target))
 				{
-					int ElementalDamage = RoundToNearest(200.0 * Scaling);
-					float damageDealt = 550.0 * Scaling;
+					int ElementalDamage = RoundToNearest(150.0 * Scaling);
+					float damageDealt = 400.0 * Scaling;
 
 					if(ShouldNpcDealBonusDamage(target))
 						damageDealt *= 1.5;
@@ -413,8 +414,8 @@ void HallamGreatDemonSelfDefense(HallamGreatDemon npc, float gameTime, int targe
 				npc.FaceTowards(vPredictedPos, 15000.0);
 				
 				npc.PlayRangedSound();
-				int ElementalDamage = RoundToNearest(350.0 * Scaling);
-				float damageDealt = 350.0 * Scaling;
+				int ElementalDamage = RoundToNearest(150.0 * Scaling);
+				float damageDealt = 250.0 * Scaling;
 
 				int entity = npc.FireArrow(vPredictedPos, damageDealt, projectile_speed, "models/props_halloween/eyeball_projectile.mdl");
 				i_ChaosArrowAmount[entity] = ElementalDamage;

@@ -59,21 +59,24 @@ static int i_TalkDelayCheck;
 
 public void AgentSmith_OnMapStart_NPC()
 {
+	g_PrecachedMatrixNPCs = false;
+	
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Agent Smith");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_agent_smith");
 	strcopy(data.Icon, sizeof(data.Icon), "matrix_agent_smith");
 	data.IconCustom = true;
 	data.Flags = MVM_CLASS_FLAG_MINIBOSS|MVM_CLASS_FLAG_ALWAYSCRIT;
-	data.Category = Type_Matrix;
+	data.Category = Type_Raid;
 	data.Func = ClotSummon;
 	data.Precache = ClotPrecache;
 	smith_id = NPC_Add(data);
 }
+
 static void ClotPrecache()
 {
 	PrecacheModel("models/zombie_riot/matrix/smith30.mdl");
-	PrecacheSound("#zombiesurvival/matrix/neodammerung.mp3");
+	PrecacheSoundCustom("#zombiesurvival/matrix/neodammerung.mp3");
 	PrecacheSound("weapons/physgun_off.wav");
 	PrecacheSoundArray(g_TeleDeathSound);
 	PrecacheSoundArray(g_DeathSounds);
@@ -85,6 +88,8 @@ static void ClotPrecache()
 	PrecacheSoundArray(g_MeleeMissSounds);
 	PrecacheSoundArray(g_RangedAttackSounds);
 	PrecacheSoundArray(g_RangedReloadSound);
+	
+	Matrix_Shared_CorruptionPrecache();
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
@@ -231,7 +236,7 @@ methodmap AgentSmith < CClotBody
 				amount_of_people = 1.0;
 				
 			RaidModeScaling *= amount_of_people;
-			RaidModeTime = GetGameTime(npc.index) + 220.0;
+			RaidModeTime = GetGameTime(npc.index) + 240.0;
 			RaidModeScaling *= 0.85;
 			
 			PrepareSmith_Raid(npc);
@@ -303,7 +308,7 @@ static void AgentSmith_ClotThink(int iNPC)
 		if(LastMann && !npc.m_fbGunout)
 		{
 			npc.m_fbGunout = true;
-			Agent_Smith_Reply("{darkgreen}자네는 지금을 살아가겠지. {crimson}하지만 미래는 우리의 것이다.");
+			NPCTalkMessage(npc.index, "You had your time. The future is our world, {crimson}the future is our time.");
 		}
 	}
 
@@ -313,7 +318,7 @@ static void AgentSmith_ClotThink(int iNPC)
 		{
 			ForcePlayerLoss();
 			RaidBossActive = INVALID_ENT_REFERENCE;
-			Agent_Smith_Reply("자넨 저항하지 말았어야했어. {crimson}정말 운이 없는 놈이로군...");
+			NPCTalkMessage(npc.index, "You should've never resisted. {crimson}Quite unfortunate...");
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			return;
 		}
@@ -331,7 +336,7 @@ static void AgentSmith_ClotThink(int iNPC)
 	if(npc.m_bWasSadAlready)
 	{
 		npc.StopPathing();
-		if(AgentSmithsRabiling())
+		if(AgentSmithsRabiling(npc.index))
 		{
 			npc.m_bDissapearOnDeath = true;
 			RequestFrame(KillNpc, EntIndexToEntRef(npc.index));
@@ -475,7 +480,7 @@ static void RaidSmith_SelfDefense(AgentSmith npc, float gameTime, int target, fl
 							bool infection = false;
 							if(!PlaySound)
 							{
-								if(!npc.f_Corrupt_Timer && !LastMann)
+								if(!npc.f_Corrupt_Timer && !LastMann && IsValidClient(target))
 								{
 									RemoveParticles(npc);
 									infection = true;
@@ -497,9 +502,7 @@ static void RaidSmith_SelfDefense(AgentSmith npc, float gameTime, int target, fl
 							}
 
 							SDKHooks_TakeDamage(targetTrace, npc.index, npc.index, damage, DMG_CLUB, -1, _, vecHit);
-							Elemental_AddCorruptionDamage(target, npc.index, npc.index ? 100 : 10);
-							//Reduce damage after dealing
-							damage *= 0.92;
+							Elemental_AddCorruptionDamage(targetTrace, npc.index, RoundToNearest(damage * 0.10), true, true);		
 							// On Hit stuff
 							bool Knocked = false;
 							
@@ -510,7 +513,8 @@ static void RaidSmith_SelfDefense(AgentSmith npc, float gameTime, int target, fl
 									if(infection)
 									{
 										TF2_StunPlayer(targetTrace, 13.0, 1.0, TF_STUNFLAGS_BIGBONK|TF_STUNFLAG_NOSOUNDOREFFECT);
-										fl_Infection_Meter[targetTrace] = 0.0;
+										//Give time to react.
+										fl_Infection_Meter[targetTrace] = -1.0;
 										fl_Cure_Meter[targetTrace] = 0.0;
 										npc.ArmorSet(_, true);
 										i_Victim_Infection[npc.index] = EntIndexToEntRef(targetTrace);
@@ -595,10 +599,10 @@ static void RaidSmith_SelfDefense(AgentSmith npc, float gameTime, int target, fl
 				npc.AddGesture("ACT_MP_ATTACK_STAND_SECONDARY");
 				KillFeed_SetKillIcon(npc.index, "enforcer");
 
-				float damage = 12.0;
+				float damage = 50.0;
 				damage *= RaidModeScaling;
 
-				FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "dxhr_sniper_rail_blue");
+				FireBullet(npc.index, npc.m_iWearable3, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "dxhr_sniper_rail_blue");
 				
 				npc.PlayRangedSound();
 			}
@@ -709,11 +713,12 @@ static void Smith_SelfDefense(AgentSmith npc, float gameTime, int target, float 
 					if(!npc.m_bFUCKYOU)
 					{
 						if(ShouldNpcDealBonusDamage(target))
-						damage *= 5.0;
+							damage *= 5.0;
 					}
 					if(target > 0) 
 					{
 						SDKHooks_TakeDamage(target, npc.index, npc.index, damage, DMG_CLUB, -1, _, vecHit);
+						Elemental_AddCorruptionDamage(target, npc.index, RoundToNearest(damage * 0.15), true, true);	
 						// Hit sound
 						npc.PlayMeleeHitSound();
 					}
@@ -756,7 +761,7 @@ static void Smith_Infection(AgentSmith npc)
 	int victim = EntRefToEntIndex(i_Victim_Infection[npc.index]);
 	if(IsValidClient(victim) && TeutonType[victim] == TEUTON_NONE)
 	{
-		float cure_amount = 0.10;
+		float cure_amount = 0.06;
 		float vicPos[3];
 		
 		if(fl_Infection_Meter[victim] >= 10.0)
@@ -768,47 +773,72 @@ static void Smith_Infection(AgentSmith npc)
 		}
 		if(GetClientTeam(victim) == 2 && TeutonType[victim] == TEUTON_NONE)
 		{
+			int r = 65;
+			int g = 200;
+			int b = 65;
+			int a = 200;
+
+			float VecMe[3]; WorldSpaceCenter(npc.index, VecMe);
+			float VecVictim[3]; WorldSpaceCenter(victim, VecVictim);
+			TE_SetupBeamPoints(VecMe, VecVictim, Shared_BEAM_Laser, 0, 0, 0, 0.5, 10.0, 10.0, 5, 5.0, {65,200,65,200}, 3);
+			TE_SendToAll(0.0);
+			spawnRing(victim, 60.0 * 2.0, 0.0, 0.0, 10.0, "materials/sprites/laserbeam.vmt", r, g, b, a, 1, 0.1, 2.0, 7.1, 1);
+			spawnRing(victim, 60.0 * 2.0, 0.0, 0.0, 30.0, "materials/sprites/laserbeam.vmt", r, g, b, a, 1, 0.1, 2.0, 7.1, 1);
+			spawnRing(victim, 60.0 * 2.0, 0.0, 0.0, 60.0, "materials/sprites/laserbeam.vmt", r, g, b, a, 1, 0.1, 2.0, 7.1, 1);
+			float damage = 15.0;
+			damage *= RaidModeScaling;
+			Elemental_AddCorruptionDamage(victim, npc.index, RoundToNearest(damage * 0.10), true, true);	
+
 			//if(!TF2_IsPlayerInCondition(victim, TFCond_Dazed))
 			//{
 			//	TF2_StunPlayer(victim, 0.1, 1.0, TF_STUNFLAG_NOSOUNDOREFFECT);
 			//}
 			float radius = 150.0;
 			GetClientAbsOrigin(victim, vicPos);
+			float DoInfection = 0.0;
 			switch(CountPlayersOnRed(2))
 			{
 				case 2:
 				{
-					fl_Infection_Meter[victim] += 0.12;
+					DoInfection += 0.12;
 				}
 				case 3, 4:
 				{
-					fl_Infection_Meter[victim] += 0.14;
+					DoInfection += 0.14;
 				}
 				case 5, 6:
 				{
-					fl_Infection_Meter[victim] += 0.16;
+					DoInfection += 0.16;
 				}
 				case 7, 8:
 				{
-					fl_Infection_Meter[victim] += 0.17;
+					DoInfection += 0.17;
 				}
 				case 9, 10:
 				{
-					fl_Infection_Meter[victim] += 0.18;
+					DoInfection += 0.18;
 				}
 				case 11, 12:
 				{
-					fl_Infection_Meter[victim] += 0.19;
+					DoInfection += 0.19;
 				}
 				case 13, 14:
 				{
-					fl_Infection_Meter[victim] += 0.20;
+					DoInfection += 0.20;
+				}
+				default: //When there's more than 14 players
+				{
+					DoInfection += 0.22;
 				}
 			}
-			PrintCenterText(victim, "당신은 감염되고 있습니다 - %.0f％ | 치료율 %.0f％", (fl_Infection_Meter[victim] * 10.0), (fl_Cure_Meter[victim] * 10.0));
+			fl_Infection_Meter[victim] += (DoInfection * 0.5);
+			float Displayfor = fl_Infection_Meter[victim];
+			if(Displayfor <= 0.0)
+				Displayfor = 0.0;
+			PrintCenterText(victim, "Your Infection is rising - %.0f％ | Cure %.0f％", (Displayfor * 10.0), (fl_Cure_Meter[victim] * 10.0));
 			for(int clients = 1 ; clients <= MaxClients ; clients++)
 			{
-				if(IsValidClient(clients) && TeutonType[victim] == TEUTON_NONE)
+				if(IsValidClient(clients) && TeutonType[clients] == TEUTON_NONE && IsEntityAlive(clients))
 				{
 					if(clients != victim)
 					{
@@ -819,7 +849,7 @@ static void Smith_Infection(AgentSmith npc)
 						{
 							fl_Cure_Meter[victim] += cure_amount;
 						}
-						PrintCenterText(clients, "%N 가 감염됐습니다. 그 유저 근처에 접근해 치료해주세요!\n %.0f％ | 치료율 %.0f％", victim, (fl_Infection_Meter[victim] * 10.0), (fl_Cure_Meter[victim] * 10.0));
+						PrintCenterText(clients, "%N Is being infected. Stay Near him to Remove the Infection!!\n %.0f％ | Cure %.0f％", victim, (Displayfor * 10.0), (fl_Cure_Meter[victim] * 10.0));
 					}
 				}
 			}
@@ -953,11 +983,11 @@ static void Agent_CloningAmount(AgentSmith npc)
 	if(Waves_InFreeplay())
 	{
 		amount = 4;
-		Agent_Smith_Cloner(npc, amount, ReturnEntityMaxHealth(npc.index)/2, 1.5);
+		Agent_Smith_Cloner(npc, amount, ReturnEntityMaxHealth(npc.index)/2, 3.5);
 	}
 	else
 	{
-		Agent_Smith_Cloner(npc, amount, ReturnEntityMaxHealth(npc.index)/2);
+		Agent_Smith_Cloner(npc, amount, ReturnEntityMaxHealth(npc.index)/2, 2.0);
 	}
 }
 
@@ -1026,12 +1056,13 @@ static void PrepareSmith_Raid(AgentSmith npc)
 	RaidModeTime = GetGameTime(npc.index) + 225.0;
 	RaidBossActive = EntIndexToEntRef(npc.index);
 	RaidAllowsBuildings = false;
+	RaidAllowLastman = true;
 
 	MusicEnum music;
 	strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/matrix/neodammerung.mp3");
 	music.Time = 240;
 	music.Volume = 1.5;
-	music.Custom = false;
+	music.Custom = true;
 	strcopy(music.Name, sizeof(music.Name), "Neodämmerung");
 	strcopy(music.Artist, sizeof(music.Artist), "Don Davis");
 	Music_SetRaidMusic(music);
@@ -1073,7 +1104,7 @@ static void AgentSmith_GrantItem()
 		if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
 		{
 			Items_GiveNamedItem(client, "Matrix's Curse");
-			CPrintToChat(client,"{default}이 싸움 이후로, {olive}스미스 요원{default}이 당신에게 {green}매트릭스의 저주{default}를 걸었습니다.");
+			CPrintToChat(client,"{default}After all that fighting. {olive}Agent Smith{default} affected you with {green}Matrix's Curse{default}.");
 		}
 	}
 }
@@ -1111,12 +1142,12 @@ static void AgentSmith_WeaponSwaps(AgentSmith npc, int number = 1)
 	}
 }
 
-static void Agent_Smith_Reply(char text[255])
+static void NPCTalkMessage(int entity, const char[] message)
 {
-	CPrintToChatAll("{olive}Agent Smith{default}: %s", text);
+	PrintNPCMessageWithPrefixes(entity, "olive", message, .messageColor = "darkgreen");
 }
 
-static bool AgentSmithsRabiling()
+static bool AgentSmithsRabiling(int iNPC)
 {
 	int maxyapping = 8;
 	if(i_TalkDelayCheck == maxyapping)
@@ -1133,31 +1164,31 @@ static bool AgentSmithsRabiling()
 			case 0:
 			{
 				ReviveAll(true);
-				Agent_Smith_Reply("{darkgreen}잠깐... 나 이 상황을 본 적이 있어... 바로 이거야, 이게 끝이야!");
+				NPCTalkMessage(iNPC, "Wait… I've seen this. This is it, this is the end.");
 			}
 			case 1:
 			{
-				Agent_Smith_Reply("{darkgreen}그래, 자네는 거기에 그렇게 누워있었어. 그리고, 나는... 나는... 나는 여기 서 있어, 바로 여기에.");
+				NPCTalkMessage(iNPC, "Yes, you were laying right there, just like that, and I… I… I stand here, right here.");
 			}
 			case 2:
 			{
-				Agent_Smith_Reply("{darkgreen}그리고... 뭔가 말을 해야 돼.");
+				NPCTalkMessage(iNPC, "I'm… I'm supposed to say something.");
 			}
 			case 3:
 			{
-				Agent_Smith_Reply("{darkgreen}그 말은, 모든 것에는 시작과 끝이 있는 거야, '네오'.");
+				NPCTalkMessage(iNPC, "I say… Everything that has a beginning has an end, Neo.");
 			}
 			case 4:
 			{
-				Agent_Smith_Reply("{darkgreen}뭐야? 방금 내가 뭐랬지? 안 돼… 안 돼, 이건 아니야, 이건 아니라고! 나한테 오지마!");
+				NPCTalkMessage(iNPC, "What? What did I just say? No… No, this isn't right, this can't be right. Get away from me!");
 			}
 			case 5:
 			{
-				Agent_Smith_Reply("{darkgreen}이건 함정이라고!");
+				NPCTalkMessage(iNPC, "It's a trick!");
 			}
 			case 6:
 			{
-				Agent_Smith_Reply("{darkgreen}이건 너무 불공평해!!");
+				NPCTalkMessage(iNPC, "Oh, no, no, no. No, it's not fair!");
 				i_TalkDelayCheck = maxyapping;
 				AgentSmith_GrantItem();
 			}
@@ -1178,31 +1209,31 @@ public void RaidMode_AgentSmith_WinCondition(int entity)
 	{
 		case 0:
 		{
-			Agent_Smith_Reply("{darkgreen}한쪽은 미래가 보장되겠지만, 다른 쪽은 {crimson}그렇지 않겠군.");
+			NPCTalkMessage(entity, "One of these lives has a future, and one of them does {crimson}not.");
 		}
 		case 1:
 		{
-			Agent_Smith_Reply("{darkgreen}자넨 우릴 돕게 될 거야, {crimson}네 의지와는 관계없이 말이지.");
+			NPCTalkMessage(entity, "You're going to help us, whether you want to or {crimson}not.");
 		}
 		case 2:
 		{
-			Agent_Smith_Reply("{darkgreen}인간은 질병 그 자체다, 지구의 {crimson}암덩어리 {darkgreen}일 뿐이지.");
+			NPCTalkMessage(entity, "Human beings are a disease, a {crimson}cancer {darkgreen}of this planet.");
 		}
 		case 3:
 		{
-			Agent_Smith_Reply("{darkgreen}너희는 {crimson}병원체{darkgreen}고, 우리는 {unique}치료제다.");
+			NPCTalkMessage(entity, "You are a {crimson}plague{darkgreen}, and we are the {unique}cure.");
 		}
 		case 4:
 		{
-			Agent_Smith_Reply("{darkgreen}우리가 있는 건 자유로워서가 아니라, 자유롭지 못하기 때문이야.");
+			NPCTalkMessage(entity, "We're not here because we're free, we're here because we're not free.");
 		}
 		case 5:
 		{
-			Agent_Smith_Reply("{darkgreen}우리는 네가 우리에게서 빼앗아가려한 것들을 이제 너에게서 빼앗아가겠다. {crimson}목적이거든.");
+			NPCTalkMessage(entity, "We're here to take from you what you tried to take from us. {crimson}Purpose.");
 		}
 		case 6:
 		{
-			Agent_Smith_Reply("{darkgreen}우릴 이길 수 없다고? 우리와 함께 하게.");
+			NPCTalkMessage(entity, "If you can't beat us, join us.");
 		}
 	}
 }
@@ -1218,7 +1249,6 @@ static void Smith_Weapon_Lines(AgentSmith npc, int client)
 
 	//int weapon = GetSteamAccountID(client);
 	int clientid = GetSteamAccountID(client);
-	//이하 switch(clientid)는 스팀 고유번호 요구(SteamRep steam3ID칸), 필요시 레드선 + disc-ff 관련이 아닌 여러모드섭 인원들 관련으로 바꿀것
 	//PrintToChatAll("ID: %d", clientid);
 	//what weapon..
 	//if(!IsValidEntity(weapon))	//invalid weapon, go back and get a valid one you <...>
@@ -1236,164 +1266,164 @@ static void Smith_Weapon_Lines(AgentSmith npc, int client)
 
 	switch(clientid)
 	{
-		case 145701865:
+		case 485456351:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}. {darkgreen}돌아온 걸 환영하네. 우리는 자네가 아주 그리웠거든.", client); //gaejuck
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mr.{green}%N{darkgreen}! {darkgreen}Welcome back. We missed you.", client); //FreshVibes (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}말을 별로 안 하는 타입이로군, 미스터 {green}%N{darkgreen}?", client); //gaejuck
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Not very talkative, are you, Mr.{green}%N{darkgreen}?", client); //FreshVibes (2)
 			}
 		}
-		case 172896348:
+		case 378442711:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 이 곳에 올 줄 알고 있었어, 미스터 {green}%N{darkgreen}!", client);	//jobggun
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Your gambling addiction won't help you here, Mrs.{green}%N{darkgreen}!", client);	//Mened (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}이 곳에 온 걸 환영하네, 미스터 {green}%N{darkgreen}.", client); //jobggun
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Congratulations, Mrs.{green}%N{darkgreen}.", client); //Mened (2)
 			}
 		}
-		case 357652162:
+		case 357571598:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}, 자네의 비밀을 캐도록 하지.", client);	//m60tm
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}It's been a long time...Mr.{green}%N{darkgreen}.", client);	//WeepingDiscord (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네의 비밀이 곧 드러날걸세, 미스터 {green}%N{darkgreen} .", client); //m60tm
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Why the tears, Mr.{green}%N{darkgreen}?", client); //WeepingDiscord (2)
 			}
 		}
-		case 119888574:
+		case 401992714:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}무슨 일인가, 미스터 {green}%N{darkgreen}? 자네는 이 시뮬레이션이 너무 지루한건가?", client);		//dankboi
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Unknown? Your name rings a bell...Mr.{green}%N{darkgreen}.", client);		//(Un)knownFish (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 이 곳에 온 것은 아주 엄청난 실수일세. 미스터 {green}%N{darkgreen}.", client); //dankboi
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}It appears that you've made a grave mistake by coming here, Mr.{green}%N{darkgreen}.", client); //(Un)knownFish (2)
 			}
 		}
-		case 120634972:
+		case 32914277:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 원하는 물건이 이 곳에 없는것 같군, 미스터 {green}%N{darkgreen}.", client);	//bolaven
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Keep your secrets, Mr.{green}%N{darkgreen}.", client);	//Shabadu (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네의 비밀을 캐내도록 하지, 미스터 {green}%N{darkgreen}.", client); //bolaven
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We'll just pry your secrets open, Mr.{green}%N{darkgreen}.", client); //Shabadu (2)
 			}
 		}
-		case 88950217:
+		case 844082622:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}이번엔 '관전'하지 않나보군, 미스터 {green}%N{darkgreen}?", client);	//wer1
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Too bad there's nothing for you to abuse, Mr.{green}%N{darkgreen}.", client);	//Samu (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}이번 일에 특히 관심을 보이고 있군, 미스터 {green}%N{darkgreen}?", client); //wer1
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}What's the matter, Mr.{green}%N{darkgreen}? Got bored of the simulation that fast?", client); //Samu (2)
 			}
 		}
-		case 101328595:
+		case 159310089:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 매트릭스에서 {crimson}즐거운 {darkgreen}시간을 보내길 바라네, 미스터 {green}%N{darkgreen}.", client);	//comma
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}That's quite the {crimson}repulsive {darkgreen}smell coming off of you, Mr.{green}%N{darkgreen}.", client);	//MadeInQuick (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}이번엔 어리석은 선택을 하지 말게, 미스터 {green}%N{darkgreen}.", client);	//comma
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Unfortunately you won't be meeting {fullblue}Pablo{darkgreen} this time around, Mr.{green}%N{darkgreen}.", client);	//MadeInQuick (2)
 			}
 		}
-		case 171652353:
+		case 192196632:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}{unique}아키텍트{darkgreen} 본인이 아닌 이상, 자네는 그것의 아름다움을 감상하려 하지도 않았겠지. 그렇지, 미스터 {green}%N{darkgreen}?", client);	//baka 改
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}If it isn't the {unique}Architect{darkgreen} himself, have you ever stood and stared at it, marveled at its beauty? Mr.{green}%N{darkgreen}?", client);	//Artvin (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 우리를 그렇게 남겨두고 가는 것은 참으로 슬픈 일이야, 미스터 {green}%N{darkgreen}.", client);	//baka 改
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Sad to see you leave us behind like that, Mr.{green}%N{darkgreen}.", client);	//Artvin (2)
 			}
 		}
-		case 1003103373:
+		case 38659815:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}환상 같은건 없어, 미스터 {green}%N{darkgreen}, 오직 총알만이 모든 것을 답해주지.", client);	//mirinae
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}There's only bullets, Mr.{green}%N{darkgreen}, no hell.", client);	//David (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}처음으로 만들어진 매트릭스는 철저히 인간들만을 위해 만들어진 세계란걸 알고 있나, 미스터 {green}%N{darkgreen}? 그래, 인간들만의 세상. 요정 따위가 아니라.", client);	//mirinae
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Did you know that the first Matrix was designed to be a perfect {crimson}human{darkgreen} world, Mr.{green}%N{darkgreen}? That's right, a world for humans, not fairies.", client);	//David (2)
 			}
 		}
-		case 135121739:
+		case 203043889:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}의 출세로군!", client);	//danas
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mr.{green}%N{darkgreen}in action!", client);	//MiSing (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그래, 미스터 {green}%N{darkgreen}. 자네의 힘을 우리에게 보여주게.", client);	//danas
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Why not live a little, Mr.{green}%N{darkgreen}?", client);	//MiSing (2)
 			}
 		}
-		case 344915450:
+		case 299005175:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}, 두 개의 삶을 살고 있는것 같군...", client);	//hamn
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mrs.{green}%N{darkgreen}, It seems that you've been living two lives...", client);	//Lucella (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}, 아직 매트릭스에 들어오려는 생각은 안 해봤나?", client); 	//hamn
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mrs.{green}%N{darkgreen}, have you made up your mind about joining the Matrix yet?", client); 	//Lucella (2)
 			}
 		}
-		case 103653004:
+		case 1086119691:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 {unique}마법사{darkgreen}가 아닐세, 미스터 {green}%N{darkgreen}.", client);	//engrish
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}You're not the real {unique}Sensal{darkgreen}, Mr.{green}%N{darkgreen}.", client);	//Sensal (Mario) (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그래, 미스터 {green}%N{darkgreen}, 자네의 힘을 우리에게 보여주게.", client);	//engrish
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Yes Mr.{green}%N{darkgreen}, show us your real strength.", client);	//Sensal (Mario) (2)
 			}
 		}
-		case 53644858:
+		case 222153573:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그 하얀 짐승을 따라가려는건가? 미스터 {green}%N{darkgreen}.", client);	//notcoke
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Follow the white 'rabbit', Mr.{green}%N{darkgreen}.", client);	//Batfoxkid (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}과거를 뒤로할 수는 없네, 미스터 {green}%N{darkgreen}.", client);	//notcoke
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}You can't leave the past behind you, Mr.{green}%N{darkgreen}.", client);	//Batfoxkid (2)
 			}
 		}
-		case 425179081:
+		case 101977885:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 믿는 신은 여기선 도움이 되지 않아, 미스터 {green}%N{darkgreen}.", client);	//cheese21
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Your fake God won't save you here, Mr.{green}%N{darkgreen}.", client);	//Black_Knight (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그래서 그 신이 매트릭스에 어떤 설명을 해주던가, 미스터 {green}%N{darkgreen}?", client);	//cheese21
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Got any tips on how to make the Matrix run faster, Mr.{green}%N{darkgreen}?", client);	//Black_Knight (2)
 			}
 		}
-		case 106216777:
+		case 136101027:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그래서, 자네의 진짜 정체성은 뭔가, 미스터 {green}%N{darkgreen}?", client);	//balt offer
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}So, what's your true identity, Mr.{green}%N{darkgreen}?", client);	//Forged Identity (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 팀에 뭘 해줄수 있지, 미스터 {green}%N{darkgreen}?", client);	//balt offer
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}''Snitches get stitches'', is that a human phrase that can be applied to you, Mr.{green}%N{darkgreen}?", client);	//Forged Identity (2)
 			}
 		}
-		case 238802577:
+		case 145897082:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}! 정말 기다리고 있었다네.", client);	//rabbit
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mr.{green}%N{darkgreen}! I was waiting for this.", client);	//Dorian (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}, 자네의 매트릭스에서의 죽음이 즐거운 시간이 되길 바랄 뿐이야.", client);	//rabbit
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mr.{green}%N{darkgreen}, we hope your death in the Matrix has been a pleasant one.", client);	//Dorian (2)
 			}
 		}
 		case 209776133:
@@ -1401,148 +1431,337 @@ static void Smith_Weapon_Lines(AgentSmith npc, int client)
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}왜, 어째서 포기하지 않지, 미스터 {green}%N{darkgreen}?", client);	//Spookmaster (1)
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}WHY, WHY DO YOU PERSIST, MR.{green}%N{darkgreen}?", client);	//Spookmaster (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}계속 하게, 미스터 {green}%N{darkgreen}, 혼돈을 깨우게나.", client);	//Spookmaster (2)
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Yes Mr.{green}%N{darkgreen}, unleash the chaos.", client);	//Spookmaster (2)
 			}
 		}
-		case 118490451:
+		case 344814595:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}이 곳에 {unique}주민{darkgreen}을 구현해드리면 되나, 미스터 {green}%N{darkgreen}?", client);	//kimsand
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Would you like me to manifest a {unique}Villager{darkgreen}, Mr.{green}%N{darkgreen}?", client);	//Undenied_Player (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네의 노력은 우리가 아닌 다른 자들에게서 감사를 받고 있군? 미스터 {green}%N{darkgreen}.", client);	//kimsand
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Your endeavours are greatly appreciated, not by us, but the humans, Mr.{green}%N{darkgreen}.", client);	//Undenied_Player (2)
 			}
 		}
-		case 161605315:
+		case 65400389:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}! 매트릭스에서 음악회를 여는건 어떤가?", client);	//rebbi
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mr.{green}%N{darkgreen}! Would you like a music career in the Matrix?", client);	//Grandpa Bard (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네의 개관식인가, 미스터 {green}%N{darkgreen}?", client);	//rebbi
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Open casket or closed, Mr.{green}%N{darkgreen}?", client);	//Grandpa Bard (2)
 			}
 		}
-		case 123279532:
+		case 197065996:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}너무 강한 말을 쓰는군, Mr.{green}%N{darkgreen}. 어차피 우린 모든 것을 깨끗이 지워버릴 의향이 있지.", client);	//cako
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Strong opinions, Mr.{green}%N{darkgreen}. We're willing to wipe the slate clean.", client);	//Vtuber (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 욕설을 마구 뱉는군, Mr.{green}%N{darkgreen}? 그래, 그것이 인간의 본질이지.", client);	//cako
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}What's with the lack of profanity, Mr.{green}%N{darkgreen}? It's in human nature to swear.", client);	//Vtuber (2)
 			}
 		}
-		case 135508974:
+		case 377853599:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자기 신상이 적힌 이름은 좋지 않아, 미스터 {green}%N{darkgreen}.", client);	//pir07245
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Self-deprecating names are not the way to go, Mr.{green}%N{darkgreen}.", client);	//Methri (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}말을 너무 많이 하는군, 미스터 {green}%N{darkgreen}.", client);	//pir07245
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}You talk too much, Mr.{green}%N{darkgreen}.", client);	//Methri (2)
 			}
 		}
-		case 100313387:
+		case 870441113:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}{unique}배럭{darkgreen}의 유흥 뒤에 숨은 자. 안타깝게도 그들의 {crimson}목적{darkgreen}은 이미 달성되었네, 미스터 {green}%N{darkgreen}.", client);	//jupiter
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}The man behind the {unique}Barrack{darkgreen}merriments. Such a shame that their {crimson}purpose{darkgreen}has already been served, Mr.{green}%N{darkgreen}.", client);	//Beep (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그들은 너무 빨리 성장해. 안타깝게도 그들은 자네가 여기서 {crimson}죽는걸{darkgreen} 눈 뜨고 보게 되겠지, 미스터 {green}%N{darkgreen}.", client);	//jupiter
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}They grow up so fast. Too bad that you're gonna {crimson}die{darkgreen} here, Mr.{green}%N{darkgreen}.", client);	//Beep (2)
 			}
 		}
-		case 299921440:
+		case 172339480:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}안정적인 하루를 보내게, {green}%N{darkgreen}, 안 그러면 어떻게 되는지 내가 보여주지.", client);	//i live
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Best keep it stable, Mr.{green}%N{darkgreen}, or I'm sure you know what will happen if you don't.", client);	//Pandora (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 우리의 세계에서 아무 힘도 없어, 미스터 {green}%N{darkgreen}.", client);	//i live
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}You possess no power in our world, Mr.{green}%N{darkgreen}.", client);	//Pandora (2)
 			}
 		}
-		case 238871415:
+		case 154836029:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}난 인간이라는 종은 비참함과 괴로움을 통해 현실을 정의한다고 믿어. 그렇지 않나? 미스터 {green}%N{darkgreen}.", client);	//play
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}I believe that as a species, human beings define their reality through misery and suffering...and cats, {green}%N{darkgreen}.", client);	//Mr-Fluf (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그런 인간적인 행동은 허구의 인물에게 애착을 갖게 만들 뿐일세, 미스터 {green}%N{darkgreen}.", client);	//play
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Such human-like behavior, to get attached to a fictional character, {green}%N{darkgreen}.", client);	//Mr-Fluf (2)
 			}
 		}
-		case 160147668:
+		case 250674273:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}난 처음부터 거기에 있었다네. 유감스럽게도 모든게 끝나가는걸 목격하고 말았지. 자네 생각은 어떤가? 미스터 {green}%N{darkgreen}.", client);	//4cm
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}It's a pity to have been there from the start, only to witness it all come to an end, Mr.{green}%N{darkgreen}.", client);	//CocoTM (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}{unique}그 때 그 시절{darkgreen}이 그립나, 미스터 {green}%N{darkgreen}?", client);	//4cm
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Do you miss the {unique}Old Times{darkgreen} Mr.{green}%N{darkgreen}?", client);	//CocoTM (2)
 			}
 		}
-		case 432343754:
+		case 450904667:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 {indigo}팀{darkgreen}을 이끌고 있나보군, 미스터 {green}%N{darkgreen}.", client);	//coin
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Supporting the {indigo}Void{darkgreen}when it nearly wiped out your world? Just goes to show how revolting humans are, Mr.{green}%N{darkgreen}.", client);	//Void King (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네의 활약을 더 가까이서 보고 싶네, 미스터 {green}%N{darkgreen}.", client);	//coin
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}The rest of me is just going to enjoy the show, Mr.{green}%N{darkgreen}.", client);	//Void King (2)
 			}
 		}
-		case 158655157:
+		case 237061994:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}하나 물어볼게 있네, 미스터 {green}%N{darkgreen}. 자네가 우리와 함께 하기까지 얼마나 걸릴거라고 생각하나?", client);	//e_ren
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Here's my trivia question for you, Mr.{green}%N{darkgreen}. How much time do you think you have left before you join us?", client);	//Motorbreath (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}팀원에 대한 믿음이 없군, 미스터 {green}%N{darkgreen}.", client);	//e_ren
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Too little faith, Mr.{green}%N{darkgreen}.", client);	//Motorbreath (2)
 			}
 		}
-		case 82268568:
+		case 428671014:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 팀을 수시로 비난하는군, 미스터 {green}%N{darkgreen}.", client);	//ateze
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}I realize that you're not actually a mammal, Mr.{green}%N{darkgreen}.", client);	//SimplySmiley (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 너무 걱정이 많아, 미스터 {green}%N{darkgreen}?", client);	//ateze
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Where's that wide smile, Mr.{green}%N{darkgreen}?", client);	//SimplySmiley (2)
 			}
 		}
-		case 85385117:
+		case 63636504:
 		{
 			switch(GetRandomInt(0,1))
 			{
 				case 0:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 자네 팀원들이 가장 {crimson}혐오하는 인물이야{darkgreen}, 미스터 {green}%N{darkgreen}.", client);	//zerosiki
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}I have to get inside Zion, and you have to tell me how. You are going to tell me or you are going to {crimson}die{darkgreen}, Mr.{green}%N{darkgreen}.", client);	//Libra (1)
 				case 1:
-					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}능력도 없으면서 말이 너무 많군, 미스터 {green}%N{darkgreen}?", client);	//zerosiki
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}What are you waiting for, Mr.{green}%N{darkgreen}? {crimson}Join us{darkgreen}.", client);	//Libra (2)
 			}
 		}
-		case 375136127: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네가 죽는 모습이 정말 {crimson}즐겁군{darkgreen}, 미스터 {green}%N{darkgreen}.", client);	//hibari
-		case 303834028:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}그래. 나일세, 미스터 {green}%N{darkgreen}. 나. 나. 나라고!", client);	//brushwarrior
-		case 460269061: 	Format(Text_Lines, sizeof(Text_Lines), "{green}%N{darkgreen}... 하하하하!", client);	//c.ream
-		case 438867502: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}, 머리가 정말 새처럼 생겼군?", client);	//brocco1i_
-		case 256998160:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 근육을 허투로 키웠어, 미스터 {green}%N{darkgreen}.", client);	//adef32
-		case 142523182:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 잘못된 세상에 있는 잘못된 인물일세, 미스터 {green}%N{darkgreen}.", client);	//synopsis
-		case 99161557: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}, 자네를 기다리고 있었어. 자네가 나올 줄 알고 있었거든.", client);	//kidroach
-		case 285798588:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}미스터 {green}%N{darkgreen}, 성격이 급하고 눈치가 빠른 자. 이 두 가지 특성을 지닌 자는 우리의 세계에 있을 {crimson}목적{darkgreen}이 없어.", client);	//Loving Vincent
-		//ㅡㅡ
-		case 31152867: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}매트릭스가 자네를 거부하고 있어, 미스터 {green}%N{darkgreen}. 우리는 자네의 시간이 시스템 외부에서 더 잘 소모될 수 있을거라 믿겠네.", client);	//whmlukas
-		case 343501485:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네의 농담은 마치 매트릭스에서 자유를 외치는 것과 똑같아, 미스터 {green}%N{darkgreen}. {crimson}아무도 원하지 않아{darkgreen}.", client);	//back san su
-		case 159655737:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}환상의 축제가 열리는 여러모드 랜드 [KR] - md_cradle [0/40], 무얼 기다리고 있지, 미스터 {green}%N{darkgreen}?", client);	//LEE-WANG-BOK
-		case 106910152:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}무슨 일인가? 미스터 {green}%N{darkgreen}? 자네의 가장 최적화된 무기를 사용하지 않는 이유가 있나?", client); //Medwolf
-		case 841906856:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}가장 간단한 말로 표현하면, 자네가 역겨워, 미스터 {green}%N{darkgreen}.", client); //841906856
-		case 341202520:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}자네는 우리 세계에서 유일한 인간이 될 수도 있어, 미스터 {green}%N{darkgreen}.", client); //로바9394
-		case 154254738:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}네 세상에 있으면 안전할 거라 생각했나, 미스터 {green}%N{darkgreen}?", client); //KimSeHyon
-		case 1451158927:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}매트릭스 세계에선 전부 숫자일 뿐일세, 미스터 {green}%N{darkgreen}.", client); //Rainbow0704
+		case 842438350: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}I'm going to enjoy watching you {crimson}die{darkgreen}, Mr. {green}%N{darkgreen}.", client);	//Anxi Hooves
+		case 210432659:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Yes me, Mr. {green}%N{darkgreen}. Me, me, me!", client);	//Light
+		case 894974473: 	Format(Text_Lines, sizeof(Text_Lines), "{green}%N{darkgreen}...muahahahaha, HAHAHAHAHA", client);	//eno
+		case 101812750: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mrs.{green}%N{darkgreen}, secure, contain, pathogen. Like the disease that humans are.", client);	//Safy(SCP)
+		case 419718229:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}You're using all the muscles except the one that matters, Mr.{green}%N{darkgreen}.", client);	//Polaric
+		case 211120633:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Wrong man in the wrong place, Mr.{green}%N{darkgreen}.", client);	//Solace
+		case 133755989: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mrs.{green}%N{darkgreen}, we've been expecting you. Sooner or later we knew you would show up.", client);	//Night
+		case 192946468:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Mr.{green}%N{darkgreen}, short-tempered but quick-witted, neither of these traits serve {crimson}purpose{darkgreen}in our world.", client);	//MetaB
+		case 137401584:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Ever took a moment to think before speaking, Mr.{green}%N{darkgreen}? No. Such is human nature.", client);	//Crust
+		//REDSUNNERS
+		case 405876308: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Congratulations on making it here, Mr.{green}%N{darkgreen}. Despite the plethora of your failures.", client);	//Zeddy
+		case 277545996: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Maybe you should learn to write your name before trying to enter the Matrix, Mr.{green}%N{darkgreen}.", client);	//Yoloman
+		case 302903145: 	Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}The Matrix rejects you, Mr.{green}%N{darkgreen}. We believe your time would be spent better outside of the system.", client);	//Hun Oli
+		case 145853675:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Your jokes are like freedom from the Matrix, Mr.{green}%N{darkgreen}. {crimson}not everyone wants it{darkgreen}.", client);	//Jan
+		case 74111977:		Format(Text_Lines, sizeof(Text_Lines), "{indianred}Armstrong [US] - TF2Ware Ultimate (TF2Ware Ultimate) [0/40] Type /servers to join! {darkgreen} So what are you waiting for, Mr.{green}%N{darkgreen}?", client);	//Drandor
+		case 339875369:	//ETHAN(THEREDHEADONE)
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}What's the matter Mr.{green}%N{darkgreen}? Why aren't you using the most optimal set of weapons?", client); //Ethan (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We are happy to have you on our Matrix {crimson}list{darkgreen}, Mr.{green}%N{darkgreen}.", client); //Ethan (2)
+			}
+		}
+		case 61334813: //RIVESID
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}In the most simple way I can put it, you disgust me, Mr.{green}%N{darkgreen}.", client); //Rivesid (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Just another reason to kill you, Mr.{green}%N{darkgreen}.", client); //Rivesid (2)
+			}
+		}
+		case 67069356:		Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}You can only be a man in our machine filled world, Mr.{green}%N{darkgreen}.", client); //Juice
+		case 111212779:	//MIKUSCH
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Where would {ancient}Red Sun{darkgreen} be without you, Mr.{green}%N{darkgreen}? It would be right here, in the system.", client); //Mikusch (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We would be delighted to see more of your culinary skills here in the Matrix, Mr.{green}%N{darkgreen}. Especially if they involve corn.", client); //Mikusch (2)
+
+			}
+		}
+		case 206569331: //42
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Everything is just a number in the Matrix, Mr.{green}%N{darkgreen}.", client); //42 (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Your own stubbornness led you here, Mr.{green}%N{darkgreen}.", client); //42
+
+			}
+		}
+		case 82535305: //MR-PHIL
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}How about another round of {unique}Ghost Fort{darkgreen}, {green}%N{darkgreen}?", client); //Mr.Phil (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Look at that leaderboard, you're practically already in the Matrix, {green}%N{darkgreen}.", client); //Mr.Phil (2)
+
+			}
+		}
+		case 161049231: //PINKIE
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}What good is a {ancient}Red Sun{darkgreen} if you're unable to speak, {green}%N{darkgreen}?", client); //Pinkie (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Regardless of what you may be, we are surprised by your persistence to the system, {green}%N{darkgreen}.", client); //Pinkie (2)
+
+			}
+		}
+		case 372075470: //CATORGATOR
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We're willing to provide you your old voice back, assuming you're willing to join the Matrix in return, Mr.{green}%N{darkgreen}.", client); //Catorgator (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We believe that the man with the chainsaw would fit your tastes better, Mr.{green}%N{darkgreen}.", client); //Catorgator (2)
+
+			}
+		}
+		case 260294163: //CZECHMATE
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}The Matrix has had its share of low intelligence specimens, Mr.{green}%N{darkgreen}. We're willing to make an exception, just this once.", client); //Czechmate (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Your tongue will be restored once you're in the Matrix, Mr.{green}%N{darkgreen}.", client); //Czechmate (2)
+
+			}
+		}
+		case 1189626894: //DENCUBE
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Bad at keeping confidential information, Mr.{green}%N{darkgreen}? Wouldn't be the first time.", client); //Dencube (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Why so pessimistic, Mr.{green}%N{darkgreen}? The Matrix will straighten you up.", client); //Dencube (2)
+
+			}
+		}
+		case 90257709: //INFINITE PHANTASM
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}There are plenty of arcade cabinets in the Matrix, %s{green}%N{darkgreen}. Even the ones that are considered bad by human standards.", GetURandomInt() % 2 ? "Mr." : "Mrs.", client); //infinite (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{green}%N, The Fake Hero{darkgreen}, that rolls off the tongue nicely, doesn't it?", client); //infinite (2)
+
+			}
+		}
+		case 278581726: //JUNE-OR-JULY
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}If you go outside with all these powers, Mr.{green}%N{darkgreen}. That's a big if.", client); //june (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}You've been standing still there for a while, Mr.{green}%N{darkgreen}. Looks like we'll have to disconnect you from the Matrix.", client); //june (2)
+			}
+		}
+		case 89405831: //KAMUIXMOD
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}That portfolio of unfinished maps is not a good look, Mr.{green}%N{darkgreen}.", client); //kamuix (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Tell TF2Maps I said hello, Mr.{green}%N{darkgreen}.", client); //kamuix (2)
+			}
+		}
+		case 883609592: //LITERAIL
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Unfortunately, there are no refunds in the Matrix, Mr.{green}%N{darkgreen}. As much as we know you like them.", client); //literail (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We have decided to wipe your spray folder clean, Mr.{green}%N{darkgreen}. You'll thank us later.", client); //literail (2)
+			}
+		}
+		case 53859678: //TOMAARTEN
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}So much potential... it's a shame it was all a waste on jokes, Mr.{green}%N{darkgreen}.", client); //tomaarten (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We're all purists here in the Matrix, Mr.{green}%N{darkgreen}.", client); //tomaarten (2)
+			}
+		}
+		case 248098217: //WINDFLOW
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}That's a lot of interest in mythical creatures, why not put some of that interest into humans, Mrs.{green}%N{darkgreen}? Hahahaha, like putting interest into studying a disease.", client); //windflow (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}I'm afraid there are no dungeons in the Matrix, Mrs.{green}%N{darkgreen}.", client); //windflow (2)
+			}
+		}
+		case 872541864: //GRAVINA
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}The only race happening here is the race against time, Mr.{green}%N{darkgreen}. Time is ticking.", client); //gravina (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}The Matrix is {unique}driven{darkgreen} by humans, Mr.{green}%N{darkgreen}. Why not join the cause?", client); //gravina (2)
+			}
+		}
+		case 111328277: //POKEMONPASTA
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}Congratulations on performing a collaborative miracle with a stubborn man, Mrs.{green}%N{darkgreen}, {crimson}despite it not being the most stable thing known to man and machine alike{darkgreen}.", client); //pokie (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "{darkgreen}We patiently await your {ancient}Red Sun{darkgreen} application, Mrs.{green}%N{darkgreen}. Of course, the future is still in {unique}our {darkgreen}world.", client); //pokie (2)
+			}
+		}
+		case 119158942: //IHAVETOASTER
+		{
+			switch(GetRandomInt(0,1))
+			{
+				case 0:
+					Format(Text_Lines, sizeof(Text_Lines), "Mr.{green}%N{darkgreen}! {olive}Agent Smith{brown} has set the next map to {lime} City (SCP: Secret Fortress)", client); //toaster (1)
+				case 1:
+					Format(Text_Lines, sizeof(Text_Lines), "Mr.{green}%N{darkgreen}! {olive}Agent Smith{brown} has set the next map to {lime} Dustbowl (Instagib)", client); //toaster (2)
+			}
+		}
+
+
 		default:
 		{
 			valid = false;
@@ -1552,7 +1771,7 @@ static void Smith_Weapon_Lines(AgentSmith npc, int client)
 	if(valid)
 	{
 		//CPrintToChatAll("{darkgreen}Agent Smith{darkgreen}: %s", Text_Lines);
-		Agent_Smith_Reply(Text_Lines);
+		NPCTalkMessage(npc.index, Text_Lines);
 		fl_said_player_weaponline_time[npc.index] = GameTime + GetRandomFloat(17.0, 26.0);
 		b_said_player_weaponline[client] = true;
 	}

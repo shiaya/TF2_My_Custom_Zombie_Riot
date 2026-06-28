@@ -155,6 +155,7 @@ methodmap SpeedusAbsolutos < CClotBody
 		npc.m_iBleedType = BLEEDTYPE_NORMAL;
 		npc.m_iStepNoiseType = STEPSOUND_NORMAL;	
 		npc.m_iNpcStepVariation = STEPTYPE_NORMAL;
+		SetEntPropFloat(npc.index, Prop_Data, "m_flElementRes", 1.0, Element_Chaos);
 		ApplyStatusEffect(npc.index, npc.index, "Infinite Will", 9999999.0);
 		
 		
@@ -326,7 +327,7 @@ public Action SpeedusAbsolutos_OnTakeDamage(int victim, int &attacker, int &infl
 				float pos[3]; GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", pos);
 				float ang[3]; GetEntPropVector(npc.index, Prop_Data, "m_angRotation", ang);
 				npc.PlayTeleportSound();
-				TE_SetupBeamPoints(WorldSpaceVec, PreviousPos, IreneReturnLaserSprite(), 0, 0, 0, life, 10.0, 10.2, 1, amp, color, 0);
+				TE_SetupBeamPoints(WorldSpaceVec, PreviousPos, AmphiReturnLaserSprite(), 0, 0, 0, life, 10.0, 10.2, 1, amp, color, 0);
 				TE_SendToAll();
 
 				float VecEnemy[3]; WorldSpaceCenter(Inflictordo, VecEnemy);

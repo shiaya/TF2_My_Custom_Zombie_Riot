@@ -36,7 +36,7 @@ void SpiritRunner_OnMapStart_NPC()
 	NPCData data;
 	strcopy(data.Name, sizeof(data.Name), "Spiritrunner");
 	strcopy(data.Plugin, sizeof(data.Plugin), "npc_spiritrunner");
-	strcopy(data.Icon, sizeof(data.Icon), "sawrunner");
+	strcopy(data.Icon, sizeof(data.Icon), "mb_sawrunner");
 	data.IconCustom = true;
 	data.Flags = 0;
 	data.Category = Type_Special;
@@ -198,7 +198,7 @@ methodmap SpiritRunner < CClotBody
 		SetEntPropFloat(npc.index, Prop_Send, "m_fadeMinDist", 600.0);
 		SetEntPropFloat(npc.index, Prop_Send, "m_fadeMaxDist", 700.0);
 
-		b_NoHealthbar[npc.index] = true;
+		b_NoHealthbar[npc.index] = 1;
 		GiveNpcOutLineLastOrBoss(npc.index, false);
 		
 		npc.m_bDissapearOnDeath = true;

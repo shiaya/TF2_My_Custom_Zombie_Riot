@@ -9,10 +9,12 @@ static GlobalForward OnKilledNPC;
 static GlobalForward OnRevivingPlayer;
 static GlobalForward OnGivenCash;
 static GlobalForward OnTeamWin;
+static GlobalForward OnWinInfo;
 static GlobalForward OnXpChanged;
 static GlobalForward CanRenameNpc;
 static GlobalForward OnWaveEnd;
 static GlobalForward OnSpecialModeProgress;
+static GlobalForward OnGiftCollected;
 
 void Natives_PluginLoad()
 {
@@ -34,6 +36,8 @@ void Natives_PluginLoad()
 	OnRevivingPlayer = new GlobalForward("ZR_OnRevivingPlayer", ET_Ignore, Param_Cell, Param_Cell);
 	OnGivenCash = new GlobalForward("ZR_OnGivenCash", ET_Event, Param_Cell, Param_CellByRef);
 	OnTeamWin = new GlobalForward("ZR_OnWinTeam", ET_Event, Param_Cell);
+	OnWinInfo = new GlobalForward("ZR_OnWinInfo", ET_Ignore, Param_Cell, Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell);
+	OnGiftCollected = new GlobalForward("ZR_OnGiftCollected", ET_Ignore, Param_Cell, Param_Cell);
 	OnXpChanged = new GlobalForward("ZR_OnGetXP", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 	CanRenameNpc = new GlobalForward("ZR_CanRenameNPCs", ET_Single, Param_Cell);
 	OnWaveEnd = new GlobalForward("ZR_OnWaveEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
@@ -62,6 +66,26 @@ void Native_ZR_OnWinTeam(int team)
 {
 	Call_StartForward(OnTeamWin);
 	Call_PushCell(view_as<TFTeam>(team));
+	Call_Finish();
+}
+
+void Native_ZR_OnWinInfo(ArrayList playerList, const char[] waveset, const char[] modifier, int TimeTook, int wave, ArrayList RogueItemNames)
+{
+	Call_StartForward(OnWinInfo);
+	Call_PushCell(playerList);
+	Call_PushString(waveset);
+	Call_PushString(modifier);
+	Call_PushCell(TimeTook);
+	Call_PushCell(wave);
+	Call_PushCell(RogueItemNames);
+	Call_Finish();
+}
+
+void Native_ZR_OnGiftCollected(int collector, ZRGiftRarity rarity)
+{
+	Call_StartForward(OnGiftCollected);
+	Call_PushCell(collector);
+	Call_PushCell(rarity);
 	Call_Finish();
 }
 
@@ -176,7 +200,7 @@ public any Native_GetLevelCount(Handle plugin, int numParams)
 
 public any Native_GetWaveCounts(Handle plugin, int numParams)
 {
-	return CurrentRound;
+	return CurrentRound[Rounds_Default];
 }
 public any Native_HasNamedItem(Handle plugin, int numParams)
 {
@@ -221,6 +245,11 @@ public any Native_GetSpecialMode(Handle plugin, int numParams)
 {
 	if(Construction_Mode())
 		return Mode_Construction;
+	if(Dungeon_Mode())
+		return Mode_Construction2;
+	if(Waves_InFreeplay())
+		return Mode_Freeplay;
+	
 
 	if(Rogue_Mode())
 	{
@@ -232,7 +261,15 @@ public any Native_GetSpecialMode(Handle plugin, int numParams)
 		{
 			return Mode_Rogue2;
 		}
+		else if(Rogue_Theme() == 2)
+		{
+			return Mode_Rogue3;
+		}
 	}
+	if(BetWar_Mode())
+		return Mode_BetWars;
+	if(Classic_Mode())
+		return Mode_Survival;
 	
 	return Mode_Standard;	
 }

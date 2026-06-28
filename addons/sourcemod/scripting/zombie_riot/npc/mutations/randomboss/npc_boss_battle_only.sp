@@ -10,12 +10,30 @@ void BossSummonRandom_OnMapStart_NPC()
 	strcopy(data.Icon, sizeof(data.Icon), "void_gate");
 	data.IconCustom = true;
 	data.Flags = MVM_CLASS_FLAG_MINIBOSS;
-	data.Category = 0; 
+	data.Category = Type_Hidden; 
 	data.Func = ClotSummon;
 	data.Precache = ClotPrecache;
 	NPC_Add(data);
+
+	
+	strcopy(data.Name, sizeof(data.Name), "Random Boss");
+	strcopy(data.Plugin, sizeof(data.Plugin), "npc_random_vsh");
+	strcopy(data.Icon, sizeof(data.Icon), "void_gate");
+	data.IconCustom = true;
+	data.Flags = MVM_CLASS_FLAG_MINIBOSS;
+	data.Category = Type_Hidden; 
+	data.Func = ClotSummon;
+	data.Precache = ClotPrecacheVsh;
+	NPC_Add(data);
 }
 
+static void ClotPrecacheVsh()
+{
+	//precaches said npcs.
+	NPC_GetByPlugin("npc_gentlespy");
+	NPC_GetByPlugin("npc_hhh");
+	NPC_GetByPlugin("npc_christianbrutalsniper");
+}
 static void ClotPrecache()
 {
 	//precaches said npcs.
@@ -46,6 +64,15 @@ static void ClotPrecache()
 	NPC_GetByPlugin("npc_castellan");
 	NPC_GetByPlugin("npc_lelouch");
 	NPC_GetByPlugin("npc_omega_raid");
+	NPC_GetByPlugin("npc_cat");
+	NPC_GetByPlugin("npc_aris");
+	NPC_GetByPlugin("npc_chimera");
+	NPC_GetByPlugin("npc_vincent");
+	NPC_GetByPlugin("npc_boss_reila");
+	NPC_GetByPlugin("npc_almagest_jkei");
+	NPC_GetByPlugin("npc_shadowing_darkness_boss");
+	NPC_GetByPlugin("npc_no_random_kranz");
+	NPC_GetByPlugin("npc_black_heavy_soul");
 }
 
 bool SameBossDisallow[64];
@@ -67,6 +94,8 @@ methodmap BossSummonRandom < CClotBody
 		npc.m_iStepNoiseType = 0;	
 		npc.m_iNpcStepVariation = 0;
 		npc.m_bDissapearOnDeath = true;
+		i_NpcIsABuilding[npc.index] = true;
+		//prevent getting prefixes
 
 		func_NPCDeath[npc.index] = view_as<Function>(BossSummonRandom_NPCDeath);
 		func_NPCThink[npc.index] = view_as<Function>(BossSummonRandom_ClotThink);
@@ -123,7 +152,11 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 	SameBossDisallow[0] = true;
 	while(SameBossDisallow[NumberRand])
 	{
-		NumberRand = GetRandomInt(1,26);
+		NumberRand = GetRandomInt(1,35);
+	}
+	if(i_RaidGrantExtra[bosssummonbase] == 666)
+	{
+		NumberRand = GetRandomInt(36,38);
 	}
 	SameBossDisallow[NumberRand] = true;
 	switch(NumberRand)
@@ -140,9 +173,20 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 		case 2:
 		{
 			//needs buffs!!
-			PluginName = "npc_blitzkrieg";	
-			Format(CharData, sizeof(CharData), "%s%s",CharData, "wave_40");
-			
+			switch(GetRandomInt(1,3))
+			{
+				case 1:
+				{
+					PluginName = "npc_blitzkrieg";	
+					Format(CharData, sizeof(CharData), "%s%s",CharData, "wave_40;hyper");
+				}
+				default:
+				{
+					PluginName = "npc_blitzkrieg";	
+					Format(CharData, sizeof(CharData), "%s%s",CharData, "wave_40");
+				}
+			}
+
 			enemy.ExtraDamage *= 1.4;
 			enemy.Health = RoundToNearest(float(enemy.Health) * 1.65); 
 		}
@@ -181,8 +225,8 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 			PluginName = "npc_sensal";	
 			Format(CharData, sizeof(CharData), "%s%s",CharData, "wave_40");
 			
-			enemy.ExtraDamage *= 1.05;
-			enemy.Health = RoundToNearest(float(enemy.Health) * 1.1); 
+			enemy.ExtraDamage *= 0.95;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.0); 
 		}
 		case 6:
 		{
@@ -216,6 +260,11 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 			enemy.ExtraDamage *= 1.1;
 			//he doesnt really scale? i dont know what to do.
 			enemy.Health = RoundToNearest(float(enemy.Health) * 1.0); 
+			if(ZR_Get_Modifier() == 4) // TURBOLENCES
+			{
+				enemy.ExtraDamage *= 0.90;
+				enemy.ExtraThinkSpeed *= 1.20;
+			}
 		}
 		case 10:
 		{
@@ -226,19 +275,29 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 		}
 		case 11:
 		{
-			PluginName = "npc_xeno_raidboss_nemesis";	
-			
+			//needs buffs!!
+			switch(GetRandomInt(1,4))
+			{
+				case 1:
+				{
+					PluginName = "npc_xeno_raidboss_nemesis";
+					Format(CharData, sizeof(CharData), "%s%s",CharData, "enraged");
+				}
+				default:
+				{
+					PluginName = "npc_xeno_raidboss_nemesis";
+				}	
+			}
+
 			enemy.ExtraDamage *= 0.9;
 			enemy.Health = RoundToNearest(float(enemy.Health) * 1.3); 
-			enemy.Health = RoundToNearest(float(enemy.Health) * 1.1); 
 			//he doesnt really scale? i dont know what to do.
 		}
 		case 12:
 		{
 			PluginName = "npc_corruptedbarney";	
 			
-			enemy.ExtraDamage *= 1.45;
-			enemy.Health = RoundToNearest(float(enemy.Health) * 0.7); 
+			enemy.Health = RoundToNearest(float(enemy.Health) * 0.6); 
 			//he doesnt really scale? i dont know what to do.
 		}
 		case 13:
@@ -265,6 +324,11 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 			
 			enemy.ExtraDamage *= 0.7;
 			enemy.Health = RoundToNearest(float(enemy.Health) * 2.5); 
+			if(ZR_Get_Modifier() == 4) // TURBOLENCES
+			{
+				enemy.ExtraDamage *= 0.65;
+				enemy.Health = RoundToNearest(float(enemy.Health) * 0.75); 
+			}
 		}
 		case 16:
 		{
@@ -317,8 +381,8 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 			PluginName = "npc_the_wall";	
 		//	Format(CharData, sizeof(CharData), "%s%s",CharData, "raid_time");
 			
-			enemy.ExtraDamage *= 1.1;
-			enemy.Health = RoundToNearest(float(enemy.Health) * 1.3); 
+			enemy.ExtraDamage *= 1.0;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.1); 
 		}
 		case 23:
 		{
@@ -336,6 +400,13 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 			enemy.ExtraDamage *= 0.9;
 			enemy.Health = RoundToNearest(float(enemy.Health) * 1.4); 
 		}
+		case 25:
+		{
+			PluginName = "npc_omega_raid";	
+			
+			enemy.ExtraDamage *= 1.1;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.25); 
+		}
 		case 26:
 		{
 			PluginName = "npc_lelouch";	
@@ -343,12 +414,103 @@ void BossBattleSummonRaidboss(int bosssummonbase)
 			enemy.ExtraDamage *= 0.85;
 			enemy.Health = RoundToNearest(float(enemy.Health) * 0.85); 
 		}
-		case 25:
+		case 27:
 		{
-			PluginName = "npc_omega_raid";	
+			PluginName = "npc_cat";	
+			
+			enemy.ExtraDamage *= 1.35;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.25); 
+		}
+		case 28:
+		{
+			PluginName = "npc_aris";	
+			
+			enemy.ExtraDamage *= 1.2;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.15); 
+		}
+		case 29:
+		{
+			PluginName = "npc_chimera";	
+			
+			enemy.ExtraDamage *= 1.1;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.1); 
+		}
+		case 30:
+		{
+			//needs buffs!!
+			switch(GetRandomInt(1,4))
+			{
+				case 1:
+				{
+					PluginName = "npc_vincent";	
+					Format(CharData, sizeof(CharData), "%s%s",CharData, "forceangry;forcesad");
+				}
+				default:
+				{
+					PluginName = "npc_vincent";	
+				}
+			}
 			
 			enemy.ExtraDamage *= 1.1;
 			enemy.Health = RoundToNearest(float(enemy.Health) * 1.4); 
+		}
+		case 31:
+		{
+			PluginName = "npc_boss_reila";	
+			Format(CharData, sizeof(CharData), "%s%s",CharData, "force_final_battle");
+			
+			enemy.ExtraDamage *= 1.05;
+			//no umbrals so buff hard
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.25); 
+		}
+		case 32:
+		{
+			PluginName = "npc_almagest_jkei";	
+			Format(CharData, sizeof(CharData), "%s%s",CharData, "force_final_battle");
+			
+			enemy.ExtraDamage *= 1.1;
+			enemy.ExtraThinkSpeed *= 0.6;
+			//no minions, so buff
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.25); 
+		}
+		case 33:
+		{
+			PluginName = "npc_shadowing_darkness_boss";	
+			
+			enemy.ExtraDamage *= 0.45;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 1.0); 
+			if(ZR_Get_Modifier() == 4) // TURBOLENCES
+			{
+				enemy.ExtraDamage *= 0.65;
+				enemy.Health = RoundToNearest(float(enemy.Health) * 0.75); 
+			}
+			enemy.ExtraThinkSpeed *= 1.25;
+		}
+		case 34:
+		{
+			PluginName = "npc_no_random_kranz";	
+			
+			enemy.ExtraDamage *= 0.75;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 0.35); 
+		}
+		case 35:
+		{
+			PluginName = "npc_black_heavy_soul";	
+			
+			enemy.ExtraDamage *= 0.65;
+			enemy.Health = RoundToNearest(float(enemy.Health) * 0.8); 
+		}
+		case 36:
+		{
+			PluginName = "npc_gentlespy";	
+		}
+		case 37:
+		{
+			PluginName = "npc_hhh";	
+		}
+		case 38:
+		{
+			PluginName = "npc_christianbrutalsniper";	
 		}
 	}
 	Format(enemy.Data, sizeof(enemy.Data), "%s",CharData);

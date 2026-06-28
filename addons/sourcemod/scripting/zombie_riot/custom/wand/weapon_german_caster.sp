@@ -65,7 +65,6 @@ static void Weapon_German_M1(int client, int weapon, int maxcharge)
 		char buffer[64];
 		FormatEx(buffer, sizeof(buffer), WAND_GERMAN_M1_SOUND, GermanCharges[client]);
 		EmitGameSoundToClient(client, buffer);
-		EmitGameSoundToClient(client, buffer);
 
 		SDKhooks_SetManaRegenDelayTime(client, 1.0);
 		Mana_Hud_Delay[client] = 0.0;
@@ -107,7 +106,6 @@ static void PlayChargeSound(int client, int charge, int max)
 
 	char buffer[64];
 	FormatEx(buffer, sizeof(buffer), WAND_GERMAN_M1_SOUND, sound);
-	EmitGameSoundToClient(client, buffer);
 	EmitGameSoundToClient(client, buffer);
 }
 
@@ -204,7 +202,7 @@ public Action Weapon_German_Timer(Handle timer, int client)
 							client,
 							80.0,		// float lockonAngleMax,
 							20.0,		// float homingaSec,
-							true,		// bool LockOnlyOnce,
+							false,		// bool LockOnlyOnce,
 							true,		// bool changeAngles,
 							ang_Look,	// float AnglesInitiate[3]);
 							target);

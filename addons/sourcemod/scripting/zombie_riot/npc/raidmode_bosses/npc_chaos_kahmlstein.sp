@@ -99,11 +99,10 @@ static float f_MessengerSpeedUp[MAXENTITIES];
 static int i_SpeedUpTime[MAXENTITIES];
 static bool b_khamlWeaponRage[MAXENTITIES];
 
-static int i_khamlCutscene[MAXENTITIES];
-static float f_khamlCutscene[MAXENTITIES];
+int i_khamlCutscene;
+float f_khamlCutscene;
 
 
-static float f_KahmlResTemp[MAXENTITIES];
 static float f_TalkDelayCheck;
 static int i_TalkDelayCheck;
 
@@ -182,6 +181,16 @@ methodmap ChaosKahmlstein < CClotBody
 	{
 		public get()							{ return b_NextRangedBarrage_OnGoing[this.index]; }
 		public set(bool TempValueForProperty) 	{ b_NextRangedBarrage_OnGoing[this.index] = TempValueForProperty; }
+	}
+	property bool m_bBossRushDuo
+	{
+		public get()							{ return b_FlamerToggled[this.index]; }
+		public set(bool TempValueForProperty) 	{ b_FlamerToggled[this.index] = TempValueForProperty; }
+	}
+	property float m_flTimerInternalSelf
+	{
+		public get()							{ return fl_AbilityOrAttack[this.index][1]; }
+		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][1] = TempValueForProperty; }
 	}
 	public void PlayAngerSoundPassed() 
 	{
@@ -287,8 +296,8 @@ methodmap ChaosKahmlstein < CClotBody
 		int iActivity = npc.LookupActivity("ACT_MP_RUN_MELEE");
 		if(iActivity > 0) npc.StartActivity(iActivity);
 		
-///		SetVariantInt(4);
-//		AcceptEntityInput(npc.index, "SetBodyGroup");
+		SetVariantInt(3);
+		AcceptEntityInput(npc.index, "SetBodyGroup");
 		
 		npc.m_flNextMeleeAttack = 0.0;
 		
@@ -320,21 +329,27 @@ methodmap ChaosKahmlstein < CClotBody
 		npc.m_flAttackHappens_bullshit = GetGameTime(npc.index) + 9999.0;
 		npc.m_flNextChargeSpecialAttack = GetGameTime(npc.index) + 5.0;
 		npc.m_flJumpCooldown = GetGameTime(npc.index) + 10.0;
-		f_MessengerSpeedUp[npc.index] = 1.0;
+		f_MessengerSpeedUp[npc.index] = 1.15;
 		i_SpeedUpTime[npc.index] = 0;
 		npc.g_TimesSummoned = 0;
 		
-		b_thisNpcIsARaid[npc.index] = true;
 		
 
 		bool final = StrContains(data, "final_item") != -1;
+		npc.m_bBossRushDuo = StrContains(data, "bossrush_duo") != -1;
 		
 		if(final)
 		{
-			f_khamlCutscene[npc.index] = GetGameTime() + 45.0;
-			i_khamlCutscene[npc.index] = 14;
+			f_khamlCutscene = GetGameTime() + 45.0;
+			i_khamlCutscene = 14;
 			i_RaidGrantExtra[npc.index] = 1;
 			b_NpcUnableToDie[npc.index] = true;
+		}
+		
+		if (npc.m_bBossRushDuo)
+		{
+			f_khamlCutscene = GetGameTime() + 3.0;
+			i_khamlCutscene = 2;
 		}
 
 		if(StrContains(data, "fake_2") != -1)
@@ -345,10 +360,10 @@ methodmap ChaosKahmlstein < CClotBody
 			b_ThisNpcIsImmuneToNuke[npc.index] = true;
 			b_NoKnockbackFromSources[npc.index] = true;
 			b_ThisEntityIgnored[npc.index] = true;
-			b_thisNpcIsARaid[npc.index] = true;
 			npc.m_flNextChargeSpecialAttack = 0.0;
 			b_NoKillFeed[npc.index] = true;
 			b_ThisEntityIgnoredBeingCarried[npc.index] = true; //cant be targeted AND wont do npc collsiions
+			i_NpcIsABuilding[npc.index] = true;
 			npc.PlayTeleportSound();
 		}
 		else if(StrContains(data, "fake_3") != -1)
@@ -359,11 +374,11 @@ methodmap ChaosKahmlstein < CClotBody
 			b_ThisNpcIsImmuneToNuke[npc.index] = true;
 			b_NoKnockbackFromSources[npc.index] = true;
 			b_ThisEntityIgnored[npc.index] = true;
-			b_thisNpcIsARaid[npc.index] = true;
 			npc.m_flNextRangedBarrage_Spam = GetGameTime(npc.index) + 10.0;
 			npc.i_GunMode = 1;
 			b_NoKillFeed[npc.index] = true;
 			b_ThisEntityIgnoredBeingCarried[npc.index] = true; //cant be targeted AND wont do npc collsiions
+			i_NpcIsABuilding[npc.index] = true;
 			npc.PlayTeleportSound();
 		}
 		else if(StrContains(data, "fake_4") != -1)
@@ -374,14 +389,15 @@ methodmap ChaosKahmlstein < CClotBody
 			b_ThisNpcIsImmuneToNuke[npc.index] = true;
 			b_NoKnockbackFromSources[npc.index] = true;
 			b_ThisEntityIgnored[npc.index] = true;
-			b_thisNpcIsARaid[npc.index] = true;
 			npc.m_flRangedSpecialDelay = 0.0;
 			b_NoKillFeed[npc.index] = true;
 			b_ThisEntityIgnoredBeingCarried[npc.index] = true; //cant be targeted AND wont do npc collsiions
+			i_NpcIsABuilding[npc.index] = true;
 			npc.PlayTeleportSound();
 		}
 		else
 		{
+			b_thisNpcIsARaid[npc.index] = true;
 			RemoveAllDamageAddition();
 			func_NPCFuncWin[npc.index] = view_as<Function>(ChaosKahmlstein_Win);
 			SDKHook(npc.index, SDKHook_OnTakeDamagePost, ChaosKahmlstein_OnTakeDamagePost);
@@ -401,12 +417,17 @@ methodmap ChaosKahmlstein < CClotBody
 				RaidModeTime += 45.0;
 				Music_SetRaidMusicSimple("vo/null.mp3", 30, false, 0.5);
 			}
+			else if (npc.m_bBossRushDuo)
+			{
+				RaidModeTime = GetGameTime(npc.index) + 503.0;
+				Music_SetRaidMusicSimple("vo/null.mp3", 30, false, 0.5);
+			}
 			else
 			{
 				bool TotalShits = StrContains(data, "no_music_blitz") != -1;
 				if(!TotalShits)
 				{
-					CPrintToChatAll("{darkblue}Kahmlstein{default}: 해보자고.");
+					NPCTalkMessage(npc.index, "Let's fight!");
 					MusicEnum music;
 					strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/internius/chaos_reigns_loop.mp3");
 					music.Time = 240;
@@ -418,13 +439,23 @@ methodmap ChaosKahmlstein < CClotBody
 				}
 				else
 				{
-					CPrintToChatAll("{darkblue}Kahmlstein{default}: 하하, 시작해볼까!!");
+					NPCTalkMessage(npc.index, "Ahahahahahah!!! LETS GET THIS PARTY STARTED!!!!!");
 					f_MessengerSpeedUp[npc.index] *= 2.0;
 				}
 			}
-
-			RaidBossActive = EntIndexToEntRef(npc.index);
+			
+			if (npc.m_bBossRushDuo)
+			{
+				if (!IsValidEntity(RaidBossActive))
+					RaidBossActive = EntIndexToEntRef(npc.index);
+			}
+			else
+			{
+				RaidBossActive = EntIndexToEntRef(npc.index);
+			}
+			
 			RaidAllowsBuildings = false;
+			RaidAllowLastman = true;
 					
 			float value;
 			char buffers[3][64];
@@ -475,6 +506,7 @@ methodmap ChaosKahmlstein < CClotBody
 			RaidModeScaling *= 0.6;
 		}
 
+		npc.m_flTimerInternalSelf = RaidModeTime;
 		
 		npc.m_iChanged_WalkCycle = -1;
 
@@ -541,6 +573,11 @@ methodmap ChaosKahmlstein < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "darkblue", message, .customName = "Kahmlstein", .customNameIsTranslated = true);
+}
+
 public void ChaosKahmlstein_ClotThink(int iNPC)
 {
 	ChaosKahmlstein npc = view_as<ChaosKahmlstein>(iNPC);
@@ -575,10 +612,28 @@ public void ChaosKahmlstein_ClotThink(int iNPC)
 		}
 		return;
 	}
-
-	if(i_RaidGrantExtra[npc.index] == 1 && i_khamlCutscene[npc.index] != 0)
+	
+	if (npc.m_bBossRushDuo)
 	{
-		if(i_khamlCutscene[npc.index] == 14)
+		if(IsEntityAlive(EntRefToEntIndex(RaidBossActive)) && RaidBossActive != EntIndexToEntRef(npc.index))
+		{
+			for(int EnemyLoop; EnemyLoop <= MaxClients; EnemyLoop ++)
+			{
+				if(IsValidClient(EnemyLoop)) //Add to hud as a duo raid.
+				{
+					Calculate_And_Display_hp(EnemyLoop, npc.index, 0.0, false);	
+				}	
+			}
+		}
+		else if(EntRefToEntIndex(RaidBossActive) != npc.index && !IsEntityAlive(EntRefToEntIndex(RaidBossActive)))
+		{	
+			RaidBossActive = EntIndexToEntRef(npc.index);
+		}
+	}
+
+	if(i_RaidGrantExtra[npc.index] == 1 && i_khamlCutscene != 0)
+	{
+		if(i_khamlCutscene == 14)
 		{
 			bool foundEm = false;
 			float Pos[3];
@@ -605,8 +660,8 @@ public void ChaosKahmlstein_ClotThink(int iNPC)
 				TeleportEntity(npc.index, Pos);
 				npc.StopPathing();
 				
-				i_khamlCutscene[npc.index] = 13;
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 너희를 충분히 지켜보고 있었다. 그리고 그건 큰 실수였던것 같다. {crimson} 처음부터 이 상황에 개입을 했어야했는데.");
+				i_khamlCutscene = 13;
+				NPCTalkMessage(npc.index, "ENOUGH. I knew I should've stepped in from the start. {crimson} You've made a mistake of sending him out alone.");
 				MusicEnum music;
 				strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/internius/chaos_reigns_intro.mp3");
 				music.Time = 42;
@@ -633,12 +688,12 @@ public void ChaosKahmlstein_ClotThink(int iNPC)
 				strcopy(music.Name, sizeof(music.Name), "Chaos Reigns");
 				strcopy(music.Artist, sizeof(music.Artist), "Grandpa Bard");
 				Music_SetRaidMusic(music);
-				i_khamlCutscene[npc.index] = 0;
+				i_khamlCutscene = 0;
 			}
 		}
-		float TimeLeft = f_khamlCutscene[npc.index] - GetGameTime();
+		float TimeLeft = f_khamlCutscene - GetGameTime();
 
-		switch(i_khamlCutscene[npc.index])
+		switch(i_khamlCutscene)
 		{
 			case 13:
 			{
@@ -653,104 +708,172 @@ public void ChaosKahmlstein_ClotThink(int iNPC)
 					strcopy(music.Name, sizeof(music.Name), "Chaos Reigns");
 					strcopy(music.Artist, sizeof(music.Artist), "Grandpa Bard");
 					Music_SetRaidMusic(music, false);
-					i_khamlCutscene[npc.index] = 12;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 너. 와서 나와 정면으로 마주해라... {crimson} 아니면 겁 먹은거냐?");
+					i_khamlCutscene = 12;
+					NPCTalkMessage(npc.index, "{crimson}YOU{default}. Come closer and face me......{crimson}or are you too scared?");
 				}
 			}
 			case 12:
 			{
 				if(TimeLeft < 37.0)
 				{
-					i_khamlCutscene[npc.index] = 11;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 그 깡통 새끼가 만든 내 싸구려 클론과는 잘만 싸우면서, 진짜 본체에게는 손 하나 못 대겠다고?");
+					i_khamlCutscene = 11;
+					NPCTalkMessage(npc.index, "All high and mighty against my cheap copy but all too scared of the real deal.");
 				}
 			}
 			case 11:
 			{
 				if(TimeLeft < 33.0)
 				{
-					i_khamlCutscene[npc.index] = 10;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 넌 나의 사람들을 죽이고, {crimson}나의 강아지도 죽였다.{default} 그런데 이제 와서 날 두려워해?!");
+					i_khamlCutscene = 10;
+					NPCTalkMessage(npc.index, "You killed my men, {crimson}YOU KILLED MY PUPPY{default} AND NOW YOU WON'T EVEN LOOK AT ME?!");
 				}
 			}
 			case 10:
 			{
 				if(TimeLeft < 30.0)
 				{
-					i_khamlCutscene[npc.index] = 9;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 난 모든 것을 태워서 재만 남을 때까지 태워버릴 것이다. 그리고 그 재에서...");
+					i_khamlCutscene = 9;
+					NPCTalkMessage(npc.index, "I will reduce everything to ash and from that ash...");
 				}
 			}
 			case 9:
 			{
 				if(TimeLeft < 26.0)
 				{
-					i_khamlCutscene[npc.index] = 8;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 완전히 새로운 자유 세계가 탄생할 것이다!! 다시는 너희를 지배할 자가 없는 세계!");
+					i_khamlCutscene = 8;
+					NPCTalkMessage(npc.index, "A NEW WORLD WILL BE BORN!! A WORLD FREE FROM THOSE YOU COMMAND YOU!");
 				}
 			}
 			case 8:
 			{
 				if(TimeLeft < 22.0)
 				{
-					i_khamlCutscene[npc.index] = 7;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 정치인이라는 기생충을 제거한 세계! 정부로부터 자유로워지는 시대!");
+					i_khamlCutscene = 7;
+					NPCTalkMessage(npc.index, "A WORLD PURGED OF THESE FUCKING PARASITES CALLED {crimson}POLITICIANS{default}! FREE FROM GOVERNMENTS!");
 				}
 			}
 			case 7:
 			{
 				if(TimeLeft < 18.0)
 				{
-					i_khamlCutscene[npc.index] = 6;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 그것이 이상적인 세계이자 낙원이다! 그러니 저항하지 말고 받아들여라!!");
+					i_khamlCutscene = 6;
+					NPCTalkMessage(npc.index, "AN IDEAL WORLD, A PARADISE!!! SO STOP RESISTING AND JOIN ME!!");
 				}
 			}
 			case 6:
 			{
 				if(TimeLeft < 12.0)
 				{
-					i_khamlCutscene[npc.index] = 5;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 아니, 생각해보니까 너는 그 시대를 볼 수 없겠군...");
+					i_khamlCutscene = 5;
+					NPCTalkMessage(npc.index, "....no, this new world would never tolerate you anyway...");
 				}
 			}
 			case 5:
 			{
 				if(TimeLeft < 9.0)
 				{
-					i_khamlCutscene[npc.index] = 4;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 내가 정부보다 더 싫어하는게 뭔지 아나? {crimson}동물 학대.");
+					i_khamlCutscene = 4;
+					NPCTalkMessage(npc.index, "Because you know what I hate more than governments and politicians? {crimson}Violence against animals.");
 				}
 			}
 			case 4:
 			{
 				if(TimeLeft < 4.0)
 				{
-					i_khamlCutscene[npc.index] = 3;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: {crimson}넌 아무 이유 없이 모든 동물들을 학대하고, 학살하고 다녔지.");
+					i_khamlCutscene = 3;
+					NPCTalkMessage(npc.index, "{crimson}You murdered all those cats in cold blood and now I'm going to do the same to you.");
 				}
 			}
 			case 3:
 			{
 				if(TimeLeft < 2.0)
 				{
-					i_khamlCutscene[npc.index] = 2;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 그리고 이제 이제 널 죽여서 그들의 원수를 갚을 시간이다...");
+					i_khamlCutscene = 2;
+					NPCTalkMessage(npc.index, "I will avenge you my dear companion. YOUR DEATH WILL NOT BE IN VAIN.");
 				}
 			}
 			case 2:
 			{
 				if(TimeLeft < 0.0)
 				{
-					i_khamlCutscene[npc.index] = 0;
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 그럼 해보자고.");
+					i_khamlCutscene = 0;
+					NPCTalkMessage(npc.index, "...Let's begin.");
 					RaidBossActive = EntIndexToEntRef(npc.index);
 					RaidAllowsBuildings = false;
+					RaidAllowLastman = true;
 				}
 				
 			}
 		}
 		return;
 	}
+	
+	if (npc.m_bBossRushDuo && i_khamlCutscene != 0)
+	{
+		float TimeLeft = f_khamlCutscene - GetGameTime();
+		
+		switch(i_khamlCutscene)
+		{
+			case 2:
+			{
+				if(TimeLeft < 3.0)
+				{
+					//b_thisNpcIsABoss[npc.index] = true;
+					b_NpcIsInvulnerable[npc.index] = true;
+					view_as<CClotBody>(npc.index).StopPathing();
+					
+					for(int i; i < i_MaxcountNpcTotal; i++)
+					{
+						int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[i]);
+						if(entity != INVALID_ENT_REFERENCE && (b_thisNpcIsARaid[entity] && IsEntityAlive(entity) && entity != npc.index))
+						{
+							//b_thisNpcIsABoss[entity] = true;
+							b_NpcIsInvulnerable[entity] = true;
+							view_as<CClotBody>(entity).StopPathing();
+						}
+					}
+					
+					i_khamlCutscene = 1;
+					NPCTalkMessage(npc.index, "You know what, I'm bored as hell. I'll help you out.");
+				}
+			}
+			case 1:
+			{
+				if(TimeLeft < 0.0)
+				{
+					for(int i; i < i_MaxcountNpcTotal; i++)
+					{
+						int entity = EntRefToEntIndexFast(i_ObjectsNpcsTotal[i]);
+						if(entity != INVALID_ENT_REFERENCE && (b_thisNpcIsARaid[entity] && IsEntityAlive(entity) && entity != npc.index))
+						{
+							b_NpcIsInvulnerable[entity] = false;
+							view_as<CClotBody>(entity).StartPathing();
+						}
+					}
+					
+					i_khamlCutscene = 0;
+					CPrintToChatAll("{lightblue}The Messenger{default}: Let's get 'em.");
+					//RaidBossActive = EntIndexToEntRef(npc.index);
+					RaidAllowsBuildings = false;
+					RaidAllowLastman = true;
+					RaidModeTime = GetGameTime() + 500.0;
+					npc.m_flTimerInternalSelf = RaidModeTime;
+					
+					MusicEnum music;
+					strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/internius/chaos_reigns_loop.mp3");
+					music.Time = 240;
+					music.Volume = 1.2;
+					music.Custom = true;
+					strcopy(music.Name, sizeof(music.Name), "Chaos Reigns");
+					strcopy(music.Artist, sizeof(music.Artist), "Grandpa Bard");
+					Music_SetRaidMusic(music);
+				}
+			}
+		}
+		
+		return;
+	}
+	
 	b_NpcIsInvulnerable[npc.index] = false;
 	if(LastMann && i_RaidGrantExtra[npc.index] < 2)
 	{
@@ -761,45 +884,46 @@ public void ChaosKahmlstein_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 네 몸 안의 뼈 하나 하나를 으깨주지.");
+					NPCTalkMessage(npc.index, "I am going to shatter your entire skeleton into a thousand pieces.");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 혼자서 혼돈에 맞서겠다는건 실로 멍청하기 짝이 없군.");
+					NPCTalkMessage(npc.index, "You're all alone against Chaos now.");
 				}
 				case 2:
 				{
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 저 심해 밑바닥까지 끌고 가주지. 최대한 고통스럽게 죽게끔.");
+					NPCTalkMessage(npc.index, "One last training dummy.");
 				}
 				case 3:
 				{
-					CPrintToChatAll("{darkblue}캄르스타인{default}: 블리츠크리그는 약해서 패배한 거다. {crimson}너처럼 말이지.");
+					NPCTalkMessage(npc.index, "How did {darkblue}Purge{default} fail to deal with the likes of {crimson}YOU.");
 				}
 			}
 		}
 	}
-	float RaidModeTimeLeft = RaidModeTime - GetGameTime();
+	
+	float RaidModeTimeLeft = npc.m_flTimerInternalSelf - GetGameTime();
 
 	if(RaidModeTimeLeft < 190.0 && i_SpeedUpTime[npc.index] == 0)
 	{
 		i_SpeedUpTime[npc.index] = 1; 
 		f_MessengerSpeedUp[npc.index] *= 1.15;
 		if(i_RaidGrantExtra[npc.index] < 2)
-			CPrintToChatAll("{darkblue}캄르스타인{default}: 그래. 좀 심심했지, 응?");
+			NPCTalkMessage(npc.index, "This fight is starting to bore me. Let's turn things up a notch.");
 	}
 	else if(RaidModeTimeLeft < 130.0 && i_SpeedUpTime[npc.index] == 1)
 	{
 		i_SpeedUpTime[npc.index] = 2; 
-		f_MessengerSpeedUp[npc.index] *= 1.15;
+		f_MessengerSpeedUp[npc.index] *= 1.125;
 		if(i_RaidGrantExtra[npc.index] < 2)
-			CPrintToChatAll("{darkblue}캄르스타인{default}: 돌아가신 내 할머니가 너희보단 더 세겠군.");
+			NPCTalkMessage(npc.index, "Even my dead grandma is more entertaining than this.");
 	}
 	else if(RaidModeTimeLeft < 70 && i_SpeedUpTime[npc.index] == 2)
 	{
 		i_SpeedUpTime[npc.index] = 3; 
-		f_MessengerSpeedUp[npc.index] *= 1.1;
+		f_MessengerSpeedUp[npc.index] *= 1.05;
 		if(i_RaidGrantExtra[npc.index] < 2)
-			CPrintToChatAll("{darkblue}캄르스타인{default}:{crimson} 으하하하하!! 난 막을 수 없다!");
+			NPCTalkMessage(npc.index, "{crimson}THERE'S NO STOPPING KAHMLSTEIN.");
 	}
 	else if(RaidModeTimeLeft < 0.0 && i_SpeedUpTime[npc.index] == 3)
 	{
@@ -807,7 +931,7 @@ public void ChaosKahmlstein_ClotThink(int iNPC)
 		f_MessengerSpeedUp[npc.index] *= 3.0;
 		npc.m_flSpeed = 600.0;
 		if(i_RaidGrantExtra[npc.index] < 2)
-			CPrintToChatAll("{darkblue}캄르스타인{default}:{crimson} 전부 죽는다.");
+			NPCTalkMessage(npc.index, "{crimson}YAAAAAAAAAAAAAAAAAAAAAAA.");
 	}
 
 	if(npc.m_blPlayHurtAnimation)
@@ -851,25 +975,6 @@ public void ChaosKahmlstein_ClotThink(int iNPC)
 	}
 	if(Kahmlstein_Attack_TempPowerup(npc))
 		return;
-
-	if(f_KahmlResTemp[npc.index] > GetGameTime())
-	{
-		if(NpcStats_IsEnemySilenced(npc.index))
-		{
-			npc.m_flMeleeArmor = 0.65;
-			npc.m_flRangedArmor = 0.5;	
-		}
-		else
-		{
-			npc.m_flMeleeArmor = 0.75;
-			npc.m_flRangedArmor = 0.6;	
-		}
-	}
-	else
-	{
-		npc.m_flMeleeArmor = 1.25;
-		npc.m_flRangedArmor = 1.0;	
-	}	
 
 	if(npc.m_flGetClosestTargetTime < GetGameTime(npc.index))
 	{
@@ -1252,7 +1357,7 @@ public Action ChaosKahmlstein_OnTakeDamage(int victim, int &attacker, int &infli
 			RaidModeTime += 60.0;
 			f_TalkDelayCheck = GetGameTime() + 0.0;
 			ReviveAll(true);
-			CPrintToChatAll("{darkblue}캄르스타인{default}: 으... 내 머리.");
+			NPCTalkMessage(npc.index, "Ughhh... My head");
 			Music_SetRaidMusicSimple("vo/null.mp3", 60, false, 0.5);
 			return Plugin_Handled;
 		}
@@ -1270,7 +1375,7 @@ public Action ChaosKahmlstein_OnTakeDamage(int victim, int &attacker, int &infli
 			if(i_CustomWeaponEquipLogic[weapon] == WEAPON_KAHMLFIST)
 			{
 				b_khamlWeaponRage[npc.index] = true;
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 지금 네 놈이 날 상대로 내 주먹을 쓰겠다는거냐? 웃기는군.");
+				NPCTalkMessage(npc.index, "You dare to use my OWN fists against ME? Man fuck you.");
 			}
 		}
 	}
@@ -1306,14 +1411,16 @@ public void ChaosKahmlstein_NPCDeath(int entity)
 	float WorldSpaceVec[3]; WorldSpaceCenter(npc.index, WorldSpaceVec);
 	ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
 	npc.PlayDeathSound();	
-
-	RaidBossActive = INVALID_ENT_REFERENCE;
+	
+	if (EntIndexToEntRef(npc.index) == RaidBossActive)
+		RaidBossActive = INVALID_ENT_REFERENCE;
+	
 	if(BlockLoseSay)
 		return;
 
 	if(i_RaidGrantExtra[npc.index] != 1)
 	{
-		CPrintToChatAll("{darkblue}캄르스타인{default}: 잘했군, 좀 더 완벽하게 대응했어야했어.");
+		NPCTalkMessage(npc.index, "That was good, next time I'll be sure to actually try. Now factor in the chance that I lied.");
 	}
 }
 /*
@@ -1420,24 +1527,16 @@ int ChaosKahmlsteinSelfDefense(ChaosKahmlstein npc, float gameTime, int target, 
 					vecTarget[0] += GetRandomFloat(-10.0, 10.0);
 					vecTarget[1] += GetRandomFloat(-10.0, 10.0);
 					vecTarget[2] += GetRandomFloat(-10.0, 10.0);
-					switch(GetRandomInt(1,2))
-					{
-						case 1:
-						{
-							projectile = npc.FireParticleRocket(vecTarget, Proj_Damage, 1200.0, 150.0, "raygun_projectile_blue_crit", false);
-						}
-						case 2:
-						{
-							projectile = npc.FireParticleRocket(vecTarget, Proj_Damage, 1200.0, 150.0, "raygun_projectile_red_crit", false);
-						}
-					}
+					if(i_RaidGrantExtra[npc.index] <= 2)
+						projectile = npc.FireParticleRocket(vecTarget, Proj_Damage, 1200.0, 150.0, "raygun_projectile_red_crit", false);
+					else
+						projectile = npc.FireParticleRocket(vecTarget, Proj_Damage, 1200.0, 150.0, "raygun_projectile_blue_crit", false);
 			
-					SDKUnhook(projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-					int particle = EntRefToEntIndex(i_rocket_particle[projectile]);
+					int particle = EntRefToEntIndex(i_WandParticle[projectile]);
 					CreateTimer(3.5, Timer_RemoveEntity, EntIndexToEntRef(projectile), TIMER_FLAG_NO_MAPCHANGE);
 					CreateTimer(3.5, Timer_RemoveEntity, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
 					
-					SDKHook(projectile, SDKHook_StartTouch, TheMessenger_Rocket_Particle_StartTouch);		
+					WandProjectile_ApplyFunctionToEntity(projectile, TheMessenger_Rocket_Particle_StartTouch);		
 					
 				}
 				if(distance > (NORMAL_ENEMY_MELEE_RANGE_FLOAT_SQUARED * 5.5))
@@ -1547,7 +1646,7 @@ int ChaosKahmlsteinSelfDefense(ChaosKahmlstein npc, float gameTime, int target, 
 								}
 							}
 
-							Elemental_AddChaosDamage(targetTrace, npc.index, 100, true, true);
+							Elemental_AddChaosDamage(targetTrace, npc.index, 200, true, true);
 
 							if(!Knocked)
 								Custom_Knockback(npc.index, targetTrace, 650.0); 
@@ -1580,7 +1679,7 @@ int ChaosKahmlsteinSelfDefense(ChaosKahmlstein npc, float gameTime, int target, 
 					npc.AddGesture("ACT_MP_ATTACK_STAND_MELEE",true, 1.0, _, f_MessengerSpeedUp[npc.index]);
 							
 					npc.m_flAttackHappens = gameTime + (0.25 * (1.0 / f_MessengerSpeedUp[npc.index]));
-					npc.m_flNextMeleeAttack = gameTime + (0.7 * (1.0 / f_MessengerSpeedUp[npc.index]));
+					npc.m_flNextMeleeAttack = gameTime + (0.5 * (1.0 / f_MessengerSpeedUp[npc.index]));
 					npc.m_flDoingAnimation = gameTime + (0.25 * (1.0 / f_MessengerSpeedUp[npc.index]));
 				}
 			}
@@ -1611,22 +1710,22 @@ public void ChaosKahmlstein_OnTakeDamagePost(int victim, int attacker, int infli
 				{
 					case 0:
 					{
-						CPrintToChatAll("{darkblue}캄르스타인{default}: 참 간지러운 공격이군.");
+						NPCTalkMessage(npc.index, "Are you even trying?");
 					}
 					case 1:
 					{
-						CPrintToChatAll("{darkblue}캄르스타인{default}: 어이구 무서워라.");
+						NPCTalkMessage(npc.index, "Oh noooooooo. I'm so scaaaaaaaared.");
 					}
 					case 2:
 					{
-						CPrintToChatAll("{darkblue}캄르스타인{default}: 벌레가 너보단 더 세게 문다.");
+						NPCTalkMessage(npc.index, "Didn't even leave behind a scratch.");
 					}
 					case 3:
 					{
-						CPrintToChatAll("{darkblue}캄르스타인{default}: 도망가시던가. 그게 네 팀한테 더 도움된다.");
+						NPCTalkMessage(npc.index, "Keep running. I'll always be faster.");
 					}
 				}
-				f_KahmlResTemp[npc.index] = GetGameTime() + 3.5;
+				ApplyStatusEffect(npc.index, npc.index, "Very Defensive Backup", 3.5);
 			}
 			npc.m_flNextChargeSpecialAttack -= 0.25;
 			npc.m_flRangedSpecialDelay -= 0.25;
@@ -1634,26 +1733,33 @@ public void ChaosKahmlstein_OnTakeDamagePost(int victim, int attacker, int infli
 		}
 	}
 
-	if((ReturnEntityMaxHealth(npc.index)/4) >= GetEntProp(npc.index, Prop_Data, "m_iHealth") && !npc.Anger) //npc.Anger after half hp/400 hp
+	if((ReturnEntityMaxHealth(npc.index)/4) >= GetEntProp(npc.index, Prop_Data, "m_iHealth") && !npc.Anger) //npc.Anger after quarter hp/400 hp
 	{
 		f_MessengerSpeedUp[npc.index] *= 1.15;
-		switch(GetRandomInt(0,3))
+		ApplyStatusEffect(npc.index, npc.index, "Ancient Melodies", 5.0);
+		ApplyStatusEffect(npc.index, npc.index, "Very Defensive Backup", 5.0);
+		ApplyStatusEffect(npc.index, npc.index, "Defensive Backup", 5.0);
+		switch(GetRandomInt(0,4))
 		{
 			case 0:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 저따위 약골이 내 상대였다니.");
+				NPCTalkMessage(npc.index, "TRY YOUR BEST. IT WILL NEVER BE ENOUGH!");
 			}
 			case 1:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 한심한 놈.");
+				NPCTalkMessage(npc.index, "WHY DO YOU PERSIST?");
 			}
 			case 2:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 멍청한 놈들.");
+				NPCTalkMessage(npc.index, "ENOUGH.");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 네 잔혹함은 국가들보다 더 심하다.");
+				NPCTalkMessage(npc.index, "NO ONE IS MY EQUAL.");
+			}
+			case 4:
+			{
+				NPCTalkMessage(npc.index, "KNEEL BEFORE ME.");
 			}
 		}
 		RaidModeScaling *= 1.2;
@@ -1713,7 +1819,7 @@ void KahmlsteinInitiatePunch(int entity, float VectorTarget[3], float VectorStar
 	ChaosKahmlstein npc = view_as<ChaosKahmlstein>(entity);
 	npc.PlayBobMeleePreHit();
 	npc.FaceTowards(VectorTarget, 20000.0);
-	int FramesUntillHit = RoundToNearest(TimeUntillHit * float(TickrateModifyInt) * ReturnEntityAttackspeed(entity));
+	TimeUntillHit = (TimeUntillHit * ReturnEntityAttackspeed(entity));
 
 	float vecForward[3], Angles[3];
 
@@ -1783,7 +1889,7 @@ void KahmlsteinInitiatePunch(int entity, float VectorTarget[3], float VectorStar
 		GetBeamDrawStartPoint_Stock(entity, VectorStartEdit_2,OffsetFromMiddle, AnglesEdit);
 
 		SetColorRGBA(glowColor, red, green, blue, Alpha);
-		TE_SetupBeamPoints(VectorStartEdit, VectorStartEdit_2, Shared_BEAM_Laser, 0, 0, 0, TimeUntillHit * ReturnEntityAttackspeed(entity), ClampBeamWidth(diameter * 0.1), ClampBeamWidth(diameter * 0.1), 0, 0.0, glowColor, 0);
+		TE_SetupBeamPoints(VectorStartEdit, VectorStartEdit_2, Shared_BEAM_Laser, 0, 0, 0, TimeUntillHit, ClampBeamWidth(diameter * 0.1), ClampBeamWidth(diameter * 0.1), 0, 0.0, glowColor, 0);
 		TE_SendToAll(0.0);
 	}
 	
@@ -1798,7 +1904,9 @@ void KahmlsteinInitiatePunch(int entity, float VectorTarget[3], float VectorStar
 	pack.WriteFloat(VectorStart[2]);
 	pack.WriteFloat(damage);
 	pack.WriteCell(kick);
-	RequestFrames(KahmlsteinInitiatePunch_DamagePart, FramesUntillHit, pack);
+	// 66.6 assumes normal tickrate.
+	int i_FrameCount = RoundToNearest(TimeUntillHit * 66.6);
+	RequestFrames(KahmlsteinInitiatePunch_DamagePart, i_FrameCount, pack);
 }
 
 void KahmlsteinInitiatePunch_DamagePart(DataPack pack)
@@ -1977,15 +2085,15 @@ public void ChaosKahmlstein_Win(int entity)
 	{
 		case 0:
 		{
-			CPrintToChatAll("{darkblue}캄르스타인{default}: 넌 이제 아무것도 아니다.");
+			NPCTalkMessage(entity, "You are {crimson}NOTHING.");
 		}
 		case 1:
 		{
-			CPrintToChatAll("{darkblue}캄르스타인{default}: 모든 것이 전부 불타리라.");
+			NPCTalkMessage(entity, "All fall before Kahmlstein.");
 		}
 		case 2:
 		{
-			CPrintToChatAll("{darkblue}캄르스타인{default}: 혼돈은 다시 일어나리라.");
+			NPCTalkMessage(entity, "{darkblue}Chaos{default} reigns supreme.");
 		}
 	}
 }
@@ -2018,77 +2126,77 @@ int ChaosKahmlsteinTalk(int iNPC)
 			{
 				f_TalkDelayCheck = GetGameTime() + 2.3;
 				npc.SetPlaybackRate(0.5);
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 마치 어깨에 앉아있던 무거운 무언가가 떠나간 듯한 같은 느낌이야.");
+				NPCTalkMessage(npc.index, "I feel like a great weight has been lifted off my shoulders.");
 				i_TalkDelayCheck += 1;
 			}
 			case 2:
 			{
 				npc.m_bisWalking = false;
 				npc.SetActivity("ACT_MP_STAND_MELEE");
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 혼돈이 나를 완전히 떠나간 모양이군.");
+				NPCTalkMessage(npc.index, "The Chaos, seems to have left me completely.");
 				i_TalkDelayCheck += 1;
 			}
 			case 3:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 하지만 내가 저질렀던 모든 일들은 잊히지 않아.");
+				NPCTalkMessage(npc.index, "...Yet I still hold all the memories made under Its influence.");
 				i_TalkDelayCheck += 1;
 			}
 			case 4:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 하지만 시간을 되돌릴 수도 없고, 이미 엎질러진 물이다.");
+				NPCTalkMessage(npc.index, "There's no turning back now. What's done is done.");
 				i_TalkDelayCheck += 1;
 			}
 			case 5:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 그래. 혼돈을 조사해보려는게 큰 실수였던거야.");
+				NPCTalkMessage(npc.index, "Researching Chaos was my greatest mistake.");
 				i_TalkDelayCheck += 1;
 			}
 			case 6:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 아무래도 혼돈은 나를 미쳐 날뛰기에 최적의 대상으로 삼은것 같다.");
+				NPCTalkMessage(npc.index, "It destroyed my sanity and made me into a perfect host.");
 				i_TalkDelayCheck += 1;
 			}
 			case 7:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 호기심이 고양이를 죽인다더니.");
+				NPCTalkMessage(npc.index, "Curiosity killed the cat as they say.");
 				i_TalkDelayCheck += 1;
 			}
 			case 8:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 너도 내 경고를 주의 깊게 여겨라.");
+				NPCTalkMessage(npc.index, "Heed my warning.");
 				i_TalkDelayCheck += 1;
 			}
 			case 9:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 혼돈과 관련된 문제는 절대적으로 피해라. 그렇지 않으면 너도 나처럼 될테니.");
+				NPCTalkMessage(npc.index, "Stay away from all matters involving Chaos or else you will be next.");
 				i_TalkDelayCheck += 1;
 			}
 			case 10:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 만약 그것과 어떻게든 싸우고 싶다면, 나와 함께 하자.");
+				NPCTalkMessage(npc.index, "Should you wish to combat Chaos directly, always remember.");
 				i_TalkDelayCheck += 1;
 			}
 			case 11:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 그리고 한 가지 조언은, 절대 네 자신을 잃지 말도록.");
+				NPCTalkMessage(npc.index, "To stay true to yourself and your ideals.");
 				i_TalkDelayCheck += 1;
 			}
 			case 12:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 자, 이걸 가져가라. 네 손에 있으면 안전할 거다..");
+				NPCTalkMessage(npc.index, "Here, take this. It's safer in your hands than mine.");
 				i_TalkDelayCheck += 1;
 				for (int client = 1; client <= MaxClients; client++)
 				{
 					if(IsValidClient(client) && GetClientTeam(client) == 2 && TeutonType[client] != TEUTON_WAITING && PlayerPoints[client] > 500)
 					{
 						Items_GiveNamedItem(client, "Kahml's Contained Chaos");
-						CPrintToChat(client,"{default}당신이 얻은 것은... : {red}''격리된 캄르스타인의 혼돈''{default}!");
+						CPrintToChat(client,"{default}You get: {red}''Kahml's Contained Chaos''{default}!");
 					}
 				}
 			}
 			case 13:
 			{
-				CPrintToChatAll("{darkblue}캄르스타인{default}: 지금은 해야할 일이 있지, {crimson}끝내지 못한 그 일.{default}");
+				NPCTalkMessage(npc.index, "As for me, I have...{crimson}some unfinished business...{default} to attend to.");
 				i_TalkDelayCheck += 1;
 				npc.m_bisWalking = false;
 				npc.AddActivityViaSequence("taunt_cyoa_PDA_intro");

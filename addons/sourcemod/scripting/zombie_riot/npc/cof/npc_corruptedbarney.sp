@@ -53,6 +53,9 @@ static char g_MeleeAttackSounds[][] = {
 	"cof/corruptedbarney/alert1.mp3",
 	"cof/corruptedbarney/attacking3.mp3",
 };
+static const char g_SummonDroneSound[][] = {
+	"mvm/mvm_bought_in.wav",
+};
 
 void CorruptedBarney_OnMapStart_NPC()
 {
@@ -75,11 +78,16 @@ static void ClotPrecache()
 	PrecacheSoundArray(g_HurtSounds);
 	PrecacheSoundArray(g_IdleSounds);
 	PrecacheSoundArray(g_MeleeHitSounds);
+	PrecacheSoundArray(g_SummonDroneSound);
 	for (int i = 0; i < (sizeof(g_MeleeAttackSounds));	i++) { PrecacheSoundCustom(g_MeleeAttackSounds[i]);	}
 	for (int i = 0; i < (sizeof(g_IdleAlertedSounds));	i++) { PrecacheSoundCustom(g_IdleAlertedSounds[i]);	}
 	for (int i = 0; i < (sizeof(g_IntroSound));	i++) { PrecacheSoundCustom(g_IntroSound[i]);	}
 	for (int i = 0; i < (sizeof(g_SpawnSounds));	i++) { PrecacheSoundCustom(g_SpawnSounds[i]);	}
 	PrecacheSoundCustom("#zombiesurvival/cof/barney.mp3");
+	NPC_GetByPlugin("npc_addiction");
+	NPC_GetByPlugin("npc_taller");
+	NPC_GetByPlugin("npc_simon");
+	NPC_GetByPlugin("npc_psycho");
 }
 
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int team, const char[] data)
@@ -118,6 +126,21 @@ methodmap CorruptedBarney < CClotBody
 		EmitSoundToAll(g_HurtSounds[GetRandomInt(0, sizeof(g_HurtSounds) - 1)], this.index, SNDCHAN_VOICE, RAIDBOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME, 80);
 	}
 
+	property float m_flBossSpawnBeacon
+	{
+		public get()							{ return fl_AbilityOrAttack[this.index][3]; }
+		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][3] = TempValueForProperty; }
+	}
+	property float m_flDidGainBuff
+	{
+		public get()							{ return fl_AbilityOrAttack[this.index][4]; }
+		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][4] = TempValueForProperty; }
+	}
+	property float m_flShutUp
+	{
+		public get()							{ return fl_AbilityOrAttack[this.index][5]; }
+		public set(float TempValueForProperty) 	{ fl_AbilityOrAttack[this.index][5] = TempValueForProperty; }
+	}
 	public void PlaySpawnSound() {
 	
 		EmitCustomToAll(g_SpawnSounds[GetRandomInt(0, sizeof(g_SpawnSounds) - 1)], this.index, SNDCHAN_AUTO, BOSS_ZOMBIE_SOUNDLEVEL, _, BOSS_ZOMBIE_VOLUME, 80);
@@ -142,18 +165,11 @@ methodmap CorruptedBarney < CClotBody
 	{
 		CorruptedBarney npc = view_as<CorruptedBarney>(CClotBody(vecPos, vecAng, "models/zombie_riot/cof/barney.mdl", "1.75", "400", ally, false, true, true,true)); //giant!
 		
-		i_NpcWeight[npc.index] = 1;
 		FormatEx(c_HeadPlaceAttachmentGibName[npc.index], sizeof(c_HeadPlaceAttachmentGibName[]), "head");
 		
 		int iActivity = npc.LookupActivity("ACT_RUN_RIFLE_STIMULATED");
 		if(iActivity > 0) npc.StartActivity(iActivity);
 		
-		if(npc.m_bDoSpawnGesture)
-		{
-			npc.PlaySpawnSound();
-			npc.AddGesture("ACT_BUSY_SIT_GROUND_EXIT");
-			npc.m_bDoSpawnGesture = false;
-		}
 		
 		npc.m_flNextMeleeAttack = 0.0;
 		
@@ -194,27 +210,67 @@ methodmap CorruptedBarney < CClotBody
 		RaidModeTime = GetGameTime(npc.index) + 200.0;
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 		b_NameNoTranslation[npc.index] = true;
+		npc.m_flBossSpawnBeacon = 1.0;
 		
 		MusicEnum music;
 		strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/cof/barney.mp3");
-		music.Time = 219;
+		music.Time = 185;
 		music.Volume = 1.25;
 		music.Custom = true;
 		strcopy(music.Name, sizeof(music.Name), "Last Legs");
 		strcopy(music.Artist, sizeof(music.Artist), "Kelly Bailey");
 		Music_SetRaidMusic(music);
-
+		
 		return npc;
+	}
+}
+
+static void NPCTalkMessage(int entity, const char[] message, bool corruptedName = false)
+{
+	char customName[64];
+	customName = "Barney";
+	
+	bool customNameIsTranslated;
+	if (corruptedName)
+	{
+		customNameIsTranslated = false;
+		
+		char prefixes[255];
+		StatusEffects_PrefixName(entity, -1, prefixes, sizeof(prefixes));
+		if (prefixes[0])
+		{
+			CorruptString(prefixes, sizeof(prefixes));
+			StrCat(prefixes, sizeof(prefixes), " ");
+		}
+		
+		CorruptString(customName, sizeof(customName));
+		CPrintToChatAll("{midnightblue}%s%s{crimson}: %s", prefixes, customName, message);
+	}
+	else
+	{
+		customNameIsTranslated = true;
+		PrintNPCMessageWithPrefixes(entity, "midnightblue", message, .customName = customName, .messageColor = "crimson", .customNameIsTranslated = customNameIsTranslated);
 	}
 }
 
 public void CorruptedBarney_ClotThink(int iNPC)
 {
 	CorruptedBarney npc = view_as<CorruptedBarney>(iNPC);
+	CBarney_CreateAllies(iNPC);
 	if(npc.m_flNextDelayTime > GetGameTime(npc.index))
 	{
 		return;
+	}
+	if(!npc.m_flDidGainBuff)
+	{
+		if(HasSpecificBuff(npc.index, "False Therapy"))
+		{
+			npc.m_flDidGainBuff = 1.0;
+			npc.m_flShutUp = GetGameTime(npc.index) + 4.0;
+			CPrintToChatAll("{snow}Purnell{default}: He's stealing your therapy! Take him out! His mind is beyond corrupted!");
+		}
 	}
 	npc.m_flNextDelayTime = GetGameTime(npc.index) + DEFAULT_UPDATE_DELAY_FLOAT;
 	npc.Update();
@@ -227,7 +283,7 @@ public void CorruptedBarney_ClotThink(int iNPC)
 		i_RaidGrantExtra[npc.index] = 0;
 		ForcePlayerLoss();
 		RaidBossActive = INVALID_ENT_REFERENCE;
-		CPrintToChatAll("{midnightblue}바니 칼훈{maroon}: 내가 빚진 그 맥주 말이야...");
+		NPCTalkMessage(npc.index, "{maroon}About that beer I owed ya...");
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
 	}
 
@@ -243,25 +299,39 @@ public void CorruptedBarney_ClotThink(int iNPC)
 		return;
 	}
 
+	if(npc.m_flShutUp < GetGameTime(npc.index))
+	{
+		char message[32] = "12345678";
+		CorruptString(message, sizeof(message));
+		NPCTalkMessage(npc.index, message, npc.Anger);
+	}
+	
 	if(!npc.Anger)
 	{
 		npc.m_flNextThinkTime = GetGameTime(npc.index) + 0.1;
 		RaidModeScaling = float(GetURandomInt());
-		fl_TotalArmor[npc.index] = GetRandomFloat(0.25, 0.3);
+		fl_TotalArmor[npc.index] = GetRandomFloat(0.45, 0.55);
 		npc.m_flSpeed = GetRandomFloat(300.0, 400.0);
+		i_NpcWeight[npc.index] = GetRandomInt(1,5);
 		RaidModeTime = GetGameTime() + GetRandomFloat(15.0, 555.0);
-		FormatEx(c_NpcName[npc.index], sizeof(c_NpcName[]), "%c%c%c%c%c%c%c%c%c%c%c%c", GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000));
-		CPrintToChatAll("{midnightblue}바니 칼훈{crimson}: %c%c%c%c%c%c%c%c", GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000));
+		
+		char name[32] = "123456789012";
+		CorruptString(name, sizeof(name));
+		strcopy(c_NpcName[npc.index], sizeof(c_NpcName[]), name);
 	}
 	else
 	{
 		npc.m_flNextThinkTime = GetGameTime(npc.index) + 0.05;
 		RaidModeScaling = float(GetURandomInt());
-		fl_TotalArmor[npc.index] = GetRandomFloat(0.22, 0.27);
+		fl_TotalArmor[npc.index] = GetRandomFloat(0.3, 0.35);
+		i_NpcWeight[npc.index] = GetRandomInt(1,5);
 		npc.m_flSpeed = GetRandomFloat(330.0, 430.0);
 		RaidModeTime = GetGameTime() + GetRandomFloat(15.0, 555.0);
-		FormatEx(c_NpcName[npc.index], sizeof(c_NpcName[]), "B%c\n%c%c\nA%c%c\n%c%c\nR%c%c%c\nN%c\n%cEY", GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000));
-		CPrintToChatAll("{midnightblue}%c%c%c%c%c{crimson}: %c%c%c%c%c%c%c%c", GetRandomInt(1, 2000), GetRandomInt(1, 2000), GetRandomInt(1, 2000), GetRandomInt(1, 2000), GetRandomInt(1, 2000), GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000),GetRandomInt(1, 2000));
+		
+		char name[64] = "B0\n00\nA00\n00\nR000\nN0\n0EY";
+		CorruptString(name, sizeof(name), true, '0');
+		strcopy(c_NpcName[npc.index], sizeof(c_NpcName[]), name);
+		
 		SetEntProp(npc.index, Prop_Data, "m_iMaxHealth", GetURandomInt());
 		SetEntPropFloat(npc.index, Prop_Send, "m_flModelScale", GetRandomFloat(1.5, 1.8));
 		char Buffer[32];
@@ -270,12 +340,13 @@ public void CorruptedBarney_ClotThink(int iNPC)
 			GlobalExtraCash = GetURandomInt();
 			Ammo_Count_Ready = GetURandomInt();
 		}
+		
 		for(int client; client <= MaxClients; client++)
 		{
 			if(IsValidClient(client))
 			{
 				Client_Shake(client, 0, 7.0, 7.0, 0.1, false);
-				if(i_RaidGrantExtra[npc.index] == 1)
+				if(i_RaidGrantExtra[npc.index] == 1 && !zr_disable_barney_rename.BoolValue)
 				{
 					FormatEx(Buffer, sizeof(Buffer), "Barney %i", GetRandomInt(1, 2500));
 					SetClientName(client, Buffer);
@@ -285,8 +356,9 @@ public void CorruptedBarney_ClotThink(int iNPC)
 				Attributes_Set(client, 26, GetRandomFloat(2500.0, 5000.0));
 				f_damageAddedTogether[client] = float(GetURandomInt());
 				f_damageAddedTogetherGametime[client] = GetGameTime() + 0.6;
-				i_CurrentEquippedPerk[client] = GetRandomInt(1,6);
-				i_AmountDowned[client] = GetRandomInt(-500000, 500000);
+				i_CurrentEquippedPerk[client] = 0;
+				UpdatePerkName(client);
+				i_AmountDowned[client] = GetRandomInt(-50, 50);
 				
 				KillFeed_Show(client, client, client, client, -1, 0, false);
 				if(i_RaidGrantExtra[npc.index] == 1)
@@ -364,6 +436,17 @@ public void CorruptedBarney_NPCDeath(int entity)
 	if(IsValidEntity(npc.m_iWearable1))
 		RemoveEntity(npc.m_iWearable1);
 
+	for(int i; i < i_MaxcountNpcTotal; i++)
+	{
+		int entitynpc = EntRefToEntIndexFast(i_ObjectsNpcsTotal[i]);
+		if(IsValidEntity(entitynpc))
+		{
+			if(entitynpc != INVALID_ENT_REFERENCE && IsEntityAlive(entitynpc) && GetTeam(npc.index) == GetTeam(entitynpc))
+			{
+				SmiteNpcToDeath(entitynpc);
+			}
+		}
+	}
 	if(i_RaidGrantExtra[npc.index] == 1 && GameRules_GetRoundState() == RoundState_ZombieRiot)
 	{
 		for (int client_repat = 1; client_repat <= MaxClients; client_repat++)
@@ -371,7 +454,7 @@ public void CorruptedBarney_NPCDeath(int entity)
 			if(IsValidClient(client_repat) && GetClientTeam(client_repat) == 2 && TeutonType[client_repat] != TEUTON_WAITING && PlayerPoints[client_repat] > 500)
 			{
 				Items_GiveNamedItem(client_repat, "Corrupted Barney's Chainsaw");
-				CPrintToChat(client_repat, "{default}타락한 바니 칼훈이 소멸되었다... 당신이 얻은 것: {crimson}''타락한 바니 칼훈의 전기톱''{default}!");
+				CPrintToChat(client_repat, "{default}Corrupted Barney Vanishes and leaves...: {crimson}''Corrupted Barney's Chainsaw''{default}!");
 			}
 		}
 	}
@@ -441,5 +524,74 @@ void CorruptedBarneySelfDefense(CorruptedBarney npc, float gameTime, int target,
 				npc.m_flNextMeleeAttack = gameTime + 0.20;
 			}
 		}
+	}
+}
+
+
+void CBarney_CreateAllies(int iNpc)
+{
+	CorruptedBarney npc = view_as<CorruptedBarney>(iNpc);
+	if(!npc.m_flBossSpawnBeacon)
+		return;
+
+	npc.m_flBossSpawnBeacon = 0.0;
+	
+	float pos[3]; GetEntPropVector(npc.index, Prop_Data, "m_vecAbsOrigin", pos);
+	int summon = NPC_CreateByName("npc_simon", -1, pos, {0.0,0.0,0.0}, GetTeam(npc.index), "final");
+	if(IsValidEntity(summon))
+	{
+		CorruptedBarney npcsummon = view_as<CorruptedBarney>(summon);
+		if(GetTeam(npc.index) != TFTeam_Red)
+			Zombies_Currently_Still_Ongoing++;
+
+		fl_Extra_Damage[npcsummon.index] = fl_Extra_Damage[npc.index];
+		f_AttackSpeedNpcIncrease[npcsummon.index] = f_AttackSpeedNpcIncrease[npc.index];
+		fl_Extra_Damage[npcsummon.index] *= 3.0;
+		f_AttackSpeedNpcIncrease[npcsummon.index] *= 0.85;
+		npcsummon.m_iTargetAlly = iNpc;
+		SetEntProp(summon, Prop_Data, "m_iHealth", ReturnEntityMaxHealth(npc.index)/7);
+		SetEntProp(summon, Prop_Data, "m_iMaxHealth", ReturnEntityMaxHealth(npc.index)/7);
+		NpcStats_CopyStats(npc.index, summon);
+		TeleportDiversioToRandLocation(summon,_,2500.0, 1250.0);
+		npcsummon.m_iWearable1 = ConnectWithBeam(npc.index, npcsummon.index, 125, 65, 65, 5.0, 5.0, 1.0, "sprites/laserbeam.vmt");
+	}
+	summon = NPC_CreateByName("npc_addiction", -1, pos, {0.0,0.0,0.0}, GetTeam(npc.index), "nightmare");
+	if(IsValidEntity(summon))
+	{
+		CorruptedBarney npcsummon = view_as<CorruptedBarney>(summon);
+		if(GetTeam(npc.index) != TFTeam_Red)
+			Zombies_Currently_Still_Ongoing++;
+		
+		fl_Extra_Damage[npcsummon.index] = fl_Extra_Damage[npc.index];
+		f_AttackSpeedNpcIncrease[npcsummon.index] = f_AttackSpeedNpcIncrease[npc.index];
+		fl_Extra_Damage[npcsummon.index] *= 5.0;
+		f_AttackSpeedNpcIncrease[npcsummon.index] *= 0.35;
+		npcsummon.m_iTargetAlly = iNpc;
+		SetEntProp(summon, Prop_Data, "m_iHealth", ReturnEntityMaxHealth(npc.index)/5);
+		SetEntProp(summon, Prop_Data, "m_iMaxHealth", ReturnEntityMaxHealth(npc.index)/5);
+		NpcStats_CopyStats(npc.index, summon);
+		TeleportDiversioToRandLocation(summon,_,2500.0, 1250.0);
+		npcsummon.m_iWearable1 = ConnectWithBeam(npc.index, npcsummon.index, 125, 125, 65, 5.0, 5.0, 1.0, "sprites/laserbeam.vmt");
+	}
+}
+
+static void CorruptString(char[] buffer, int length, bool respectSpaces = true, char onlyRandomizeCharacter = '\0')
+{
+	for (int i = 0; i < length; i++)
+	{
+		if (buffer[i] == '\0')
+			return;
+		
+		if (respectSpaces && (buffer[i] == ' ' || buffer[i] == '\n'))
+			continue;
+		
+		if (onlyRandomizeCharacter != '\0' && onlyRandomizeCharacter != buffer[i])
+			continue;
+		
+		do
+		{
+			buffer[i] = (GetURandomInt() % 2000) + 1;
+		}
+		while (buffer[i] == '%'); // prevents errors
 	}
 }

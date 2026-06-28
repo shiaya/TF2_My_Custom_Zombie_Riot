@@ -151,6 +151,11 @@ methodmap TheMessenger < CClotBody
 		public get()			{	return this.m_flGrappleCooldown;	}
 		public set(float value) 	{	this.m_flGrappleCooldown = value;	}
 	}
+	property bool m_bBossRushDuo
+	{
+		public get()							{ return b_FlamerToggled[this.index]; }
+		public set(bool TempValueForProperty) 	{ b_FlamerToggled[this.index] = TempValueForProperty; }
+	}
 	public void PlayAngerSoundPassed() 
 	{
 		int sound = GetRandomInt(0, sizeof(g_AngerSoundsPassed) - 1);
@@ -258,12 +263,9 @@ methodmap TheMessenger < CClotBody
 		npc.StartPathing();
 		npc.m_flSpeed = 300.0;
 		npc.i_GunMode = 0;
-		npc.m_flRangedSpecialDelay = GetGameTime() + 10.0;
-		npc.m_flNextRangedSpecialAttackHappens = GetGameTime() + 5.0;
-		npc.m_flAngerDelay = GetGameTime() + 15.0;
 		BlockLoseSay = false;
 		npc.m_flAttackHappens_bullshit = GetGameTime(npc.index) + 15.0;
-		npc.m_flNextChargeSpecialAttack = GetGameTime(npc.index) + 25.0;
+		npc.m_flNextChargeSpecialAttack = GetGameTime(npc.index) + 10.0;
 		f_MessengerSpeedUp[npc.index] = 1.0;
 		npc.g_TimesSummoned = 0;
 		
@@ -292,6 +294,7 @@ methodmap TheMessenger < CClotBody
 		}
 
 		bool final = StrContains(data, "Cutscene_Khaml") != -1;
+		npc.m_bBossRushDuo = StrContains(data, "bossrush_duo") != -1;
 		
 		if(final)
 		{
@@ -313,6 +316,7 @@ methodmap TheMessenger < CClotBody
 		RaidModeTime = GetGameTime(npc.index) + 200.0;
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 	
 		float value;
 		char buffers[3][64];
@@ -382,16 +386,20 @@ methodmap TheMessenger < CClotBody
 		SetVariantString("1.0");
 		AcceptEntityInput(npc.m_iWearable1, "SetModelScale");
 		
-		if(!final)
+		if (npc.m_bBossRushDuo)
+		{
+			NPCTalkMessage(npc.index, "You're gonna die.");
+		}
+		else if(!final)
 		{
 			if(i_RaidGrantExtra[npc.index] <= 2)
 			{
 				IgniteTargetEffect(npc.m_iWearable1);
-				CPrintToChatAll("{lightblue}메신저{default}: 잘 왔다, 죄인들아! 여기 너희에게 줄 전령이 하나 있다!");
+				NPCTalkMessage(npc.index, "Welcome, welcome sinners! I'm bearing a message to you all!");
 			}
 			else
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 2차전은 준비 됐겠지, 죄인들?");
+				NPCTalkMessage(npc.index, "Round two.");
 			}
 		}
 
@@ -428,6 +436,11 @@ methodmap TheMessenger < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int iNPC, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(iNPC, "lightblue", message);
+}
+
 public void TheMessenger_ClotThink(int iNPC)
 {
 	TheMessenger npc = view_as<TheMessenger>(iNPC);
@@ -437,11 +450,14 @@ public void TheMessenger_ClotThink(int iNPC)
 	}
 	npc.m_flNextDelayTime = GetGameTime(npc.index) + DEFAULT_UPDATE_DELAY_FLOAT;
 	npc.Update();
-
+	
+	if (npc.m_bBossRushDuo && b_NpcIsInvulnerable[npc.index])
+		return;
+	
 	if(i_RaidGrantExtra[npc.index] >= 6)
 	{
 		i_RaidGrantExtra[npc.index] = 6;
-		CPrintToChatAll("{lightblue}메신저{default}: {crimson}으하하하하하!!! 전부 뒈져버려라!!");
+		NPCTalkMessage(npc.index, "{crimson}AHAHAHAHHAHAHAHA!!! KNEEL BEFORE THE LORD'S MIGHT!");
 		return;
 	}
 	/*
@@ -459,21 +475,21 @@ public void TheMessenger_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 쪽팔리는 줄 알아라.");
+					NPCTalkMessage(npc.index, "Shame.");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 진심인가?");
+					NPCTalkMessage(npc.index, "Are you for real??");
 				}
 				case 2:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 뭐라 할 말이 없군.");
+					NPCTalkMessage(npc.index, "No comment.");
 				}
 			}
 		}
 		else
 		{
-			CPrintToChatAll("{lightblue}메신저{default}: ...........");
+			NPCTalkMessage(npc.index, "...........");
 		}
 	}
 	if(LastMann)
@@ -483,19 +499,23 @@ public void TheMessenger_ClotThink(int iNPC)
 			npc.m_fbGunout = true;
 			if(i_RaidGrantExtra[npc.index] <= 2)
 			{
-				switch(GetRandomInt(0,2))
+				switch(GetRandomInt(0,3))
 				{
 					case 0:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 네 놈의 친구들은 전부 죽었다. {crimson}네 운명을 받아들여라.");
+						NPCTalkMessage(npc.index, "Your friends are dead. {crimson}Accept your fate.");
 					}
 					case 1:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 너와 나만 남았다.");
+						NPCTalkMessage(npc.index, "It's just you and me now.");
+					}
+					case 2:
+					{
+						NPCTalkMessage(npc.index, "Time for you to forward my message to your superiors.");
 					}
 					case 3:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 포기해라. 넌 이길 수 없다");
+						NPCTalkMessage(npc.index, "Give up, you cannot win.");
 					}
 				}
 			}
@@ -505,15 +525,15 @@ public void TheMessenger_ClotThink(int iNPC)
 				{
 					case 0:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 죽으라고!!!!");
+						NPCTalkMessage(npc.index, "YOU ARE DEAD");
 					}
 					case 1:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 사지를 찢어발겨주마!!!!");
+						NPCTalkMessage(npc.index, "I'LL FUCK YOU UP");
 					}
 					case 3:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 으하하하하하!!!");
+						NPCTalkMessage(npc.index, "AHAHAHAHAHAHA");
 					}
 				}				
 			}
@@ -654,23 +674,27 @@ bool Messanger_Elemental_Attack_Projectiles(TheMessenger npc)
 				npc.m_iOverlordComboAttack = 4;
 				fl_TotalArmor[npc.index] = fl_TotalArmor[npc.index] * 0.9;
 				RaidModeScaling *= 1.1;
-				switch(GetRandomInt(0,3))
+				switch(GetRandomInt(0,4))
 				{
 					case 0:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 나는 너희들과 이 지랄하면서 놀 시간이 없다.");
+						NPCTalkMessage(npc.index, "No more fucking around.");
 					}
 					case 1:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 그만 죽어라, 이 머저리들아.");
+						NPCTalkMessage(npc.index, "Stop wasting my time shitheads.");
 					}
 					case 2:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 모든 죄인은 {crimson}죽어야만한다.");
+						NPCTalkMessage(npc.index, "All sinners will {crimson}DIE.");
 					}
 					case 3:
 					{
-						CPrintToChatAll("{lightblue}메신저{default}: 그래봤자 무한한 고통을 느끼게 될 뿐이다.");
+						NPCTalkMessage(npc.index, "You just brought infinite pain upon you.");
+					}
+					case 4:
+					{
+						NPCTalkMessage(npc.index, "You fucks are just a waste of my time.");
 					}
 				}
 				MessengerInitiateGroupAttack(npc);
@@ -864,7 +888,7 @@ public Action TheMessenger_OnTakeDamage(int victim, int &attacker, int &inflicto
 			if(i_CustomWeaponEquipLogic[weapon] == WEAPON_MESSENGER_LAUNCHER)
 			{
 				b_khamlWeaponRage[npc.index] = true;
-				CPrintToChatAll("{lightblue}메신저{default}: 그건 내 무기잖아. 이런 미친 놈이...");
+				NPCTalkMessage(npc.index, "USING MY OWN WEAPON AGAINST ME? {crimson}GO FUCK YOURSELF.");
 			}
 		}
 	}
@@ -885,8 +909,9 @@ public void TheMessenger_NPCDeath(int entity)
 		ParticleEffectAt(WorldSpaceVec, "teleported_blue", 0.5);
 		npc.PlayDeathSound();	
 	}
-
-	RaidBossActive = INVALID_ENT_REFERENCE;
+	
+	if (EntIndexToEntRef(npc.index) == RaidBossActive)
+		RaidBossActive = INVALID_ENT_REFERENCE;
 		
 	if(IsValidEntity(npc.m_iWearable7))
 		RemoveEntity(npc.m_iWearable7);
@@ -914,37 +939,49 @@ public void TheMessenger_NPCDeath(int entity)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 으윽... 이런 개밥도 못 한 쓰레기들이...");
+					NPCTalkMessage(npc.index, "Ugh... little fucks.. This ain't over!");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 너흰 그저 피할 수 없는 일을 지연시킬 수 있을 뿐이다..");
+					NPCTalkMessage(npc.index, "You're just delaying the inevitable..");
 				}
 				case 2:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 어쩌면 네놈들을 과소평가 했을수도 있겠군..");
+					NPCTalkMessage(npc.index, "I may or may not have heavily underestimated you..");
 				}
 				case 3:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 안 돼...");
+					NPCTalkMessage(npc.index, "No...");
 				}
 			}
 		}
 		else
 		{
-			switch(GetRandomInt(0,2))
+			switch(GetRandomInt(0,5))
 			{
 				case 0:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 두 번 씩이나 졌단 말인가!!");
+					NPCTalkMessage(npc.index, "NOT TWICE.");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 어째서냐!!");
+					NPCTalkMessage(npc.index, "WHY");
 				}
 				case 2:
 				{
-					CPrintToChatAll("{lightblue}메신저{default}: 난 그저 그 분에게 한 번이라도 좋은 모습을 보여주고 싶었을 뿐인데... 으윽.....");
+					NPCTalkMessage(npc.index, "YOU WILL REGRET THIS.");
+				}
+				case 3:
+				{
+					NPCTalkMessage(npc.index, "I've failed you..... my Lord..");
+				}
+				case 4:
+				{
+					NPCTalkMessage(npc.index, "How will I.... tell Him about my failure.");
+				}
+				case 5:
+				{
+					NPCTalkMessage(npc.index, "FUCK FUCK FUCK GOD FUCKING DAMNIT {crimson}FUCK!!!{default}");
 				}
 			}
 		}
@@ -1041,12 +1078,11 @@ int TheMessengerSelfDefense(TheMessenger npc, float gameTime, int target, float 
 					else
 						projectile = npc.FireParticleRocket(vecTarget, Proj_Damage, 1000.0, 150.0, "spell_fireball_small_blue", false);
 			
-					SDKUnhook(projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-					int particle = EntRefToEntIndex(i_rocket_particle[projectile]);
+					int particle = EntRefToEntIndex(i_WandParticle[projectile]);
 					CreateTimer(3.5, Timer_RemoveEntity, EntIndexToEntRef(projectile), TIMER_FLAG_NO_MAPCHANGE);
 					CreateTimer(3.5, Timer_RemoveEntity, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
 					
-					SDKHook(projectile, SDKHook_StartTouch, TheMessenger_Rocket_Particle_StartTouch);		
+					WandProjectile_ApplyFunctionToEntity(projectile, TheMessenger_Rocket_Particle_StartTouch);
 					
 				}
 				if(distance > (NORMAL_ENEMY_MELEE_RANGE_FLOAT_SQUARED * 3.5))
@@ -1156,14 +1192,16 @@ int TheMessengerSelfDefense(TheMessenger npc, float gameTime, int target, float 
 							{
 								float Proj_Damage = 22.0 * RaidModeScaling;
 								Proj_Damage *= 0.1;
-								NPC_Ignite(targetTrace, npc.index,Proj_Damage, -1, 2.5);
+								NPC_Ignite(targetTrace, npc.index,2.5, -1, Proj_Damage);
 							}
 							else
 							{
+								
 								int ChaosDamage = 150;
 								if(NpcStats_IsEnemySilenced(npc.index))
 									ChaosDamage = 140;
 
+								ApplyStatusEffect(npc.index, targetTrace, "Near Zero", 3.5);
 								Elemental_AddChaosDamage(targetTrace, npc.index, ChaosDamage, true, true);
 							}
 
@@ -1249,26 +1287,27 @@ public void TheMessenger_Rocket_Particle_StartTouch(int entity, int target)
 
 		if(i_RaidGrantExtra[owner] <= 2)
 		{
-			NPC_Ignite(target, owner,DamageDeal * 0.1, -1, 2.5);
+			if(i_NpcInternalId[owner] == NPCId)
+				NPC_Ignite(target, owner,2.5, -1, DamageDeal * 0.1);
+			else
+				NPC_Ignite(target, owner,2.5, -1, DamageDeal * 0.2);
 		}
 		else
 		{
-			int ChaosDamage = 75;
-			if(NpcStats_IsEnemySilenced(owner))
-				ChaosDamage = 65;
+			int ChaosDamage = 100;
 			//above is kahmlstein
 
 			if(i_NpcInternalId[owner] == NPCId)
 			{
 				//This is messenger
 				ChaosDamage = 60;
-				if(NpcStats_IsEnemySilenced(owner))
-					ChaosDamage = 50;
+					
+				ApplyStatusEffect(owner, target, "Near Zero", 3.5);
 			}
 
 			Elemental_AddChaosDamage(target, owner, ChaosDamage, true, true);
 		}
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		if(IsValidEntity(particle))
 		{
 			RemoveEntity(particle);
@@ -1276,7 +1315,7 @@ public void TheMessenger_Rocket_Particle_StartTouch(int entity, int target)
 	}
 	else
 	{
-		int particle = EntRefToEntIndex(i_rocket_particle[entity]);
+		int particle = EntRefToEntIndex(i_WandParticle[entity]);
 		//we uhh, missed?
 		if(IsValidEntity(particle))
 		{
@@ -1320,9 +1359,7 @@ void MessengerInitiateGroupAttack(TheMessenger npc)
 			else
 				projectile = npc.FireParticleRocket(vecHit, Proj_Damage, 1000.0, 150.0, "spell_fireball_small_blue", false,_,true, vecHitPart);
 	
-			SDKUnhook(projectile, SDKHook_StartTouch, Rocket_Particle_StartTouch);
-			
-			SDKHook(projectile, SDKHook_StartTouch, TheMessenger_Rocket_Particle_StartTouch);		
+			WandProjectile_ApplyFunctionToEntity(projectile, TheMessenger_Rocket_Particle_StartTouch);		
 			static float ang_Look[3];
 			GetEntPropVector(projectile, Prop_Send, "m_angRotation", ang_Look);
 			Initiate_HomingProjectile(projectile,
@@ -1357,7 +1394,7 @@ public void TheMessenger_OnTakeDamagePost(int victim, int attacker, int inflicto
 		}
 	}
 
-	if((ReturnEntityMaxHealth(npc.index)/4) >= GetEntProp(npc.index, Prop_Data, "m_iHealth") && !npc.Anger) //npc.Anger after half hp/400 hp
+	if((ReturnEntityMaxHealth(npc.index)/4) >= GetEntProp(npc.index, Prop_Data, "m_iHealth") && !npc.Anger) //npc.Anger after quarter hp/400 hp
 	{
 		npc.Anger = true;
 		npc.m_flAttackHappens_bullshit = GetGameTime(npc.index) + 0.0;
@@ -1365,23 +1402,31 @@ public void TheMessenger_OnTakeDamagePost(int victim, int attacker, int inflicto
 		f_MessengerSpeedUp[npc.index] = 1.65;
 		npc.m_flSpeed = 330.0;
 
-		switch(GetRandomInt(0,3))
+		switch(GetRandomInt(0,5))
 		{
 			case 0:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 하하하하하, 전부 {crimson}뒈질 준비나 해라!!");
+				NPCTalkMessage(npc.index, "AHAHAHAHAHHA, all of you are so{crimson}FUCKED!!");
 			}
 			case 1:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 공허여, 내게 힘을 주소서!");
+				NPCTalkMessage(npc.index, "{purple}VOID{default}, GRANT ME STRENGTH!");
 			}
 			case 2:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 지금 이겼다고 생각하나? 아직 시작일 뿐이라고.");
+				NPCTalkMessage(npc.index, "You think you won? I'M JUST GETTING STARTED.");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 그 고양이들을 기억하나? {crimson} 너희는 그것보다 더 심한 꼴을 당하게 될 거다.");
+				NPCTalkMessage(npc.index, "Remember those cats? {crimson} You're about to get it worse.");
+			}
+			case 4:
+			{
+				NPCTalkMessage(npc.index, "{crimson} DEATH TO MY ENEMIES!!!.");
+			}
+			case 5:
+			{
+				NPCTalkMessage(npc.index, "{crimson} DIE ALREADY!!!");
 			}
 		}
 	}
@@ -1396,15 +1441,15 @@ public void TheMessenger_Win(int entity)
 		{
 			case 0:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 정의가 집행되었다.");
+				NPCTalkMessage(entity, "Judgement delivered.");
 			}
 			case 1:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 네 죗값은 이걸로 전부 치뤘다.");
+				NPCTalkMessage(entity, "Your penance is now over.");
 			}
 			case 2:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 네 공포 정치는 이걸로 끝이다.");
+				NPCTalkMessage(entity, "Thus your reign of terror is no more.");
 			}
 		}
 	}
@@ -1414,15 +1459,15 @@ public void TheMessenger_Win(int entity)
 		{
 			case 0:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: {crimson}멍청한 병신새끼들!");
+				NPCTalkMessage(entity, "{crimson}TAKE THAT YOU FUCKS");
 			}
 			case 1:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 보고 계십니까? 제가 해냈습니다...");
+				NPCTalkMessage(entity, "Message...... delivered....");
 			}
 			case 2:
 			{
-				CPrintToChatAll("{lightblue}메신저{default}: 이제 만족하십니까, 주군이시여....");
+				NPCTalkMessage(entity, "Are you proud? My Lord....");
 			}
 		}
 	}

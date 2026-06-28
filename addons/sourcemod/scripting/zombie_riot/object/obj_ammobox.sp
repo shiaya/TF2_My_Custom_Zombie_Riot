@@ -124,10 +124,10 @@ static bool ClotInteract(int client, int weapon, ObjectAmmobox npc)
 			int owner = GetEntPropEnt(npc.index, Prop_Send, "m_hOwnerEntity");
 			if(UsedBoxLogic >= 2)
 			{
-				Building_GiveRewardsUse(client, owner, 10, true, 0.35, true);
+				Building_GiveRewardsUse(client, owner, 10, true, 0.5, true);
 				Barracks_TryRegenIfBuilding(client);
 			}
-			Building_GiveRewardsUse(client, owner, 10, true, 0.35, true);
+			Building_GiveRewardsUse(client, owner, 10, true, 0.5, true);
 			Barracks_TryRegenIfBuilding(client);
 		}
 		npc.m_flAttackHappens = GetGameTime(npc.index) + 999999.4;
@@ -177,6 +177,8 @@ int AmmoboxUsed(int client, int entity)
 			if(Current_Mana[client] < RoundToCeil(max_mana[client] * 2.0))
 			{
 				Ammo_Count_Used[client] += 2;
+				if(ZR_Get_Modifier() == 8)
+					Ammo_Count_Used[client] += 2;
 				ClientCommand(client, "playgamesound items/ammo_pickup.wav");
 				ClientCommand(client, "playgamesound items/ammo_pickup.wav");
 				if(Current_Mana[client] < RoundToCeil(max_mana[client] * 2.0))
@@ -191,6 +193,8 @@ int AmmoboxUsed(int client, int entity)
 				}
 
 				ApplyBuildingCollectCooldown(entity, client, 5.0, true);
+				if(Dungeon_Mode())
+					ApplyBuildingCollectCooldown(entity, client, 2.5, true);
 				Mana_Hud_Delay[client] = 0.0;
 				return 2;
 			}
@@ -212,11 +216,15 @@ int AmmoboxUsed(int client, int entity)
 				ClientCommand(client, "playgamesound items/ammo_pickup.wav");
 				AddAmmoClient(client, i_WeaponAmmoAdjustable[weapon] ,_,2.0);
 				Ammo_Count_Used[client] += 1;
+				if(ZR_Get_Modifier() == 8)
+					Ammo_Count_Used[client] += 1;
 				for(int i; i<Ammo_MAX; i++)
 				{
 					CurrentAmmo[client][i] = GetAmmo(client, i);
 				}
 				ApplyBuildingCollectCooldown(entity, client, 5.0, true);
+				if(Dungeon_Mode())
+					ApplyBuildingCollectCooldown(entity, client, 2.5, true);
 				return true;
 			}
 			else if(weaponindex == 441 || weaponindex == 35)
@@ -225,11 +233,15 @@ int AmmoboxUsed(int client, int entity)
 				ClientCommand(client, "playgamesound items/ammo_pickup.wav");
 				AddAmmoClient(client, 23 ,_,2.0);
 				Ammo_Count_Used[client] += 1;
+				if(ZR_Get_Modifier() == 8)
+					Ammo_Count_Used[client] += 1;
 				for(int i; i<Ammo_MAX; i++)
 				{
 					CurrentAmmo[client][i] = GetAmmo(client, i);
 				}		
 				ApplyBuildingCollectCooldown(entity, client, 5.0, true);
+				if(Dungeon_Mode())
+					ApplyBuildingCollectCooldown(entity, client, 2.5, true);
 				return true;
 			}
 			else if(AmmoBlacklist(Ammo_type) && i_OverrideWeaponSlot[weapon] != 2) //Disallow Ammo_Hand_Grenade, that ammo type is regenerative!, dont use jar, tf2 needs jar? idk, wierdshit.
@@ -238,15 +250,25 @@ int AmmoboxUsed(int client, int entity)
 				ClientCommand(client, "playgamesound items/ammo_pickup.wav");
 				AddAmmoClient(client, Ammo_type ,_,2.0);
 				Ammo_Count_Used[client] += 1;
+				if(ZR_Get_Modifier() == 8)
+					Ammo_Count_Used[client] += 1;
 				for(int i; i<Ammo_MAX; i++)
 				{
 					CurrentAmmo[client][i] = GetAmmo(client, i);
 				}
 				ApplyBuildingCollectCooldown(entity, client, 5.0, true);
+				if(Dungeon_Mode())
+					ApplyBuildingCollectCooldown(entity, client, 2.5, true);
 				return true;
 			}
 			else
 			{
+				//not useable if they have armor, or no armor, useable if they are under corrosion
+				if(f_LivingArmorPenalty[client] > GetGameTime() || (Attributes_Get(client, Attrib_Armor_AliveMode, 0.0) != 0.0 && Armor_Charge[client] >= 0))
+				{
+					ClientCommand(client, "playgamesound items/medshotno1.wav");
+					return false;
+				}
 				int Armor_Max = 150;
 			
 				Armor_Max = MaxArmorCalculation(Armor_Level[client], client, 0.75);
@@ -255,7 +277,11 @@ int AmmoboxUsed(int client, int entity)
 				{
 					GiveArmorViaPercentage(client, 0.1, 1.0);
 					ApplyBuildingCollectCooldown(entity, client, 5.0, true);
+					if(Dungeon_Mode())
+						ApplyBuildingCollectCooldown(entity, client, 2.5, true);
 					Ammo_Count_Used[client] += 1;
+					if(ZR_Get_Modifier() == 8)
+						Ammo_Count_Used[client] += 1;
 					
 					ClientCommand(client, "playgamesound ambient/machines/machine1_hit2.wav");
 					return true;

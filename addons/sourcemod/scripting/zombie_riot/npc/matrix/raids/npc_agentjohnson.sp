@@ -52,6 +52,21 @@ static char g_SlamSounds[][] = {
 
 void AgentJohnson_OnMapStart_NPC()
 {
+	NPCData data;
+	strcopy(data.Name, sizeof(data.Name), "Agent Johnson");
+	strcopy(data.Plugin, sizeof(data.Plugin), "npc_agent_johnson");
+	strcopy(data.Icon, sizeof(data.Icon), "matrix_agent_johnson");
+	data.IconCustom = true;
+	data.Flags = 0;
+	data.Category = Type_Matrix;
+	data.Func = ClotSummon;
+	data.Precache = ClotPrecache;
+	NPC_Add(data);
+}
+
+
+static void ClotPrecache()
+{
 	PrecacheSoundArray(g_DeathSounds);
 	PrecacheSoundArray(g_HurtSounds);
 	PrecacheSoundArray(g_IdleAlertedSounds);
@@ -62,19 +77,10 @@ void AgentJohnson_OnMapStart_NPC()
 	PrecacheSoundArray(g_WarningSounds);
 	PrecacheSoundArray(g_SlamSounds);
 	PrecacheModel("models/player/spy.mdl");
-	NPCData data;
-	strcopy(data.Name, sizeof(data.Name), "Agent Johnson");
-	strcopy(data.Plugin, sizeof(data.Plugin), "npc_agent_johnson");
-	strcopy(data.Icon, sizeof(data.Icon), "matrix_agent_johnson");
-	PrecacheSound("#zombiesurvival/matrix/navras.mp3");
-	data.IconCustom = true;
-	data.Flags = 0;
-	data.Category = Type_Matrix;
-	data.Func = ClotSummon;
-	NPC_Add(data);
+	PrecacheSoundCustom("#zombiesurvival/matrix/navras.mp3");
+	
+	Matrix_Shared_CorruptionPrecache();
 }
-
-
 static any ClotSummon(int client, float vecPos[3], float vecAng[3], int ally, const char[] data)
 {
 	return AgentJohnson(vecPos, vecAng, ally, data);
@@ -141,6 +147,7 @@ methodmap AgentJohnson < CClotBody
 
 		RaidBossActive = EntIndexToEntRef(npc.index);
 		RaidAllowsBuildings = false;
+		RaidAllowLastman = true;
 		
 		int iActivity = npc.LookupActivity("ACT_MP_RUN_MELEE_ALLCLASS");
 		if(iActivity > 0) npc.StartActivity(iActivity);
@@ -217,7 +224,7 @@ methodmap AgentJohnson < CClotBody
 		strcopy(music.Path, sizeof(music.Path), "#zombiesurvival/matrix/navras.mp3");
 		music.Time = 181;
 		music.Volume = 1.3;
-		music.Custom = false;
+		music.Custom = true;
 		strcopy(music.Name, sizeof(music.Name), "Navras");
 		strcopy(music.Artist, sizeof(music.Artist), "Juno Reactor");
 		Music_SetRaidMusic(music);
@@ -264,9 +271,15 @@ methodmap AgentJohnson < CClotBody
 	}
 }
 
+static void NPCTalkMessage(int entity, const char[] message)
+{
+	PrintNPCMessageWithPrefixes(entity, "community", message, .messageColor = "darkgreen");
+}
+
 public void Johnson_GroundCheck(int entity, int victim, float damage, int weapon)
 {
 	Custom_Knockback(entity, victim, 1000.0, true);
+	Elemental_AddCorruptionDamage(victim, entity, 2000, true, true);
 }
 
 public void AgentJohnson_ClotThink(int iNPC)
@@ -286,11 +299,11 @@ public void AgentJohnson_ClotThink(int iNPC)
 			{
 				case 0:
 				{
-					CPrintToChatAll("{community}존슨 요원{default}: 네가 살아있을 가치가 있나?");
+					NPCTalkMessage(npc.index, "Was it worth the risk?");
 				}
 				case 1:
 				{
-					CPrintToChatAll("{community}존슨 요원{default}: 인간의 정신은 너무나도 나약하다.");
+					NPCTalkMessage(npc.index, "Human minds are so feeble.");
 				}
 			}
 		}
@@ -300,7 +313,7 @@ public void AgentJohnson_ClotThink(int iNPC)
 	{
 		func_NPCThink[npc.index] = INVALID_FUNCTION;
 		
-		CPrintToChatAll("{community}존슨 요원{default}: 네 이야기는 여기서 끝이다.");
+		NPCTalkMessage(npc.index, "Your story ends here.");
 		return;
 	}
 
@@ -311,7 +324,7 @@ public void AgentJohnson_ClotThink(int iNPC)
 		{
 			ForcePlayerLoss();
 			RaidBossActive = INVALID_ENT_REFERENCE;
-			CPrintToChatAll("{community}존슨 요원{default}: {default}망명자들의 이야기는 여기서 끝이다.{default}");
+			NPCTalkMessage(npc.index, "The Exiles are done here.");
 			func_NPCThink[npc.index] = INVALID_FUNCTION;
 			return;
 		}
@@ -448,11 +461,9 @@ public void AgentJohnson_ClotThink(int iNPC)
 					npc.FaceTowards(vecTarget, 99999.9);
 					npc.m_flAbilityOrAttack1 = gameTime + 0.45;
 					npc.PlaySlamSound(0);
-					return;
 				}
 			}
 		}
-		
 		Johnsons_SelfDefense(npc, gameTime, npc.m_iTarget, flDistanceToTarget);
 	}
 	else
@@ -498,10 +509,8 @@ static void Johnsons_SelfDefense(AgentJohnson npc, float gameTime, int target, f
 							{
 								damage = 1.0;
 							}
-							Elemental_AddCorruptionDamage(targetTrace, npc.index, 15);
 							SDKHooks_TakeDamage(targetTrace, npc.index, npc.index, damage, DMG_CLUB, -1, _, vecHit);
-							//Reduce damage after dealing
-							damage *= 0.92;
+							Elemental_AddCorruptionDamage(targetTrace, npc.index, RoundToNearest(damage * 0.25), true, true);	
 							// On Hit stuff
 							bool Knocked = false;
 							if(!PlaySound)
@@ -592,7 +601,7 @@ static void Johnsons_SelfDefense(AgentJohnson npc, float gameTime, int target, f
 				npc.AddGesture("ACT_MP_ATTACK_STAND_SECONDARY");
 				KillFeed_SetKillIcon(npc.index, "pistol");
 
-				float damage = 10.0;
+				float damage = 30.0;
 				damage *= RaidModeScaling;
 
 				FireBullet(npc.index, npc.m_iWearable1, vecMe, vecDir, damage, 9000.0, DMG_BULLET, "dxhr_sniper_rail_blue");
@@ -696,7 +705,6 @@ public void AgentJohnson_NPCDeath(int entity)
 		npc.PlayDeathSound();	
 	}
 		
-	Music_SetRaidMusicSimple("vo/null.mp3", 60, false, 0.5);
 	if(IsValidEntity(npc.m_iWearable4))
 		RemoveEntity(npc.m_iWearable4);
 	if(IsValidEntity(npc.m_iWearable3))

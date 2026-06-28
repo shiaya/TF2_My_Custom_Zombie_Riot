@@ -5,6 +5,8 @@ int i_HexCustomDamageTypes[MAXENTITIES]; //We use this to avoid using tf2's dama
 //Use what already exists in tf2 please, only add stuff here if it needs extra spacing like ice damage and so on
 //I dont want to use DMG_SHOCK for example due to its extra ugly effect thats annoying!
 
+float PreventRespawnsAll;
+
 #define ZR_DAMAGE_NONE							0		  	//Nothing special.
 #define ZR_DAMAGE_ICE							(1 << 1)
 #define ZR_DAMAGE_LASER_NO_BLAST				(1 << 2)
@@ -18,6 +20,28 @@ int i_HexCustomDamageTypes[MAXENTITIES]; //We use this to avoid using tf2's dama
 #define ZR_DAMAGE_NPC_REFLECT					(1 << 10)	//this npc reflects damage to another npc that can also reflect damage, use this to filter out the damage.
 #define ZR_DAMAGE_CANNOTGIB_REGARDLESS			(1 << 11)
 #define ZR_DAMAGE_ALLOW_SELFHURT				(1 << 12)
+#define ZR_ELEMENTAL_QUANTUM					(1 << 13)
+
+
+#define PERK_NONE						0
+#define PERK_REGENE						(1 << 0)
+#define PERK_OBSIDIAN					(1 << 1)
+#define PERK_MORNING_COFFEE				(1 << 2)
+#define PERK_HASTY_HOPS					(1 << 3)
+#define PERK_MARKSMAN_BEER				(1 << 4)
+#define PERK_TESLAR_MULE				(1 << 5)
+#define PERK_STOCKPILE_STOUT			(1 << 6)
+#define PERK_ENERGY_DRINK				(1 << 7)
+#define PERK_LOVER					(1 << 8)
+#define PERK_MARATHON				(1 << 9)
+#define PERK_SEALED					(1 << 10)
+#define PERK_BLOODY					(1 << 11)
+#define PERK_WHO					(1 << 12)
+	
+#define PERK_MORNING_COFFEE_X		(1 << 13)
+#define PERK_HASTY_HOPS_X			(1 << 14)
+#define PERK_MARKSMAN_BEER_X		(1 << 15)
+#define PERK_ENERGY_DRINK_X			(1 << 16)
 
 #define HEAL_NO_RULES				0	 	 
 //Nothing special.
@@ -28,6 +52,8 @@ int i_HexCustomDamageTypes[MAXENTITIES]; //We use this to avoid using tf2's dama
 #define HEAL_SILENCEABLE			(1 << 3) 
 //Silence Entirely nukes this heal
 #define HEAL_PASSIVE_NO_NOTIF		(1 << 4) 
+//Heals but doesnt notify anyone
+#define HEAL_FLAG_AM				(1 << 5) 
 //Heals but doesnt notify anyone
 
 #define ZR_STORE_RESET (1 << 1) //This will reset the entire store to default
@@ -62,47 +88,83 @@ enum
 	Ammo_MAX
 };
 
+enum
+{
+	BBV_Normal = 0,
+	BBV_Giant = 1,
+	BBV_DontAlter = 999,
+}
+enum
+{
+	Faction_Expidonsa = 1,
+	Faction_Grunwald,
+	Faction_Vesta,
+	Faction_PsychicWarlord,
+	Faction_Dweller
+}
+public const char ItemFaction[][] =
+{
+	"",
+
+	"Expidonsa",
+	"Grunwald",
+	"Vesta",
+	"Psychic Warlord",
+	"Dweller"
+}
+
+enum
+{
+	Archetype_Artillery = 1,
+	Archetype_Deadeye,
+	Archetype_Charger,
+	Archetype_Tactician,
+	Archetype_Hunter,
+	Archetype_Drone,
+	Archetype_Splash,
+	Archetype_Rapid,
+	Archetype_Power,
+	Archetype_Hexing,
+	Archetype_Ambusher,
+	Archetype_Duelist,
+	Archetype_Defender,
+	Archetype_Lord,
+	Archetype_Crusher,
+	Archetype_Combatant,
+	Archetype_Medical,
+	Archetype_Mechanic,
+	Archetype_Buffer,
+	Archetype_Debuffer
+}
 public const char ItemArchetype[][] =
 {
-	"",	// No archetype.	
-//PRIMARY SECONDARY
-	"Multi Pellet",		// 1
-	"Rapid Fire",		// 2
-	"Infinite Fire",	// 3
-	"None",		// 4
-	"Single Pellet",	// 5
-	"Far Range",		// 6
-	"Trap Master",		// 7 this can include builder weapons!
-	"Explosive Mind",	// 8 Most Explosive weapons
-//SUPPORT ITEMS
-	"Team Support",		// 9
-	"ArchDebuff",			// 10
-//MELEE'S
-	"Brawler",			// 11 most fist melee's
-	"Ambusher",			// 12 spy backstab weapons
-	"Combatant",		// 13 Longsword any melee that has no special abilities, mostly
-//	"Martial Artist",	// ?? Weapons with heavy skill usage such as judgement of iberia
-//	edit: Too general, cant.
-	"Aberration",		// 14 Melee weapons that summon things, currenly only fusion blade
-	"Duelist",			// 15 Melee weapons that exell at taking down/fighting single targets, see ark due to parry
-	"Lord",				// 16 Any melee that heavily has ranged attacks, see Lappland melee as the only one currently
-	"Crusher",			// 17 Any melee that has very good aoe, see judgement of ibera or final hammer pap
+	"",
 
-	
-//MAGE WEAPONS
-	"Summoner",			// 18
-	"Chain Caster",		// 19
-	"Multi Caster",		// 20
-	"Base Caster",		// 21
+	"Artillery",	// 1 Explosives, Heavy AOE Focus
+	"Deadeye",	// 2 Sniper, Slow/High Damage at a Range
+	"Charger",	// 3 Shotgun, Slow Fire Rate/Short Range
+	"Tactician",	// 4 Pistol/SMG, Fast Fire Rate/Medium Range
+	"Hunter",	// 5 Stickybomb, Trap Focus
 
-// CUSTOM
-	"Abyssal Hunter",	// 22
-	"Kazimierz",		// 23
-	"Bloodletter",	//24, Vampire Knives fast-attack path
-	"Bloody Butcher", //25, Vampire Knives cleaver path
-	"Mythic Caster",	// 26
-	"Psychic Warlord",	//27, Psychokinesis and Magnesis Staff, possibly more in the future
-	"Archetype Victoria" //28, Damn this is an Archetype for a Victorian weapon made by beep.
+	"Drone Magic",	// 6 High lifetime projectiles or summoning, Skulls/Drone/Nerco
+	"Splash Magic",	// 7 Heavy AOE Focus
+	"Rapid Magic",	// 8 High Fire Rate
+	"Power Magic",	// 9 Low Fire Rate
+	"Hexing Magic",	// 10 Elemental/Debuff Focus
+
+	"Ambusher",	// 11 Knifes, Focus on hitting correct timing
+	"Duelist",	// 12 Survival focus
+	"Defender",	// 13 Tank focus
+	"Lord",		// 14 Long range focus
+	"Crusher",	// 15 AOE focus
+	"Combatant",	// 16 DPS focus
+
+	"Medical",	// 17 Healing focus
+	"Mechanic",	// 18 Building focus
+	"Buffer",	// 19 Buffing focus
+	"Debuffer",	// 20 Debuff focus
+
+	"Fallen Warrior"// 21 Special
 };
 
 public const int RenderColors_RPG[][] =
@@ -135,6 +197,7 @@ float i_WasInResPowerup[MAXPLAYERS] = {0.0,0.0,0.0};
 
 ConVar Cvar_clamp_back_speed; //tf_clamp_back_speed
 ConVar Cvar_LoostFooting; //tf_movement_lost_footing_friction
+ConVar sv_gravity; 
 ConVar sv_cheats;
 ConVar nav_edit;
 ConVar tf_scout_air_dash_count;
@@ -150,6 +213,7 @@ bool b_LagCompNPC_BlockInteral;
 bool b_LagCompAlliedPlayers; //Make sure this actually compensates allies.
 #endif
 
+Function func_WandOnTouch[MAXENTITIES];
 ConVar zr_spawnprotectiontime;
 #if !defined RTS
 float f_BackstabDmgMulti[MAXENTITIES];
@@ -165,6 +229,8 @@ int Animation_Index[MAXPLAYERS];
 int Animation_Retry[MAXPLAYERS];
 #endif
 
+float f_LatestDamageTaken[MAXPLAYERS];
+int i_LatestHealthLeft[MAXPLAYERS];
 int Building_Mounted[MAXENTITIES];
 bool i_HasBeenBackstabbed[MAXENTITIES];
 bool i_HasBeenHeadShotted[MAXENTITIES];
@@ -172,12 +238,14 @@ int i_IDependOnThisBuilding[MAXENTITIES];
 
 int g_particleImpactFlesh;
 int g_particleImpactRubber;
+int g_particleImpactPortal;
 
 
 #if !defined RTS
 float f_damageAddedTogether[MAXPLAYERS];
 float f_damageAddedTogetherGametime[MAXPLAYERS];
 int i_HudVictimToDisplay[MAXPLAYERS];
+float f_RepeatShowHudFor[MAXPLAYERS];
 int i_HudVictimToDisplay2[MAXPLAYERS];
 #endif
 
@@ -196,6 +264,7 @@ int TeamNumber[MAXENTITIES];
 int i_NextAttackDoubleHit[MAXENTITIES];
 
 bool thirdperson[MAXPLAYERS];
+float f_ArmorDamageDeltHud[MAXPLAYERS];
 bool b_DoNotUnStuck[MAXENTITIES];
 float f_NoUnstuckVariousReasons[MAXENTITIES];
 //bool b_PlayerIsInAnotherPart[MAXENTITIES];
@@ -208,10 +277,11 @@ int i_WhatLevelForHudIsThisClientAt[MAXPLAYERS];
 
 float f_Data_InBattleHudDisableDelay[MAXPLAYERS];
 float f_InBattleDelay[MAXENTITIES];
+float f_TimerStatusEffectsDo[MAXENTITIES];
 
 int Healing_done_in_total[MAXENTITIES];
 int i_PlayerDamaged[MAXENTITIES];
-bool b_PlayerWasAirbornKnockbackReduction[MAXPLAYERS];
+int b_PlayerWasAirbornKnockbackReduction[MAXPLAYERS];
 ConVar CvarRPGInfiniteLevelAndAmmo;
 ConVar CvarXpMultiplier;
 TFClassType CurrentClass[MAXPLAYERS]={TFClass_Scout, ...};
@@ -219,6 +289,24 @@ TFClassType WeaponClass[MAXPLAYERS]={TFClass_Scout, ...};
 
 bool b_GivePlayerHint[MAXPLAYERS];
 #if defined ZR
+
+//custom wave music.
+MusicEnum MusicString1;
+MusicEnum MusicString2;
+MusicEnum MusicSetup1;
+MusicEnum MusicLastmann;
+MusicEnum MusicWin;
+MusicEnum MusicLoss;
+MusicEnum RaidMusicSpecial1;
+MusicEnum BGMusicSpecial1;
+
+int MostRecentVoteCancel;
+
+//only used for waves from spawners
+float DelayContinuneWave[Rounds_MAX];
+ArrayList Enemies[Rounds_MAX][3];
+ArrayList Rounds[Rounds_MAX];
+
 int i_ObjectsBuilding[ZR_MAX_BUILDINGS];
 bool b_IgnoreMapMusic[MAXPLAYERS];
 bool b_DisableDynamicMusic[MAXPLAYERS];
@@ -227,7 +315,6 @@ bool b_EnableCountedDowns[MAXPLAYERS];
 bool b_EnableClutterSetting[MAXPLAYERS];
 bool b_EnableNumeralArmor[MAXPLAYERS];
 int i_CustomModelOverrideIndex[MAXPLAYERS];
-int FogEntity = INVALID_ENT_REFERENCE;
 int PlayerPoints[MAXPLAYERS];
 float f_InBattleHudDisableDelay[MAXPLAYERS];
 int CurrentAmmo[MAXPLAYERS][Ammo_MAX];
@@ -250,11 +337,13 @@ int i_HowManyBombsOnThisEntity[MAXENTITIES][MAXPLAYERS];
 int i_HowManyBombsHud[MAXENTITIES];
 int i_PlayerToCustomBuilding[MAXENTITIES] = {0, ...};
 float f_BuildingIsNotReady[MAXPLAYERS] = {0.0, ...};
+float f_VintulumBombRecentlyUsed[MAXPLAYERS] = {0.0, ...};
 float f_AmmoConsumeExtra[MAXPLAYERS];
 #endif
 
 #if defined ZR || defined RTS
 ConVar CvarInfiniteCash;
+ConVar CvarUnlockStore;
 #endif
 
 #if defined ZR || defined RTS || defined RPG
@@ -270,6 +359,7 @@ float f_Client_BackwardsWalkPenalty[MAXPLAYERS]={0.7, ...};
 float f_Weapon_BackwardsWalkPenalty[MAXENTITIES]={0.9, ...};
 float f_Client_BackwardsWalkPenalty[MAXPLAYERS]={0.9, ...};
 #endif
+int i_Client_Gravity[MAXPLAYERS]={800, ...};
 
 float f_Client_LostFriction[MAXPLAYERS]={0.1, ...};
 int i_SemiAutoWeapon[MAXENTITIES];
@@ -280,16 +370,17 @@ bool b_HideCosmeticsPlayer[MAXPLAYERS];
 float f_HealDelayParticle[MAXENTITIES]={1.0, ...};
 
 bool b_IsAloneOnServer = false;
-bool b_TauntSpeedIncrease[MAXPLAYERS] = {true, ...};
+bool b_BackwardsWalkNotif[MAXPLAYERS] = {true, ...};
 Handle SyncHud_Notifaction;
 Handle SyncHud_WandMana;
 int i_CustomWeaponEquipLogic[MAXENTITIES]={0, ...};
 
 
 //only used in zr, however, can also be used for other gamemodes incase theres a limit.
-bool b_EnemyNpcWasIndexed[MAXENTITIES][2];
+bool b_EnemyNpcWasIndexed[MAXENTITIES][3];
 int EnemyNpcAlive = 0;
 int EnemyNpcAliveStatic = 0;
+int EnemyNpcAliveConst2 = 0;
 
 const int i_MaxcountBuilding = ZR_MAX_BUILDINGS;
 
@@ -325,7 +416,7 @@ int ClientAttribResetCount[MAXPLAYERS];
 
 //This is for going through things via lag comp or other reasons to teleport things away.
 //bool Do_Not_Regen_Mana[MAXPLAYERS];;
-bool i_ClientHasCustomGearEquipped[MAXPLAYERS]={false, ...};
+int i_ClientHasCustomGearEquipped[MAXPLAYERS]={0, ...};
 
 float delay_hud[MAXPLAYERS];
 float f_DelayBuildNotif[MAXPLAYERS];
@@ -348,17 +439,22 @@ bool i_IsABuilding[MAXENTITIES];
 bool i_NpcIsABuilding[MAXENTITIES];
 bool b_NpcIgnoresbuildings[MAXENTITIES];
 
+float f_ReceivedTruedamageHit[MAXPLAYERS];
 
 bool b_IsAGib[MAXENTITIES];
 int i_NpcInternalId[MAXENTITIES];
 bool b_IsCamoNPC[MAXENTITIES];
 bool b_NoKillFeed[MAXENTITIES];
+bool b_IsCustomProjectile[MAXENTITIES];
 
 float f_TimeUntillNormalHeal[MAXENTITIES]={0.0, ...};
+float f_LivingArmorPenalty[MAXPLAYERS]={0.0, ...};
 float f_ClientWasTooLongInsideHurtZone[MAXENTITIES]={0.0, ...};
 float f_ClientWasTooLongInsideHurtZoneDamage[MAXENTITIES]={0.0, ...};
 float f_ClientWasTooLongInsideHurtZoneStairs[MAXENTITIES]={0.0, ...};
 float f_ClientWasTooLongInsideHurtZoneDamageStairs[MAXENTITIES]={0.0, ...};
+
+float fl_player_weapon_score[MAXPLAYERS];
 
 bool b_HideHealth[MAXENTITIES];
 bool b_IsABow[MAXENTITIES];
@@ -377,6 +473,7 @@ float f_TimeFrozenStill[MAXENTITIES];
 float f_StunExtraGametimeDuration[MAXENTITIES];
 float f_BannerDurationActive[MAXENTITIES];
 float f_PreventMovementClient[MAXENTITIES];
+float BackwardsWarn[MAXPLAYERS];
 //0 means bad, 1 means good
 float f_BubbleProcStatus[MAXENTITIES][2];
 float f_DuelStatus[MAXENTITIES];
@@ -406,20 +503,16 @@ float f_PullStrength[MAXENTITIES];
 float ReplicateClient_Svairaccelerate[MAXPLAYERS];
 float ReplicateClient_BackwardsWalk[MAXPLAYERS];
 float ReplicateClient_LostFooting[MAXPLAYERS];
+int ReplicateClient_Gravity[MAXPLAYERS];
 int ReplicateClient_Tfsolidobjects[MAXPLAYERS];
 int ReplicateClient_RollAngle[MAXPLAYERS];
 
 bool b_StickyIsSticking[MAXENTITIES];
 
-RenderMode i_EntityRenderMode[MAXENTITIES]={RENDER_NORMAL, ...};
-int i_EntityRenderColour1[MAXENTITIES]={255, ...};
-int i_EntityRenderColour2[MAXENTITIES]={255, ...};
-int i_EntityRenderColour3[MAXENTITIES]={255, ...};
-int i_EntityRenderColour4[MAXENTITIES]={255, ...};
-bool i_EntityRenderOverride[MAXENTITIES]={false, ...};
+float f_EntityRenderColour[MAXENTITIES][3];
+int i_EntityRenderColourSave[MAXENTITIES][3];
 
-//6 wearables
-int i_Wearable[MAXENTITIES][9];
+int i_Wearable[MAXENTITIES][10];
 int i_FreezeWearable[MAXENTITIES];
 int i_InvincibleParticle[MAXENTITIES];
 int i_InvincibleParticlePrev[MAXENTITIES];
@@ -472,6 +565,7 @@ int i_nm_body_client[MAXPLAYERS];
 int i_CurrentEquippedPerk[MAXENTITIES];
 float f_DelayAttackspeedAnimation[MAXPLAYERS +1];
 float f_DelayAttackspeedPanicAttack[MAXENTITIES];
+bool b_AntiLateSpawn_Allow[MAXPLAYERS + 1];
 
 #if defined ZR 
 int i_SpecialGrigoriReplace;
@@ -490,12 +584,10 @@ bool b_FaceStabber[MAXENTITIES];
 int Armor_Level[MAXPLAYERS]={0, ...}; 				//701
 int Grigori_Blessing[MAXPLAYERS]={0, ...}; 				//777
 bool b_HasGlassBuilder[MAXPLAYERS];
-bool b_HasMechanic[MAXPLAYERS];
+//bool b_HasMechanic[MAXPLAYERS];
 int i_MaxSupportBuildingsLimit[MAXPLAYERS];
 bool b_AggreviatedSilence[MAXPLAYERS];
 bool b_ArmorVisualiser[MAXENTITIES];
-//bool b_BobsCuringHand[MAXPLAYERS];
-//bool b_XenoVial[MAXPLAYERS];
 int b_BobsCuringHand_Revived[MAXPLAYERS];
 bool b_StickyExtraGrenades[MAXPLAYERS];
 bool FinalBuilder[MAXENTITIES];
@@ -506,13 +598,6 @@ bool HasMechanic[MAXENTITIES];
 bool b_ExpertTrapper[MAXENTITIES];
 bool b_RaptureZombie[MAXENTITIES];
 float f_ClientArmorRegen[MAXENTITIES];
-//bool b_NemesisHeart[MAXPLAYERS];
-//bool b_OverlordsFinalWish[MAXPLAYERS];
-//bool b_BobsTrueFear[MAXPLAYERS];
-//bool b_TwirlHairpins[MAXPLAYERS];
-//bool b_KahmlLastWish[MAXPLAYERS];
-//bool b_VoidPortalOpened[MAXPLAYERS];
-//bool b_AvangardCoreB[MAXPLAYERS];
 float f_ArmorCurrosionImmunity[MAXENTITIES][Element_MAX];
 float f_CooldownForHurtHud_Ally[MAXPLAYERS];	
 float mana_regen[MAXPLAYERS];
@@ -534,8 +619,6 @@ Handle g_hRecalculatePlayerBodygroups;
 float f_WandDamage[MAXENTITIES]; //
 int i_WandWeapon[MAXENTITIES]; //
 int i_WandParticle[MAXENTITIES]; //Only one allowed, dont use more. ever. ever ever. lag max otherwise.
-//float Check_Standstill_Delay[MAXPLAYERS];
-//bool Check_Standstill_Applied[MAXPLAYERS];
 
 float max_mana[MAXPLAYERS];
 
@@ -589,6 +672,10 @@ Function EntityFuncAttackInstant[MAXENTITIES];
 Function EntityFuncAttack2[MAXENTITIES];
 Function EntityFuncAttack3[MAXENTITIES];
 Function EntityFuncReload4[MAXENTITIES];
+Function EntityFuncPlayerRunCmd[MAXENTITIES];
+Function EntityFuncOnKill[MAXENTITIES];
+Function EntityFuncTakeDamage[MAXENTITIES][3];
+Function EntityCustomTraceMelee[MAXENTITIES];
 //Function EntityFuncReloadSingular5[MAXENTITIES];
 
 float f_ClientMusicVolume[MAXPLAYERS];
@@ -614,6 +701,7 @@ bool b_IgnoreAllCollisionNPC[MAXENTITIES];		//for npc's that noclip
 int iref_PropAppliedToRocket[MAXENTITIES];
 
 int i_ExplosiveProjectileHexArray[MAXENTITIES];
+//int h_TransmitHookType[MAXENTITIES];
 int h_NpcCollissionHookType[MAXENTITIES];
 int h_NpcSolidHookType[MAXENTITIES];
 int h_NpcHandleEventHook[MAXENTITIES];
@@ -744,6 +832,7 @@ float f_ClientDoDamageHud[MAXPLAYERS][2];
 float f_ClientDoDamageHud_Hurt[MAXPLAYERS][2];
 float f3_NpcSavePos[MAXENTITIES][3];  
 float f_DelayComputingOfPath[MAXENTITIES];
+#define EXTRA_RAID_EXPLOSIVE_DAMAGE 1.3
 
 enum
 {
@@ -754,7 +843,7 @@ enum
 	STEPTYPE_COMBINE_METRO = 4,
 	STEPTYPE_TANK = 5,
 	STEPTYPE_ROBOT = 6,
-	STEPTYPE_SEABORN = 7
+	STEPTYPE_DWELLER = 7
 }
 
 enum
@@ -770,10 +859,11 @@ enum
 	BLEEDTYPE_RUBBER = 3,
 	BLEEDTYPE_XENO = 4,
 	BLEEDTYPE_SKELETON = 5,
-	BLEEDTYPE_SEABORN = 6,
-	BLEEDTYPE_VOID = 7
+	BLEEDTYPE_DWELLER = 6,
+	BLEEDTYPE_VOID = 7,
+	BLEEDTYPE_UMBRAL = 8,
+	BLEEDTYPE_PORTAL = 9
 }
-
 
 
 int i_TankAntiStuck[MAXENTITIES];
@@ -791,7 +881,7 @@ float f3_LastValidPosition[MAXENTITIES][3]; //Before grab to be exact
 int i_PlayIdleAlertSound[MAXENTITIES];
 int i_ammo_count[MAXENTITIES];
 bool b_we_are_reloading[MAXENTITIES];
-float fl_nightmare_cannon_core_sound_timer[MAXENTITIES];
+float fl_RuinaLaserSoundTimer[MAXENTITIES];
 int i_wingslot[MAXENTITIES];
 int i_haloslot[MAXENTITIES];
 int i_ClosestAlly[MAXENTITIES];
@@ -805,6 +895,8 @@ float fl_BEAM_DurationTime[MAXENTITIES];	//how long until the laser ends
 float fl_BEAM_ThrottleTime[MAXENTITIES];	//if you want to make a laser only do something 10 times a second instead of 66 during a think hook
 
 float fl_AbilityVectorData[MAXENTITIES][3];	//if you wish to transfer vector data between stuff. or save it for something else
+float fl_AbilityVectorData_2[MAXENTITIES][3];	//if you wish to transfer vector data between stuff. or save it for something else
+float fl_AbilityVectorData_3[MAXENTITIES][3];	//if you wish to transfer vector data between stuff. or save it for something else
 int i_Ruina_Laser_BEAM_HitDetected[100];	//if your laser has to hit more then 100 targets, your doing something wrong.
 int i_AmountProjectiles[MAXENTITIES];
 
@@ -821,6 +913,7 @@ float fl_StopDodgeCD[MAXENTITIES];
 
 int i_GunMode[MAXENTITIES];
 int i_GunAmmo[MAXENTITIES];
+int i_GunAmmoMAX[MAXENTITIES];
 float f_NemesisImmuneToInfection[MAXENTITIES];
 float f_NemesisSpecialDeathAnimation[MAXENTITIES];
 float f_NemesisRandomInfectionCycle[MAXENTITIES];
@@ -828,12 +921,50 @@ bool b_InKame[MAXENTITIES];
 bool b_said_player_weaponline[MAXPLAYERS]; //Yes, i know, itll break if multiple raids spawn, but it doesnt really matter....
 float fl_said_player_weaponline_time[MAXENTITIES];
 int i_current_wave[MAXENTITIES];
-bool FactorySpawn[MAXENTITIES];
-bool MK2[MAXENTITIES];
-bool Limit[MAXENTITIES];
-bool Anvil[MAXENTITIES];
 int i_ally_index[MAXENTITIES];
 
 //some lasers had some variation of this, i just condeced it down to 1
 int LaserVarious_HitDetection[MAXENTITIES];
 int i_SaidLineAlready[MAXENTITIES];
+
+
+
+#if defined ZR
+
+Handle WaveTimer;
+float MultiGlobalEnemy = 0.25;
+float MultiGlobalEnemyBoss = 0.25;
+//This value is capped at max 4.0, any higher will result in MultiGlobalHealth being increased
+//isnt affected when selecting Modificators.
+//Bosses scale harder, as they are fewer of them, and we cant make them scale the same.
+float MultiGlobalHealth = 1.0;
+//See above
+
+float MultiGlobalHealthBoss = 0.25;
+//This is normal boss scaling, this scales ontop of enemies spawning
+
+float MultiGlobalHighHealthBoss = 0.34;
+//This is Raidboss/Single boss scaling, this is used if the boss only spawns once.
+
+//Above a certain amount, bosses gain more damage and HP, but its capped at a certain amount of them just like normal enemies
+float MultiGlobalScalingBossExtra = 1.0;
+
+enum
+{
+	FogType_Wave,
+	FogType_NPC,
+	FogType_Difficulty,
+	
+	FogType_COUNT
+}
+
+int CustomFogEntity[FogType_COUNT];	// Array of fog controller entity refs set by the gamemode that exist, but might not be active
+int MapFogEntity;					// Entity ref of the fog controller used by the map, that is currently unused because a custom fog is taking priority
+int ActiveFogEntity;				// Entity ref of the fog controller that is currently active, mostly used for late joins
+
+bool g_PrecachedMatrixNPCs;
+int ZoneMarkerRef[Zone_MAX] = {-1, ...};
+ArrayList CurrentCollection;
+ArrayList Artifacts;
+ArrayList E_AL_StatusEffects[MAXENTITIES];
+#endif

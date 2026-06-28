@@ -11,6 +11,7 @@ static const char SectionName[][] =
 {
 	"Support Buildings",
 	"Unique Buildings",
+	"Construct Buildings",
 	"Construct Buildings"
 };
 
@@ -36,6 +37,7 @@ static int Player_BuildingBeingCarried[MAXPLAYERS];
 static float PlayerWasHoldingProp[MAXPLAYERS];
 float PreventSameFrameActivation[2][MAXPLAYERS];
 int RandomIntSameRequestFrame[MAXPLAYERS];
+static int Toggle_MetalAutobuy[MAXPLAYERS];
 
 bool BuildingIsSupport(int entity)
 {
@@ -75,6 +77,10 @@ bool IsPlayerCarringObject(int client)
 		
 	return false;
 }
+int GetCarryingObject(int client)
+{
+	return Player_BuildingBeingCarried[client] == 0 ? -1 : EntRefToEntIndex(Player_BuildingBeingCarried[client]);
+}
 bool BuildingIsBeingCarried(int buildingindx)
 {
 	if(IsValidEntity(Building_BuildingBeingCarried[buildingindx]))
@@ -104,7 +110,7 @@ void Building_ResetRewardValuesWave()
 void Building_GiveRewardsUse(int client, int trueOwner, int Cash, bool CashLimit = true, float AmmoSupply = 0.0, bool SupplyLimit = true)
 {
 	int owner = trueOwner;
-	if(owner > MaxClients)
+	if(!IsValidEntity(owner) || owner > MaxClients)
 		owner = client;
 	
 	//when using your own buildings, you get half as much.
@@ -139,7 +145,7 @@ void Building_GiveRewardsUse(int client, int trueOwner, int Cash, bool CashLimit
 	{
 		//This building doesnt affect the limit.
 		Native_OnGivenCash(owner, Cash);
-		CashRecievedNonWave[owner] += Cash;
+		CashReceivedNonWave[owner] += Cash;
 		CashSpent[owner] -= Cash;
 	}
 	if(AmmoSupply <= 0.0)
@@ -160,7 +166,8 @@ void Building_GiveRewardsUse(int client, int trueOwner, int Cash, bool CashLimit
 	if(ConvertedAmmoSupplyGive <= 0)
 		return;
 		
-	Resupplies_Supplied[trueOwner] += ConvertedAmmoSupplyGive;
+	if(IsValidEntity(trueOwner))
+		Resupplies_Supplied[trueOwner] += ConvertedAmmoSupplyGive;
 	Resupplies_Supplied[owner] += ConvertedAmmoSupplyGive;
 	if(SupplyLimit)
 	{
@@ -198,6 +205,7 @@ void Building_MapStart()
 
 void Building_ClientDisconnect(int client)
 {
+	Toggle_MetalAutobuy[client] = 0;
 	MenuSection[client] = -1;
 	MenuPage[client] = 0;
 }
@@ -217,6 +225,7 @@ int Building_Add(BuildingInfo info)
 public void Building_OpenMenuWeapon(int client, int weapon, bool crit, int slot)
 {
 	MenuSection[client] = -1;
+	MenuPage[client] = 0;
 	//reset to main menu for easier quick access
 	delete MenuTimer[client];
 	BuildingMenu(client);
@@ -233,6 +242,57 @@ static bool HasWrench(int client)
 		return false;
 
 	return true;
+}
+
+void AutobuyMetal(int client)
+{
+	switch(Toggle_MetalAutobuy[client])
+	{
+		case 0:
+		{
+			//disabled
+			return;
+		}
+		case 1, 2:
+		{
+			int metal = GetAmmo(client, Ammo_Metal);
+			//disabled
+			int MetalToMaxBuy = (Toggle_MetalAutobuy[client] * 500);
+			if(metal >= MetalToMaxBuy)
+				return;
+
+			int cash = (CurrentCash + GlobalExtraCash) - CashSpent[client];
+			if(StarterCashMode[client])
+			{
+				int maxCash = StartCash;
+				maxCash -= CashSpentLoadout[client];
+				cash = maxCash;
+			}
+			//metal to cost ratio
+			MetalToMaxBuy -= metal;
+
+			int TimesToBuy = RoundToCeil(float(MetalToMaxBuy) / float(AmmoData[Ammo_Metal][1]));
+
+			if((TimesToBuy * AmmoData[Ammo_Metal][0]) >= cash)
+				return;
+			
+			CashSpent[client] += AmmoData[Ammo_Metal][0] * TimesToBuy;
+			CashSpentTotal[client] += AmmoData[Ammo_Metal][0] * TimesToBuy;
+			CashSpentLoadout[client] += AmmoData[Ammo_Metal][0] * TimesToBuy;
+			
+			int ammo = GetAmmo(client, Ammo_Metal) + (AmmoData[Ammo_Metal][1] * TimesToBuy);
+			SetAmmo(client, Ammo_Metal, ammo);
+			CurrentAmmo[client][Ammo_Metal] = ammo;
+			TellClientBoughtAmmo(client, AmmoData[Ammo_Metal][1] * TimesToBuy,AmmoData[Ammo_Metal][0] * TimesToBuy);
+
+		}
+	}
+}
+
+void TellClientBoughtAmmo(int client, int metalbought, int cashused)
+{
+	SPrintToChat(client, "%t", "Just Bought Ammo Automatically",metalbought, cashused);
+	ClientCommand(client, "playgamesound \"mvm/mvm_bought_upgrade.wav\"");
 }
 
 static int GetCost(int client, BuildingInfo info, float multi)
@@ -253,21 +313,43 @@ static int GetCost(int client, BuildingInfo info, float multi)
 		//only reduce off buildigns that actually cost more to build.
 		ReduceMetalCost(client, buildCost);
 	}
+	if(HasSpecificBuff(client, "Starting Grace"))
+	{
+		buildCost /= 2;
+	}
+	if(Dungeon_Mode() && !Waves_Started())
+	{
+		buildCost = 99999;
+	}
 
 
+	if(CvarInfiniteCash.BoolValue)
+		buildCost = 1;
 	if(Rogue_Mode())
 		buildCost /= 3;
+	if(Dungeon_Mode())
+		buildCost /= 2;
 
 	return buildCost;
 }
 
 static void BuildingMenu(int client)
 {
-	if(MenuTimer[client] || !HasWrench(client))
+	if(MenuTimer[client])
 		return;
+	if(!HasWrench(client))
+	{
+		HideMenuInstantly(client);
+		//show a blank page to instantly hide it
+		CancelClientMenu(client);
+		ClientCommand(client, "slot10");
+		ResetStoreMenuLogic(client);
+		return;
+		//no wrench, die
+	}
 	
 	int metal = GetAmmo(client, Ammo_Metal);
-	int cash = CurrentCash - CashSpent[client];
+	int cash = (CurrentCash + GlobalExtraCash) - CashSpent[client];
 	if(StarterCashMode[client])
 	{
 		int maxCash = StartCash;
@@ -315,8 +397,8 @@ static void BuildingMenu(int client)
 
 	if(MenuSection[client] == -1 || !ducking)
 	{
-		FormatEx(buffer1, sizeof(buffer1), "%t [%d] ($%d)", "Scrap Metal", AmmoData[Ammo_Metal][1], AmmoData[Ammo_Metal][0]);
-		menu.AddItem(buffer1, buffer1, cash < AmmoData[Ammo_Metal][0] ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+		FormatEx(buffer1, sizeof(buffer1), "%t", "Scrap Metal Auto Buy", (Toggle_MetalAutobuy[client] * 500));
+		menu.AddItem(buffer1, buffer1, ITEMDRAW_DEFAULT);
 
 		FormatEx(buffer1, sizeof(buffer1), "%t x10 [%d] ($%d)%s", "Scrap Metal", AmmoData[Ammo_Metal][1] * 10, AmmoData[Ammo_Metal][0] * 10, MenuSection[client] == -1 ? "" : "\n ");
 		menu.AddItem(buffer1, buffer1, cash < (AmmoData[Ammo_Metal][0] * 10) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
@@ -334,15 +416,38 @@ static void BuildingMenu(int client)
 
 		for(int i; i < sizeof(SectionName); i++)
 		{
-			if(i == 2 && !Construction_Mode() && !CvarInfiniteCash.BoolValue)
-				continue;
+			bool locked;
+			IntToString(i, buffer2, sizeof(buffer2));
 
+			if(!CvarInfiniteCash.BoolValue)
+			{
+				if(Dungeon_Mode())
+				{
+					if(!Waves_Started())
+						locked = true;
+				}
+
+				if(i == 2)
+				{
+					if(!Construction_Mode())
+						continue;
+					
+					if(!Waves_Started())
+						locked = true;
+				}
+				
+				if(i == 3)
+				{
+					if(!Dungeon_Mode())
+						continue;
+					
+					if(Dungeon_GetEntityZone(client) != Zone_HomeBase)
+						locked = true;
+				}
+			}
 			
 			FormatEx(buffer1, sizeof(buffer1), "%t", SectionName[i]);
-			if(i == 2 && !Waves_Started() && !CvarInfiniteCash.BoolValue)
-				menu.AddItem(buffer1, buffer1, ITEMDRAW_DISABLED);
-			else
-				menu.AddItem(buffer1, buffer1);
+			menu.AddItem(buffer2, buffer1, locked ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 		}
 	}
 	else
@@ -405,7 +510,7 @@ static void BuildingMenu(int client)
 			if(cost > metal)
 				allowed = false;
 			
-			if((Waves_InSetup() && !Construction_Mode()) || f_AllowInstabuildRegardless > GetGameTime())
+			if((Waves_InSetup() && !Construction_Mode() && !Dungeon_Mode()) || f_AllowInstabuildRegardless > GetGameTime())
 			{
 				cooldown = 0.0;
 			}
@@ -486,6 +591,8 @@ static void BuildingMenu(int client)
 
 	if(menu.Display(client, 2))
 		MenuTimer[client] = CreateTimer(0.5, Timer_RefreshMenu, client);
+
+	AnyMenuOpen[client] = 1.0;
 }
 
 static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
@@ -495,14 +602,18 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 		case MenuAction_End:
 		{
 			delete menu;
+			if(IsValidClient(client))
+				AnyMenuOpen[client] = 0.0;
 		}
 		case MenuAction_Cancel:
 		{
 			delete MenuTimer[client];
+			AnyMenuOpen[client] = 0.0;
 		}
 		case MenuAction_Select:
 		{
 			delete MenuTimer[client];
+			AnyMenuOpen[client] = 0.0;
 
 			if(HasWrench(client))
 			{
@@ -512,14 +623,9 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 					{
 						case 0:
 						{
-							CashSpent[client] += AmmoData[Ammo_Metal][0];
-							CashSpentTotal[client] += AmmoData[Ammo_Metal][0];
-							CashSpentLoadout[client] += AmmoData[Ammo_Metal][0];
-							ClientCommand(client, "playgamesound \"mvm/mvm_bought_upgrade.wav\"");
-							
-							int ammo = GetAmmo(client, Ammo_Metal) + AmmoData[Ammo_Metal][1];
-							SetAmmo(client, Ammo_Metal, ammo);
-							CurrentAmmo[client][Ammo_Metal] = ammo;
+							Toggle_MetalAutobuy[client]++;
+							if(Toggle_MetalAutobuy[client] >= 3)
+								Toggle_MetalAutobuy[client] = 0;
 						}
 						case 1:
 						{
@@ -543,7 +649,9 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 						}
 						default:
 						{
-							MenuSection[client] = choice - 3;
+							char buffer[16];
+							menu.GetItem(choice, buffer, sizeof(buffer));
+							MenuSection[client] = StringToInt(buffer);
 						}
 					}
 				}
@@ -553,14 +661,9 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 					{
 						case 0:
 						{
-							CashSpent[client] += AmmoData[Ammo_Metal][0];
-							CashSpentTotal[client] += AmmoData[Ammo_Metal][0];
-							CashSpentLoadout[client] += AmmoData[Ammo_Metal][0];
-							ClientCommand(client, "playgamesound \"mvm/mvm_bought_upgrade.wav\"");
-							
-							int ammo = GetAmmo(client, Ammo_Metal) + AmmoData[Ammo_Metal][1];
-							SetAmmo(client, Ammo_Metal, ammo);
-							CurrentAmmo[client][Ammo_Metal] = ammo;
+							Toggle_MetalAutobuy[client]++;
+							if(Toggle_MetalAutobuy[client] >= 3)
+								Toggle_MetalAutobuy[client] = 0;
 						}
 						case 1:
 						{
@@ -637,6 +740,10 @@ static int BuildingMenuH(Menu menu, MenuAction action, int client, int choice)
 											CooldownGive *= 3.0;
 											
 										UpdateDoublebuilding(entity);
+										if(HasSpecificBuff(client, "Starting Grace"))
+										{
+											CooldownGive *= 0.5;
+										}
 										
 										info.Cooldowns[client] = GetGameTime() + CooldownGive;
 										BuildingList.SetArray(id, info);
@@ -668,7 +775,7 @@ int Building_BuildByName(const char[] plugin, int client, float vecPos[3], float
 
 static int BuildByInfo(BuildingInfo info, int client, float vecPos[3], float vecAng[3])
 {
-	int entity = NPC_CreateByName(info.Plugin, client, vecPos, vecAng, GetTeam(client));
+	int entity = NPC_CreateByName(info.Plugin, client, vecPos, vecAng, client < 1 ? TFTeam_Red : GetTeam(client));
 	if(entity != -1)
 	{
 		ObjectGeneric obj = view_as<ObjectGeneric>(entity);
@@ -681,7 +788,7 @@ static int BuildByInfo(BuildingInfo info, int client, float vecPos[3], float vec
 
 		if(obj.m_bConstructBuilding && !info.HealthScaleCost)
 		{
-			expected = RoundFloat(obj.BaseHealth * Construction_GetMaxHealthMulti());
+			expected = RoundFloat(obj.BaseHealth * Construction_GetMaxHealthMulti(Multi));
 		}
 
 		if(maxhealth && expected && maxhealth != expected)
@@ -699,7 +806,9 @@ static int BuildByInfo(BuildingInfo info, int client, float vecPos[3], float vec
 			SetEntProp(obj.index, Prop_Data, "m_iRepairMax", maxrepair);
 			SetEntProp(obj.index, Prop_Data, "m_iRepair", repair);
 		}
-		SetTeam(obj.index, GetTeam(client));
+
+		if(client > 0)
+			SetTeam(obj.index, GetTeam(client));
 
 		GiveBuildingMetalCostOnBuy(entity, 0);
 	}
@@ -792,7 +901,8 @@ void Building_ShowInteractionHud(int client, int entity)
 			//NPC_GetPluginById(i_NpcInternalId[entity], plugin, sizeof(plugin));
 			//if(StrContains(plugin, "obj_", false) != -1)
 			{
-				if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") == -1)
+				ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
+				if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") == -1 && !objstats.m_bNoOwnerRequired)
 				{
 					Hide_Hud = false;
 					SetGlobalTransTarget(client);
@@ -879,9 +989,19 @@ public void Pickup_Building_M2(int client, int weapon, bool crit)
 	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
 	if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") != client && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") <= MaxClients)
 	{
-		if(!objstats.m_bConstructBuilding)
-			return; //anyone can pick up construct buildings!
+		bool AllowAnyways = false;
+		if(objstats.m_bNoOwnerRequired)
+			AllowAnyways = true;
+		if(objstats.m_bConstructBuilding)
+			AllowAnyways = true;
+		if(!AllowAnyways)
+		{
+			return;
+		}
 	}
+	//dont allow pickup
+	if(objstats.m_bCannotBePickedUp)
+		return; 
 	if(IsValidEntity(objstats.m_iMasterBuilding))
 	{
 		entity = objstats.m_iMasterBuilding;
@@ -909,9 +1029,19 @@ public void Pickup_Building_M2_InfRange(int client, int weapon, bool crit)
 	ObjectGeneric objstats = view_as<ObjectGeneric>(entity);
 	if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") != client && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") <= MaxClients)
 	{
-		if(!objstats.m_bConstructBuilding)
-			return; //anyone can pick up construct buildings!
+		bool AllowAnyways = false;
+		if(objstats.m_bNoOwnerRequired)
+			AllowAnyways = true;
+		if(objstats.m_bConstructBuilding)
+			AllowAnyways = true;
+		if(!AllowAnyways)
+		{
+			return;
+		}
 	}
+	//dont allow pickup
+	if(objstats.m_bCannotBePickedUp)
+		return; 
 	if(IsValidEntity(objstats.m_iMasterBuilding))
 	{
 		entity = objstats.m_iMasterBuilding;
@@ -1051,6 +1181,13 @@ bool Building_AttemptPlace(int buildingindx, int client, bool TestClient = false
 			Player_BuildingBeingCarried[client] = 0;
 			EmitSoundToClient(client, SOUND_TOSS_TF);
 		}
+	}
+
+	// Don't place constructs outside home base
+	if(Dungeon_Mode() && view_as<ObjectGeneric>(buildingindx).m_bConstructBuilding && Dungeon_GetEntityZone(buildingindx, true) != Zone_HomeBase)
+	{
+		int builder_owner = GetEntPropEnt(buildingindx, Prop_Send, "m_hOwnerEntity");
+		DeleteAndRefundBuilding(builder_owner, buildingindx);
 	}
 	return true;
 }
@@ -1736,7 +1873,7 @@ bool Building_RepairObject(int client, int target, int weapon,float vectorhit[3]
 	int iHealth, max_health;
 	if(i_IsVehicle[target])
 	{
-		max_health = 10000;
+		max_health = view_as<VehicleGeneric>(target).m_iMaxArmor;
 		iHealth = Armor_Charge[target];
 	}
 	else
@@ -1951,35 +2088,14 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 			//rid of warning.
 			firstbuild = false;
 		}
-		/*
-		if(!GlassBuilder[entity] && b_HasGlassBuilder[client])
-		{
-			GlassBuilder[entity] = true;
-			SetBuildingMaxHealth(entity, 0.25, false, true);
-		}
-		if(GlassBuilder[entity] && !b_HasGlassBuilder[client])
-		{
-			GlassBuilder[entity] = false;
-			SetBuildingMaxHealth(entity, 0.25, false, true ,true);
-		}
-		if(!HasMechanic[entity] && b_HasMechanic[client])
-		{
-			HasMechanic[entity] = true;
-			SetBuildingMaxHealth(entity, 1.15, false, firstbuild);
-		}
-		if(HasMechanic[entity] && !b_HasMechanic[client])
-		{
-			HasMechanic[entity] = false;
-			SetBuildingMaxHealth(entity, 1.15, true, false);
-		}
-		*/
-		//When we buy upgrades, we want to update this.
-		//the above code due to that isnt needed anymore.
 		float multi = Object_GetMaxHealthMulti(client);
 		float CurrentMulti = Attributes_Get(entity, 286, 1.0);
 		float IsAlreadyDowngraded = Attributes_Get(entity, Attrib_BuildingOnly_PreventUpgrade, 0.0);
 		if(CurrentMulti != multi)
 		{
+			//dont
+			if(Dungeon_Mode() && view_as<ObjectGeneric>(entity).m_bConstructBuilding)
+				return;
 			float MultiChange = multi / CurrentMulti;
 			if(MultiChange < 1.0)
 			{
@@ -1999,10 +2115,10 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 		if(StrContains(plugin, "obj_barracks", false) != -1)
 		{
 			float healthMult = 1.0;
-			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_TOWER) && !(i_EntityRecievedUpgrades[entity] & ZR_BARRACKS_UPGRADES_TOWER))
+			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_TOWER) && !(i_EntityReceivedUpgrades[entity] & ZR_BARRACKS_UPGRADES_TOWER))
 			{
 				healthMult *= 1.3;
-				i_EntityRecievedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_TOWER;
+				i_EntityReceivedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_TOWER;
 				/*
 				int prop1 = EntRefToEntIndex(Building_Hidden_Prop[entity][1]);
 				if(IsValidEntity(prop1))
@@ -2014,35 +2130,35 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 				*/
 			}
 
-			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_GUARD_TOWER) && (!(i_EntityRecievedUpgrades[entity] & ZR_BARRACKS_UPGRADES_GUARD_TOWER)))
+			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_GUARD_TOWER) && (!(i_EntityReceivedUpgrades[entity] & ZR_BARRACKS_UPGRADES_GUARD_TOWER)))
 			{
 				healthMult *= 1.15;
-				i_EntityRecievedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_GUARD_TOWER;
+				i_EntityReceivedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_GUARD_TOWER;
 			}
-			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_IMPERIAL_TOWER) && (!(i_EntityRecievedUpgrades[entity] & ZR_BARRACKS_UPGRADES_IMPERIAL_TOWER)))
+			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_IMPERIAL_TOWER) && (!(i_EntityReceivedUpgrades[entity] & ZR_BARRACKS_UPGRADES_IMPERIAL_TOWER)))
 			{
 				healthMult *= 1.15;
-				i_EntityRecievedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_IMPERIAL_TOWER;
+				i_EntityReceivedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_IMPERIAL_TOWER;
 			}
-			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_BALLISTICAL_TOWER) && (!(i_EntityRecievedUpgrades[entity] & ZR_BARRACKS_UPGRADES_BALLISTICAL_TOWER)))
+			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_BALLISTICAL_TOWER) && (!(i_EntityReceivedUpgrades[entity] & ZR_BARRACKS_UPGRADES_BALLISTICAL_TOWER)))
 			{
 				healthMult *= 1.15;
-				i_EntityRecievedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_BALLISTICAL_TOWER;
+				i_EntityReceivedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_BALLISTICAL_TOWER;
 			}
-			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_DONJON)&& (!(i_EntityRecievedUpgrades[entity] & ZR_BARRACKS_UPGRADES_DONJON)))
+			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_DONJON)&& (!(i_EntityReceivedUpgrades[entity] & ZR_BARRACKS_UPGRADES_DONJON)))
 			{
 				healthMult *= 1.3;
-				i_EntityRecievedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_DONJON;
+				i_EntityReceivedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_DONJON;
 			}
-			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_KREPOST) && (!(i_EntityRecievedUpgrades[entity] & ZR_BARRACKS_UPGRADES_KREPOST)))
+			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_KREPOST) && (!(i_EntityReceivedUpgrades[entity] & ZR_BARRACKS_UPGRADES_KREPOST)))
 			{
 				healthMult *= 1.4;
-				i_EntityRecievedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_KREPOST;
+				i_EntityReceivedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_KREPOST;
 			}
-			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_CASTLE) && (!(i_EntityRecievedUpgrades[entity] & ZR_BARRACKS_UPGRADES_CASTLE)))
+			if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_BARRACKS_UPGRADES_CASTLE) && (!(i_EntityReceivedUpgrades[entity] & ZR_BARRACKS_UPGRADES_CASTLE)))
 			{
 				healthMult *= 1.6;
-				i_EntityRecievedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_CASTLE;
+				i_EntityReceivedUpgrades[entity] |= ZR_BARRACKS_UPGRADES_CASTLE;
 			}
 			if(healthMult > 1.0)
 			{
@@ -2087,7 +2203,7 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 			view_as<BarrackBody>(entity).BonusDamageBonus /= AdjustValues;
 			f_FreeplayAlteredDamageOld_Barracks[entity] = Attribute;
 		}
-		if(!FinalBuilder[entity] && FinalBuilder[client])
+		if(!FinalBuilder[entity] && FinalBuilder[client])	// I'll keep this here in case i wanna use it for something
 		{
 			FinalBuilder[entity] = true;
 			view_as<BarrackBody>(entity).BonusDamageBonus *= 1.35;
@@ -2099,16 +2215,16 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 		if(!WildingenBuilder[entity] && WildingenBuilder[client])
 		{
 			WildingenBuilder[entity] = true;
-			view_as<BarrackBody>(entity).BonusDamageBonus *= 1.55;
-			view_as<BarrackBody>(entity).BonusFireRate *= 0.7;
+			view_as<BarrackBody>(entity).BonusDamageBonus *= 1.3;
+			view_as<BarrackBody>(entity).BonusFireRate *= 0.85;
 			if(BarracksUpgrade)
-				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 1.7));
-			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.7));
+				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 1.6));
+			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.6));
 		}
 		if(!WildingenBuilder2[entity] && WildingenBuilder2[client])
 		{
 			WildingenBuilder2[entity] = true;
-			view_as<BarrackBody>(entity).BonusDamageBonus *= 1.55;
+			view_as<BarrackBody>(entity).BonusDamageBonus *= 1.5;
 			view_as<BarrackBody>(entity).BonusFireRate *= 0.7;
 			if(BarracksUpgrade)
 				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 1.7));
@@ -2122,44 +2238,37 @@ void Barracks_UpdateEntityUpgrades(int entity, int client, bool firstbuild = fal
 			SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) / 1.35));
 			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 1.35));
 		}
-		if(!GlassBuilder[entity] && GlassBuilder[client])
-		{
-			GlassBuilder[entity] = true;
-			view_as<BarrackBody>(entity).BonusDamageBonus *= 1.15;
-			SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 0.8));
-			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 0.8));
-		}
-		if(GlassBuilder[entity] && !GlassBuilder[client])
-		{
-			GlassBuilder[entity] = false;
-			view_as<BarrackBody>(entity).BonusDamageBonus /= 1.15;
-			if(BarracksUpgrade)
-				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) / 0.8));
-			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 0.8));
-		}
-		if(i_CurrentEquippedPerk[entity] != 3 && i_CurrentEquippedPerk[client] == 3)
+		if(!(i_CurrentEquippedPerk[entity] & PERK_MORNING_COFFEE) && (i_CurrentEquippedPerk[client] & PERK_MORNING_COFFEE))
 		{
 			view_as<BarrackBody>(entity).BonusFireRate *= 0.85;
 		}
-		if(i_CurrentEquippedPerk[entity] == 3 && i_CurrentEquippedPerk[client] != 3)
+		if((i_CurrentEquippedPerk[entity] & PERK_MORNING_COFFEE) && !(i_CurrentEquippedPerk[client] & PERK_MORNING_COFFEE))
 		{
 			view_as<BarrackBody>(entity).BonusFireRate /= 0.85;
 		}
-		if(i_CurrentEquippedPerk[entity] != 2 && i_CurrentEquippedPerk[client] == 2)
+		if(!(i_CurrentEquippedPerk[entity] & PERK_MORNING_COFFEE_X) && (i_CurrentEquippedPerk[client] & PERK_MORNING_COFFEE_X))
+		{
+			view_as<BarrackBody>(entity).BonusFireRate *= (1.0 / 1.35);
+		}
+		if((i_CurrentEquippedPerk[entity] & PERK_MORNING_COFFEE_X) && !(i_CurrentEquippedPerk[client] & PERK_MORNING_COFFEE_X))
+		{
+			view_as<BarrackBody>(entity).BonusFireRate /= (1.0 / 1.35);
+		}
+		if((i_CurrentEquippedPerk[entity] & PERK_OBSIDIAN) && !(i_CurrentEquippedPerk[client] & PERK_OBSIDIAN))
 		{
 			if(BarracksUpgrade)
 				SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 1.15));
 
 			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.15));
 		}
-		if(i_CurrentEquippedPerk[entity] == 2 && i_CurrentEquippedPerk[client] != 2)
+		if(!(i_CurrentEquippedPerk[entity] & PERK_OBSIDIAN) && (i_CurrentEquippedPerk[client] & PERK_OBSIDIAN))
 		{
 			SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) / 1.15));
 			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) / 1.15));
 		}
-		if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_UNIT_UPGRADES_REFINED_MEDICINE) &&!(i_EntityRecievedUpgrades[entity] & ZR_UNIT_UPGRADES_REFINED_MEDICINE))
+		if((i_NormalBarracks_HexBarracksUpgrades[client] & ZR_UNIT_UPGRADES_REFINED_MEDICINE) &&!(i_EntityReceivedUpgrades[entity] & ZR_UNIT_UPGRADES_REFINED_MEDICINE))
 		{
-			i_EntityRecievedUpgrades[entity] |= ZR_UNIT_UPGRADES_REFINED_MEDICINE;
+			i_EntityReceivedUpgrades[entity] |= ZR_UNIT_UPGRADES_REFINED_MEDICINE;
 			SetEntProp(entity, Prop_Data, "m_iHealth", RoundToCeil(float(GetEntProp(entity, Prop_Data, "m_iHealth")) * 1.1));
 			SetEntProp(entity, Prop_Data, "m_iMaxHealth", RoundToCeil(float(ReturnEntityMaxHealth(entity)) * 1.1));
 		}
@@ -2312,6 +2421,8 @@ bool MountBuildingToBackInternal(int client, bool AllowAnyBuilding)
 	ObjectGeneric objstats1 = view_as<ObjectGeneric>(entity);
 	if(objstats1.m_bConstructBuilding)
 		return false;	// Too fat
+	if(objstats.m_bNoOwnerRequired)
+		return false;	// no owner!!!
 
 	Building_RotateAllDepencencies(entity);
 	float ModelScale = GetEntPropFloat(entity, Prop_Send, "m_flModelScale");
@@ -2326,7 +2437,6 @@ bool MountBuildingToBackInternal(int client, bool AllowAnyBuilding)
 		SetEntPropFloat(objstats.m_iWearable1, Prop_Send, "m_flModelScale", ModelScale);
 		b_IsEntityAlwaysTranmitted[objstats.m_iWearable1] = true;		
 		SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingReady);
-	//	SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
 	}
 
 	
@@ -2433,6 +2543,7 @@ void TransferDispenserBackToOtherEntity(int client, bool DontEquip = false)
 			if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
 				posStacked[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
 			SDKCall_SetLocalOrigin(entity, posStacked);	
+			Update_TransmitState(entity);
 		}
 		return;
 	}
@@ -2505,14 +2616,14 @@ void UnequipDispenser(int client, bool destroy = false)
 	
 	Building_Mounted[client] = -1;
 	int entity = EntRefToEntIndex(i2_MountedInfoAndBuilding[1][client]);
-	if(IsValidEntity(i2_MountedInfoAndBuilding[1][client]))
+	if(IsValidEntity(entity))
 	{
 		float posStacked[3]; 
 		GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", posStacked);
-		AcceptEntityInput(i2_MountedInfoAndBuilding[1][client], "ClearParent");
+		AcceptEntityInput(entity, "ClearParent");
 		if(f3_CustomMinMaxBoundingBoxMinExtra[entity][2])	//wierd offset.
 			posStacked[2] -= f3_CustomMinMaxBoundingBoxMinExtra[entity][2];
-
+		Update_TransmitState(entity);
 		SDKCall_SetLocalOrigin(entity, posStacked);	
 		i2_MountedInfoAndBuilding[1][client] = INVALID_ENT_REFERENCE;
 	}
@@ -2540,8 +2651,6 @@ void UnequipDispenser(int client, bool destroy = false)
 	//	SetEntPropFloat(objstats.m_iWearable1, Prop_Send, "m_fadeMaxDist", 0.0);		
 		SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingReady);
 		SDKHook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingReady);
-	//	SDKUnhook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
-	//	SDKHook(objstats.m_iWearable1, SDKHook_SetTransmit, SetTransmit_BuildingNotReady);
 	}
 
 	//update text
@@ -2595,6 +2704,14 @@ void GiveBuildingMetalCostOnBuy(int entity, int cost)
 }
 void DeleteAndRefundBuilding(int client, int entity)
 {	
+	//dont do boom if primed
+	if(BombIdVintulum() == i_NpcInternalId[entity])
+	{
+		ObjectVintulumBomb npc = view_as<ObjectVintulumBomb>(entity);
+		if(npc.m_flBombExplodeTill)
+			return;
+	}
+
 	if(IsValidClient(client))
 	{
 		int Repair = 	GetEntProp(entity, Prop_Data, "m_iRepair");
@@ -2778,6 +2895,8 @@ static void Tinker_TouchAnything(int entity, int target)
 	{
 		if(i_NpcIsABuilding[target])
 		{
+			if(view_as<ObjectGeneric>(target).m_bConstructBuilding && IsValidEntity(view_as<ObjectGeneric>(target).m_iConstructDeathModel))
+				return;
 			//heal building?
 			bool RepairDone = false;
 			int weapon = EntRefToEntIndex(i_WandWeapon[entity]);

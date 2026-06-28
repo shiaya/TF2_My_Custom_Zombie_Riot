@@ -516,8 +516,8 @@ static void ReShowSettingsHud(int client)
 	}
 	menu2.AddItem("-42", buffer);
 
-	FormatEx(buffer, sizeof(buffer), "%t", "Taunt Speed increase");
-	if(b_TauntSpeedIncrease[client])
+	FormatEx(buffer, sizeof(buffer), "%t", "Display Backwards Walk Notif");
+	if(b_BackwardsWalkNotif[client])
 	{
 		FormatEx(buffer, sizeof(buffer), "%s %s", buffer, "[X]");
 	}
@@ -961,13 +961,13 @@ public int Settings_MenuPage(Menu menu, MenuAction action, int client, int choic
 				}
 				case -71: 
 				{
-					if(b_TauntSpeedIncrease[client])
+					if(b_BackwardsWalkNotif[client])
 					{
-						b_TauntSpeedIncrease[client] = false;
+						b_BackwardsWalkNotif[client] = false;
 					}
 					else
 					{
-						b_TauntSpeedIncrease[client] = true;
+						b_BackwardsWalkNotif[client] = true;
 					}
 					ReShowSettingsHud(client);
 				}
@@ -1048,7 +1048,7 @@ void Store_ApplyAttribs(int client)
 							{
 								map.SetValue(buffer1, info.Value[a]);
 							}
-							else if(info.Attrib[a] < 0 || info.Attrib[a]==26 || (TF2Econ_GetAttributeDefinitionString(info.Attrib[a], "description_format", buffer2, sizeof(buffer2)) && StrContains(buffer2, "additive")!=-1))
+							else if(info.Attrib[a] < 0 || info.Attrib[a]==26 || (Attribute_IntAttribute(info.Attrib[a]) || (TF2Econ_GetAttributeDefinitionString(info.Attrib[a], "description_format", buffer2, sizeof(buffer2)) && StrContains(buffer2, "additive")!=-1)))
 							{
 								map.SetValue(buffer1, value + info.Value[a]);
 							}
@@ -1068,7 +1068,7 @@ void Store_ApplyAttribs(int client)
 							{
 								map.SetValue(buffer1, info.Value2[a]);
 							}
-							else if(info.Attrib2[a] < 0 || info.Attrib2[a]==26 || (TF2Econ_GetAttributeDefinitionString(info.Attrib2[a], "description_format", buffer2, sizeof(buffer2)) && StrContains(buffer2, "additive")!=-1))
+							else if(info.Attrib2[a] < 0 || info.Attrib2[a]==26 || (Attribute_IntAttribute(info.Attrib2[a]) || (TF2Econ_GetAttributeDefinitionString(info.Attrib2[a], "description_format", buffer2, sizeof(buffer2)) && StrContains(buffer2, "additive")!=-1)))
 							{
 								map.SetValue(buffer1, value + info.Value2[a]);
 							}
@@ -1133,6 +1133,10 @@ void Store_ApplyAttribs(int client)
 void Store_GiveAll(int client, int health, bool removeWeapons = false)
 {
 	if(!EquippedItems)
+	{
+		return; //STOP. BAD!
+	}
+	if(!IsPlayerAlive(client))
 	{
 		return; //STOP. BAD!
 	}
@@ -1287,6 +1291,8 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 	{
 		return -1;
 	}
+	if(!IsPlayerAlive(client))
+		return -1;
 
 	int slot = -1;
 	int entity = -1;
@@ -1642,7 +1648,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 									Attributes_Set(entity, info.Attrib[a], info.Value[a]);
 								}
 							}
-							else if(!ignore_rest && TF2Econ_GetAttributeDefinitionString(info.Attrib[a], "description_format", info.Classname, sizeof(info.Classname)) && StrContains(info.Classname, "additive")!=-1)
+							else if(!ignore_rest && (Attribute_IntAttribute(info.Attrib[a]) || (TF2Econ_GetAttributeDefinitionString(info.Attrib[a], "description_format", info.Classname, sizeof(info.Classname)) && StrContains(info.Classname, "additive")!=-1)))
 							{
 								Attributes_SetAdd(entity, info.Attrib[a], info.Value[a]);
 							}
@@ -1677,7 +1683,7 @@ int Store_GiveItem(int client, int index, bool &use=false, bool &found=false)
 									Attributes_Set(entity, info.Attrib2[a], info.Value2[a]);
 								}
 							}
-							else if(!ignore_rest && TF2Econ_GetAttributeDefinitionString(info.Attrib2[a], "description_format", info.Classname, sizeof(info.Classname)) && StrContains(info.Classname, "additive")!=-1)
+							else if(!ignore_rest && (Attribute_IntAttribute(info.Attrib2[a]) || (TF2Econ_GetAttributeDefinitionString(info.Attrib2[a], "description_format", info.Classname, sizeof(info.Classname)) && StrContains(info.Classname, "additive")!=-1)))
 							{
 								Attributes_SetAdd(entity, info.Attrib2[a], info.Value2[a]);
 							}

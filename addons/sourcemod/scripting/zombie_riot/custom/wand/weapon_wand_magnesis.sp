@@ -25,7 +25,7 @@ static float Magnesis_Grab_Cost_Scaling_Normal[3] = { 0.01, 0.01, 0.01 };		//Add
 static float Magnesis_Grab_Cost_Special[3] = { 35.0, 35.0, 35.0 };				//Mana drained per 0.1s while holding a boss/mini-boss.
 static float Magnesis_Grab_Cost_Scaling_Special[3] = { 0.01, 0.01, 0.01 };		//Additional percentage of the user's max mana to drain per 0.1s while holding a special enemy (0.1 = 10%).
 static float Magnesis_Grab_Cost_Raid[3] = { 35.0, 35.0, 35.0 };					//Mana drained per 0.1s while holding a raid.
-static float Magnesis_Grab_Cost_Scaling_Raid[3] = { 0.025, 0.025, 0.025 };		//Additional percentage of the user's max mana to drain per 0.1s while holding a raid.
+static float Magnesis_Grab_Cost_Scaling_Raid[3] = { 0.020, 0.020, 0.020 };		//Additional percentage of the user's max mana to drain per 0.1s while holding a raid.
 static float Magnesis_Grab_DragRate[3] = { 10.0, 10.0, 10.0 };					//Base speed at which grabbed targets move towards the puller, per frame.
 static float Magnesis_Grab_DragRate_WeightPenalty[3] = { 7.5, 3.0, 1.25 };		//Amount to reduce grab movement speed per point of NPC weight above 1.
 static float Magnesis_Grab_Range[3] = { 150.0, 200.0, 250.0 };					//Maximum distance from which enemies can be grabbed.
@@ -72,7 +72,7 @@ static float Newtonian_M2_Knockback_Vertical[3] = { 400.0, 600.0, 750.0 };		//Ve
 static float Newtonian_M2_Knockback_RaidMult[3] = { 1.0, 1.0, 1.0 };			//Amount to multiply knockback dealt to raids.
 static float Newtonian_M2_Knockback_WeightPenalty[3] = { 150.0, 100.0, 100.0 };	//Amount to reduce knockback per point of NPC weight above 1.0.
 static float Newtonian_M2_AttackDelay[3] = { 0.66, 0.66, 0.66 };				//Duration to prevent the user from attacking with M1 after triggering a shockwave. This is to prevent cheesy combos where you press M2 and M1 at the same time.
-static int Newtonian_M2_MaxTargets[3] = { 4, 6, 8 };							//Max zombies hit by M2 shockwave.
+static int Newtonian_M2_MaxTargets[3] = { 7, 8, 9 };							//Max zombies hit by M2 shockwave.
 
 //Client/entity-specific global variables below, don't touch these:
 static float ability_cooldown[MAXPLAYERS + 1] = {0.0, ...};
@@ -128,7 +128,7 @@ float MagnesisDamageBuff(int Tier)
 #define PARTICLE_MAGNESIS_M1     			"raygun_projectile_blue"
 #define PARTICLE_MAGNESIS_M1_FINALPAP		"raygun_projectile_blue_crit"
 #define PARTICLE_MAGNESIS_M1_COLLIDE		"impact_metal"
-#define PARTICLE_MAGNESIS_GRAB				"medicgun_beam_machinery_trail"
+#define PARTICLE_MAGNESIS_GRAB				"medicgun_beam_machinery"
 #define PARTICLE_MAGNESIS_GRAB_FINALPAP		"medicgun_beam_blue_trail"
 #define PARTICLE_MAGNESIS_THROW				"dxhr_lightningball_hit_red"
 #define PARTICLE_MAGNESIS_THROW_FINALPAP	"dxhr_lightningball_hit_blue"
@@ -480,6 +480,12 @@ void Magnesis_AttemptGrab(int client, int weapon, int tier)
 		if(HasSpecificBuff(victim, "Solid Stance"))
 			return;
 
+		if(HasSpecificBuff(victim, "Raid Strangle Protection", _ , client) == 3)
+		{
+			//already grabbed once, the owner that is.
+			return;
+		}
+
 		if (Magnesis_Grabbed[victim])
 		{
 			Utility_HUDNotification_Translation(client, "Magnesis Already Grabbed", true);
@@ -513,7 +519,10 @@ void Magnesis_AttemptGrab(int client, int weapon, int tier)
 		}
 		float cd = Magnesis_Grab_Cooldown_Normal[tier];
 		if (b_thisNpcIsARaid[victim])
+		{
+			ApplyStatusEffect(client, victim, "Raid Strangle Protection", 999999.9);
 			cd = Magnesis_Grab_Cooldown_Raids[tier];
+		}
 		else if (b_thisNpcIsABoss[victim])
 			cd = Magnesis_Grab_Cooldown_Special[tier];
 		Magnesis_CooldownToApply[client] = cd;
@@ -1170,16 +1179,18 @@ public void Magnesis_DelayHoming(DataPack pack)
 	int target = EntRefToEntIndex(ReadPackCell(pack));
 	if (!IsValidEntity(projectile) || !IsValidEntity(target))
 		return;
-
-	if(Can_I_See_Enemy_Only(target, projectile)) //Insta home!
-	{
-		HomingProjectile_TurnToTarget(target, projectile);
-	}
-
-	DataPack pack2;
-	CreateDataTimer(0.1, PerfectHomingShot, pack2, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-	pack2.WriteCell(EntIndexToEntRef(projectile)); //projectile
-	pack2.WriteCell(EntIndexToEntRef(target));		//victim to annihilate :)
+	
+	float fAng[3];
+	GetEntPropVector(projectile, Prop_Send, "m_angRotation", fAng);
+	Initiate_HomingProjectile(projectile,
+	projectile,
+		180.0,			// float lockonAngleMax,
+		90.0,				//float homingaSec,
+		true,				// bool LockOnlyOnce,
+		true,				// bool changeAngles,
+		fAng,
+		target);			// float AnglesInitiate[3]);
+	TriggerTimerHoming(projectile);
 
 	EmitSoundToAll(SND_MAGNESIS_HOMING_BEGIN, projectile, _, _, _, 0.66, GetRandomInt(60, 80));
 }
