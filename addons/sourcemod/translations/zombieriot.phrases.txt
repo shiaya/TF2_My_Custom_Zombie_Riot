@@ -2495,6 +2495,11 @@
 		"it"		"Assicuratevi di spendere tutti i vostri soldi iniziali!"
 		"ko"		"당신의 시작 자금을 전부 사용하는걸 추천합니다!"
 	}
+	"Free Roam Spec Notice"
+	{
+		"en"		"Left click an NPC while freeroaming to spectate it."
+		"ko"		"자유 카메라 상태일 때 NPC를 보고 좌클릭하여 관전하세요."
+	}
 	"Difficulty set to"
 	{
 		"en"		"Difficulty set to"
@@ -3238,6 +3243,12 @@
 		"ko"		"지베리아 게릴라의 지원이 도착했습니다."
 		"it"		"I Guerriglieri Ziberiani sono qui per aiutare."
 	}
+	"Vesta_Survival_Bob_Message"
+	{
+		"en"		"Bob the First and his army found us and decided to help us fight the Outpost. Bob needs our help after we're finished here. He hopes that the Vestans started this....."
+		"ko"		"밥 1세와 그의 군대가 우리를 발견했으며, 전초기지와의 전투를 돕기로 결정합니다.\n이곳의 일이 끝나면 밥이 우리의 도움을 필요로 할 것입니다.\n그가 베스타인들이 먼저 이 상황을 시작했길 바라는군요..."
+		"it"		"I Guerriglieri Ziberiani sono qui per aiutare."
+	}
 	"RadioTower_here_Message"
 	{
 		"en"		"Radiotower is here, Prepare."
@@ -3250,10 +3261,15 @@
 		"it"		"Gli Expidonsan stanno cercando di inviare aiuti, ma il vuoto interferisce, solo i guardiani possono arrivare qui."
 		"ko"		"엑스피돈사가 지원을 보내려고 시도했지만, 공허의 간섭으로 인하여, 가두스들만 이 곳에 도착할 수 있었습니다."
 	}
-	"Void_Survival_Help_Message"
+	"Void_Survival_Help_Message_1"
 	{
-		"en"		"Expidonsan's are here to help us defeat this void outbreak."
-		"ko"		"엑스피돈사가 공허 재앙을 막기 위해 당신에게 합류합니다."
+		"en"		"Expidonsan scouts have located us. They’ve sent word for someone to arrive as soon as possible. Until then, they will aid us."
+		"ko"		"엑스피돈사 정찰병들이 우리의 위치를 확인했습니다.\n어떤 이에게 최대한 빠르게 도착하라고 전달한 것 같군요.\n그때까지는, 이들이 우릴 도울 것입니다."
+	}
+	"Void_Survival_Help_Message_2"
+	{
+		"en"		"Sensal has finally reached us to defeat this void outbreak."
+		"ko"		"센살이 공허 재앙을 막기 위해 드디어 당신에게 합류합니다."
 	}
 	"Umbral_Outbreak_Help_Message"
 	{
