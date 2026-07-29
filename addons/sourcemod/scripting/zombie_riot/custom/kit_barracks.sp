@@ -80,7 +80,6 @@ public void Enable_Barracks(int client, int weapon)
 	ResourceGen[client] = RoundFloat(Attributes_Get(weapon, 4050, 0.0));
 	h_Barrack_Timer[client] = CreateDataTimer(0.1, Timer_Barracks, pack, TIMER_REPEAT);
 	pack.WriteCell(client);
-	pack.WriteCell(EntIndexToEntRef(weapon));
 	pack.WriteCell(EntIndexToEntRef(client));
 	PrecacheBarracksMusic();
 }
@@ -88,14 +87,19 @@ static Action Timer_Barracks(Handle timer, DataPack pack)
 {
 	pack.Reset();
 	int clientindx = pack.ReadCell();
-	int weapon = EntRefToEntIndex(pack.ReadCell());
 	int client = EntRefToEntIndex(pack.ReadCell());
 	
-	if(!IsValidClient(client) || !IsClientInGame(client) || !IsPlayerAlive(client) || !IsValidEntity(weapon))
-	{	
+	bool valid = IsValidClient(client);
+	if(!valid)
+	{
 		h_Barrack_Timer[clientindx] = null;
 		return Plugin_Stop;
 	}
+	if(i_ClientHasCustomGearEquipped[client] != CUSTOMGEAR_NONE || !IsEntityAlive(client,_, true))
+	{
+		return Plugin_Continue;
+	}
+	
 	Barracks_HUD(client);
 	return Plugin_Continue;
 }
@@ -430,11 +434,16 @@ public void Barracks_OnTakeDamage_Italian(int victim, int &attacker, int &inflic
 		}
 	}
 }
+public void CommanderKit_Unequip(int client)
+{
+	h_Barrack_Timer[client] = null;
+	delete h_Barrack_Timer[client];
+}
 public int Barracks_GetInfo(int client, int choice)
 {
 	if (client > 0 && client <= MaxClients)
 	{
-		if (!IsBarracks(client))
+		if(!IsBarracks(client))
 		return -1;
 		
 		switch(choice)

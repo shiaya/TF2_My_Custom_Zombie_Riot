@@ -285,6 +285,7 @@ void InitStatusEffects()
 	StatusEffects_Barracks();
 	StatusEffects_IndexNurseFather();
 	StatusEffects_Gunsaw();
+	StatusEffects_ManaRecharge();
 }
 
 static int CategoryPage[MAXPLAYERS];
@@ -6694,7 +6695,7 @@ static void Warped_FuncTimer(int entity, StatusEffect Apply_MasterStatusEffect, 
 		}
 
 		Elemental_AddWarpedDamage(entity, attacker, RoundFloat(ReturnEntityMaxHealth(entity) * 0.027), false, _, true);
-		if(!Citizen_IsIt(entity))
+		if(!Citizen_IsIt(entity) && !IsBarrackTroop(entity))
 			if(f_AttackSpeedNpcIncrease[entity] > 0.2)
 				f_AttackSpeedNpcIncrease[entity] *= 0.979;
 	}
@@ -8612,6 +8613,9 @@ static void Const2_SefHeal_Timer(int entity, StatusEffect Apply_MasterStatusEffe
 	float maxhealth = float(ReturnEntityMaxHealth(entity));
 	if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity])
 		maxhealth *= 0.01;
+	else if (b_IsGiant[entity])
+		maxhealth *= 0.5;
+	
 	HealEntityGlobal(entity, entity, maxhealth / 5.0, 1.0, 0.0, HEAL_SELFHEAL);
 }
 static void Const2_Armoring_Timer(int entity, StatusEffect Apply_MasterStatusEffect, E_StatusEffect Apply_StatusEffect)
@@ -8627,6 +8631,9 @@ static void Const2_Armoring_Timer(int entity, StatusEffect Apply_MasterStatusEff
 	float maxhealth = float(ReturnEntityMaxHealth(entity));
 	if(b_thisNpcIsARaid[entity] || b_thisNpcIsABoss[entity])
 		maxhealth *= 0.025;
+	else if (b_IsGiant[entity])
+		maxhealth *= 0.5;
+	
 	GrantEntityArmor(entity, false, 1.0, 0.25, 0, maxhealth / 4.0);
 }
 
@@ -12121,4 +12128,21 @@ static void FuriosoAbilityEnd(int victim, StatusEffect Apply_MasterStatusEffect,
 {
 	ExtinguishTarget(victim);
 
+}
+void StatusEffects_ManaRecharge()
+{
+	StatusEffect data;
+	strcopy(data.BuffName, sizeof(data.BuffName), "Mana Recharge");
+	strcopy(data.HudDisplay, sizeof(data.HudDisplay), "✫");
+	strcopy(data.AboveEnemyDisplay, sizeof(data.AboveEnemyDisplay), ""); //dont display above head, so empty
+	data.DamageTakenMulti 			= -1.0;
+	data.DamageDealMulti			= -1.0;
+	//Make sure it isnt ignored, set it to 0.0, on need for extra func checks either.
+	data.MovementspeedModif			= -1.0;
+	data.Positive 					= true;
+	data.ShouldScaleWithPlayerCount = false;
+	data.ElementalLogic				= false;
+	data.Slot						= 0; //0 means ignored
+	data.SlotPriority				= 0; //if its higher, then the lower version is entirely ignored.
+	StatusEffect_AddGlobal(data);
 }
